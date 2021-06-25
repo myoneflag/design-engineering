@@ -10,6 +10,7 @@ import set = Reflect.set;
 import { isGermanStandard } from "../../../../../common/src/api/config";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
 import { Units } from "../../../../../common/src/lib/measurements";
+import { DocumentState } from "../types";
 
 export default interface SystemNodeCalculation extends
     PsdCalculation,
@@ -18,8 +19,8 @@ export default interface SystemNodeCalculation extends
     flowRateLS: number | null;
 }
 
-export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settings: DrawingState): CalculationField[] {
-    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
+export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, doc: DocumentState): CalculationField[] {
+    const psdUnit = getPsdUnitName(doc.drawing.metadata.calculationParams.psdMethod, doc.locale);
     const result: CalculationField[] = [];
 
     addPressureCalculationFields(result, entity.systemUid);
@@ -35,7 +36,7 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
         },
     );
 
-    if (settings.metadata.calculationParams.psdMethod !== null) {
+    if (doc.drawing.metadata.calculationParams.psdMethod !== null) {
         result.push({
             property: "psdUnits.units",
             title: psdUnit.name,
@@ -46,7 +47,7 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, settin
         });
     }
 
-    if (settings.metadata.calculationParams.dwellingMethod !== null) {
+    if (doc.drawing.metadata.calculationParams.dwellingMethod !== null) {
         result.push({
             property: "psdUnits.dwellings",
             title: "Dwellings",
@@ -70,6 +71,7 @@ export function emptySystemNodeCalculation(): SystemNodeCalculation {
         psdUnits: null,
         pressureKPA: null,
         staticPressureKPA: null,
-        warning: null
+        warning: null,
+        warningLayout: null,
     };
 }

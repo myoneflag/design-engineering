@@ -133,7 +133,8 @@ export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         rpzdSizeMM: {},
         mixingValveSizeMM: null,
 
-        warning: null
+        warning: null,
+        warningLayout: null,
     };
 
     const suids: string[] = [];

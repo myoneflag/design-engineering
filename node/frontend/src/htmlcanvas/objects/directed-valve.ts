@@ -31,7 +31,7 @@ import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/ent
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import {assertUnreachable, ComponentPressureLossMethod, isGas} from "../../../../common/src/api/config";
+import {assertUnreachable, ComponentPressureLossMethod, isDrainage, isGas} from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -42,6 +42,7 @@ import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {lowerBoundNumberTable} from "../utils";
 import {decomposeMatrix} from "../utils";
+import {DEFAULT_FONT_NAME} from "../../config";
 
 
 @CalculatedObject
@@ -100,6 +101,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         return [];
     }
 
+    isActive(): boolean {
+        const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return systemUid === undefined || !isDrainage(systemUid);
+            case "drainage":
+                return systemUid === undefined || isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
@@ -109,7 +121,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
             context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
         }
-        const color = e.color!;
+        let color = e.color!;
+        if (!this.isActive()) {
+            color = {hex: 'rgba(150, 150, 150, 0.65)'};
+        }
 
         const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / this.toWorldLength(1));
 
@@ -157,9 +172,72 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.FILTER:
                 this.drawFilter(context);
                 break;
+            case ValveType.FLOOR_WASTE:
+                this.drawFloorWaste(context);
+                break;
+            case ValveType.INSPECTION_OPENING:
+                this.drawInspectionOpening(context);
+                break;
+            case ValveType.REFLUX_VALVE:
+                this.drawRefluxValve(context);
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }
+    }
+
+    drawFloorWaste(context: DrawingContext) {
+        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            const ctx = context.ctx;
+            ctx.fillStyle='#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            const lineX = VALVE_SIZE_MM / 2;
+            const lineY = ((VALVE_SIZE_MM ** 2) - (lineX ** 2)) ** 0.5;
+
+            ctx.moveTo(0, VALVE_SIZE_MM);
+            ctx.lineTo(0, -VALVE_SIZE_MM);
+            ctx.moveTo(lineX, lineY);
+            ctx.lineTo(lineX, -lineY);
+            ctx.moveTo(-lineX, lineY);
+            ctx.lineTo(-lineX, -lineY);
+
+            ctx.stroke();
+
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '65px ' + DEFAULT_FONT_NAME;
+            ctx.fillText("FW", -50, 25);
+        });
+    }
+
+    drawInspectionOpening(context: DrawingContext) {
+        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+            const ctx = context.ctx;
+            ctx.fillStyle='#ffffff';
+            ctx.beginPath();
+            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '65px ' + DEFAULT_FONT_NAME;
+            ctx.fillText("I.O.", -50, 25);
+        });
+    }
+
+    drawRefluxValve(context: DrawingContext) {
+        const ctx = context.ctx;
+        ctx.beginPath();
+        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.stroke();
     }
 
     drawCheckValve(context: DrawingContext) {
@@ -430,6 +508,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     inBounds(objectCoord: Coord, objectRadius?: number): boolean {
+        if (!this.isActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist < VALVE_SIZE_MM + (objectRadius ? objectRadius : 0);
     }
@@ -544,6 +625,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.PRV_DOUBLE:
             case ValveType.PRV_TRIPLE:
             case ValveType.BALANCING:
+            case ValveType.FLOOR_WASTE:
+            case ValveType.INSPECTION_OPENING:
+            case ValveType.REFLUX_VALVE:
                 break;
             default:
                 assertUnreachable(this.entity.valve);
@@ -683,6 +767,10 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                     context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
                 );
             }
+            case ValveType.FLOOR_WASTE:
+            case ValveType.INSPECTION_OPENING:
+            case ValveType.REFLUX_VALVE:
+                return null;
             default:
                 assertUnreachable(this.entity.valve);
         }
@@ -727,6 +815,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 return "Gas Regulator";
             case ValveType.FILTER:
                 return "Filter";
+            case ValveType.FLOOR_WASTE:
+                return "Floor waste";
+            case ValveType.INSPECTION_OPENING:
+                return "Inspection opening";
+            case ValveType.REFLUX_VALVE:
+                return "Reflux valve";
         }
         assertUnreachable(this.entity.valve);
     }
@@ -1044,6 +1138,34 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                         path: `Equipment.Gas Regulator`,
                     }],
                 };
+            case ValveType.FLOOR_WASTE:
+                return {
+                    cost: context.priceTable.Equipment['Floor Waste'],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Floor Waste`,
+                    }]
+                };
+            case ValveType.INSPECTION_OPENING:
+                return {
+                    cost: context.priceTable.Equipment['Inspection Opening'],
+                    breakdown: [{
+                        qty: 1,
+                        path: `Equipment.Inspection Opening`,
+                    }]
+                };
+            case ValveType.REFLUX_VALVE:
+                size = lowerBoundNumberTable(context.priceTable.Equipment["Reflux Valve"], size);
+                if (size) {
+                    return {
+                        cost: context.priceTable.Equipment['Reflux Valve'][size],
+                        breakdown: [{
+                            qty: 1,
+                            path: `Equipment.Reflux Valve.${size}`,
+                        }]
+                    };
+                }
+                break;
             default:
                 assertUnreachable(this.entity.valve);
         }

@@ -357,7 +357,7 @@ export const mutations: MutationTree<DocumentState> = {
     },
 
     resetDrawing(state) {
-        changeDrawing(state, cloneSimple(initialDrawing), undefined, true);
+        changeDrawing(state, initialDrawing(state.locale), undefined, true);
     },
 
     reset(state) {

@@ -11,7 +11,10 @@ export type DirectedValveConcrete =
     | PressureReliefValveTriple
     | Balancing
     | GasRegulator
-    | Filter;
+    | Filter
+    | FloorWaste
+    | InspectionOpening
+    | RefluxValve;
 
 export interface DirectedValve {
     type: ValveType;
@@ -99,6 +102,18 @@ export interface Filter extends DirectedValve {
     pressureDropKPA: number | null;
 }
 
+export interface FloorWaste extends DirectedValve {
+    type: ValveType.FLOOR_WASTE;
+}
+
+export interface InspectionOpening extends DirectedValve {
+    type: ValveType.INSPECTION_OPENING;
+}
+
+export interface RefluxValve extends DirectedValve {
+    type: ValveType.REFLUX_VALVE;
+}
+
 export enum ValveType {
     CHECK_VALVE = "CHECK_VALVE",
     ISOLATION_VALVE = "ISOLATION_VALVE",
@@ -115,4 +130,8 @@ export enum ValveType {
     BALANCING = 'BALANCING',
     GAS_REGULATOR = 'GAS_REGULATOR',
     FILTER = 'FILTER',
+
+    FLOOR_WASTE = 'FLOOR_WASTE',
+    INSPECTION_OPENING = 'INSPECTION_OPENING',
+    REFLUX_VALVE = 'REFLUX_VALVE',
 }

@@ -173,6 +173,12 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
             });
             break;
         }
+        case ValveType.FLOOR_WASTE:
+        case ValveType.INSPECTION_OPENING:
+        case ValveType.REFLUX_VALVE: {
+            // Nothing for these.
+            break;
+        };
         default:
             assertUnreachable(entity.valve);
     }
@@ -192,6 +198,7 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         kvValue: null,
         pressureKPA: null,
         warning: null,
+        warningLayout: null,
         sizeMM: null
     };
 }

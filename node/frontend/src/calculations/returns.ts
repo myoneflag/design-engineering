@@ -564,6 +564,9 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                         case ValveType.WATER_METER:
                         case ValveType.STRAINER:
                         case ValveType.FILTER:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             // whatevs, not directed
                             break;
                         case ValveType.CHECK_VALVE:

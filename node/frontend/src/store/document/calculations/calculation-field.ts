@@ -16,6 +16,8 @@ export enum FieldCategory {
     Location,
 }
 
+export type CalculationLayout = 'pressure' | 'drainage';
+
 export interface CalculationField {
     property: string;
     title: string;
@@ -32,6 +34,9 @@ export interface CalculationField {
     format?: (v: any) => string;
     hideIfNull?: boolean;
     convert?: (unitPrefs: UnitsParameters, units: Units, value: number | null) => [Units, number | string | null];
+
+    // If missing, assume it is just for ['pressure'].
+    layouts?: CalculationLayout[];
 }
 
 export enum CalculationDataType {

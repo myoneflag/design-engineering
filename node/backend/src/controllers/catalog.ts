@@ -1,10 +1,18 @@
-import { initialCatalog } from "../../../common/src/api/catalog/initial-catalog/initial-catalog";
+import { auCatalog } from "../../../common/src/api/catalog/initial-catalog/au-catalog";
 import {NextFunction, Request, Response, Router} from "express";
 import {Session} from "../../../common/src/models/Session";
 import {AuthRequired} from "../helpers/withAuth";
 import {AccessType, withDocument} from "../helpers/withResources";
 import { ShareDocument } from '../../../common/src/models/ShareDocument';
 import { Document } from '../../../common/src/models/Document';
+import { SupportedLocales } from "../../../common/src/api/locale";
+import { usCatalog } from "../../../common/src/api/catalog/initial-catalog/us-catalog";
+
+const catalogsByLocale = {
+    [SupportedLocales.AU]: auCatalog,
+    [SupportedLocales.UK]: auCatalog,
+    [SupportedLocales.US]: usCatalog
+};
 
 export class CatalogController {
     @AuthRequired()
@@ -12,7 +20,7 @@ export class CatalogController {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             return res.status(200).send({
                 success: true,
-                data: initialCatalog,
+                data: catalogsByLocale[doc.locale],
             });
         });
     }
@@ -33,7 +41,7 @@ export class CatalogController {
         if (doc) {
             return res.status(200).send({
                 success: true,
-                data: initialCatalog
+                data: catalogsByLocale[doc.locale],
             });
         } else {
             return res.status(401).send({

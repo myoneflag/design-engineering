@@ -56,6 +56,9 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         let loadingUnits = 0;
         let designFlowRateLS = 0;
         let continuousFlow = 0;
+        let upcFixtureUnits = 0;
+        let asnzFixtureUnits = 0;
+        let enDischargeUnits = 0;
 
         if (!result.node.loadingUnits 
             || !result.node.designFlowRateLS
@@ -118,12 +121,32 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                         continuousFlow += parseCatalogNumberExact(continuousFlowLS[systemChk])!;
                     }
                 }
+
+                asnzFixtureUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].asnzFixtureUnits) || 0;
+                upcFixtureUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].upcFixtureUnits) || 0;
+                enDischargeUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].enDischargeUnits) || 0;
             }
         }
-        
-        result.node.loadingUnits = result.node.loadingUnits || loadingUnits;
-        result.node.designFlowRateLS = result.node.designFlowRateLS || designFlowRateLS;
-        result.node.continuousFlowLS = result.node.continuousFlowLS || continuousFlow;
+
+        if (result.node.loadingUnits === null) {
+            result.node.loadingUnits = loadingUnits;
+        }
+        if (result.node.designFlowRateLS === null) {
+            result.node.designFlowRateLS = designFlowRateLS;
+        }
+        if (result.node.continuousFlowLS === null) {
+            result.node.continuousFlowLS = continuousFlow;
+        }
+
+        if (result.node.upcFixtureUnits === null) {
+            result.node.upcFixtureUnits = upcFixtureUnits;
+        }
+        if (result.node.asnzFixtureUnits === null) {
+            result.node.asnzFixtureUnits = asnzFixtureUnits;
+        }
+        if (result.node.enDischargeUnits === null) {
+            result.node.enDischargeUnits = enDischargeUnits;
+        }
     }
 
     return result;

@@ -3,7 +3,7 @@
         <template v-for="fitting in fittings">
             <b-row>
                 <b-col>
-                    <h4>{{fitting}}</h4>
+                    <h4>{{fitting}} ({{ currency.symbol }})</h4>
                 </b-col>
             </b-row>
             <b-table
@@ -19,7 +19,7 @@
                         <b-form-input
                                 type="number"
                                 @input="(e) => onCellInput(fitting, material, slot.item['Size (mm)'], e)"
-                                :value="slot.value"
+                                :value="displayValue(slot.value)"
                         ></b-form-input>
                     </b-input-group>
                 </template>
@@ -55,6 +55,15 @@
         get document(): DocumentState {
             return this.$store.getters['document/document'];
         }
+        get currency() {
+            return this.document.drawing.metadata.units.currency;
+        }
+        displayValue(value: number) {
+            if (!value) {
+                return value;
+            }
+            return (value * this.currency.multiplierPct / 100).toFixed(2);
+        }
 
         get fittings() {
             return Object.keys(this.priceTable.Fittings);
@@ -80,7 +89,7 @@
             setPropertyByStringVue(
                 this.document.drawing.metadata.priceTable,
                 'Fittings.' + fitting + '.' + material + '.' + size,
-                Number(value),
+                Number(value) / this.currency.multiplierPct * 100,
             );
         }
 

@@ -26,7 +26,6 @@ import { DrawableEntityConcrete } from "../../../../../common/src/api/document/e
 import { makeBackgroundFields } from "../../../../../common/src/api/document/entities/background-entity";
 import { fillPipeDefaultFields, makePipeFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import {
-    fillValveDefaultFields,
     makeValveFields
 } from "../../../../../common/src/api/document/entities/fitting-entity";
 import Component from "vue-class-component";
@@ -37,19 +36,19 @@ import {
     fillDefaultBigValveFields,
     makeBigValveFields
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import {
-    fillFixtureFields,
-    makeFixtureFields
-} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
-import { makeDirectedValveFields } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import { makeLoadNodesFields } from "../../../../../common/src/api/document/entities/load-node-entity";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import {
     fillFlowSourceDefaults,
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
+import {
+    fillFixtureFields,
+    makeFixtureFields
+} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { makeDirectedValveFields } from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { makeLoadNodesFields } from "../../../../../common/src/api/document/entities/load-node-entity";
 import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
@@ -58,6 +57,7 @@ import { fillDirectedValveFields } from "../../../store/document/entities/fillDi
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import { makeEntityFields } from "../../../htmlcanvas/lib/utils";
 import {fillGasApplianceFields} from "../../../../../common/src/api/document/entities/gas-appliance";
+import {fillValveDefaultFields} from "../../../store/document/entities/fillDefaultEntityFields";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -119,7 +119,7 @@ export default class MultiFieldBuilder extends Vue {
             case EntityType.BACKGROUND_IMAGE:
                 return obj.entity;
             case EntityType.FITTING:
-                return fillValveDefaultFields(this.document.drawing, obj.entity);
+                return fillValveDefaultFields(this.document.drawing, obj.entity, this.$props.objectStore);
             case EntityType.PIPE:
                 return fillPipeDefaultFields(this.document.drawing, (obj as Pipe).computedLengthM, obj.entity);
             case EntityType.RISER:

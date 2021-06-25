@@ -25,11 +25,17 @@ import { Matrix } from "transformation-matrix";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { fillDefaultLoadNodeFields } from "../../store/document/entities/fillDefaultLoadNodeFields";
-import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
+import {
+    ConnectableEntityConcrete,
+    DrawableEntityConcrete, hasExplicitSystemUid
+} from "../../../../common/src/api/document/entities/concrete-entity";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
-import {assertUnreachable, isGas, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import {assertUnreachable, isDrainage, isGas, StandardFlowSystemUids} from "../../../../common/src/api/config";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
+import {Interaction, InteractionType} from "../lib/interaction";
+import {determineConnectableSystemUid} from "../../store/document/entities/lib";
+import Pipe from "./pipe";
 
 @SelectableObject
 @CenterDraggableObject
@@ -41,7 +47,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
     get maximumConnections(): number | null {
         switch (this.entity.node.type) {
             case NodeType.LOAD_NODE:
-                return 1;
+                return 2;
             case NodeType.DWELLING:
                 return null;
         }
@@ -228,6 +234,67 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
     rememberToRegister(): void {
         /**/
+    }
+
+    flowSystemsCompatible(a: string, b: string): boolean {
+        if (a === b) {
+            return true;
+        }
+        if (isDrainage(a)) {
+            return true;
+        }
+        return false;
+    }
+
+    offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
+        const result = super.offerInteraction(interaction);
+        if (result) {
+            // the result is with the assumption that there are 2 max connections.
+            // but the 2 connections is only to manage allowing a sewer connection.
+            // So be more restrictive than the super behavior that allows 2 max connections,
+            // and make sure that only sewer + other is allowed for that case.
+            const connections = this.globalStore.getConnections(this.entity.uid);
+            if (connections.length === 1) {
+                // need to restrict it.
+                const p1 = this.globalStore.get(connections[0]) as Pipe;
+                const system1 = p1.entity.systemUid;
+                let system2: string | null = null;
+
+                switch (interaction.type) {
+                    case InteractionType.CONTINUING_PIPE:
+                    case InteractionType.STARTING_PIPE:
+                        system2 = interaction.system.uid;
+                        break;
+                    case InteractionType.INSERT:
+                        system2 = interaction.systemUid;
+                        break;
+                    case InteractionType.MOVE_ONTO_RECEIVE:
+                        if (hasExplicitSystemUid(interaction.src)) {
+                            system2 = interaction.src.systemUid;
+                        }
+                        break;
+                    case InteractionType.MOVE_ONTO_SEND:
+                        if (hasExplicitSystemUid(interaction.dest)) {
+                            system2 = interaction.dest.systemUid;
+                        }
+                        break;
+                    case InteractionType.EXTEND_NETWORK:
+                        system2 = interaction.systemUid;
+                        break;
+
+                }
+
+                if ((system2 && isDrainage(system2)) && !isDrainage(system1)) {
+                    return result;
+                } else if (isDrainage(system1) && !(system2 && isDrainage(system2))) {
+                    return result;
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        return result;
     }
 
     collectCalculations(context: CalculationContext): LoadNodeCalculation {

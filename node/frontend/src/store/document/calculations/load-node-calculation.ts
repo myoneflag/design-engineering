@@ -12,19 +12,20 @@ import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import {isGas} from "../../../../../common/src/api/config";
 import {Catalog} from "../../../../../common/src/api/catalog/types";
+import { DocumentState } from "../types";
 
 export default interface LoadNodeCalculation extends Calculation, PressureCalculation, PsdCalculation {
     flowRateLS: number | null;
     gasFlowRateMJH: number | null;
 }
 
-export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: DrawingState, catalog: Catalog, globalStore: GlobalStore): CalculationField[] {
+export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, doc: DocumentState, catalog: Catalog, globalStore: GlobalStore): CalculationField[] {
     const result: CalculationField[] = [];
 
     const systemUid =  determineConnectableSystemUid(globalStore, entity);
     addPressureCalculationFields(result, entity.systemUidOption || undefined, "", {defaultEnabled: true}, {defaultEnabled: true});
 
-    const system = settings.metadata.flowSystems.find((f) => f.uid === systemUid);
+    const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
     const thisIsGas = isGas(system ? system.fluid : 'water', catalog);
 
     if (thisIsGas) {
@@ -51,7 +52,7 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, settings: 
         );
     }
 
-    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(doc.drawing.metadata.calculationParams.psdMethod, doc.locale);
     switch (entity.node.type) {
         case NodeType.LOAD_NODE:
             if (!thisIsGas) {
@@ -91,6 +92,7 @@ export function emptyLoadNodeCalculation(): LoadNodeCalculation {
         staticPressureKPA: null,
         flowRateLS: null,
         gasFlowRateMJH: null,
-        warning: null
+        warning: null,
+        warningLayout: null,
     };
 }

@@ -2,7 +2,7 @@
     <div>
         <b-row>
             <b-col>
-                <h4>Price per meter ($/m)</h4>
+                <h4>Price per meter ({{ currency.symbol }}/m)</h4>
             </b-col>
         </b-row>
         <b-table
@@ -18,7 +18,7 @@
                     <b-form-input
                             type="number"
                             @input="(e) => onCellInput(material, slot.item['Size (mm)'], e)"
-                            :value="slot.value"
+                            :value="displayValue(slot.value)"
                     ></b-form-input>
                 </b-input-group>
             </template>
@@ -47,6 +47,10 @@
             return this.$store.getters['document/document'];
         }
 
+        get currency() {
+            return this.document.drawing.metadata.units.currency;
+        }
+
         get fields() {
             const fields = ["Size (mm)"];
             for (const material of Object.keys(this.priceTable.Pipes)) {
@@ -67,8 +71,15 @@
             setPropertyByStringVue(
                 this.document.drawing.metadata.priceTable,
                 'Pipes.' + material + '.' + size,
-                Number(value),
+                Number(value) / this.currency.multiplierPct * 100,
             );
+        }
+
+        displayValue(value: number) {
+            if (!value) {
+                return value;
+            }
+            return (value * this.currency.multiplierPct / 100).toFixed(2);
         }
 
         get items() {

@@ -392,7 +392,7 @@
                 "Value": { "Ref": "H2XEmailAddress" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker"
+            "SolutionStackName": "64bit Amazon Linux 2 v3.4.0 running Docker"
           }
         },
 
@@ -524,7 +524,7 @@
                 "Value": { "Ref": "AWS::Region" }
               }
             ],
-            "SolutionStackName": "64bit Amazon Linux 2 v3.3.0 running Docker"
+            "SolutionStackName": "64bit Amazon Linux 2 v3.4.0 running Docker"
           } 
         },
         "WorkerEnvironment": {
@@ -672,7 +672,7 @@
            "Type": "AWS::SQS::Queue",
            "Properties": {
               "QueueName": { "Fn::Sub": "h2x-worker-queue-${EnvName}" },
-              "VisibilityTimeout": "600",
+              "VisibilityTimeout": "3600",
               "RedrivePolicy": {
                 "deadLetterTargetArn": { "Fn::GetAtt" : [ "WorkerDeadLetterQueue", "Arn" ] },
                 "maxReceiveCount": "10"

@@ -1,9 +1,9 @@
-import { ObjectStore } from "../../../htmlcanvas/lib/object-store";
-import { ConnectableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
-import { NetworkType } from "../../../../../common/src/api/document/drawing";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import {ObjectStore} from "../../../htmlcanvas/lib/object-store";
+import {ConnectableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
+import {NetworkType} from "../../../../../common/src/api/document/drawing";
+import {EntityType} from "../../../../../common/src/api/document/entities/types";
 import Pipe from "../../../htmlcanvas/objects/pipe";
-import { assertUnreachable } from "../../../../../common/src/api/config";
+import {assertUnreachable} from "../../../../../common/src/api/config";
 
 export function determineConnectableNetwork(
     objectStore: ObjectStore,
@@ -12,6 +12,9 @@ export function determineConnectableNetwork(
     let retVal = NetworkType.RETICULATIONS;
     if (value.type === EntityType.RISER) {
         retVal = NetworkType.RISERS;
+        if (value.isVent) {
+            retVal = NetworkType.CONNECTIONS;
+        }
     } else {
         for (const conn of objectStore.getConnections(value.uid)) {
             const o = objectStore.get(conn) as Pipe;

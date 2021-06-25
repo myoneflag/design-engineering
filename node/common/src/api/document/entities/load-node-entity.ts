@@ -4,6 +4,8 @@ import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../dr
 import {Units} from "../../../lib/measurements";
 import {isGas} from "../../config";
 import {Catalog} from "../../catalog/types";
+import { I18N } from "../../locale/values";
+import { SupportedLocales } from "../../locale";
 
 export enum NodeType {
     LOAD_NODE,
@@ -11,9 +13,9 @@ export enum NodeType {
 }
 
 export enum NodeVariant {
-    "FIXTURE-GROUP" = "FIXTURE-GROUP",
-    "FIXTURE" = "FIXTURE",
-    "CONTINUOUS" = "CONTINUOUS",
+    FIXTURE_GROUP = "FIXTURE-GROUP",
+    FIXTURE = "FIXTURE",
+    CONTINUOUS = "CONTINUOUS",
 }
 
 export interface LoadNode {
@@ -23,7 +25,11 @@ export interface LoadNode {
     continuousFlowLS: number | null;
     gasFlowRateMJH: number;
     gasPressureKPA: number;
-    variant?: NodeVariant;
+    variant: NodeVariant;
+    asnzFixtureUnits: number | null;
+    enDischargeUnits: number | null;
+    upcFixtureUnits: number | null;
+
 }
 
 export interface DwellingNode {
@@ -34,6 +40,9 @@ export interface DwellingNode {
     gasPressureKPA: number;
     loadingUnits: number | null;
     designFlowRateLS: number | null;
+    asnzFixtureUnits: number;
+    enDischargeUnits: number;
+    upcFixtureUnits: number;
 }
 
 export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
@@ -51,7 +60,7 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
     name?: string | null;
 }
 
-export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, systemUid: string | null): PropertyField[] {
+export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, locale: SupportedLocales, systemUid: string | null): PropertyField[] {
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",
@@ -81,73 +90,172 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
             if (!nodeIsGas || systemUid === null) {
-                if (value.node.variant === NodeVariant.FIXTURE) {
-                    fields.push(
-                        {
-                            property: "node.loadingUnits",
-                            title: "Loading Units",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "loadingUnits"
-                        },
-                        {
-                            property: "node.designFlowRateLS",
-                            title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "designFlowRateLS",
-                            units: Units.LitersPerSecond,
-                        },
-                    );
-                } else if (value.node.variant === NodeVariant.CONTINUOUS) {
-                    fields.push(
-                        {
-                            property: "node.continuousFlowLS",
-                            title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "continuousFlowLS",
-                            units: Units.LitersPerSecond
-                        },
-                    );
-                } else {
-                    fields.push(
-                        {
-                            property: "node.loadingUnits",
-                            title: "Loading Units",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "loadingUnits"
-                        },
-                        {
-                            property: "node.designFlowRateLS",
-                            title: "Full Flow Rate",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "designFlowRateLS",
-                            units: Units.LitersPerSecond,
-                        },
-                        {
-                            property: "node.continuousFlowLS",
-                            title: "Continuous Flow",
-                            hasDefault: typeof value.customNodeId !== "undefined",
-                            isCalculated: false,
-                            type: FieldType.Number,
-                            params: { min: 0, max: null },
-                            multiFieldId: "continuousFlowLS",
-                            units: Units.LitersPerSecond
-                        },
-                    );
+                switch (value.node.variant) {
+                    case undefined:
+                    case null:
+                    case NodeVariant.FIXTURE:
+                        fields.push(
+                            {
+                                property: "node.loadingUnits",
+                                title: I18N.loadingUnits[locale],
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "loadingUnits"
+                            },
+                            {
+                                property: "node.designFlowRateLS",
+                                title: "Full Flow Rate",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "designFlowRateLS",
+                                units: Units.LitersPerSecond,
+                            },
+                            {
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    case NodeVariant.CONTINUOUS:
+                        fields.push(
+                            {
+                                property: "node.continuousFlowLS",
+                                title: "Continuous Flow",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "continuousFlowLS",
+                                units: Units.LitersPerSecond
+                            },
+                            {
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: false,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    case NodeVariant.FIXTURE_GROUP:
+                        fields.push(
+                            {
+                                property: "node.loadingUnits",
+                                title: I18N.loadingUnits[locale],
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "loadingUnits"
+                            },
+                            {
+                                property: "node.designFlowRateLS",
+                                title: "Full Flow Rate",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "designFlowRateLS",
+                                units: Units.LitersPerSecond,
+                            },
+                            {
+                                property: "node.continuousFlowLS",
+                                title: "Continuous Flow",
+                                hasDefault: typeof value.customNodeId !== "undefined",
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "continuousFlowLS",
+                                units: Units.LitersPerSecond
+                            },
+                            {
+                                property: "node.asnzFixtureUnits",
+                                title: "AS/NZS3500.2:2018 Fixture Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "asnzFixtureUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.enDischargeUnits",
+                                title: "EN 12056-2:2000 Discharge Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "enDischargeUnits",
+                                units: Units.None
+                            },
+                            {
+                                property: "node.upcFixtureUnits",
+                                title: "2018 UPC Drainage Fixture Unit",
+                                hasDefault: true,
+                                isCalculated: false,
+                                type: FieldType.Number,
+                                params: { min: 0, max: null },
+                                multiFieldId: "upcFixtureUnits",
+                                units: Units.None
+                            },
+                        );
+                        break;
+                    default:
+                        // Do not assert unreachable.
+                        //assertUnreachable(value.node.variant);
                 }
             }
             break;
@@ -164,7 +272,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                 },
                 {
                     property: "node.loadingUnits",
-                    title: "Loading Units",
+                    title: I18N.loadingUnits[locale],
                     hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
@@ -194,7 +302,38 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         params: { min: 0, max: null },
                         multiFieldId: "continuousFlowLS",
                         units: Units.LitersPerSecond,
-                    }
+                    },
+
+                    {
+                        property: "node.asnzFixtureUnits",
+                        title: "AS/NZS3500.2:2018 Fixture Unit",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "asnzFixtureUnits",
+                        units: Units.None
+                    },
+                    {
+                        property: "node.enDischargeUnits",
+                        title: "EN 12056-2:2000 Discharge Unit",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "enDischargeUnits",
+                        units: Units.None
+                    },
+                    {
+                        property: "node.upcFixtureUnits",
+                        title: "2018 UPC Drainage Fixture Unit",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Number,
+                        params: { min: 0, max: null },
+                        multiFieldId: "upcFixtureUnits",
+                        units: Units.None
+                    },
                 );
             }
             break;
@@ -229,50 +368,48 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
 
     if (nodeIsGas || systemUid === null) {
 
-        if (nodeIsGas || systemUid === null) {
-            if (value.node.type === NodeType.DWELLING) {
-
-                fields.push(
-                    {
-                        property: "node.gasFlowRateMJH",
-                        title: "Gas Demand (Per Dwelling)",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        units: Units.MegajoulesPerHour,
-                        params: { min: 0, max: null },
-                        multiFieldId: "gasFlowRateMJH"
-                    },
-                );
-            } else {
-
-                fields.push(
-                    {
-                        property: "node.gasFlowRateMJH",
-                        title: "Gas Demand",
-                        hasDefault: false,
-                        isCalculated: false,
-                        type: FieldType.Number,
-                        units: Units.MegajoulesPerHour,
-                        params: { min: 0, max: null },
-                        multiFieldId: "gasFlowRateMJH"
-                    },
-                );
-            }
+        if (value.node.type === NodeType.DWELLING) {
 
             fields.push(
                 {
-                    property: "node.gasPressureKPA",
-                    title: "Gas Pressure",
+                    property: "node.gasFlowRateMJH",
+                    title: "Gas Demand (Per Dwelling)",
                     hasDefault: false,
                     isCalculated: false,
                     type: FieldType.Number,
-                    units: Units.KiloPascals,
+                    units: Units.MegajoulesPerHour,
                     params: { min: 0, max: null },
-                    multiFieldId: "gasPressureKPA"
+                    multiFieldId: "gasFlowRateMJH"
+                },
+            );
+        } else {
+
+            fields.push(
+                {
+                    property: "node.gasFlowRateMJH",
+                    title: "Gas Demand",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    units: Units.MegajoulesPerHour,
+                    params: { min: 0, max: null },
+                    multiFieldId: "gasFlowRateMJH"
                 },
             );
         }
+
+        fields.push(
+            {
+                property: "node.gasPressureKPA",
+                title: "Gas Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                units: Units.KiloPascals,
+                params: { min: 0, max: null },
+                multiFieldId: "gasPressureKPA"
+            },
+        );
 
     }
 

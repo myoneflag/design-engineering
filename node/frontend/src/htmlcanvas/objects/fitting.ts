@@ -1,42 +1,44 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import FittingEntity, { fillValveDefaultFields } from "../../../../common/src/api/document/entities/fitting-entity";
+import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import * as TM from "transformation-matrix";
-import { Matrix } from "transformation-matrix";
-import { DocumentState } from "../../../src/store/document/types";
-import {lowerBoundNumberTable, matrixScale} from "../../../src/htmlcanvas/utils";
+import {Matrix} from "transformation-matrix";
+import {DocumentState} from "../../../src/store/document/types";
+import {lowerBoundNumberTable} from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
-import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
     canonizeAngleRad,
     getValveK,
     isAcuteRad,
     isRightAngleRad,
     isStraightRad,
-    lighten, rgb2color, rgb2style
+    lighten,
+    rgb2style
 } from "../../../src/lib/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import { EntityType } from "../../../../common/src/api/document/entities/types";
+import {EntityType} from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
-import { getDragPriority } from "../../../src/store/document";
+import {getDragPriority} from "../../../src/store/document";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import { CalculationContext } from "../../../src/calculations/types";
-import { FlowNode, FLOW_SOURCE_EDGE } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
-import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
-import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
+import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import {CenteredObject} from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import {CalculationContext} from "../../../src/calculations/types";
+import {FLOW_SOURCE_EDGE, FlowNode} from "../../../src/calculations/calculation-engine";
+import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
+import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
+import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
 import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
-import { Coord } from "../../../../common/src/api/document/drawing";
-import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
-import { assertUnreachable, ComponentPressureLossMethod } from "../../../../common/src/api/config";
-import { SnappableObject } from "../lib/object-traits/snappable-object";
-import { getHighlightColor } from "../lib/utils";
+import {Coord, NetworkType} from "../../../../common/src/api/document/drawing";
+import {EPS, parseCatalogNumberExact} from "../../../../common/src/lib/utils";
+import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../../../common/src/api/config";
+import {SnappableObject} from "../lib/object-traits/snappable-object";
+import {getHighlightColor} from "../lib/utils";
 import {PipesTable} from "../../../../common/src/api/catalog/price-table";
+import {fillValveDefaultFields} from "../../store/document/entities/fillDefaultEntityFields";
 
 @CalculatedObject
 @SelectableObject
@@ -63,6 +65,17 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     get position(): Matrix {
         return TM.translate(this.entity.center.x, this.entity.center.y);
+    }
+
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
@@ -94,6 +107,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                 this.lastDrawnLength = Math.max(this.toObjectLength(minJointLength), this.toObjectLength(this.TURN_RADIUS_MM));
 
                 this.lastRadials = this.getRadials();
+
                 this.lastRadials.forEach(([wc, pipe]) => {
                     let targetWidth = defaultWidth;
                     if (pipe.entity.type === EntityType.PIPE) {
@@ -108,6 +122,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     const oc = this.toObjectCoord(wc);
                     const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
 
+                    let baseColorHex = this.displayEntity(doc).color!.hex;
                     if (vec.length > EPS) {
                         const small = vec
                             .normalize()
@@ -120,14 +135,17 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                             ctx.strokeStyle = rgb2style(getHighlightColor(
                                 selected,
                                 overrideColorList,
-                                {hex: lighten(this.displayEntity(doc).color!.hex, 50)},
+                                {hex: lighten(baseColorHex, 50)},
                             ), 0.5);
                             ctx.moveTo(0, 0);
                             ctx.lineTo(small.x, small.y);
                             ctx.stroke();
                         }
 
-                        ctx.strokeStyle = this.displayEntity(doc).color!.hex;
+                        ctx.strokeStyle = baseColorHex;
+                        if (!this.isActive()) {
+                            ctx.strokeStyle = 'rgba(150, 150, 150, 0.65)';
+                        }
                         ctx.lineWidth = targetWidth;
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
@@ -149,10 +167,13 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     displayEntity(context: DocumentState) {
-        return fillValveDefaultFields(context.drawing, this.entity);
+        return fillValveDefaultFields(context.drawing, this.entity, this.globalStore);
     }
 
     inBounds(moc: Coord, radius: number = 0): boolean {
+        if (!this.isActive()) {
+            return false;
+        }
         if (this.lastRadials && this.lastDrawnLength !== undefined && this.lastDrawnWidth !== undefined) {
             let selected = false;
             this.lastRadials.forEach(([wc]) => {
@@ -333,6 +354,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
             warning: calc.warning,
+            warningLayout: calc.warningLayout,
             pressureByEndpointKPA: {},
             staticPressureKPA: calc.staticPressureKPA,
         };

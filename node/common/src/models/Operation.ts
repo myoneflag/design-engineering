@@ -1,8 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index } from "typeorm";
-import { BaseEntity } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index, JoinColumn} from "typeorm";
 import { Document } from "./Document";
-import { OperationTransformConcrete } from "../api/document/operation-transforms";
 import { User } from "./User";
+import { OperationTransformConcrete } from "../api/document/operation-transforms";
 
 @Entity()
 @Index(['document', 'orderIndex'])
@@ -11,7 +10,11 @@ export class Operation extends BaseEntity {
     id: number;
 
     @ManyToOne(() => Document)
+    @JoinColumn({name: "documentId"})
     document: Promise<Document>;
+
+    @Column()
+    documentId: number;
 
     @Column()
     orderIndex: number;

@@ -17,9 +17,9 @@ import {makeFlowSourceCalculationFields} from "../store/document/calculations/fl
 import {ObjectStore} from "../htmlcanvas/lib/object-store";
 import {makePlantCalculationFields} from "../store/document/calculations/plant-calculation";
 import {
-    assertUnreachable,
+    assertUnreachable, getPsdMethods, isDrainage,
     isGermanStandard,
-    StandardFlowSystemUids,
+    StandardFlowSystemUids, SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
 import {Catalog} from "../../../common/src/api/catalog/types";
@@ -38,12 +38,16 @@ import {makeGasApplianceCalculationFields} from "../store/document/calculations/
 import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
+import { SupportedLocales } from "../../../common/src/api/locale";
 
 export interface PsdCountEntry {
     units: number;
     continuousFlowLS: number;
     dwellings: number;
     gasMJH: number;
+
+    // drainage
+    drainageUnits: number;
 }
 
 export interface FinalPsdCountEntry extends PsdCountEntry {
@@ -103,6 +107,22 @@ export function countPsdUnits(
                     }
 
                     result[suid].continuousFlowLS += mainFixture.roughIns[suid].continuousFlowLS!;
+
+                    if (isDrainage(suid)) {
+                        let drainageUnits: number | null = 0;
+                        switch (doc.drawing.metadata.calculationParams.drainageMethod) {
+                            case SupportedDrainageMethods.AS2018FixtureUnits:
+                                drainageUnits = mainFixture.asnzFixtureUnits;
+                                break;
+                            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                drainageUnits =  mainFixture.enDischargeUnits;
+                                break;
+                            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                drainageUnits =  mainFixture.upcFixtureUnits;
+                                break;
+                        }
+                        result[suid].drainageUnits += drainageUnits!;
+                    }
                 }
 
                 break;
@@ -117,11 +137,16 @@ export function countPsdUnits(
                     if (!result.hasOwnProperty(suid)) {
                         result[suid] = zeroFinalPsdCounts();
                     }
+                    if (!result.hasOwnProperty(StandardFlowSystemUids.SewerDrainage)) {
+                        result[StandardFlowSystemUids.SewerDrainage] = zeroFinalPsdCounts();
+                    }
 
                     switch (mainLoadNode.node.type) {
                         case NodeType.DWELLING:
                             result[suid].dwellings += mainLoadNode.node.dwellings;
                         case NodeType.LOAD_NODE:
+
+
                             if (isGermanStandard(doc.drawing.metadata.calculationParams.psdMethod)) {
                                 result[suid].units += mainLoadNode.node.designFlowRateLS!;
                             } else {
@@ -129,6 +154,26 @@ export function countPsdUnits(
                                 result[suid].highestLU = Math.max(result[suid].highestLU, mainLoadNode.node.loadingUnits!);
                             }
                             result[suid].continuousFlowLS += mainLoadNode.node.continuousFlowLS!;
+
+                            let hasDrainagePipe = false;
+
+
+                            // The drainage nodes are repeated for pairs of load nodes, so we apply this only to the root.
+                            if (!mainLoadNode.linkedToUid || !objectStore.get(mainLoadNode.linkedToUid)) {
+                                let drainageUnits: number | null = 0;
+                                switch (doc.drawing.metadata.calculationParams.drainageMethod) {
+                                    case SupportedDrainageMethods.AS2018FixtureUnits:
+                                        drainageUnits = mainLoadNode.node.asnzFixtureUnits;
+                                        break;
+                                    case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                                        drainageUnits = mainLoadNode.node.enDischargeUnits;
+                                        break;
+                                    case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                                        drainageUnits = mainLoadNode.node.upcFixtureUnits;
+                                        break;
+                                }
+                                result[StandardFlowSystemUids.SewerDrainage].drainageUnits += drainageUnits!;
+                            }
                             break;
                     }
                 }
@@ -156,10 +201,9 @@ export function countPsdUnits(
                         }
                         break;
                     case PlantType.TANK:
-                        break;
                     case PlantType.CUSTOM:
-                        break;
                     case PlantType.PUMP:
+                    case PlantType.DRAINAGE_PIT:
                         break;
                     default:
                         assertUnreachable(e.plant);
@@ -189,6 +233,7 @@ export function addPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry 
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings,
         gasMJH: a.gasMJH + b.gasMJH,
+        drainageUnits: a.drainageUnits + b.drainageUnits,
     };
 }
 
@@ -199,6 +244,7 @@ export function addFinalPsdCounts(a: FinalPsdCountEntry, b: FinalPsdCountEntry):
         dwellings: a.dwellings + b.dwellings,
         highestLU: Math.max(a.highestLU, b.highestLU),
         gasMJH: a.gasMJH + b.gasMJH,
+        drainageUnits: a.drainageUnits + b.drainageUnits,
     };
 }
 
@@ -208,6 +254,7 @@ export function subPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry 
         continuousFlowLS: a.continuousFlowLS - b.continuousFlowLS,
         dwellings: a.dwellings - b.dwellings,
         gasMJH: a.gasMJH - b.gasMJH,
+        drainageUnits: a.drainageUnits - b.drainageUnits,
     };
 }
 
@@ -217,6 +264,7 @@ export function scalePsdCounts(a: PsdCountEntry, scale: number): PsdCountEntry {
         continuousFlowLS: a.continuousFlowLS * scale,
         dwellings: a.dwellings * scale,
         gasMJH: a.gasMJH * scale,
+        drainageUnits: a.drainageUnits * scale,
     };
 }
 
@@ -225,23 +273,55 @@ export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
         Math.abs(a.units - b.units) < EPS &&
         Math.abs(a.continuousFlowLS - b.continuousFlowLS) < EPS &&
         Math.abs(a.dwellings - b.dwellings) < EPS &&
-        Math.abs(a.gasMJH - b.gasMJH) < EPS
+        Math.abs(a.gasMJH - b.gasMJH) < EPS &&
+        Math.abs(a.drainageUnits - b.drainageUnits) < EPS
     );
 }
 
-export function isZeroPsdCounts(a: PsdCountEntry): boolean {
-    return Math.abs(a.units) < EPS && Math.abs(a.continuousFlowLS) < EPS && Math.abs(a.dwellings) < EPS && Math.abs(a.gasMJH) < EPS;
+function isZeroPsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.units) < EPS &&
+    Math.abs(a.continuousFlowLS) < EPS &&
+    Math.abs(a.dwellings) < EPS &&
+    Math.abs(a.gasMJH) < EPS &&
+    Math.abs(a.drainageUnits) < EPS;
 }
 
-export function comparePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
+export function isZeroWaterPsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.units) < EPS &&
+        Math.abs(a.continuousFlowLS) < EPS &&
+        Math.abs(a.dwellings) < EPS;
+}
+
+export function isZeroDrainagePsdCounts(a: PsdCountEntry): boolean {
+    return Math.abs(a.drainageUnits) < EPS;
+}
+
+// Returns >0 if a > b, <0 if a < b.
+export function compareWaterPsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
     const unitDiff = a.units + EPS < b.units ? -1 : a.units - EPS > b.units ? 1 : 0;
     const cfDiff =
         a.continuousFlowLS + EPS < b.continuousFlowLS ? -1 : a.continuousFlowLS - EPS > b.continuousFlowLS ? 1 : 0;
     const dDiff = a.dwellings + EPS < b.dwellings ? -1 : a.dwellings - EPS > b.dwellings ? 1 : 0;
-    const gDiff = a.gasMJH + EPS < b.gasMJH ? -1 : a.gasMJH - EPS > b.gasMJH ? 1 : 0;
 
-    const small = Math.min(unitDiff, cfDiff, dDiff, gDiff);
-    const large = Math.max(unitDiff, cfDiff, dDiff, gDiff);
+    const small = Math.min(unitDiff, cfDiff, dDiff);
+    const large = Math.max(unitDiff, cfDiff, dDiff);
+
+    if (small === 0) {
+        return large;
+    } else if (large === 0) {
+        return small;
+    } else if (small !== large) {
+        return null;
+    } else {
+        return small;
+    }
+}
+
+export function compareDrainagePsdCounts(a: PsdCountEntry, b: PsdCountEntry): number | null {
+    const sDiff = a.drainageUnits + EPS < b.drainageUnits ? -1 : a.drainageUnits - EPS > b.drainageUnits ? 1 : 0;
+
+    const small = Math.min(sDiff);
+    const large = Math.max(sDiff);
 
     if (small === 0) {
         return large;
@@ -290,6 +370,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
                 units: Math.max(a.units, b.units),
                 continuousFlowLS: Math.max(a.continuousFlowLS, b.continuousFlowLS),
                 gasMJH: Math.max(a.gasMJH, b.gasMJH),
+                drainageUnits: Math.max(a.drainageUnits, b.drainageUnits),
             };
 
             byCorrelated.set(contextual.correlationGroup, max);
@@ -308,6 +389,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
         dwellings: total.dwellings,
         continuousFlowLS: total.continuousFlowLS,
         gasMJH: total.gasMJH,
+        drainageUnits: total.drainageUnits,
         highestLU,
     };
 }
@@ -330,6 +412,7 @@ export function subtractPsdProfiles(profile: PsdProfile, operand: PsdProfile): v
             continuousFlowLS: prev.continuousFlowLS - contextual.continuousFlowLS,
             dwellings: prev.dwellings - contextual.dwellings,
             gasMJH: prev.gasMJH - contextual.gasMJH,
+            drainageUnits: prev.drainageUnits - contextual.drainageUnits,
         });
     });
 }
@@ -340,6 +423,7 @@ export function zeroPsdCounts(): PsdCountEntry {
         continuousFlowLS: 0,
         dwellings: 0,
         gasMJH: 0,
+        drainageUnits: 0,
     };
 }
 
@@ -350,6 +434,7 @@ export function zeroFinalPsdCounts(): FinalPsdCountEntry {
         dwellings: 0,
         highestLU: 0,
         gasMJH: 0,
+        drainageUnits: 0,
     };
 }
 
@@ -361,10 +446,11 @@ export function zeroContextualPCE(entity: string, correlationGroup: string): Con
         units: 0,
         dwellings: 0,
         gasMJH: 0,
+        drainageUnits: 0,
     };
 }
 
-export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string; abbreviation: string } {
+export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: SupportedLocales): { name: string; abbreviation: string } {
     switch (psdMethod) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
@@ -374,6 +460,14 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.bs806:
+            switch (locale) {
+                case SupportedLocales.UK:
+                case SupportedLocales.AU:
+                    return { name: "Loading Units", abbreviation: "LU" };
+                case SupportedLocales.US:
+                    return { name: "Water Supply Fixture Units", abbreviation: "WSFU" };
+            }
+            assertUnreachable(locale);
             return { name: "Loading Units", abbreviation: "LU" };
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:
@@ -385,6 +479,19 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
             return { name: "Full Flow Rate", abbreviation: "F. Flow" };
     }
     assertUnreachable(psdMethod);
+}
+
+export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods):  { name: string; abbreviation: string } {
+    switch (drainageMethod) {
+        case SupportedDrainageMethods.AS2018FixtureUnits:
+        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+            return { name: 'Fixture Units', abbreviation: 'FU' };
+            break;
+        case SupportedDrainageMethods.EN1205622000DischargeUnits:
+            return { name: 'Discharge Units', abbreviation: 'DU' };
+            break;
+    }
+    assertUnreachable(drainageMethod);
 }
 
 export interface FlowRateResult {
@@ -514,9 +621,9 @@ export function getFields(
 ): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
-            return makeRiserCalculationFields(entity, doc, catalog);
+            return makeRiserCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.PIPE:
-            return makePipeCalculationFields(entity, doc.drawing, catalog, globalStore);
+            return makePipeCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.FITTING:
             return makeFittingCalculationFields(entity, globalStore, doc, catalog);
         case EntityType.BIG_VALVE:
@@ -528,13 +635,13 @@ export function getFields(
         case EntityType.DIRECTED_VALVE:
             return makeDirectedValveCalculationFields(entity, globalStore, doc.drawing, catalog);
         case EntityType.SYSTEM_NODE:
-            return makeSystemNodeCalculationFields(entity, doc.drawing);
+            return makeSystemNodeCalculationFields(entity, doc);
         case EntityType.LOAD_NODE:
-            return makeLoadNodeCalculationFields(entity, doc.drawing, catalog, globalStore);
+            return makeLoadNodeCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.FLOW_SOURCE:
-            return makeFlowSourceCalculationFields(entity, doc.drawing);
+            return makeFlowSourceCalculationFields(entity, doc);
         case EntityType.PLANT:
-            return makePlantCalculationFields(entity);
+            return makePlantCalculationFields(entity, doc);
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }
@@ -556,4 +663,9 @@ export function addCosts(a: Cost | null, b: Cost | null): Cost {
     const value = (a ? a.value : 0) + (b ? b.value : 0);
     const exact = a !== null && a.exact && b !== null && b.exact;
     return {value, exact};
+}
+
+export function roundNumber(value: number, decimalPlaces: number) {
+    const factor = Math.pow(10, decimalPlaces)
+    return Math.round((value + Number.EPSILON) * factor) / factor
 }

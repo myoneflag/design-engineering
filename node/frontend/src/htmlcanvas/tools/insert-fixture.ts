@@ -48,7 +48,9 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                     type: EntityType.FIXTURE,
                     uid: fixtureUid,
 
-                    fixtureUnits: null,
+                    asnzFixtureUnits: null,
+                    enDischargeUnits: null,
+                    upcFixtureUnits: null,
 
                     name: fixtureName,
                     outletAboveFloorM: null,
@@ -76,15 +78,15 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
 
                 context.$store.dispatch("document/addEntity", newEntity);
 
+                const xMat = [[], [], [0.0, 0.0], [0.0, -0.5, 0.5]];
+                const yMat = [[], [], [-0.2, 0.0], [-0.2, 0.0, 0.0]]
                 for (let i = 0; i < newEntity.roughInsInOrder.length; i++) {
                     const suid = newEntity.roughInsInOrder[i];
                     const snuid = newEntity.roughIns[suid].uid;
                     const snEntity: SystemNodeEntity = {
                         center: {
-                            x:
-                                newEntity.pipeDistanceMM * i -
-                                (newEntity.pipeDistanceMM * (newEntity.roughInsInOrder.length - 1)) / 2,
-                            y: 0
+                            x: newEntity.pipeDistanceMM * xMat[newEntity.roughInsInOrder.length][i],
+                            y: newEntity.pipeDistanceMM * yMat[newEntity.roughInsInOrder.length][i],
                         },
                         parentUid: fixtureUid,
                         type: EntityType.SYSTEM_NODE,

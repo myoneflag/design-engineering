@@ -31,6 +31,7 @@ import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import useColors = Mocha.reporters.Base.useColors;
 import { getHighlightColor } from "../lib/utils";
+import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject
@@ -57,6 +58,17 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         return TM.transform(TM.translate(this.entity.center.x, this.entity.center.y), TM.scale(scale, scale));
     }
 
+    pressureDrainageActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
@@ -76,6 +88,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             const haloSize = (Math.max(this.MINIMUM_RADIUS_PX, screenSize) + 5) / scale;
 
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, this.color(doc)), 0.5);
+            if (!this.pressureDrainageActive()) {
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.65)';
+            }
 
             ctx.beginPath();
             ctx.lineWidth = 0;
@@ -139,6 +154,17 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         ctx.fill();
     }
 
+    isActive(): boolean {
+        const systemUid = this.entity.systemUid;
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return !isDrainage(systemUid);
+            case "drainage":
+                return isDrainage(systemUid);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         return [];
     }
@@ -150,6 +176,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     color(doc: DocumentState) {
+        if (!this.isActive()) {
+            return {hex: 'rgba(150, 150, 150, 0.65)'};
+        }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
 
@@ -167,6 +196,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     inBounds(objectCoord: Coord, radius?: number) {
+        if (!this.pressureDrainageActive()) {
+            return false;
+        }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
         return dist <= this.toObjectLength(this.lastDrawnDiameterW / 2) + (radius ? radius : 0);
     }
@@ -208,8 +240,15 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const tower: Array<
             [ConnectableEntityConcrete, PipeEntity] | [ConnectableEntityConcrete]
         > = this.getCalculationTower(context);
+
         const se = cloneSimple(this.entity);
         se.uid += ".calculation";
+
+        if (isDrainage(this.entity.systemUid)) {
+            // Drainage pipe has no height.
+            se.heightAboveGroundM = tower[0]?.[0]?.calculationHeightM! || 0;
+        }
+
         se.calculationHeightM = se.heightAboveGroundM;
 
         if (tower.length === 0) {
@@ -228,6 +267,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                 lengthM: null,
                 material: null,
                 maximumVelocityMS: null,
+                gradePCT: null,
                 parentUid: null,
                 network: NetworkType.RISERS,
                 systemUid: this.entity.systemUid,
@@ -247,6 +287,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                 lengthM: null,
                 material: null,
                 maximumVelocityMS: null,
+                gradePCT: null,
                 parentUid: null,
                 network: NetworkType.RISERS,
                 systemUid: this.entity.systemUid,
@@ -273,6 +314,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                     lengthM: null,
                     material: null,
                     maximumVelocityMS: null,
+                    gradePCT: null,
                     parentUid: null,
                     network: NetworkType.RISERS,
                     systemUid: this.entity.systemUid,
@@ -288,6 +330,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                     lengthM: null,
                     material: null,
                     maximumVelocityMS: null,
+                    gradePCT: null,
                     parentUid: null,
                     network: NetworkType.RISERS,
                     systemUid: this.entity.systemUid,
@@ -329,6 +372,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
             warning: calc.warning,
+            warningLayout: calc.warningLayout,
             staticPressureKPA: calc.staticPressureKPA,
         };
 

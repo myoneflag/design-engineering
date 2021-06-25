@@ -1,12 +1,15 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
-import {Catalog, State} from "../types";
+import { Catalog, State } from "../types";
+import { EN12056FrequencyFactor } from "../../config";
 
-export const initialCatalog: Catalog = {
+export const auCatalog: Catalog = {
     fixtures: {
         ablutionTrough: {
             priceTableName: "Ablution Trough",
             abbreviation: "AT",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "1",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -25,12 +28,12 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 upc2018Flushometer: {
                     "cold-water": "3",
@@ -41,7 +44,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Ablution Trough",
@@ -95,7 +98,9 @@ export const initialCatalog: Catalog = {
         basin: {
             priceTableName: "Basin",
             abbreviation: "B",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1",
@@ -114,23 +119,23 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1",
+                    "warm-water": "1",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "1",
+                    "warm-water": "1",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Basin",
@@ -196,7 +201,9 @@ export const initialCatalog: Catalog = {
         bath: {
             priceTableName: "Bath",
             abbreviation: "BT",
-            fixtureUnits: "4",
+            asnzFixtureUnits: "4",
+            enDischargeUnits: "0.8",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "8",
@@ -215,12 +222,12 @@ export const initialCatalog: Catalog = {
                     "warm-water": "10",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "4",
-                    "warm-water": "4",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "4",
-                    "warm-water": "4",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "4",
@@ -231,7 +238,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "4",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bath",
@@ -272,7 +279,9 @@ export const initialCatalog: Catalog = {
         bedpanSanitiser: {
             priceTableName: "Bedpan Sanitiser",
             abbreviation: "BPST",
-            fixtureUnits: "6",
+            asnzFixtureUnits: "6",
+            enDischargeUnits: "2",
+            upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -291,23 +300,23 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Bedpan Sanitiser",
@@ -335,7 +344,9 @@ export const initialCatalog: Catalog = {
         beverageBay: {
             priceTableName: "Beverage Bay",
             abbreviation: "BB",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -354,12 +365,12 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -370,7 +381,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "1.5",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Beverage Bay",
@@ -424,7 +435,9 @@ export const initialCatalog: Catalog = {
         birthingPool: {
             priceTableName: "Birthing Pool",
             abbreviation: "BP",
-            fixtureUnits: "8",
+            asnzFixtureUnits: "8",
+            enDischargeUnits: "4",
+            upcFixtureUnits: "8",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "16",
@@ -459,7 +472,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "8",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Birthing Pool",
@@ -499,7 +512,9 @@ export const initialCatalog: Catalog = {
         cleanersSink: {
             priceTableName: "Cleaners Sink",
             abbreviation: "CS",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "1",
+            upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -518,23 +533,23 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                     "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                     "hot-water": "3",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Cleaners sink",
@@ -562,7 +577,9 @@ export const initialCatalog: Catalog = {
         dishwasher: {
             priceTableName: "Dishwasher",
             abbreviation: "D",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "1.5",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -581,12 +598,12 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "1.4",
+                    "hot-water": "1.4",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "1.4",
+                    "hot-water": "1.4",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -597,7 +614,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "1.5",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Dishwasher",
@@ -625,7 +642,9 @@ export const initialCatalog: Catalog = {
         drinkingFountain: {
             priceTableName: "Drinking Fountain",
             abbreviation: "DF",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "0.5",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1"
@@ -640,19 +659,19 @@ export const initialCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1",
+                    "cold-water": "0.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1",
+                    "cold-water": "0.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "1",
+                    "cold-water": "0.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "1",
+                    "cold-water": "0.5",
                 },
             },
-            roughIns: ["cold-water"],
+            roughIns: ["sewer-drainage", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Drinking Fountain",
@@ -677,7 +696,9 @@ export const initialCatalog: Catalog = {
         flushingRimSink: {
             priceTableName: "Flushing Rim Sink",
             abbreviation: "FRS",
-            fixtureUnits: "6",
+            asnzFixtureUnits: "6",
+            enDischargeUnits: "2",
+            upcFixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -696,23 +717,23 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "2",
-                    "hot-water": "2",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Flushing Rim Sink",
@@ -752,7 +773,9 @@ export const initialCatalog: Catalog = {
         hoseTap: {
             priceTableName: "Hose Tap",
             abbreviation: "H",
-            fixtureUnits: "0",
+            asnzFixtureUnits: "0",
+            enDischargeUnits: "0.0",
+            upcFixtureUnits: "0",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "8"
@@ -779,7 +802,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2.5",
                 },
             },
-            roughIns: ["cold-water"],
+            roughIns: ["sewer-drainage", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Hose tap",
@@ -802,7 +825,9 @@ export const initialCatalog: Catalog = {
         kitchenSink: {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.8",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -821,12 +846,12 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "warm-water": "1.5",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -837,7 +862,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "1.5",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen Sink (Warm)",
@@ -891,7 +916,9 @@ export const initialCatalog: Catalog = {
         kitchenSinkHot: {
             priceTableName: "Kitchen Sink",
             abbreviation: "KS",
-            fixtureUnits: "3",
+            asnzFixtureUnits: "3",
+            enDischargeUnits: "0.8",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -910,12 +937,12 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "1.5",
-                    "hot-water": "1.5",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "1.5",
@@ -926,7 +953,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "1.5",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Kitchen Sink (Hot)",
@@ -980,7 +1007,9 @@ export const initialCatalog: Catalog = {
         laundryTrough: {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "2",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -999,23 +1028,23 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "2.25",
+                    "warm-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "3",
-                    "warm-water": "3",
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough (Warm)",
@@ -1069,7 +1098,9 @@ export const initialCatalog: Catalog = {
         laundryTroughHot: {
             priceTableName: "Laundry Trough",
             abbreviation: "T",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "2",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -1088,23 +1119,23 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "2.25",
+                    "hot-water": "2.25",
                 },
                 upc2018Flushometer: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
                 },
                 upc2018FlushTanks: {
-                    "cold-water": "3",
-                    "hot-water": "3",
+                    "cold-water": "1.5",
+                    "hot-water": "1.5",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Laundry Trough (Hot)",
@@ -1158,7 +1189,9 @@ export const initialCatalog: Catalog = {
         shower: {
             priceTableName: "Shower",
             abbreviation: "SHR",
-            fixtureUnits: "2",
+            asnzFixtureUnits: "2",
+            enDischargeUnits: "0.6",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2",
@@ -1177,12 +1210,12 @@ export const initialCatalog: Catalog = {
                     "warm-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
-                    "warm-water": "2",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2",
@@ -1193,7 +1226,7 @@ export const initialCatalog: Catalog = {
                     "warm-water": "2",
                 },
             },
-            roughIns: ["warm-water", "cold-water"],
+            roughIns: ["sewer-drainage", "warm-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Shower",
@@ -1251,7 +1284,9 @@ export const initialCatalog: Catalog = {
         urinal: {
             priceTableName: "Urinal",
             abbreviation: "U",
-            fixtureUnits: "1",
+            asnzFixtureUnits: "1",
+            enDischargeUnits: "0.5",
+            upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2"
@@ -1266,10 +1301,10 @@ export const initialCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2",
+                    "cold-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2",
@@ -1278,7 +1313,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                 },
             },
-            roughIns: ["cold-water"],
+            roughIns: ["sewer-drainage", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Urinal",
@@ -1301,7 +1336,9 @@ export const initialCatalog: Catalog = {
         washingMachine: {
             priceTableName: "Washing Machine",
             abbreviation: "WM",
-            fixtureUnits: "5",
+            asnzFixtureUnits: "5",
+            enDischargeUnits: "1.5",
+            upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "3",
@@ -1320,12 +1357,12 @@ export const initialCatalog: Catalog = {
                     "hot-water": "3",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "4",
-                    "hot-water": "4",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "4",
-                    "hot-water": "4",
+                    "cold-water": "3",
+                    "hot-water": "3",
                 },
                 upc2018Flushometer: {
                     "cold-water": "4",
@@ -1336,7 +1373,7 @@ export const initialCatalog: Catalog = {
                     "hot-water": "4",
                 },
             },
-            roughIns: ["hot-water", "cold-water"],
+            roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "Washing Machine",
@@ -1364,7 +1401,9 @@ export const initialCatalog: Catalog = {
         wc: {
             priceTableName: "WC",
             abbreviation: "WC",
-            fixtureUnits: "4",
+            asnzFixtureUnits: "4",
+            enDischargeUnits: "2",
+            upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "2"
@@ -1379,10 +1418,10 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2",
                 },
                 ipc2018Flushometer: {
-                    "cold-water": "2.5",
+                    "cold-water": "5",
                 },
                 ipc2018FlushTanks: {
-                    "cold-water": "2.5",
+                    "cold-water": "5",
                 },
                 upc2018Flushometer: {
                     "cold-water": "2.5",
@@ -1391,7 +1430,7 @@ export const initialCatalog: Catalog = {
                     "cold-water": "2.5",
                 },
             },
-            roughIns: ["cold-water"],
+            roughIns: ["sewer-drainage", "cold-water"],
             maxInletPressureKPA: "500",
             minInletPressureKPA: "200",
             name: "WC",
@@ -1802,7 +1841,7 @@ export const initialCatalog: Catalog = {
             uid: "castIronCoated"
         },
         copperTypeB: {
-            name: "Copper (Type B)",
+            name: "Copper",
             manufacturer: [
                 {
                     name: 'Generic',
@@ -1815,7 +1854,19 @@ export const initialCatalog: Catalog = {
                     abbreviation: 'KEMBLA CU',
                     priceTableName: "Copper",
                     uid: 'kemblaCu',
-                }
+                },
+                {
+                    name: 'BSEN 1057 TYPE X',
+                    abbreviation: '1057 CU',
+                    priceTableName: "Copper",
+                    uid: 'bsen1057Cu',
+                },
+                {
+                    name: 'ATSM B88 TYPE K',
+                    abbreviation: 'B88 CU',
+                    priceTableName: "Copper",
+                    uid: 'atsmB88Cu',
+                }                                
             ],
             abbreviation: "CU",
             pipesBySize: {
@@ -1997,6 +2048,178 @@ export const initialCatalog: Catalog = {
                         diameterOutsideMM: "76.2",
                         pipeUid: "copperTypeB",
                         safeWorkingPressureKPA: "1520"
+                    }
+                },
+                bsen1057Cu: {
+                    15: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "13.6",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "15",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "5870"
+                    },
+                    22: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "20.2",
+                        diameterNominalMM: "22",
+                        diameterOutsideMM: "22",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "5120"
+                    },
+                    28: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "26.2",
+                        diameterNominalMM: "28",
+                        diameterOutsideMM: "28",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3990"
+                    },
+                    35: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "32.6",
+                        diameterNominalMM: "35",
+                        diameterOutsideMM: "35",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "5150"
+                    },
+                    42: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "39.6",
+                        diameterNominalMM: "42",
+                        diameterOutsideMM: "42",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "4260"
+                    },
+                    54: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "51.6",
+                        diameterNominalMM: "54",
+                        diameterOutsideMM: "54",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3300"
+                    },
+                    67: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "64.3",
+                        diameterNominalMM: "67",
+                        diameterOutsideMM: "67",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2660"
+                    },
+                    76: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "73",
+                        diameterNominalMM: "76",
+                        diameterOutsideMM: "76",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2920"
+                    },
+                    108: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "105",
+                        diameterNominalMM: "108",
+                        diameterOutsideMM: "108",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2040"
+                    },
+                    133: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "130",
+                        diameterNominalMM: "133",
+                        diameterOutsideMM: "133",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1650"
+                    },
+                    159: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "154",
+                        diameterNominalMM: "159",
+                        diameterOutsideMM: "159",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1850"
+                    }
+                },
+                atsmB88Cu: {
+                    15: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "13.42",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "15.9",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "5290"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "18.9",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "22.2",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3970"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "25.3",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "28.6",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3500"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "31.3",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "34.9",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2780"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "37.64",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "41.3",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2300"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "49.78",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "54",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1710"
+                    },
+                    65: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "61.88",
+                        diameterNominalMM: "65",
+                        diameterOutsideMM: "66.7",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1370"
+                    },
+                    80: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "73.86",
+                        diameterNominalMM: "80",
+                        diameterOutsideMM: "79.4",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1520"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "98.2",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "105",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1200"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.003",
+                        diameterInternalMM: "146.24",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "156",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1000"
                     }
                 }
             },
@@ -2186,6 +2409,18 @@ export const initialCatalog: Catalog = {
                     abbreviation: 'REHAU PEX',
                     priceTableName: "PEX",
                     uid: 'rehauPex',
+                },
+                {
+                    name: 'ATSM F877',
+                    abbreviation: 'ATSM F877 PEX',
+                    priceTableName: "PEX",
+                    uid: 'atsmF877pex',
+                },
+                {
+                    name: 'EN ISO 15875',
+                    abbreviation: 'EN ISO 15875',
+                    priceTableName: "PEX",
+                    uid: 'enIso15875pex',
                 }
             ],
             abbreviation: "PEX",
@@ -2329,7 +2564,115 @@ export const initialCatalog: Catalog = {
                         pipeUid: "pexSdr74",
                         safeWorkingPressureKPA: "1000"
                     }
-                }
+                },
+                atsmF877pex: {
+                    16: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "12.32",
+                        diameterNominalMM: "16",
+                        diameterOutsideMM: "15.88",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "17.28",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "22.22",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "22.22",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "28.58",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "27.16",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "34.92",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "32.10",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "41.28",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "41.98",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "53.98",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    }
+                },
+                enIso15875pex: {
+                    16: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "12",
+                        diameterNominalMM: "16",
+                        diameterOutsideMM: "16",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "15.5",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "20",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "20",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "25",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "26",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "32",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "32",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "40",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "41",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    63: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "51",
+                        diameterNominalMM: "63",
+                        diameterOutsideMM: "63",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    }
+                }                
             },
             uid: "pexSdr74"
         },
@@ -2347,19 +2690,17 @@ export const initialCatalog: Catalog = {
                     abbreviation: 'KEMBLA S/S',
                     priceTableName: "Stainless Steel",
                     uid: 'kemblaS/s',
-                }
+                },
+                {
+                    name: 'BS 1387',
+                    abbreviation: 'BS 1387 S/S',
+                    priceTableName: "Stainless Steel",
+                    uid: 'bs1387ss',
+                }                
             ],
             abbreviation: "S/S",
             pipesBySize: {
                 generic: {
-                    100: {
-                        colebrookWhiteCoefficient: "0.0015",
-                        diameterInternalMM: "104",
-                        diameterNominalMM: "100",
-                        diameterOutsideMM: "108",
-                        pipeUid: "stainlessSteel",
-                        safeWorkingPressureKPA: "4500"
-                    },
                     15: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "13",
@@ -2368,80 +2709,80 @@ export const initialCatalog: Catalog = {
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "20000"
                     },
-                    150: {
-                        colebrookWhiteCoefficient: "0.0015",
-                        diameterInternalMM: "162",
-                        diameterNominalMM: "150",
-                        diameterOutsideMM: "166",
-                        pipeUid: "stainlessSteel",
-                        safeWorkingPressureKPA: "4000"
-                    },
-                    20: {
+                    22: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "19.6",
-                        diameterNominalMM: "20",
+                        diameterNominalMM: "22",
                         diameterOutsideMM: "22",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "15800"
                     },
-                    25: {
+                    28: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "25.6",
-                        diameterNominalMM: "25",
+                        diameterNominalMM: "28",
                         diameterOutsideMM: "28",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "12500"
                     },
-                    32: {
+                    35: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "32",
-                        diameterNominalMM: "32",
+                        diameterNominalMM: "35",
                         diameterOutsideMM: "35",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "9800"
                     },
-                    40: {
+                    42: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "39",
-                        diameterNominalMM: "40",
+                        diameterNominalMM: "42",
                         diameterOutsideMM: "42",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "8500"
                     },
-                    50: {
+                    54: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "51",
-                        diameterNominalMM: "50",
+                        diameterNominalMM: "54",
                         diameterOutsideMM: "54",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "6800"
                     },
-                    65: {
+                    71: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "67",
-                        diameterNominalMM: "65",
+                        diameterNominalMM: "71",
                         diameterOutsideMM: "71",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "7200"
                     },
-                    80: {
+                    76: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "72.1",
-                        diameterNominalMM: "80",
+                        diameterNominalMM: "76",
                         diameterOutsideMM: "76.1",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "5900"
+                    },
+                    108: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "104",
+                        diameterNominalMM: "108",
+                        diameterOutsideMM: "108",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "4500"
+                    },
+                    166: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "162",
+                        diameterNominalMM: "166",
+                        diameterOutsideMM: "166",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "4000"
                     }
                 },
                 'kemblaS/s': {
-                    100: {
-                        colebrookWhiteCoefficient: "0.0015",
-                        diameterInternalMM: "104",
-                        diameterNominalMM: "100",
-                        diameterOutsideMM: "108",
-                        pipeUid: "stainlessSteel",
-                        safeWorkingPressureKPA: "1600"
-                    },
                     15: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "13",
@@ -2450,58 +2791,521 @@ export const initialCatalog: Catalog = {
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "4000"
                     },
-                    20: {
+                    22: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "19.6",
-                        diameterNominalMM: "20",
+                        diameterNominalMM: "22",
                         diameterOutsideMM: "22",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "4000"
                     },
-                    25: {
+                    28: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "25.6",
-                        diameterNominalMM: "25",
+                        diameterNominalMM: "28",
                         diameterOutsideMM: "28",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "2500"
                     },
-                    32: {
+                    35: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "32",
-                        diameterNominalMM: "32",
+                        diameterNominalMM: "35",
                         diameterOutsideMM: "35",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "2500"
                     },
-                    40: {
+                    42: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "39",
-                        diameterNominalMM: "40",
+                        diameterNominalMM: "42",
                         diameterOutsideMM: "42",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "1600"
                     },
-                    50: {
+                    54: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "51",
-                        diameterNominalMM: "50",
+                        diameterNominalMM: "54",
                         diameterOutsideMM: "54",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "1600"
                     },
-                    80: {
+                    76: {
                         colebrookWhiteCoefficient: "0.0015",
                         diameterInternalMM: "72.1",
-                        diameterNominalMM: "80",
+                        diameterNominalMM: "76",
                         diameterOutsideMM: "76.1",
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "1600"
+                    },
+                    108: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "104",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "108",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                },
+                bs1387ss: {
+                    15: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "16.1",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "21.3",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "20000"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "21.7",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "26.9",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "15800"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "27.3",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "33.7",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "12500"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "36",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "42.4",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "9800"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "41.9",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "48.3",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "8500"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "53.1",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "60.3",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "6800"
+                    },
+                    65: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "68.9",
+                        diameterNominalMM: "65",
+                        diameterOutsideMM: "76.1",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "7200"
+                    },
+                    80: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "80.9",
+                        diameterNominalMM: "80",
+                        diameterOutsideMM: "88.9",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "5900"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "105.9",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "114.9",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "4500"
+                    }
+                }             
+            },
+            uid: "stainlessSteel"
+        },
+        cpvc: {
+            name: "CPVC (SDR 11)",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "CPVC",
+                    uid: 'generic',
+                }
+            ],
+            abbreviation: "CPVC",
+            pipesBySize: {
+                generic: {
+                    15: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "12.86",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "15.9",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "4068"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "18.14",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "22.2",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "3310"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "23.42",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "28.6",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "3103"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "28.54",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "34.9",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "2517"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "33.78",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "41.3",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "2275"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "44.2",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "54",
+                        pipeUid: "cpvc",
+                        safeWorkingPressureKPA: "1896"
                     }
                 }
             },
-            uid: "stainlessSteel"
-        }
+            uid: "cpvc"
+        },        
+        stainlessSteelSewer: {
+            name: "Stainless Steel (Sewer)",
+            abbreviation: "S/S",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "Stainless Steel (Sewer)",
+                    uid: 'generic',
+                },
+                {
+                    name: 'Blucher',
+                    abbreviation: 'blucherSS',
+                    priceTableName: "Stainless Steel (Sewer)",
+                    uid: 'blucherSS',
+                }
+            ],
+            uid: 'stainlessSteelSewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                },
+                blucherSS: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    200: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "200",
+                        diameterNominalMM: "200",
+                        diameterOutsideMM: "200",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    315: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "315",
+                        diameterNominalMM: "315",
+                        diameterOutsideMM: "315",
+                        pipeUid: "stainlessSteelSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
+        uPVCSewer: {
+            name: "Unplasticised PVC (Sewer)",
+            abbreviation: "uPCV",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "uPVC (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'uPVCSewer',
+            pipesBySize: {
+                generic: {
+                    40: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "40",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "40",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    65: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "65",
+                        diameterNominalMM: "65",
+                        diameterOutsideMM: "65",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    80: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "80",
+                        diameterNominalMM: "80",
+                        diameterOutsideMM: "80",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "100",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "100",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "150",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "150",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
+        hdpeSdr11Sewer: {
+            name: "HDPE (SDR11) (Sewer)",
+            abbreviation: "HDPE",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "HDPE (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'hdpeSdr11Sewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "75",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    90: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "90",
+                        diameterNominalMM: "90",
+                        diameterOutsideMM: "90",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "110",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "160",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "hdpeSdr11Sewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
+        castIronSewer: {
+            name: "Cast Iron (Sewer)",
+            abbreviation: "CICL",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "Cast Iron (Sewer)",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'castIronSewer',
+            pipesBySize: {
+                generic: {
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "50",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    70: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "70",
+                        diameterNominalMM: "70",
+                        diameterOutsideMM: "70",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "100",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "100",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "150",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "150",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    200: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "200",
+                        diameterNominalMM: "200",
+                        diameterOutsideMM: "200",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "250",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    300: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "300",
+                        diameterNominalMM: "300",
+                        diameterOutsideMM: "300",
+                        pipeUid: "castIronSewer",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                }
+            }
+        },
     },
     valves: {
         "45Elbow": {
@@ -3512,10 +4316,10 @@ export const initialCatalog: Catalog = {
             type: PSDStandardType.LU_LOOKUP_TABLE,
             name: "IPC 2018 - Flushometer",
             table: {
-                1: "0",
-                2: "0",
-                3: "0",
-                4: "0",
+                1: "0.5",
+                2: "0.6",
+                3: "0.75",
+                4: "0.85",
                 5: "0.946353",
                 6: "1.09776948",
                 7: "1.24918596",
@@ -3848,6 +4652,9 @@ export const initialCatalog: Catalog = {
             }
         }
     },
+    en12056FrequencyFactor: {
+        [EN12056FrequencyFactor.CongestedUse]: 1.0
+    },
     gasDiversification: {
         1: 1,
         2: 0.73,
@@ -4001,6 +4808,17 @@ export const initialCatalog: Catalog = {
             },
             state: State.GAS,
         },
+        sewage: {
+            name: "Sewage",
+            densityKGM3: "1000",
+            dynamicViscosityByTemperature: {
+                0: "0",
+            },
+            specificHeatByTemperatureKJ_KGK: {
+                0: "0",
+            },
+            state: State.LIQUID,
+        }
     },
     backflowValves: {
         RPZD: {

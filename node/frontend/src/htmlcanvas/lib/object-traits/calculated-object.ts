@@ -16,11 +16,12 @@ import { tm2flatten } from "../../../../src/htmlcanvas/lib/utils";
 import { TEXT_MAX_SCALE } from "../../../../src/htmlcanvas/objects/pipe";
 import { getWarningSignImg, matrixScale, warningSignImg, wrapText } from "../../../../src/htmlcanvas/utils";
 import { CalculationContext } from "../../../calculations/types";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import {EntityType, getEntityName} from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { convertMeasurementSystem } from "../../../../../common/src/lib/measurements";
+import { I18N } from "../../../../../common/src/api/locale/values";
 
 export interface Calculated {
     drawCalculationBox(
@@ -132,25 +133,27 @@ export function CalculatedObject<
             for (let i = data.length - 1; i >= 0; i--) {
                 const datum = data[i];
 
-                if (datum.type === CalculationDataType.VALUE) {
-                    ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
-                    height += (datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier) * FIELD_FONT_SIZE;
-                } else {
-                    ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
-                    height += FIELD_FONT_SIZE;
-                }
-
-                const text = this.makeDatumText(context, datum);
-                if (Array.isArray(text)) {
-                    for (let i2 = 0; i2 < text.length; i2++) {
-                        const metrics = ctx.measureText(text[i2]);
-                        maxWidth = Math.max(maxWidth, metrics.width);
+                if (datum.type === CalculationDataType.VALUE && datum.value) {
+                    if (datum.type === CalculationDataType.VALUE) {
+                        ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                        height += (datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier) * FIELD_FONT_SIZE;
+                    } else {
+                        ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                        height += FIELD_FONT_SIZE;
                     }
 
-                    height += (FIELD_FONT_SIZE * (text.length - 1));
-                } else {
-                    const metrics = ctx.measureText(text);
-                    maxWidth = Math.max(maxWidth, metrics.width);
+                    const text = this.makeDatumText(context, datum);
+                    if (Array.isArray(text)) {
+                        for (let i2 = 0; i2 < text.length; i2++) {
+                            const metrics = ctx.measureText(text[i2]);
+                            maxWidth = Math.max(maxWidth, metrics.width);
+                        }
+
+                        height += (FIELD_FONT_SIZE * (text.length - 1));
+                    } else {
+                        const metrics = ctx.measureText(text);
+                        maxWidth = Math.max(maxWidth, metrics.width);
+                    }
                 }
             }
 
@@ -210,39 +213,41 @@ export function CalculatedObject<
                 for (let i = data.length - 1; i >= 0; i--) {
                     const datum = data[i];
 
-                    let multiplier = 1;
-                    if (datum.type === CalculationDataType.VALUE) {
-                        multiplier = datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier!;
-                        ctx.font =
-                            (datum.bold ? "bold " : "") +
-                            (multiplier * FIELD_FONT_SIZE).toFixed(0) +
-                            "px " +
-                            DEFAULT_FONT_NAME;
-                    } else {
-                        ctx.font = (multiplier * FIELD_FONT_SIZE).toFixed(0) + "px " + DEFAULT_FONT_NAME;
-                    }
+                    if (datum.type === CalculationDataType.VALUE && datum.value) {
+                        let multiplier = 1;
+                        if (datum.type === CalculationDataType.VALUE) {
+                            multiplier = datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier!;
+                            ctx.font =
+                                (datum.bold ? "bold " : "") +
+                                (multiplier * FIELD_FONT_SIZE).toFixed(0) +
+                                "px " +
+                                DEFAULT_FONT_NAME;
+                        } else {
+                            ctx.font = (multiplier * FIELD_FONT_SIZE).toFixed(0) + "px " + DEFAULT_FONT_NAME;
+                        }
 
-                    ctx.fillStyle = "#000";
+                        ctx.fillStyle = "#000";
 
-                    if (datum.systemUid) {
-                        const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!
-                            .color;
-                        ctx.fillStyle = lighten(col.hex, -20);
-                    }
-
-                    const text = this.makeDatumText(context, data[i]);
-                    if (Array.isArray(text)) {
-                        for (let i2 = 0; i2 < text.length; i2++) {
-                            ctx.fillText(text[i2], -maxWidth / 2, y);
+                        if (datum.systemUid) {
+                            const col = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === data[i].systemUid)!
+                                .color;
+                            ctx.fillStyle = lighten(col.hex, -20);
+                        }
+                    
+                        const text = this.makeDatumText(context, data[i]);
+                        if (Array.isArray(text)) {
+                            for (let i2 = 0; i2 < text.length; i2++) {
+                                ctx.fillText(text[i2], -maxWidth / 2, y);
+                                y -= multiplier * FIELD_HEIGHT;
+                            }
+                        } else {
+                            ctx.fillText(text, -maxWidth / 2, y);
                             y -= multiplier * FIELD_HEIGHT;
                         }
-                    } else {
-                        ctx.fillText(text, -maxWidth / 2, y);
-                        y -= multiplier * FIELD_HEIGHT;
                     }
                 }
 
-                // line to
+                // line too
                 const boxShape = new Flatten.Polygon();
                 const worldMin = vp.toWorldCoord(
                     TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })
@@ -254,10 +259,10 @@ export function CalculatedObject<
                     worldMin.x -= WARNING_WIDTH;
                 }
                 const worldBox = new Flatten.Box(
-                    Math.min(worldMin.x, worldMax.x),
-                    Math.min(worldMin.y, worldMax.y),
-                    Math.max(worldMin.x, worldMax.x),
-                    Math.max(worldMin.y, worldMax.y)
+                    Math.min(worldMin.x, worldMax.x) - 1,
+                    Math.min(worldMin.y, worldMax.y) - 1,
+                    Math.max(worldMin.x, worldMax.x) + 1,
+                    Math.max(worldMin.y, worldMax.y + 1)
                 );
 
                 boxShape.addFace(worldBox);
@@ -301,6 +306,11 @@ export function CalculatedObject<
             }
 
             const locs: TM.Matrix[] = this.locateCalculationBoxWorld(context, data, newScale);
+            try {
+                this.drawCalculationBox(context, data, true, false, forExport);
+            } catch (error) {
+                console.log(error);
+            }
             const box = this.drawCalculationBox(context, data, true, false, forExport);
 
             return locs.map((loc) => {
@@ -312,7 +322,8 @@ export function CalculatedObject<
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-            const filter = filters[this.entity.type].filters;
+            const eName = getEntityName(this.entity);
+            const filter = filters[eName].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 
             const res: CalculationData[] = [];
@@ -339,7 +350,7 @@ export function CalculatedObject<
                                 ambiguousMessage = "NO ISOLATION VALVES ON MAIN";
                                 break;
                             case NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS:
-                                ambiguousMessage = "LOADING UNITS OUT OF BOUNDS";
+                                ambiguousMessage = I18N.loadingUnits[context.doc.locale].toLocaleUpperCase() + " OUT OF BOUNDS";
                                 break;
                             case NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE:
                                 ambiguousMessage = "NO SUITABLE PIPE SIZE";
@@ -396,7 +407,25 @@ export function CalculatedObject<
             if (calculation && calculation.warning === undefined) {
                 throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
-            return calculation !== undefined && calculation.warning !== null;
+            if (!calculation) {
+                return false;
+            }
+            switch (calculation.warningLayout) {
+                case null:
+                case "pressure":
+                    if (context.doc.uiState.pressureOrDrainage !== 'pressure') {
+                        return false;
+                    }
+                    break;
+                case "drainage":
+                    if (context.doc.uiState.pressureOrDrainage !== 'drainage') {
+                        return false;
+                    }
+                    break;
+                default:
+                    assertUnreachable(calculation.warningLayout);
+            }
+            return calculation.warning !== null;
         }
     };
 }

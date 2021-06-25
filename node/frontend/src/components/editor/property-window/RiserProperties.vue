@@ -2,7 +2,7 @@
     <b-container>
         <b-row>
             <b-col>
-                <h3>Riser</h3>
+                <h3>{{name}}</h3>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
@@ -29,6 +29,7 @@ import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
+import {getEntityName} from "../../../../../common/src/api/document/entities/types";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -47,6 +48,13 @@ export default class RiserProperties extends Vue {
             this.$store.getters["catalog/default"],
             this.document.drawing
         );
+    }
+
+    get name() {
+        if (this.$props.selectedEntity.isVent) {
+            return "Vertical Vent";
+        }
+        return getEntityName(this.$props.selectedEntity);
     }
 
     get reactiveData() {

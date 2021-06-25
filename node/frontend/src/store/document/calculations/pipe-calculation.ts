@@ -1,14 +1,18 @@
-import { SelectedMaterialManufacturer } from './../../../../../common/src/api/document/drawing';
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
-import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
-import { getPsdUnitName, PsdProfile } from "../../../calculations/utils";
-import set = Reflect.set;
-import {assertUnreachable, isGas, isGermanStandard} from "../../../../../common/src/api/config";
-import {Catalog, Manufacturer, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
-import { DrawingState, MeasurementSystem, UnitsParameters } from "../../../../../common/src/api/document/drawing";
-import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
-import { convertPipeDiameterFromMetric, mm2IN, Units } from "../../../../../common/src/lib/measurements";
+import {NetworkType, SelectedMaterialManufacturer} from './../../../../../common/src/api/document/drawing';
+import {
+    CalculationField,
+    CalculationLayout,
+    FieldCategory
+} from "../../../../src/store/document/calculations/calculation-field";
+import {Calculation, PsdCalculation} from "../../../../src/store/document/calculations/types";
+import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/document/entities/pipe-entity";
+import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
+import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
+import {Catalog, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
+import {UnitsParameters} from "../../../../../common/src/api/document/drawing";
+import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
+import { convertPipeDiameterFromMetric, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
+import {DocumentState} from "../types";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -53,24 +57,35 @@ export default interface PipeCalculation extends PsdCalculation, Calculation {
     velocityRealMS: number | null;
 
     temperatureRange: string | null;
+    gradePCT: number | null;
 
     gasMJH: number | null;
+
+    // Vent specific calcs;
+    // An invisible, transactional value during calculations specifically for stacks.
+    stackDedicatedVentSize: number | null;
+    ventRoot: string | null;
+    ventTooFarDist: boolean | null;
+    ventTooFarWC: boolean | null;
+    fallM: number | null;
 }
 
 export function makePipeCalculationFields(
     entity: PipeEntity,
-    settings: DrawingState,
+    document: DocumentState,
     catalog: Catalog | undefined,
     globalStore: GlobalStore,
 ): CalculationField[] {
-    const psdUnit = getPsdUnitName(settings.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod, document.locale);
+    const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod);
 
-    const pipeIsGas = catalog && isGas(settings.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
+    const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
+    const pipeIsDrainage = isDrainage(entity.systemUid);
 
     let materialName = "";
     if (catalog) {
-        const pipe = fillPipeDefaultFields(settings, 0, entity);
-        const manufacturer = settings.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
+        const pipe = fillPipeDefaultFields(document.drawing, 0, entity);
+        const manufacturer = document.drawing.metadata.catalog.pipes.find((pipeObj: SelectedMaterialManufacturer) => pipeObj.uid === pipe.material)?.manufacturer || 'generic';
         const abbreviation = manufacturer !== 'generic'
             && catalog.pipes[pipe.material!].manufacturer.find((manufacturerObj: PipeManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
             || catalog.pipes[pipe.material!].abbreviation;
@@ -80,6 +95,9 @@ export function makePipeCalculationFields(
     const pCalc = globalStore.getOrCreateCalculation(entity);
 
     const result: CalculationField[] = [];
+
+    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
+    const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid) ? ['drainage'] : ['pressure'];
 
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
@@ -147,7 +165,8 @@ export function makePipeCalculationFields(
                         return convertPipeDiameterFromMetric(unitPrefs, value);
                 }
                 assertUnreachable(unitPrefs.lengthMeasurementSystem);
-            }
+            },
+            layouts: layoutStrict,
         },
         {
             property: "realInternalDiameterMM",
@@ -158,6 +177,7 @@ export function makePipeCalculationFields(
             systemUid: entity.systemUid
         },
     );
+
 
     if (pipeIsGas) {
         result.push(
@@ -190,7 +210,8 @@ export function makePipeCalculationFields(
             short: "",
             units: Units.Meters,
             category: FieldCategory.Size,
-            systemUid: entity.systemUid
+            systemUid: entity.systemUid,
+            layouts: layoutOptionDrainage,
         },
         {
             property: "velocityRealMS",
@@ -200,6 +221,8 @@ export function makePipeCalculationFields(
             category: FieldCategory.Velocity,
             systemUid: entity.systemUid
         },
+
+        /* TODO: temperature loss calculation for hot water loop.
         {
             property: "temperatureRange",
             title: "Temperature Range",
@@ -207,7 +230,7 @@ export function makePipeCalculationFields(
             units: Units.Celsius,
             category: FieldCategory.Temperature,
             systemUid: entity.systemUid
-        }
+        }*/
 
         /*
         {
@@ -222,7 +245,7 @@ export function makePipeCalculationFields(
 
     if (!pipeIsGas) {
 
-        if (settings.metadata.calculationParams.psdMethod !== null) {
+        if (document.drawing.metadata.calculationParams.psdMethod !== null) {
             result.push({
                 property: "psdUnits.units",
                 title: psdUnit.name,
@@ -233,7 +256,7 @@ export function makePipeCalculationFields(
             });
         }
 
-        if (settings.metadata.calculationParams.dwellingMethod !== null) {
+        if (document.drawing.metadata.calculationParams.dwellingMethod !== null) {
             result.push({
                 property: "psdUnits.dwellings",
                 title: "Dwellings",
@@ -244,6 +267,61 @@ export function makePipeCalculationFields(
             });
         }
 
+        if (isDrainage(entity.systemUid)) {
+
+            result.push(
+                {
+                    property: "psdUnits.drainageUnits",
+                    title: drainageUnits.name,
+                    short: drainageUnits.abbreviation,
+                    units: Units.None,
+                    category: FieldCategory.LoadingUnits,
+                    systemUid: entity.systemUid,
+                    defaultEnabled: true,
+                    layouts: ['drainage'],
+                },
+            );
+
+            if (entity.network === NetworkType.RETICULATIONS) {
+                result.push(
+                    {
+                    property: "gradePCT",
+                    title: 'Grade (%)',
+                    short: '%',
+                    units: Units.None,
+                    category: FieldCategory.Location,
+                    systemUid: entity.systemUid,
+                    defaultEnabled: true,
+                    layouts: ['drainage'],
+                },
+
+                    {
+                        property: "fallM",
+                        title: "Fall",
+                        short: "fall",
+                        units: Units.Meters,
+                        systemUid: entity.systemUid,
+                        defaultEnabled: true,
+                        category: FieldCategory.Length,
+                        layouts: ['drainage'],
+                    },
+                );
+            }
+        }
+    }
+
+    if (isDrainage(entity.systemUid)) {
+        if (document.uiState.pressureOrDrainage === 'drainage') {
+            return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
+        } else {
+            return [];
+        }
+    } else {
+        if (document.uiState.pressureOrDrainage === 'pressure') {
+            return result.filter((f) => !f.layouts || f.layouts.includes('pressure'));
+        } else {
+            return [];
+        }
     }
 
     return result;
@@ -274,7 +352,15 @@ export function emptyPipeCalculation(): PipeCalculation {
         configuration: null,
         velocityRealMS: null,
         warning: null,
+        warningLayout: null,
         psdProfile: null,
-        flowFrom: null
+        flowFrom: null,
+        gradePCT: null,
+
+        stackDedicatedVentSize: null,
+        ventRoot: null,
+        ventTooFarWC: null,
+        ventTooFarDist: null,
+        fallM: null,
     };
 }

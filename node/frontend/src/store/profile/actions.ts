@@ -4,6 +4,7 @@ import ProfileState from "../../../src/store/profile/types";
 import { recordVideoView, viewedVideoIds } from "../../api/videos";
 import { onBoardingStats } from "../../api/logins";
 import { Onboarding } from '../../../../common/src/models/Onboarding';
+import { SupportedLocales } from "../../../../common/src/api/locale";
 
 export const actions: ActionTree<ProfileState, RootState> = {
     async setProfile({ commit, state, dispatch }, profile) {
@@ -28,5 +29,9 @@ export const actions: ActionTree<ProfileState, RootState> = {
 
     setOnboarding({commit, state}, payload: Onboarding) {
         commit("setOnboarding", payload);
+    },
+
+    setLocale({commit, state}, payload: SupportedLocales) {
+        commit('setLocale', payload)
     }
 };

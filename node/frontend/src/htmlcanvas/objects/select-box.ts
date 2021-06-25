@@ -4,6 +4,7 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import Flatten from "@flatten-js/core";
 import { Coord } from "../../../../common/src/api/document/drawing";
+import BaseBackedObject from "../lib/base-backed-object";
 
 export default class SelectBox extends DrawableObject {
     pointA: Coord;
@@ -104,8 +105,11 @@ export default class SelectBox extends DrawableObject {
         }
     }
 
-    inSelection(objects: DrawableObject[]): DrawableObject[] {
+    inSelection(objects: BaseBackedObject[]): BaseBackedObject[] {
         const ret = objects.filter((o) => {
+            if (!o.isActive()) {
+                return false;
+            }
             if (o.selectable === false) {
                 return false;
             }

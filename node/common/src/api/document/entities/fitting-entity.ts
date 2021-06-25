@@ -1,7 +1,6 @@
-import { FieldType, PropertyField } from "./property-field";
-import { EntityType } from "./types";
-import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
-import {  cloneSimple } from "../../../lib/utils";
+import {FieldType, PropertyField} from "./property-field";
+import {EntityType} from "./types";
+import {Color, ConnectableEntity, Coord, FlowSystemParameters} from "../drawing";
 
 export default interface FittingEntity extends ConnectableEntity {
     type: EntityType.FITTING;
@@ -34,19 +33,3 @@ export function makeValveFields(systems: FlowSystemParameters[]): PropertyField[
     ];
 }
 
-export function fillValveDefaultFields(drawing: DrawingState, value: FittingEntity) {
-    const result = cloneSimple(value);
-
-    // get system
-    const system = drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
-
-    if (system) {
-        if (result.color == null) {
-            result.color = system.color;
-        }
-    } else {
-        throw new Error("Existing system not found for object " + JSON.stringify(value));
-    }
-
-    return result;
-}

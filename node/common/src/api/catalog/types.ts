@@ -3,7 +3,7 @@ import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
-import { SupportedPsdStandards } from "../config";
+import {EN12056FrequencyFactor, SupportedPsdStandards } from "../config";
 import {FixturesTable, PipesTable} from "./price-table";
 
 export interface DwellingUnitHotColdTable {
@@ -50,6 +50,7 @@ export interface Catalog {
     backflowValves: { [key: string]: BackflowValveSpec };
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
+    en12056FrequencyFactor: { [key in EN12056FrequencyFactor]: number};
     gasDiversification: DwellingDiversificationTable;
     fluids: { [key: string]: FluidsSpec };
     prv: PRVSpec;
@@ -97,7 +98,6 @@ export interface FixtureSpec {
     abbreviation: string;
     uid: string;
 
-    fixtureUnits: string | null;
     loadingUnits: {
         [SupportedPsdStandards.as35002018LoadingUnits]: LoadingUnit,
         [SupportedPsdStandards.barriesBookLoadingUnits]: LoadingUnit,
@@ -112,9 +112,16 @@ export interface FixtureSpec {
     continuousFlowLS?: ContinuousFlowRateSpec;
     roughIns: string[];
 
+
+
     maxInletPressureKPA: string | null;
     minInletPressureKPA: string | null;
     probabilityOfUsagePCT: string | null;
+
+    // Drainage
+    asnzFixtureUnits: string | null;
+    enDischargeUnits: string | null;
+    upcFixtureUnits: string | null;
 
     outletAboveFloorM: string | null;
 

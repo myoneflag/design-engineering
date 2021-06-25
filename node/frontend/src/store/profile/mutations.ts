@@ -3,6 +3,7 @@ import ProfileState from "../../../src/store/profile/types";
 import { User } from "../../../../common/src/models/User";
 import { viewedVideoIds } from "../../api/videos";
 import { Onboarding } from '../../../../common/src/models/Onboarding';
+import { SupportedLocales } from "../../../../common/src/api/locale";
 
 export const mutations: MutationTree<ProfileState> = {
     setProfile(state, profile: User | null) {
@@ -29,5 +30,10 @@ export const mutations: MutationTree<ProfileState> = {
 
     setOnboarding(state, payload: Onboarding) {
         state.profile!.onboarding = payload;
+    },
+
+    setLocale(state, payload: SupportedLocales) {
+        localStorage.setItem('locale', payload);
+        state.locale = payload;
     }
 };

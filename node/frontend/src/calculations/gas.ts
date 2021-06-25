@@ -162,6 +162,9 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                         case ValveType.PRV_TRIPLE:
                         case ValveType.BALANCING:
                         case ValveType.GAS_REGULATOR:
+                        case ValveType.FLOOR_WASTE:
+                        case ValveType.INSPECTION_OPENING:
+                        case ValveType.REFLUX_VALVE:
                             break;
                         case ValveType.FILTER:
                         case ValveType.WATER_METER:
