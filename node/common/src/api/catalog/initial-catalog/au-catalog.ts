@@ -3002,7 +3002,7 @@ export const auCatalog: Catalog = {
                 },
                 {
                     name: 'Blucher',
-                    abbreviation: 'blucherSS',
+                    abbreviation: 'Blucher S/S',
                     priceTableName: "Stainless Steel (Sewer)",
                     uid: 'blucherSS',
                 }
