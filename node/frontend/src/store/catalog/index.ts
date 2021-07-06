@@ -14,10 +14,7 @@ export const state: CatalogState = {
         mixingValves: {},
         psdStandards: {},
         en12056FrequencyFactor: {
-            [EN12056FrequencyFactor.IntermittentUse]: 0.5,
-            [EN12056FrequencyFactor.FrequentUse]: 0.7,
-            [EN12056FrequencyFactor.CongestedUse]: 1.0,
-            [EN12056FrequencyFactor.SpecialUse]: 1.2,
+            [EN12056FrequencyFactor.CongestedUse]: 1.0
         },
         dwellingStandards: {},
         gasDiversification: {},

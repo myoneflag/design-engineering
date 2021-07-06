@@ -7,7 +7,7 @@ import { registerUser } from "./controllers/login";
 import { AccessLevel, User } from "../../common/src/models/User";
 import { Document } from "../../common/src/models/Document";
 import pLimit from 'p-limit';
-import { DocumentUpgrader, fixOperationIds } from "./services/DocumentUpgrader";
+import { Organization } from "../../common/src/models/Organization";
 
 const limit = pLimit(4);
 
@@ -16,7 +16,14 @@ Error.stackTraceLimit = Infinity;
 
 async function ensureInitialUser() {
     const logins = await User.count();
-    if (logins === 0) {
+    const organizations = await Organization.count()
+    if (logins === 0 && organizations === 0) {
+
+        const org = Organization.create();
+        org.id = "test";
+        org.name = "test";
+        await org.save();
+
         const login = await registerUser({
             username: "admin",
             firstname: "Root User",
@@ -24,6 +31,7 @@ async function ensureInitialUser() {
             password: "pleasechange",
             access:  AccessLevel.SUPERUSER,
             email: CONFIG.INIT_SUPERUSER_EMAIL,
+            organization: org
         });
     }
 
@@ -33,20 +41,10 @@ async function ensureInitialUser() {
 
 createConnection().then(async (connection) => {
     await ensureInitialUser();
-    DocumentUpgrader.initialize();
-    // await fixOperationIds();
 
     app.enable("trust proxy");
 
-    app.listen(Number(PORT), "0.0.0.0", (err) => {
-        if (err) {
-            return console.log(err);
-        }
-
-        console.log("AWS key: " + process.env.AWS_ACCESS_KEY);
-        console.log("MQ url: " + process.env.MQ_URL);
-        console.log("MQ username: " + process.env.MQ_USERNAME);
-
+    app.listen(Number(PORT), "0.0.0.0", () => {
         console.log(`Server is listening on ${PORT}`);
     });
 }).catch((error) => console.log(error));

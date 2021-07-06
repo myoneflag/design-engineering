@@ -1,11 +1,5 @@
-import {
-    EnergyMeasurementSystem,
-    MeasurementSystem,
-    UnitsParameters,
-    VelocityMeasurementSystem,
-    VolumeMeasurementSystem
-} from "../api/document/drawing";
-import {assertUnreachable} from "../api/config";
+import { UnitsParameters } from "../api/document/drawing";
+import { assertUnreachable } from "../api/config";
 
 export enum Units {
     None = "",
@@ -29,9 +23,11 @@ export enum Units {
     GallonsPerMinute = "gal/min",
     USGallonsPerMinute = "US gal/min", // wtf usa
     Inches = "in",
+    InchesShort = "″",
     Feet = "ft",
     FeetPerSecondSquared = "ftt/s\u0178",
     Psi = "psi",
+    Bar = 'bar',
     FeetPerSecond = "ft/s",
     Fahrenheit = "\u00B0F",
     // keep it at kilowatts
@@ -42,15 +38,44 @@ export enum Units {
     ThermsPerHour = 'thm/hr',
 
     PipeDiameterMM = "pmm",
-    CubicFeetPerHour = "ft^3/hr",
-
-    // April Fools
-    FurlongsPerFortnight = "fur/fortn",
-
-
+    CubicFeetPerHour = "ft^3/hr"
 }
 
-export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, value: number): [Units, number | string | null] {
+export enum EnergyMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+}
+
+export enum MeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+}
+
+export enum PressureMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+    UK = "UK",
+}
+
+export enum VolumeMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL",
+    US = "US",
+}
+
+export enum VelocityMeasurementSystem {
+    METRIC = "METRIC",
+    IMPERIAL = "IMPERIAL"
+}
+
+export enum CurrencySymbol {
+    DOLLARS = '$',
+    POUNDS = '£'
+}
+
+export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {
+    const value = Number(valueRaw);
+
     switch (units) {
         case Units.None:
         case Units.Kv:
@@ -91,10 +116,12 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.KiloPascals:
             switch (unitsPrefs.pressureMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+                case PressureMeasurementSystem.METRIC:
                     return [units, value];
-                case MeasurementSystem.IMPERIAL:
+                case PressureMeasurementSystem.IMPERIAL:
                     return [Units.Psi, kpa2PSI(value)];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, kpa2bar(value)];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             return [Units.None, 0];
@@ -104,8 +131,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [units, value];
                 case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, m2FT(value)];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, value * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
@@ -150,6 +175,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             return [Units.None, 0];
         case Units.Inches:
+        case Units.InchesShort:
             switch (unitsPrefs.lengthMeasurementSystem) {
                 case MeasurementSystem.METRIC:
                     return [Units.Millimeters, in2MM(value)];
@@ -169,10 +195,23 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             return [Units.None, 0];
         case Units.Psi:
             switch (unitsPrefs.pressureMeasurementSystem) {
-                case MeasurementSystem.METRIC:
+                case PressureMeasurementSystem.METRIC:
                     return [Units.KiloPascals, psi2KPA(value)];
-                case MeasurementSystem.IMPERIAL:
+                case PressureMeasurementSystem.IMPERIAL:
                     return [Units.Psi, value];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, kpa2bar(psi2KPA(value))];
+            }
+            assertUnreachable(unitsPrefs.pressureMeasurementSystem);
+            return [Units.None, 0];
+        case Units.Bar:
+            switch (unitsPrefs.pressureMeasurementSystem) {
+                case PressureMeasurementSystem.METRIC:
+                    return [Units.KiloPascals, bar2kpa(value)];
+                case PressureMeasurementSystem.IMPERIAL:
+                    return [Units.Psi, kpa2PSI(bar2kpa(value))];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Bar, value];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             return [Units.None, 0];
@@ -182,8 +221,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.MetersPerSecond, ft2M(value)];
                 case VelocityMeasurementSystem.IMPERIAL:
                     return [Units.FeetPerSecond, value];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, ft2M(value) * 6012.87];
             }
             assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             return [Units.None, 0];
@@ -239,20 +276,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
             assertUnreachable(unitsPrefs.volumeMeasurementSystem);
             return [Units.None, 0];
         case Units.PipeDiameterMM:
-            return convertPipeDiameterFromMetric(unitsPrefs, value);
-        case Units.FurlongsPerFortnight:
-            switch (unitsPrefs.velocityMeasurementSystem) {
-                case VelocityMeasurementSystem.METRIC:
-                    return [Units.MetersPerSecond, value / 6012.87];
-                case VelocityMeasurementSystem.IMPERIAL:
-                    return [Units.FeetPerSecond, m2FT(value / 6012.87)];
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
-                    return [Units.FurlongsPerFortnight, value];
-                default:
-                    assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            }
-            assertUnreachable(unitsPrefs.velocityMeasurementSystem);
-            return [Units.None, 0];
+            return convertPipeDiameterFromMetric(unitsPrefs, valueRaw);
         case Units.MegajoulesPerHour:
             switch (unitsPrefs.energyMeasurementSystem) {
                 case EnergyMeasurementSystem.METRIC:
@@ -266,7 +290,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case VelocityMeasurementSystem.METRIC:
                     return [Units.MetersCubedPerHour, value];
                 case VelocityMeasurementSystem.IMPERIAL:
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
                     return [Units.CubicFeetPerHour, value * 3.28084 * 3.28084 * 3.28084];
                 default:
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
@@ -277,7 +300,6 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case VelocityMeasurementSystem.METRIC:
                     return [Units.MetersCubedPerHour, value / (3.28084 * 3.28084 * 3.28084)];
                 case VelocityMeasurementSystem.IMPERIAL:
-                case VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL:
                     return [Units.CubicFeetPerHour, value];
                 default:
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
@@ -298,7 +320,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
     return [Units.None, 0];
 }
 
-export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | null): [Units, number | null | string] {
+export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | string | null): [Units, number | null | string] {
     if (value === null) {
         const [newUnits] = convertMeasurementSystemNonNull(unitsPrefs, units, 1);
         return [newUnits, null];
@@ -314,9 +336,13 @@ export function convertMeasurementToMetric(units: Units, value: number | null) {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
-            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            pressureMeasurementSystem: PressureMeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
+            currency: {
+                symbol: CurrencySymbol.POUNDS,
+                multiplierPct: 100,
+            }
         },
         units,
         value
@@ -347,6 +373,14 @@ export function psi2KPA(psi: number) {
     return psi * 6.894757293168361;
 }
 
+export function kpa2bar(kpa: number) {
+    return kpa / 100;
+}
+
+export function bar2kpa(bar: number) {
+    return bar * 100;
+}
+
 export function c2F(celsius: number) {
     return (celsius * 9 / 5) + 32;
 }
@@ -356,20 +390,20 @@ export function f2C(fahrenheit: number) {
 }
 
 const validConverts: { [key: number]: string } = {
-    0.25: "1/4",
-    0.5: "1/2",
-    0.75: "3/4",
+    0.25: "¼",
+    0.5: "½",
+    0.75: "¾",
     1: "1",
-    1.25: "1 1/4",
-    1.5: "1 1/2",
+    1.25: "1¼",
+    1.5: "1½",
     2: "2",
-    2.5: "2 1/2",
+    2.5: "2½",
     3: "3",
-    3.5: "3 1/2",
+    3.5: "3½",
     4: "4",
-    4.5: "4 1/2",
+    4.5: "4½",
     5: "5",
-    5.5: "5.5",
+    5.5: "5½",
     6: "6",
     7: "7",
     8: "8",
@@ -385,25 +419,43 @@ const validConverts: { [key: number]: string } = {
     18: "18"
 };
 
-export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueMM: number | null): [Units, number | string | null] {
+function closestImperialPipe(valueMM: number) {
+
+    let closestDist = Infinity;
+    let value: string | number | null = mm2IN(valueMM);
+
+    const inches = mm2IN(valueMM);
+    for (const [num, val] of Object.entries(validConverts)) {
+        if (Math.abs(Number(num) - inches) < closestDist) {
+            closestDist = Math.abs(Number(num) - inches);
+            value = val;
+        }
+    }
+
+    return value;
+}
+
+
+export function convertPipeDiameterFromMetric(unitPrefs: UnitsParameters, valueRawMM: number | string | null): [Units, number | string | null] {
+    const valueMM = Number(valueRawMM);
     switch (unitPrefs.lengthMeasurementSystem) {
         case MeasurementSystem.METRIC:
-            return [Units.Millimeters, valueMM];
+            return [Units.Millimeters, valueRawMM];
         case MeasurementSystem.IMPERIAL:
-            if (valueMM === null) {
+            if (valueMM === null || valueRawMM === null) {
                 return [Units.Inches, valueMM];
             }
-            let closestDist = Infinity;
-            let value: string | number | null = mm2IN(valueMM);
-
-            const inches = mm2IN(valueMM);
-            for (const [num, val] of Object.entries(validConverts)) {
-                if (Math.abs(Number(num) - inches) < closestDist) {
-                    closestDist = Math.abs(Number(num) - inches);
-                    value = val;
+            if (typeof valueRawMM === 'string' && valueRawMM.includes('+')) {
+                // parse [Ax]B+C syntax
+                let [b, c] = valueRawMM.split('+');
+                let prefix = '';
+                if (b.includes('x')) {
+                    prefix = b.split('x')[0] + ' × ';
+                    b = b.split('x')[1];
                 }
+                return [Units.Inches, prefix + closestImperialPipe(Number(b)) + '″ + ' + closestImperialPipe(Number(c)) + "″"];
             }
-            return [Units.Inches, value];
+            return [Units.InchesShort, closestImperialPipe(valueMM) + "″"];
     }
     assertUnreachable(unitPrefs.lengthMeasurementSystem);
 }

@@ -144,7 +144,7 @@ export class UserController {
             lastname: user.lastname,
             username: user.username,
             email: user.email,
-        }));
+        }));    
         
         return res.status(200).send({
             success: true,
@@ -415,7 +415,6 @@ export class UserController {
 const router = Router();
 const controller = new UserController();
 
-// Retrieve all Users
 router.post('/', controller.create.bind(controller));
 router.post('/signUp', controller.signUp.bind(controller));
 router.get('/active-users', controller.activeUsers.bind(controller));

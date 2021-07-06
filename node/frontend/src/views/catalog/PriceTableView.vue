@@ -1,5 +1,9 @@
 <template>
     <b-container>
+        <b-row align-h="end">
+            <b-btn variant="outline-primary" class="mr-2" :to="{name: 'settings/units'}">Edit Currency</b-btn>
+            <currency-selector disabled/>
+        </b-row>
         <b-row>
             <b-container class="priceTableContent">
                 <template v-for="[title, component] in sections">
@@ -56,9 +60,10 @@ import EquipmentTable from "./EquipmentTable.vue";
 import {DocumentState} from "../../store/document/types";
 import * as _ from 'lodash';
 import {cloneSimple} from "../../../../common/src/lib/utils";
+import CurrencySelector from "../../components/molecules/CurrencySelector.vue";
 
 @Component({
-    components: { FixturesTable, InsulationTable, PlantsTable, PipesTable, FittingsTable, ValvesTable, NodesTable, EquipmentTable},
+    components: { CurrencySelector, FixturesTable, InsulationTable, PlantsTable, PipesTable, FittingsTable, ValvesTable, NodesTable, EquipmentTable},
     props: {
         schema: Object
     }
@@ -115,6 +120,6 @@ export default class CatalogView extends Vue {
     .priceTableContent {
         overflow-y: auto;
         overflow-x: hidden;
-        height: calc(100vh - 270px);
+        height: calc(100vh - 300px);
     }
 </style>

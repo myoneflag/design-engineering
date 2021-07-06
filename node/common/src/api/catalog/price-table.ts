@@ -1,4 +1,6 @@
 import {assertUnreachable} from "../config";
+import { I18N } from "../locale/values";
+import { SupportedLocales } from "../locale";
 
 export interface PriceTable {
   'Insulation': {[key: number]: number};
@@ -27,6 +29,7 @@ export type PipeMaterials =
     | 'PEX'
     | 'Copper'
     | 'Stainless Steel'
+    | 'CPVC'
     | 'HDPE'
     | 'GMS'
     | 'Cast Iron'
@@ -100,10 +103,10 @@ export interface EquipmentTable {
     'Drainage Pit': number;
 }
 
-export function getEquipmentTitle(name: keyof EquipmentTable): string {
+export function getEquipmentTitle(name: keyof EquipmentTable, locale: SupportedLocales): string {
     switch (name) {
         case "PRV":
-            return "PRV - Pressure Reduction Valves";
+            return "PRV - " + I18N.pressureReducingValve[locale] + "s";
         case "TMV":
             return "TMV - Thermostatic Mixing Valves";
         case "RPZD":
@@ -111,7 +114,7 @@ export function getEquipmentTitle(name: keyof EquipmentTable): string {
         case "Tempering Valve":
             return "Tempering Valves";
         case "Balancing Valve":
-            return "Balancing Valves";
+            return I18N.balancingValve[locale] + "s";
         case "Gas Filter":
             return "Gas Filters";
         case "Gas Meter":
@@ -130,10 +133,10 @@ export function getEquipmentTitle(name: keyof EquipmentTable): string {
     assertUnreachable(name);
 }
 
-export function getEquipmentDescription(name: keyof EquipmentTable): string {
+export function getEquipmentDescription(name: keyof EquipmentTable, locale: SupportedLocales): string {
     switch (name) {
         case "PRV":
-            return "PRV - Pressure Reduction Valve";
+            return "PRV - " + I18N.pressureReducingValve[locale];
         case "TMV":
             return "TMV - Thermostatic Mixing Valve - All Sizes";
         case "RPZD":
@@ -141,7 +144,7 @@ export function getEquipmentDescription(name: keyof EquipmentTable): string {
         case "Tempering Valve":
             return "Tempering Valve - All Sizes";
         case "Balancing Valve":
-            return "Balancing Valve";
+            return I18N.balancingValve[locale];
         case "Gas Filter":
             return "Gas Filter - All Sizes";
         case "Gas Meter":

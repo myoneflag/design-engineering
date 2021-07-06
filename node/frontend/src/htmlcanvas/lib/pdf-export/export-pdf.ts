@@ -28,6 +28,8 @@ import {
 import * as _ from "lodash";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { BackgroundImage } from "../../objects/background-image";
+import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
+import { DrawingContext } from "../types";
 
 export function mm2pt(mm: number) {
     return (72 * mm) / 25.4;
@@ -180,7 +182,7 @@ async function drawTitleBar(
     pdf.fontSize(Math.round(mm2pt(4)));
 }
 
-export async function drawScale(doc: PDFKit.PDFDocument, paperSize: PaperSize, scaleName: string) {
+export async function drawScale(doc: PDFKit.PDFDocument, context: CanvasContext, paperSize: PaperSize, scaleName: string) {
     const factor = parseScale(scaleName);
     const RENDER_WIDTH = 200; // to make text visible, this was adjusted manually.
 
@@ -191,7 +193,7 @@ export async function drawScale(doc: PDFKit.PDFDocument, paperSize: PaperSize, s
     const pxPerMM = RENDER_WIDTH / PHYSICAL_MM;
 
     const ctx = new C2S.C2S(RENDER_WIDTH, 50);
-    drawPaperScale(ctx, pxPerMM, RENDER_WIDTH, 0, 0);
+    drawPaperScale(ctx, context.document.drawing.metadata.units.lengthMeasurementSystem, pxPerMM, RENDER_WIDTH, 0, 0);
     const svg = ctx.getSerializedSvg();
 
     const PAPER_UNITS = mm2pt(PAPER_MM);
@@ -432,7 +434,11 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
         doc.text(fs.name + " System Properties: ", { underline: true });
         doc.fillColor("black");
         doc.font(DEFAULT_FONT_NAME);
-        doc.text("Temperature: " + fs.temperature + "\u00B0C");
+
+
+        const [tempUnits, tempConverted] =
+            convertMeasurementSystem(context.document.drawing.metadata.units, Units.Celsius, fs.temperature);
+        doc.text("Temperature: " + (tempConverted as number).toFixed(2) + tempUnits);
 
         const ox = doc.x;
         if (Object.keys(fs.networks)) {
@@ -449,12 +455,14 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
                 doc.font(DEFAULT_FONT_NAME_BOLD);
                 doc.text(_.startCase(network.toLowerCase()));
 
+                const [velUnits, velConverted] =
+                    convertMeasurementSystem(context.document.drawing.metadata.units, Units.MetersPerSecond, value.velocityMS);
                 doc.fontSize(8);
                 doc.font(DEFAULT_FONT_NAME_BOLD);
                 doc.x = leftPt;
                 doc.text("Max. Velocity: ", { continued: true, lineBreak: false });
                 doc.font(DEFAULT_FONT_NAME);
-                doc.text(value.velocityMS + " m/s");
+                doc.text((velConverted as number).toFixed(2) + " " + velUnits);
 
                 doc.x = leftPt;
                 doc.font(DEFAULT_FONT_NAME_BOLD);
@@ -670,7 +678,7 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
 
         await drawTitleBar(doc, context, paperSize, scaleName, luid);
 
-        await drawScale(doc, paperSize, scaleName);
+        await drawScale(doc, context, paperSize, scaleName);
     }
 
     const stream = doc.pipe(blobstream());

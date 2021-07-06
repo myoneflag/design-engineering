@@ -1,4 +1,11 @@
-aws_creds.sh
+.DS_Store
 *.swp
 node_modules/
 implement_notes/
+cloudformation/template.cfn.json
+cloudformation/package-lock.json
+cloudformation/dist
+docker/package-lock.json
+docker/dist
+.aws-sam
+docker/temp/*

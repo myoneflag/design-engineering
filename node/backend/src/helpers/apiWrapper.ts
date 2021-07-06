@@ -8,12 +8,13 @@ export function ApiHandleError() {
             try {
                 return await original(req, res, next);
             } catch (e) {
+                console.error(e.stack || e);
                 if (res.headersSent) {
                     console.log("headers were sent before we could catch the error: " + e.message);
                 } else {
                     res.status(500).send({
                         success: false,
-                        message: e.message + "\n" + e.stack,
+                        message: e.message,
                     });
                 }
             }

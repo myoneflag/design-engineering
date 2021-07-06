@@ -1,7 +1,8 @@
-import {Catalog, State} from "./catalog/types";
-import {Choice, cloneSimple, SelectField} from "../lib/utils";
-import {THERMAL_CONDUCTIVITY} from "./constants/air-properties";
-import {evaluatePolynomial} from "../lib/polynomials";
+
+import { Catalog, State } from "./catalog/types";
+import { Choice, cloneSimple, SelectField } from "../lib/utils";
+import { UnitsParameters } from "./document/drawing";
+import { MeasurementSystem } from "../lib/measurements";
 
 export enum SupportedPsdStandards {
     as35002018LoadingUnits = "as35002018LoadingUnits",
@@ -65,30 +66,15 @@ export const DRAINAGE_METHOD_CHOICES: Choice[] = [
 ];
 
 export enum EN12056FrequencyFactor {
-    IntermittentUse = "IntermittentUse",
-    FrequentUse = "FrequentUse",
-    CongestedUse = "CongestedUse",
-    SpecialUse = "SpecialUse",
+    CongestedUse = "CongestedUse"
 }
 
 export function getEN_12506_FREQUENCY_FACTOR_CHOICES(catalog: Catalog): Choice[] {
     return [
         {
-            name: `Intermittent Use (${catalog.en12056FrequencyFactor.IntermittentUse})`,
-            key: EN12056FrequencyFactor.IntermittentUse,
-        },
-        {
-            name: `Frequent Use (${catalog.en12056FrequencyFactor.FrequentUse})`,
-            key: EN12056FrequencyFactor.FrequentUse,
-        },
-        {
             name: `Congested Use (${catalog.en12056FrequencyFactor.CongestedUse})`,
             key: EN12056FrequencyFactor.CongestedUse,
-        },
-        {
-            name: `Special Use (${catalog.en12056FrequencyFactor.SpecialUse})`,
-            key: EN12056FrequencyFactor.SpecialUse,
-        },
+        }
     ];
 }
 
@@ -256,12 +242,6 @@ export const INSULATION_MATERIAL_CHOICES: Choice[] = [
     { key: InsulationMaterials.mmKemblaInsulation, name: 'MM Kembla Insulation' },
 ];
 
-export function getInsulationMaterialChoicesWithThermalConductivity(tempC: number) {
-    return INSULATION_MATERIAL_CHOICES.map((c) => {
-        return {key: c.key, name: c.name + " (" + evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3) + " W/m.K @ " + tempC.toFixed(3) + " °C)"};
-    });
-}
-
 export enum InsulationJackets {
     noJacket = 'noJacket',
     pvcJacket = 'pvcJacket',
@@ -388,7 +368,7 @@ export enum StandardMaterialUids {
     Pex = "pexSdr74"
 }
 
-export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
+const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
     { value: 9, text: '9' },
     { value: 13, text: '13' },
     { value: 19, text: '19' },
@@ -396,3 +376,23 @@ export const INSULATION_THICKNESS_MMKEMBLA: SelectField[] = [
     { value: 32, text: '32' },
     { value: 38, text: '38' },
 ];
+
+const INSULATION_THICKNESS_MMKEMBLA_IN: SelectField[] = [
+    { value: 9, text: '⅜' },
+    { value: 13, text: '½' },
+    { value: 19, text: '¾' },
+    { value: 25, text: '1' },
+    { value: 32, text: '1¼' },
+    { value: 38, text: '1½' },
+];
+
+export function getInsulationThicknessMMKEMBLA(units: UnitsParameters) {
+    switch (units.lengthMeasurementSystem) {
+        case MeasurementSystem.METRIC:
+            return INSULATION_THICKNESS_MMKEMBLA;
+        case MeasurementSystem.IMPERIAL:
+            return INSULATION_THICKNESS_MMKEMBLA_IN;
+        default:
+            assertUnreachable(units.lengthMeasurementSystem);
+    }
+}

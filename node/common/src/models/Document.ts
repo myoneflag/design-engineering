@@ -1,9 +1,11 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, OneToOne, JoinColumn } from "typeorm";
 import { Operation } from "./Operation";
+import { Drawing } from "./Drawing";
 import { Organization } from "./Organization";
 import { AccessLevel, User } from "./User";
 import { ShareDocument } from './ShareDocument';
 import { GeneralInfo } from "../api/document/drawing";
+import { SupportedLocales } from "../api/locale";
 
 export enum DocumentStatus {
     ACTIVE,
@@ -25,6 +27,13 @@ export class Document extends BaseEntity {
         { cascade: true }
     )
     operations: Promise<Operation[]>;
+
+    @OneToMany(
+        () => Drawing,
+        ( dr: Drawing ) => dr.document,
+        { cascade: true }
+    )
+    drawings: Promise<Drawing[]>;
 
     @Column({default: 0})
     nextOperationIndex: number;
@@ -66,6 +75,9 @@ export class Document extends BaseEntity {
 
     @Column({default: new Date(2000, 0, 0)})
     lastCompression: Date;
+
+    @Column({type: "enum", enum: SupportedLocales, default: SupportedLocales.AU})
+    locale: SupportedLocales;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {

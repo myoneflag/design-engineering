@@ -22,7 +22,8 @@ import {
     NetworkType
 } from "../../../../common/src/api/document/drawing";
 import CoordContextualSnappingTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
-import {isDrainage} from "../../../../common/src/api/config";
+import { isDrainage } from "../../../../common/src/api/config";
+import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:
@@ -282,9 +283,17 @@ function insertPipeChain(
             ],
             () => {
                 if (newPipe && context.globalStore.has(newPipe.uid)) {
+                    const [units, height] =
+                        convertMeasurementSystem(context.document.drawing.metadata.units, Units.Meters, heightM);
+                    const [_, length] = convertMeasurementSystem(
+                        context.document.drawing.metadata.units,
+                        Units.Meters,
+                        (context.globalStore.get(newPipe.uid) as Pipe).computedLengthM
+                    );
+
                     return [
-                        "Height: " + heightM.toPrecision(3) + "m",
-                        "Length: " + (context.globalStore.get(newPipe.uid) as Pipe).computedLengthM.toPrecision(4) + "m"
+                        "Height: " + (height as number).toPrecision(3) + units,
+                        "Length: " + (length as number).toPrecision(4) + units
                     ];
                 } else {
                     return [];

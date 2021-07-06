@@ -1,6 +1,9 @@
 {
-  "name": "h2xdemo",
-  "version": "1.5.12",
+  "name": "h2x-frontend",
+  "version": "1.7.0",
+  "description": "H2X frontend",
+  "repository": "gitlab:info892/H2X",
+  "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

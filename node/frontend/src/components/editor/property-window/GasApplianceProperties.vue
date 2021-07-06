@@ -28,12 +28,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
-import {
-    fillFixtureFields,
-    makeFixtureFields
-} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import {
     fillGasApplianceFields,

@@ -128,8 +128,10 @@ export default class DrawingNavBar extends Vue {
 
     mounted() {
         const { settings } = this.hotKeySetting;
-
-        Mousetrap.bind(settings, this.toggleSettings);
+        if (settings) {
+            Mousetrap.bind(settings, this.toggleSettings);
+        }
+        
     }
 
     get hotKeySetting(): { [key: string]: string } {

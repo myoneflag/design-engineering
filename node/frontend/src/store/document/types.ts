@@ -6,8 +6,8 @@ import { ValveId } from "../../../src/htmlcanvas/lib/types";
 import { DrawingState, initialDrawing } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { Operation } from "../../../../common/src/models/Operation";
-import { PAPER_SIZES, PaperSize, PaperSizeName } from "../../../../common/src/api/paper-config";
-import {bool} from "aws-sdk/clients/signer";
+import { PAPER_SIZES, PaperSize } from "../../../../common/src/api/paper-config";
+import { SupportedLocales } from "../../../../common/src/api/locale";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -108,6 +108,7 @@ export interface DocumentState {
     nextId: number;
 
     uiState: UIState;
+    locale: SupportedLocales;
 
     documentId: number;
     shareToken: string;
@@ -167,8 +168,8 @@ export function blankDiffFilter() {
 }
 
 export const initialDocumentState: DocumentState = {
-    committedDrawing: cloneSimple(initialDrawing),
-    drawing: cloneSimple(initialDrawing),
+    committedDrawing: initialDrawing(SupportedLocales.AU),
+    drawing: initialDrawing(SupportedLocales.AU), // This gets replaced immediately upon loading after locales are known.
     undoStack: [],
     undoIndex: 0,
     diffFilter: blankDiffFilter(),
@@ -181,6 +182,7 @@ export const initialDocumentState: DocumentState = {
     documentId: -1,
     shareToken: '',
     isLoading: false,
+    locale: SupportedLocales.AU,
 };
 
 export interface EntityParam {

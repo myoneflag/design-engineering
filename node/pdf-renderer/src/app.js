@@ -40,9 +40,9 @@ exports.lambdaHandler = async (event, context, callback) => {
     const srcBucket = event.Records[0].s3.bucket.name;
     // Object key may have spaces or unicode non-ASCII characters.
     const srcKey    = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, " "));
-    const dstBucket = srcBucket + "-renders";
+    const dstBucket = process.env.DESTINATION_BUCKET;
     const splitByDot = srcKey.split(".");
-    const dstKeyBase    = splitByDot.splice(0, splitByDot.length - 1).join('.');
+    const dstKeyBase = splitByDot.splice(0, splitByDot.length - 1).join('.');
 
     // Infer the image type from the file suffix.
     const typeMatch = srcKey.match(/\.([^.]*)$/);

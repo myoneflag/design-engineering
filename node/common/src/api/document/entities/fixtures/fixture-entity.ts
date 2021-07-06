@@ -1,10 +1,13 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
-import {isDrainage, isLUStandard, SupportedPsdStandards} from "../../../config";
+import { isDrainage, isLUStandard, SupportedPsdStandards} from "../../../config";
 import { Catalog } from "../../../catalog/types";
 import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
+import { I18N } from "../../../locale/values";
+import { SupportedLocales } from "../../../locale";
+
 
 export interface RoughInRecord {
     uid: string;
@@ -40,7 +43,7 @@ export default interface FixtureEntity extends DrawableEntity {
     probabilityOfUsagePCT: number | null;
 }
 
-export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity): PropertyField[] {
+export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: SupportedLocales): PropertyField[] {
     const res: PropertyField[] = [
         {
             property: "rotation",
@@ -171,7 +174,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity):
                 },
                 {
                     property: "roughIns." + suid + ".loadingUnits",
-                    title: "Loading Units",
+                    title: I18N.loadingUnits[locale],
                     hasDefault: true,
                     highlightOnOverride: COLORS.YELLOW,
                     isCalculated: false,

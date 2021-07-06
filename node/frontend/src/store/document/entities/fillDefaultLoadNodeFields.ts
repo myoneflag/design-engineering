@@ -39,6 +39,11 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
     if (typeof result.customNodeId !== "undefined") {
         const node = nodes.find((node: NodeProps) => node.id === result.customNodeId || node.uid === result.customNodeId)!;
 
+        if (!node) {
+            console.warn(`custom node ${result.customNodeId} missing`)
+            return result;
+        }
+
         result.name = node.name;
         result.minPressureKPA = result.minPressureKPA === null && (node.minPressure ? Number(node.minPressure) : null) || result.minPressureKPA;
         result.maxPressureKPA = result.maxPressureKPA === null && (node.maxPressure ? Number(node.maxPressure) : null) || result.maxPressureKPA;

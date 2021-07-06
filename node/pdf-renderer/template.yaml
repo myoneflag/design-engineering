@@ -12,14 +12,21 @@ Resources:
       CodeUri: src/
       Handler: app.lambdaHandler
       Runtime: nodejs12.x
+# For local development only
+#      Layers:
+#        - arn:aws:lambda:us-west-1:891449579858:layer:ghostscript:1
+#        - arn:aws:lambda:us-west-1:891449579858:layer:image-magick:1
       Timeout: 200
-      MemorySize: 1024
+      MemorySize: 2048
       Events:
         PdfUpload:
           Type: S3
           Properties:
             Bucket: !Ref SrcBucket
             Events: s3:ObjectCreated:*
+      Environment:
+          Variables:
+              DESTINATION_BUCKET: pleaseupdate
 
   SrcBucket:
     Type: AWS::S3::Bucket

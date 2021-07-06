@@ -20,6 +20,7 @@ import DrawingCanvas from "../components/editor/DrawingCanvas.vue";
 import LoadingScreen from "../views/LoadingScreen.vue";
 import { customEntityData } from "../api/custom-entity";
 import { EntityType } from "../../../common/src/api/document/entities/types";
+import { initialDrawing } from "../../../common/src/api/document/drawing";
 
 @Component({
     components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
@@ -37,63 +38,74 @@ export default class Document extends Vue {
     mounted() {
         this.$store.dispatch("document/setId", this.$props.id);
 
-        openDocument(
-            this.$props.id,
-            (op) => {
-                this.$store.dispatch("document/applyRemoteOperation", op);
-            },
-            () => {
-                this.deleteFile();
-            },
-            () => {
-                this.$store.dispatch("document/loaded", true);
-
-                this.document.uiState.viewOnly = false;
-
-                getDocument(this.$props.id).then((res) => {
-                    if (res.success) {
-                        if (res.data.shareDocument?.token !== undefined) {
-                            this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
-                        }
-
-                        if (
-                            this.profile &&
-                            res.data.createdBy.username !== this.profile.username &&
-                            this.profile.accessLevel <= AccessLevel.ADMIN
-                        ) {
-                            this.document.uiState.viewOnly = true;
-                            this.document.uiState.viewOnlyReason =
-                                "Superusers view documents in View Only mode by default (click to edit)";
-                        }
-                    } else {
-                        this.$bvToast.toast(res.message, {
-                            title: "Error Getting Document Metadata",
-                            variant: "Danger"
-                        });
-                    }
-                });
-
-                MainEventBus.$emit("drawing-loaded");
-            },
-            (msg) => {
-                if (!this.closeExpected) {
-                    this.$bvToast.toast(
-                        "The connection to the server was lost, please refresh. " +
-                            "Changes from now will not be saved.\n" +
-                            "reason: " +
-                            msg,
-                        {
-                            variant: "danger",
-                            title: "Connection Error"
-                        }
-                    );
-
-                    this.document.uiState.viewOnly = true;
-                    this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
-                    this.$store.dispatch("document/revert");
+        getDocument(this.$props.id).then((res) => {
+            if (res.success) {
+                if (res.data.shareDocument?.token !== undefined) {
+                    this.$store.dispatch("document/setShareToken", res.data.shareDocument.token);
                 }
+
+                if (
+                    this.profile &&
+                    res.data.createdBy.username !== this.profile.username &&
+                    this.profile.accessLevel <= AccessLevel.ADMIN
+                ) {
+                    this.document.uiState.viewOnly = true;
+                    this.document.uiState.viewOnlyReason =
+                        "Superusers view documents in View Only mode by default (click to edit)";
+                }
+                this.document.locale = res.data.locale;
+
+                // repair the document structure with the correct initial state, now that we
+                // know the locale.
+                this.document.drawing = initialDrawing(res.data.locale)
+                this.document.committedDrawing = initialDrawing(res.data.locale)
+
+
+                openDocument(
+                    this.$props.id,
+                    (op) => {
+                        this.$store.dispatch("document/applyRemoteOperation", op);
+                    },
+                    () => {
+                        this.deleteFile();
+                    },
+                    () => {
+                        this.$store.dispatch("document/loaded", true);
+
+                        this.document.uiState.viewOnly = false;
+
+
+                        MainEventBus.$emit("drawing-loaded");
+                    },
+                    (msg) => {
+                        if (!this.closeExpected) {
+                            this.$bvToast.toast(
+                                "The connection to the server was lost, please refresh. " +
+                                "Changes from now will not be saved.\n" +
+                                "reason: " +
+                                msg,
+                                {
+                                    variant: "danger",
+                                    title: "Connection Error"
+                                }
+                            );
+
+                            this.document.uiState.viewOnly = true;
+                            this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
+                            this.$store.dispatch("document/revert");
+                        }
+                    }
+                );
+
+            } else {
+                this.$bvToast.toast(res.message, {
+                    title: "Error Getting Document Metadata",
+                    variant: "Danger"
+                });
             }
-        );
+        });
+
+
 
         loadCatalog(this.$props.id).then((catalog) => {
             if (catalog.success) {

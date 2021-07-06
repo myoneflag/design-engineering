@@ -18,6 +18,7 @@ import { assertUnreachable } from "../../../common/src/api/config";
 import { FloorPlan } from "../../../common/src/models/FloorPlan";
 import { RENDER_SIZES, RenderSize } from "../../../common/src/api/document/pdf-render-config";
 import { GetObjectRequest } from 'aws-sdk/clients/s3';
+import Config from "../config/config";
 
 async function convertToPng(pdfPath: string, pngHash: string, density: number): Promise<string> {
     const pngPath = "/tmp/" + pngHash + ".png";
@@ -198,7 +199,7 @@ export class PDFController {
         const pngHash = uuid();
 
         const params2: AWS.S3.Types.PutObjectRequest = {
-            Bucket: "h2x-pdf",
+            Bucket: Config.PDF_BUCKET,
             Body: fs.createReadStream(pdfPath).on("error", (err) => {
                 console.log("File error: ", err);
             }),
@@ -253,7 +254,7 @@ export class PDFController {
             console.log('downloading from s3: ' + pdfFile);
 
             const params: GetObjectRequest = {
-                Bucket: "h2x-pdf-renders",
+                Bucket: Config.PDF_BUCKET,
                 Key: pdfFile,
             };
             // download pdf again from amazon
@@ -298,13 +299,12 @@ export class PDFController {
     public async getImageLink(req: Request, res: Response, next: NextFunction, session: Session) {
         const key = req.params.key;
 
-
-        const sGetUrl = s3.getSignedUrl("getObject", {
-            Bucket: "h2x-pdf-renders",
+        const sGetUrl = await s3.getSignedUrlPromise("getObject", {
+            Bucket: Config.PDF_RENDERS_BUCKET,
             Key: key
         });
-        const sHeadUrl = s3.getSignedUrl("headObject", {
-            Bucket: "h2x-pdf-renders",
+        const sHeadUrl = await s3.getSignedUrlPromise("headObject", {
+            Bucket: Config.PDF_RENDERS_BUCKET,
             Key: key
         });
 
@@ -322,7 +322,6 @@ const router: Router = Router();
 
 const controller = new PDFController();
 
-// Retrieve all Users
 router.post("/", controller.uploadPdf.bind(controller));
 router.get("/:key", controller.getImageLink.bind(controller));
 router.get("/:key/renders", controller.getRenders.bind(controller));

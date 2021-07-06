@@ -1,0 +1,800 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "H2X Web and Worker Enviromment Setup Template",
+    "Metadata": {  
+    },
+    "Parameters": {
+      "EnvName": {
+        "Description": "Enviroment name, used in DNS, database names, etc.",
+        "Type": "String"
+      },
+      "Ec2InstanceKeyname": {
+        "Description": "Keypair name for SSH access on instances - keypair must be created prior to Stack creation",
+        "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+      "WebInstanceSize": {
+        "Description": "Web server instance size",
+        "Type": "String"
+      },
+      "WorkerInstanceSize": {
+        "Description": "Worker instance size",
+        "Type": "String"
+      },
+      "DbInstanceSize": {
+        "Description": "DB instance size",
+        "Type": "String"
+      },
+      "WebInstanceMin": {
+        "Description": "Web group min instance count",
+        "Type": "Number"
+      },
+      "WebInstanceMax": {
+        "Description": "Web group max instance count",
+        "Type": "Number"
+      },
+      "WebInstanceIncrement": {
+        "Description": "Web group instance increase on trigger",
+        "Type": "Number"
+      },
+      "WorkerInstanceMin": {
+        "Description": "Worker group min instance count",
+        "Type": "Number"
+      },
+      "WorkerInstanceMax": {
+        "Description": "Web group max instance count",
+        "Type": "Number"
+      },
+      "WorkerInstanceIncrement": {
+        "Description": "Web group instance increase on trigger",
+        "Type": "Number"
+      },
+      "DnsZoneId": {
+        "Description": "HostedZoneID of the DNS zone to create the main records pointing to the web loadbalancer",
+        "Type": "AWS::Route53::HostedZone::Id"
+      },
+      "DnsZoneName": {
+        "Description": "HostedZone DNS zone to create the main records pointing to the web loadbalancer",
+        "Type": "String"
+      },
+      "DBMasterUserName": {
+        "Type": "String",
+        "Description": "DB Master Username",
+        "NoEcho": "true"
+      },
+      "DBMasterUserPassword": {
+        "Type": "String",
+        "Description": "DB Master User Password",
+        "NoEcho": "true"
+      },
+      "DBName": {
+        "Type": "String",
+        "Description": "Database Name",
+        "NoEcho": "true"
+      },
+      "DBSnapshotARNRestore": {
+        "Description": "ARN of the DB snapshot to use to recreate the RDS instance",
+        "Type": "String",
+        "Default": ""
+      },
+      "MQUsername": {
+        "Description": "MQ Username",
+        "Type": "String",
+        "NoEcho": "true"
+      },
+      "MQPassword": {
+        "Description": "MQ Password",
+        "Type": "String",
+        "NoEcho": "true"
+      },
+      "SourceBucketName": {
+        "Description": "S3 Bucket where deployment source is uploaded",
+        "Type": "String"
+      },
+      "SourcePathWeb": {
+        "Description": "S3 Bucket path where Web deployment source is uploaded",
+        "Type": "String"
+      },
+      "SourcePathWorker": {
+        "Description": "S3 Bucket path where Worker deployment source is uploaded",
+        "Type": "String"
+      },
+      "WebVersion": {
+        "Description": "Extra name tag for major upgrades to Web EB",
+        "Type": "String",
+        "Default": ""
+      },
+      "WorkerVersion": {
+        "Description": "Extra name tag for major upgrades to Worker EB",
+        "Type": "String",
+        "Default": ""
+      },
+      "DbVersion": {
+        "Description": "Extra name tag for major upgrades to RDS DB",
+        "Type": "String",
+        "Default": ""
+      }, 
+      "NotificationsEmail": {
+        "Description": "Notifications email to send Beanstalk deployment notifications to",
+        "Type": "String"
+      },
+      "SesEmailRegion": {
+        "Description": "SES Region to send emails from",
+        "Type": "String"
+      },
+      "H2XEmailAddress": {
+        "Description": "Email Address to send emails from",
+        "Type": "String"
+      }
+    },
+    "Conditions" : {
+      "UseRDSSnapshot": { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "DBSnapshotARNRestore" }, "" ]}] }
+    },
+    "Resources": {        
+        // Instance Roles
+        "InstanceProfile": {
+          "Type": "AWS::IAM::InstanceProfile",
+          "Properties": {
+              "Path": "/",
+              "Roles": [ 
+                { "Ref": "InstanceIAMRole" }
+              ]
+          }
+        },
+
+        "InstanceIAMRole": {
+           "Type": "AWS::IAM::Role",
+           "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Principal": {
+                          "Service": [
+                              "ec2.amazonaws.com"
+                          ]
+                      },
+                      "Action": [
+                          "sts:AssumeRole"
+                      ]
+                  }
+                ]
+            },
+            "Path": "/",
+            "ManagedPolicyArns": [ 
+              "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
+              "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
+              "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-instancerole-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+           }
+        },
+
+        "InstancePolicy": {
+          "Type": "AWS::IAM::Policy",
+          "Properties": {
+            "PolicyName" : { "Fn::Sub": "h2x-application-policy-${EnvName}" },
+             "PolicyDocument": {
+                "Version" : "2012-10-17",
+                "Statement": [ 
+                  {
+                    "Sid": "S3PdfBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "PdfBucket", "Arn" ] }, "/*" ] ] }
+                  },
+                  {
+                    "Sid": "S3PdfRenderBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "PdfRendersBucket", "Arn" ] }, "/*" ] ] }
+                  },
+                  {
+                    "Sid": "ConnectRdsDb",
+                    "Action": "rds-db:connect",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Sub": "arn:aws:rds-db:${AWS::Region}:${AWS::AccountId}:dbuser:${DBInstance}/${DBMasterUserName}" }
+                  }, 
+                  {
+                    "Sid": "SendSesEmail",
+                    "Effect": "Allow",
+                    "Action": "ses:SendRawEmail",
+                    "Resource": "*"
+                  }
+                ]
+             },
+             "Roles": [ {
+                "Ref": "InstanceIAMRole"
+             } ]
+          }
+        },
+
+        // Security groups
+        "WebSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : { "Fn::Sub": "h2x-web-${EnvName}-sg" },
+            "SecurityGroupIngress" : [ 
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-web-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        "WorkerSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : { "Fn::Sub": "h2x-worker-${EnvName}-sg" },
+            "SecurityGroupIngress" : [ 
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        // Web environment
+        "WebApplication": {
+          "Type": "AWS::ElasticBeanstalk::Application",
+          "Properties": {
+             "ApplicationName": { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Application" }
+          }
+        },
+        "WebApplicationVersion_DATESTAMP_": {
+          "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "UpdateReplacePolicy" : "Retain",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "ApplicationName": { "Ref": "WebApplication" },
+            "Description": { "Fn::Sub": "H2X-web-${EnvName}-${SourcePathWeb}" },
+            "SourceBundle": { 
+              "S3Bucket": { "Ref": "SourceBucketName" }, 
+              "S3Key": { "Ref": "SourcePathWeb" }
+             }
+          }
+        },
+        "WebApplicationConfiguration": {
+          "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+          "Properties": {  
+            "ApplicationName": { "Ref": "WebApplication" },
+            "Description": { "Fn::Sub": "${WebApplication} configuration" },
+            "OptionSettings": [ 
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "IamInstanceProfile",
+                "Value": { "Ref": "InstanceProfile" }
+              },
+              {
+                "Namespace": "aws:ec2:instances",
+                "OptionName": "InstanceTypes",
+                "Value": { "Ref": "WebInstanceSize" }
+              },
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "SecurityGroups",
+                "Value": { "Ref": "WebSecurityGroup" }
+              },
+              {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "EC2KeyName",
+                "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sns:topics",
+                "OptionName": "Notification Endpoint",
+                "Value": { "Ref": "NotificationsEmail" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:environment",
+                "OptionName": "LoadBalancerType",
+                "Value": "application"
+              },
+              {
+                "Namespace": "aws:elbv2:listener:443",
+                "OptionName": "Protocol",
+                "Value": "HTTPS"
+              },    
+              {
+                "Namespace": "aws:autoscaling:asg",
+                "OptionName": "MinSize",
+                "Value": { "Ref": "WebInstanceMin"}
+              },
+              {
+                "Namespace": "aws:autoscaling:asg",
+                "OptionName": "MaxSize",
+                "Value": { "Ref": "WebInstanceMax"}
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "UpperBreachScaleIncrement",
+                "Value": { "Ref": "WebInstanceIncrement" }
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "LowerBreachScaleIncrement",
+                "Value": { "Fn::Sub": "-${WebInstanceIncrement}" }
+              },
+              {
+                "Namespace": "aws:elbv2:listener:443",
+                "OptionName": "SSLCertificateArns",
+                "Value": { "Ref": "SSLCertificate"}
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_HOSTNAME",
+                "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_USER",
+                "Value":  { "Ref": "DBMasterUserName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_PASSWORD",
+                "Value":  { "Ref": "DBMasterUserPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_DB_NAME",
+                "Value":  { "Ref": "DBName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_URL",
+                "Value":  { "Fn::Select" : [ 0, { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] } ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_USERNAME",
+                "Value":  { "Ref": "MQUsername" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "MQ_PASSWORD",
+                "Value":  { "Ref": "MQPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "AWS_REGION",
+                "Value": { "Ref": "AWS::Region" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "PDF_BUCKET",
+                "Value": { "Ref": "PdfBucket" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "PDF_RENDERS_BUCKET",
+                "Value": { "Ref": "PdfRendersBucket" }
+              },
+
+              // email SES sending params
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "SES_EMAIL_REGION",
+                "Value": { "Ref": "SesEmailRegion" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "EMAIL_ADDRESS",
+                "Value": { "Ref": "H2XEmailAddress" }
+              }
+            ],
+            "SolutionStackName": "64bit Amazon Linux 2 v3.4.1 running Docker"
+          }
+        },
+
+        "WebEnvironment": {
+          "Type": "AWS::ElasticBeanstalk::Environment",
+          "DependsOn": [ "WorkerEnvironment" ],
+          "Properties": {
+             "ApplicationName": { "Ref": "WebApplication" },
+             "EnvironmentName":  { "Fn::Sub": "H2X-web-${EnvName}${WebVersion}" },              
+             "Description": { "Fn::Sub": "H2X ${EnvName} Web Environment" },
+             "VersionLabel": { "Ref": "WebApplicationVersion_DATESTAMP_" },
+             "TemplateName": { "Ref": "WebApplicationConfiguration" },
+             "Tier": {
+               "Name" : "WebServer",
+               "Type" : "Standard"
+             },
+             "Tags": [ 
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        // Worker Enviroment
+        "WorkerApplication": {
+          "Type": "AWS::ElasticBeanstalk::Application",
+          "Properties": {
+             "ApplicationName": { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
+             "Description": { "Fn::Sub": "H2X ${EnvName} Worker Application" }
+          }
+        },
+        "WorkerApplicationVersion_DATESTAMP_": {
+          "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+          "UpdateReplacePolicy" : "Retain",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "ApplicationName": { "Ref": "WorkerApplication" },
+            "Description": { "Fn::Sub": "H2X-worker-${EnvName}-${SourcePathWorker}" },
+            "SourceBundle": { 
+              "S3Bucket": { "Ref": "SourceBucketName" }, 
+              "S3Key": { "Ref": "SourcePathWorker"}
+             }
+          }
+        },
+        "WorkerApplicationConfiguration": {
+          "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+          "Properties": {  
+            "ApplicationName": { "Ref": "WorkerApplication" },
+            "Description": { "Fn::Sub": "${WorkerApplication} configuration" },
+            "OptionSettings": [ 
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "IamInstanceProfile",
+                "Value": { "Ref": "InstanceProfile" }
+              },
+              {
+                "Namespace": "aws:ec2:instances",
+                "OptionName": "InstanceTypes",
+                "Value": { "Ref": "WorkerInstanceSize" }
+              },
+              {
+                "Namespace": "aws:autoscaling:launchconfiguration",
+                "OptionName": "SecurityGroups",
+                "Value": { "Ref": "WorkerSecurityGroup" }
+              },
+              {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "EC2KeyName",
+                "Value" : { "Ref": "Ec2InstanceKeyname" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sns:topics",
+                "OptionName": "Notification Endpoint",
+                "Value": { "Ref": "NotificationsEmail" }
+              },              
+              {
+                "Namespace": "aws:autoscaling:asg",
+                "OptionName": "MinSize",
+                "Value": { "Ref": "WorkerInstanceMin" }
+              },
+              {
+                "Namespace": "aws:autoscaling:asg",
+                "OptionName": "MaxSize",
+                "Value": { "Ref": "WorkerInstanceMax" }
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "UpperBreachScaleIncrement",
+                "Value": { "Ref": "WorkerInstanceIncrement" }
+              },
+              {
+                "Namespace": "aws:autoscaling:trigger",
+                "OptionName": "LowerBreachScaleIncrement",
+                "Value": { "Fn::Sub": "-${WorkerInstanceIncrement}" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:sqsd",
+                "OptionName": "WorkerQueueURL",
+                "Value": { "Ref": "WorkerQueue" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_HOSTNAME",
+                "Value":  { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_USER",
+                "Value":  { "Ref": "DBMasterUserName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_PASSWORD",
+                "Value":  { "Ref": "DBMasterUserPassword" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "RDS_DB_NAME",
+                "Value":  { "Ref": "DBName" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "SQS_QUEUE_URL",
+                "Value": { "Ref": "WorkerQueue" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "AWS_REGION",
+                "Value": { "Ref": "AWS::Region" }
+              }
+            ],
+            "SolutionStackName": "64bit Amazon Linux 2 v3.4.1 running Docker"
+          } 
+        },
+        "WorkerEnvironment": {
+           "Type": "AWS::ElasticBeanstalk::Environment",
+           "Properties": {
+              "ApplicationName": { "Ref": "WorkerApplication" },
+              "EnvironmentName":  { "Fn::Sub": "H2X-worker-${EnvName}${WorkerVersion}" },
+              "Description": { "Fn::Sub": "H2X ${EnvName} Worker Environment" },
+              "VersionLabel": { "Ref": "WorkerApplicationVersion_DATESTAMP_" },
+              "TemplateName": { "Ref": "WorkerApplicationConfiguration" },              
+              "Tier": {
+                "Name" : "Worker",
+                "Type" : "SQS/HTTP"
+              },
+              "Tags": [ 
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
+           }
+        }, 
+        
+        // RDS
+        "DBSecurityGroup": {
+           "Type": "AWS::RDS::DBSecurityGroup",
+           "Properties": {
+              "GroupDescription": "h2x-db-${EnvName}-sg",
+              "DBSecurityGroupIngress": [ 
+                {
+                  "EC2SecurityGroupId" : { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
+                },
+                {
+                  "EC2SecurityGroupId" : { "Fn::GetAtt": [ "WorkerSecurityGroup", "GroupId" ] }
+                }
+               ],
+               "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-rds-securitygroup-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]
+  
+           }
+        },
+
+        "DBInstance": {
+          "Type": "AWS::RDS::DBInstance",
+          "Properties": {
+            "DBSnapshotIdentifier": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                {"Ref" : "DBSnapshotARNRestore"},
+                {"Ref" : "AWS::NoValue"}
+              ]
+            },
+            "AllocatedStorage": "100",
+            "AllowMajorVersionUpgrade": false,
+            "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
+            "DBInstanceClass": { "Ref": "DbInstanceSize" },
+            "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
+            "DeleteAutomatedBackups": false,
+            "Engine": "postgres",
+            "EngineVersion": "11.10",
+            "EnableIAMDatabaseAuthentication": true,
+            "MultiAZ": "false",
+            "PubliclyAccessible": "false",
+            "MasterUsername": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                {"Ref" : "AWS::NoValue"},
+                { "Ref": "DBMasterUserName"}
+              ]
+            },
+            "MasterUserPassword": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBMasterUserPassword" }
+              ]
+            },
+            "DBName": {
+              "Fn::If" : [
+                "UseRDSSnapshot",
+                { "Ref" : "AWS::NoValue" },
+                { "Ref": "DBName" }
+              ]
+            },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-rds-instance-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        // MQ
+        "MQBroker": {
+          "Type" : "AWS::AmazonMQ::Broker",
+          "Properties" : {
+              "AutoMinorVersionUpgrade" : false,
+              "BrokerName" : {"Fn::Sub": "h2x-mq-${EnvName}" },
+              "DeploymentMode" : "SINGLE_INSTANCE",
+              "EngineType" : "ACTIVEMQ",
+              "EngineVersion" : "5.15.13",
+              "HostInstanceType" : "mq.t2.micro",
+              "PubliclyAccessible" : false,
+              "SecurityGroups" : [ 
+                { "Fn::GetAtt": [ "MQSecurityGroup", "GroupId" ] }
+              ],
+              "Users" : [ 
+                {
+                  "ConsoleAccess" : true,
+                  "Password" : { "Ref": "MQPassword"},
+                  "Username" : { "Ref": "MQUsername" }
+                }
+               ],
+               "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-mq-broker-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+               ]
+            }
+        },
+
+        "MQSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "ActiveMQ security group",
+            "SecurityGroupIngress" : [ 
+              {
+                "FromPort": "61619",
+                "ToPort": "61619",
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": { "Fn::GetAtt": [ "WebSecurityGroup", "GroupId" ] }
+              }
+            ],
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-mq-securitygroup-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        // Worker queue
+        "WorkerQueue": {
+           "Type": "AWS::SQS::Queue",
+           "Properties": {
+              "QueueName": { "Fn::Sub": "h2x-worker-queue-${EnvName}" },
+              "VisibilityTimeout": "3600",
+              "RedrivePolicy": {
+                "deadLetterTargetArn": { "Fn::GetAtt" : [ "WorkerDeadLetterQueue", "Arn" ] },
+                "maxReceiveCount": "10"
+              },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-queue-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
+           }
+        },
+        
+        "WorkerDeadLetterQueue": {
+           "Type": "AWS::SQS::Queue",
+           "Properties": {
+              "QueueName": { "Fn::Sub": "h2x-worker-deadletterqueue-${EnvName}" },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-worker-dlqueue-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
+           }
+        },
+        
+
+        //S3 buckets
+        "PdfBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-pdf-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+        "PdfRendersBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" },
+            "CorsConfiguration": {
+              "CorsRules": [
+                  {
+                      "AllowedHeaders": [
+                          "*"
+                      ],
+                      "AllowedMethods": [
+                          "GET",
+                          "POST",
+                          "HEAD"
+                      ],
+                      "AllowedOrigins": [
+                          "*"
+                      ],
+                      "ExposedHeaders": []
+                  }
+                ]
+              },
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]
+          }
+        }, 
+
+        // DNS record
+        "DnsRecord": {
+          "Type": "AWS::Route53::RecordSet",
+          "Properties": {
+            "Name": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" },
+            "Type": "CNAME",
+            "TTL": "900",
+            "HostedZoneId": { "Ref": "DnsZoneId" },
+            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ]
+          }
+        }, 
+
+        //SSL certificate
+        "SSLCertificate":{
+          "Type":"AWS::CertificateManager::Certificate",
+          "Properties":{
+            "DomainName": { "Fn::Sub": "*.${DnsZoneName}" },
+            "ValidationMethod": "DNS",
+            "DomainValidationOptions" : [
+                {
+                  "DomainName" : { "Fn::Sub": "*.${DnsZoneName}" },
+                  "HostedZoneId": { "Ref": "DnsZoneId" }
+                }
+              ],
+              "Tags": [ 
+                { "Key": "Name", "Value": { "Fn::Sub": "h2x-ssl-certificate-${EnvName}"} },
+                { "Key": "AppName", "Value": "H2X" },
+                { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+              ]  
+            }
+        },
+        "ResourceGroup": {
+            "Type": "AWS::ResourceGroups::Group",
+            "Properties": {
+                "Name": { "Fn::Sub": "h2x-resource-group-${EnvName}"},
+                "Description": { "Fn::Sub": "All resources of the ${EnvName} Cloudformation stack" },
+                "ResourceQuery": { 
+                    "Type": "CLOUDFORMATION_STACK_1_0",
+                    "Query": {
+                        "ResourceTypeFilters": [
+                            "AWS::AllSupported" 
+                        ],
+                        "StackIdentifier": { "Ref": "AWS::StackId" }
+                    }
+                },
+                "Tags": [ 
+                  { "Key": "Name", "Value": { "Fn::Sub": "h2x-resource-group-${EnvName}"} },
+                  { "Key": "AppName", "Value": "H2X" },
+                  { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+                ]  
+          }
+        }
+   },
+   "Outputs": {
+   }
+}

@@ -1,5 +1,6 @@
-import {DrawableEntityConcrete} from "./entities/concrete-entity";
+import { DrawableEntityConcrete } from "./entities/concrete-entity";
 import {
+    assertUnreachable,
     ComponentPressureLossMethod,
     EN12056FrequencyFactor,
     InsulationJackets,
@@ -12,9 +13,18 @@ import {
     SupportedPsdStandards
 } from "../config";
 import RiserEntity from "./entities/riser-entity";
-import {EntityType} from "./entities/types";
-import {Choice, cloneSimple, DeepPartial} from "../../lib/utils";
-import {PriceTable} from "../catalog/price-table";
+import { EntityType } from "./entities/types";
+import { Choice, cloneSimple, DeepPartial } from "../../lib/utils";
+import { PriceTable } from "../catalog/price-table";
+import { SupportedLocales } from "../locale";
+import {
+    CurrencySymbol,
+    EnergyMeasurementSystem,
+    MeasurementSystem,
+    PressureMeasurementSystem,
+    VelocityMeasurementSystem,
+    VolumeMeasurementSystem
+} from "../../lib/measurements";
 
 export interface Coord {
     x: number;
@@ -79,35 +89,17 @@ export interface DrawingState {
 
 export interface UnitsParameters {
     lengthMeasurementSystem: MeasurementSystem;
-    pressureMeasurementSystem: MeasurementSystem;
+    pressureMeasurementSystem: PressureMeasurementSystem;
     velocityMeasurementSystem: VelocityMeasurementSystem;
     temperatureMeasurementSystem: MeasurementSystem;
     volumeMeasurementSystem: VolumeMeasurementSystem;
     energyMeasurementSystem: EnergyMeasurementSystem;
+    currency: {
+        symbol: CurrencySymbol;
+        multiplierPct: 100;
+    };
 }
 
-export enum EnergyMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-}
-
-export enum MeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-}
-
-export enum VolumeMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-    US = 'US',
-}
-
-
-export enum VelocityMeasurementSystem {
-    METRIC = 'METRIC',
-    IMPERIAL = 'IMPERIAL',
-    ALTERNATIVE_IMPERIAL = 'ALTERNATIVE_IMPERIAL',
-}
 
 export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Metric (mm)", key: MeasurementSystem.METRIC},
@@ -115,8 +107,9 @@ export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
 ];
 
 export const PRESSURE_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (kpa)", key: MeasurementSystem.METRIC},
-    {name: "Imperial (psi)", key: MeasurementSystem.IMPERIAL},
+    {name: "Metric (kpa)", key: PressureMeasurementSystem.METRIC},
+    {name: "Imperial (psi)", key: PressureMeasurementSystem.IMPERIAL},
+    {name: "UK (bar)", key: PressureMeasurementSystem.UK}
 ];
 
 export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
@@ -126,8 +119,7 @@ export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
 
 export const VELOCITY_MEASUREMENT_CHOICES: Choice[] = [
     {name: 'Metric (m/s)', key: VelocityMeasurementSystem.METRIC},
-    {name: 'Imperial (furlongs/fortnight)', key: VelocityMeasurementSystem.ALTERNATIVE_IMPERIAL},
-    {name: 'Alt. Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
+    {name: 'Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
 ];
 
 export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
@@ -136,13 +128,10 @@ export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
     {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
 ];
 
-
 export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
     {name: "Therms (thm)", key: EnergyMeasurementSystem.IMPERIAL},
 ];
-
-
 
 export interface GeneralInfo {
     title: string;
@@ -483,19 +472,19 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
             RISERS: {
                 spareCapacityPCT: 0,
                 velocityMS: 20,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 15,
             },
             RETICULATIONS: {
                 spareCapacityPCT: 0,
                 velocityMS: 20,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 15,
             },
             CONNECTIONS: {
                 spareCapacityPCT: 0,
                 velocityMS: 3,
-                material: "hdpeSdr11Sewer",
+                material: "stainlessSteelSewer",
                 minimumPipeSize: 16,
             }
         },
@@ -541,7 +530,93 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
     }
 ];
 
-export const initialDrawing: DrawingState = {
+export function initialDrawing(locale: SupportedLocales): DrawingState {
+    const result = cloneSimple(initialAustralianDrawing);
+    switch (locale) {
+        case SupportedLocales.AU:
+            break;
+        case SupportedLocales.UK:
+            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;
+            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.EN1205622000DischargeUnits
+            // 0 index is cold water.
+            result.metadata.flowSystems[0].temperature = 10;
+            result.metadata.units.currency = {
+                symbol: CurrencySymbol.POUNDS,
+                multiplierPct: 100,
+            };
+
+            // default pipes manufacturers
+            result.metadata.catalog.pipes[0].manufacturer = "bsen1057Cu"
+            result.metadata.catalog.pipes[1].manufacturer = "enIso15875pex"
+            result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
+
+            break;
+        case SupportedLocales.US:
+            result.metadata.units = {
+                energyMeasurementSystem: EnergyMeasurementSystem.IMPERIAL,
+                lengthMeasurementSystem: MeasurementSystem.IMPERIAL,
+                pressureMeasurementSystem: PressureMeasurementSystem.IMPERIAL,
+                temperatureMeasurementSystem: MeasurementSystem.IMPERIAL,
+                velocityMeasurementSystem: VelocityMeasurementSystem.IMPERIAL,
+                volumeMeasurementSystem: VolumeMeasurementSystem.US,
+                currency: {
+                    symbol: CurrencySymbol.DOLLARS,
+                    multiplierPct: 100,
+                }
+            };
+
+            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
+            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.UPC2018DrainageFixtureUnits;
+
+            // hot water is 140 F
+            result.metadata.flowSystems[1].temperature = 60;
+            result.metadata.flowSystems[1].insulationThicknessMM = 25.4;
+
+            // warm water
+            result.metadata.flowSystems[2].temperature = 48.888888888;
+
+            // cold water
+            result.metadata.flowSystems[0].temperature = 21.11111111;
+
+            // warm and hot velocity
+            result.metadata.flowSystems[1].networks.RISERS.velocityMS =
+                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS =
+                    result.metadata.flowSystems[2].networks.RISERS.velocityMS =
+                        result.metadata.flowSystems[2].networks.RETICULATIONS.velocityMS = 1.524;
+
+
+            // cold water velocity
+            result.metadata.flowSystems[0].networks.RISERS.velocityMS =
+                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS = 2.4384;
+
+            // all connections are the same.
+            result.metadata.flowSystems[0].networks.CONNECTIONS.velocityMS =
+                result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS =
+                    result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS = 2.7432;
+
+            // default pipes manufacturers
+            result.metadata.catalog.pipes[0].manufacturer = "atsmB88Cu"
+            result.metadata.catalog.pipes[1].manufacturer = "atsmF877pex"
+            result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
+
+            result.levels = {
+                ground: {
+                    entities: {},
+                    floorHeightM: 0,
+                    name: "Level 1",
+                    abbreviation: "L1",
+                    uid: "ground"
+                }
+            };
+            break;
+        default:
+            assertUnreachable(locale);
+    }
+    return result;
+}
+
+
+export const initialAustralianDrawing: DrawingState = {
     metadata: {
         generalInfo: {
             title: "Untitled",
@@ -558,9 +633,13 @@ export const initialDrawing: DrawingState = {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
             volumeMeasurementSystem: VolumeMeasurementSystem.METRIC,
             velocityMeasurementSystem: VelocityMeasurementSystem.METRIC,
-            pressureMeasurementSystem: MeasurementSystem.METRIC,
+            pressureMeasurementSystem: PressureMeasurementSystem.METRIC,
             temperatureMeasurementSystem: MeasurementSystem.METRIC,
             energyMeasurementSystem: EnergyMeasurementSystem.METRIC,
+            currency: {
+                symbol: CurrencySymbol.DOLLARS,
+                multiplierPct: 100
+            }
         },
         flowSystems: [
             // TODO: these values should get got from the database.
@@ -785,7 +864,7 @@ export const initialDrawing: DrawingState = {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
             dwellingMethod: null,
             drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
-            en12056FrequencyFactor: EN12056FrequencyFactor.IntermittentUse,
+            en12056FrequencyFactor: EN12056FrequencyFactor.CongestedUse,
             ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
             componentPressureLossMethod: ComponentPressureLossMethod.INDIVIDUALLY,

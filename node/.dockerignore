@@ -1,6 +1,10 @@
 backend/npm-debug.log
 backend/node_modules
+backend/dist
 frontend/npm-debug.log
 frontend/node_modules
+frontend/dist
 common/npm-debug.log
 common/node_modules
+node_modules
+npm-debug.log

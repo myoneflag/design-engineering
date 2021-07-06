@@ -15,7 +15,7 @@ export const OPERATION_PUSH_TOPIC = '/topic/document/operation';
 import retry from 'retry';
 import CONFIG from '../config/config';
 import MqClient from "./MqClient";
-import {withSerializableTransaction, withTransaction} from "../helpers/database";
+import {withRepeatableReadTransaction, withSerializableTransaction, withReadUncommittedTransaction} from "../helpers/database";
 
 /**
  * This class handles the management of a concurrent document.
@@ -43,20 +43,26 @@ export default class ConcurrentDocument {
      * Put only database code in the handler (and nothing with side effects) because this is supposed to retry when
      * transactions inevitably concurrently update.
      */
-    static async withDocumentLock<T>(docId: number, retryable: (tx: EntityManager, doc: Document) => Promise<T>) {
+    static async withDocumentLock<T>(docId: number, transaction: (tx: EntityManager, doc: Document) => Promise<T>) {
         return await withSerializableTransaction(async (tx) => {
             const doc = await tx.findOne(Document, {id: docId});
-            return await retryable(tx, doc);
+            return await transaction(tx, doc);
         });
     }
 
-    static async withDocumentLockRepeatableRead<T>(docId: number, retryable: (tx: EntityManager, doc: Document) => Promise<T>) {
-        return await withTransaction('REPEATABLE READ',async (tx) => {
+    static async withDocumentLockRepeatableRead<T>(docId: number, transaction: (tx: EntityManager, doc: Document) => Promise<T>) {
+        return await withRepeatableReadTransaction(async (tx) => {
             const doc = await tx.findOne(Document, {id: docId});
-            return await retryable(tx, doc);
+            return await transaction(tx, doc);
         });
     }
 
+    static async withDocumentLockReadUncommitted<T>(docId: number, transaction: (tx: EntityManager, doc: Document) => Promise<T>) {
+        return await withReadUncommittedTransaction(async (tx) => {
+            const doc = await tx.findOne(Document, {id: docId});
+            return await transaction(tx, doc);
+        });
+    }
 
     operationPushTopic: string;
     operationPushSub: StompSubscription;

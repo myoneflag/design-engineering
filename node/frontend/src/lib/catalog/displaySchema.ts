@@ -1,5 +1,7 @@
 import {Catalog, PRVSize} from "../../../../common/src/api/catalog/types";
 import {Units} from "../../../../common/src/lib/measurements";
+import { SupportedLocales } from "../../../../common/src/api/locale";
+import { I18N } from "../../../../common/src/api/locale/values";
 
 export type Page<V> = {
     [K in keyof V]: {
@@ -22,7 +24,7 @@ export interface Table<TV> {
 
 export type CatalogSchema = Page<Catalog>;
 
-export function getCatalogDisplaySchema(): CatalogSchema {
+export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema {
     return {
         fixtures: {
             order: 1,
@@ -48,13 +50,13 @@ export function getCatalogDisplaySchema(): CatalogSchema {
 
                     loadingUnits: {
                         order: 7,
-                        name: "Loading Units By PSD Method",
+                        name: I18N.loadingUnits[locale] + " By PSD Method",
                         table: {
                             primaryName: "PSD Method",
                             columns: [
-                                ["hot-water", "Hot LUs"],
-                                ["warm-water", "Hot (Warm) LUs"],
-                                ["cold-water", "Cold LUs"]
+                                ["hot-water", "Hot " + I18N.loadingUnitShort[locale] + "s"],
+                                ["warm-water", "Hot (Warm) " + I18N.loadingUnitShort[locale] + "s"],
+                                ["cold-water", "Cold " + I18N.loadingUnitShort[locale] + "s"]
                             ]
                         }
                     },
@@ -108,26 +110,26 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                     },
                     table: {
                         order: 3,
-                        name: "Loading Unit Table",
+                        name: I18N.loadingUnitMedium[locale] + " Table",
                         table: {
-                            primaryName: "Loading Units",
+                            primaryName: I18N.loadingUnitMedium[locale],
                             columns: [[null, "Flow Rate", Units.LitersPerSecond]]
                         }
                     },
                     maxLuTable: {
                         order: 3,
-                        name: "Loading Unit Table by Highest LU",
+                        name: I18N.loadingUnitMedium[locale] + " Table by Highest LU",
                         table: {
-                            primaryName: "Highest LU / Total",
+                            primaryName: "Highest " + I18N.loadingUnitShort[locale] + " / Total",
                             columns: [],
                             twoDimensional: true,
                         }
                     },
                     hotColdTable: {
                         order: 3,
-                        name: "Loading Unit Table",
+                        name: I18N.loadingUnitMedium[locale] + " Table",
                         table: {
-                            primaryName: "Loading Units",
+                            primaryName: I18N.loadingUnitMedium[locale],
                             columns: [
                                 ["cold", "Cold Flow Rate", Units.LitersPerSecond],
                                 ["hot", "Hot Flow Rate", Units.LitersPerSecond]
@@ -240,7 +242,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 link: {
                     name: { order: 1, name: "Material" },
                     manufacturer: { order: 2, name: "Manufacturer"},
-                    abbreviation: { order: 3, name: "Abbreaviation" },
+                    abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
                     pipesBySize: {
                         order: 4,
@@ -266,12 +268,12 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                 primaryName: null,
                 columns: [
                     ["name", "Name"],
-                    ["abbreviation", "Abbreaviation"]
+                    ["abbreviation", "Abbreviation"]
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
                     uid: null,
-                    abbreviation: { order: 2, name: "Abbreaviation" },
+                    abbreviation: { order: 2, name: "Abbreviation" },
                     valvesBySize: {
                         order: 3,
                         name: "K values By Size",
@@ -322,7 +324,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         },
         prv: {
             order: 10,
-            name: "Pressure Reducing Valves",
+            name: I18N.pressureReducingValve[locale],
             table: {
                 primaryName: "Nominal Diameter",
                 primaryUnits: Units.PipeDiameterMM,
@@ -361,7 +363,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
                         name: "Valves By Size",
                         table: {
                             primaryName: "Diameter",
-                            primaryUnits: Units.Millimeters,
+                            primaryUnits: Units.PipeDiameterMM,
                             columns: [
                                 ["minInletPressureKPA", "Min. Inlet Pressure", Units.KiloPascals],
                                 ["maxInletPressureKPA", "Max. Inlet Pressure", Units.KiloPascals],
@@ -391,7 +393,7 @@ export function getCatalogDisplaySchema(): CatalogSchema {
         },
         balancingValves: {
             order: 12,
-            name: "Balancing Valves",
+            name: I18N.balancingValve[locale],
         },
         hotWaterPlant: {
             order: 13,

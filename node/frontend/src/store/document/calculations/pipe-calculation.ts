@@ -9,9 +9,9 @@ import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/d
 import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
 import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
 import {Catalog, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
-import {MeasurementSystem, UnitsParameters} from "../../../../../common/src/api/document/drawing";
+import {UnitsParameters} from "../../../../../common/src/api/document/drawing";
 import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
-import {convertPipeDiameterFromMetric, Units} from "../../../../../common/src/lib/measurements";
+import { convertPipeDiameterFromMetric, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import {DocumentState} from "../types";
 
 export enum NoFlowAvailableReason {
@@ -76,7 +76,7 @@ export function makePipeCalculationFields(
     catalog: Catalog | undefined,
     globalStore: GlobalStore,
 ): CalculationField[] {
-    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod);
+    const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod, document.locale);
     const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod);
 
     const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
@@ -221,6 +221,8 @@ export function makePipeCalculationFields(
             category: FieldCategory.Velocity,
             systemUid: entity.systemUid
         },
+
+        /* TODO: temperature loss calculation for hot water loop.
         {
             property: "temperatureRange",
             title: "Temperature Range",
@@ -228,7 +230,7 @@ export function makePipeCalculationFields(
             units: Units.Celsius,
             category: FieldCategory.Temperature,
             systemUid: entity.systemUid
-        }
+        }*/
 
         /*
         {

@@ -22,13 +22,15 @@ import {Units} from "../../../../common/src/lib/measurements";
                 </b-col>
             </b-row>
             <b-row style="padding-bottom: 20px">
-                <b-col> </b-col>
+                <b-col></b-col>
                 <b-col>
                     <b-button variant="light" @click="addNewSystem" class="float-left">
-                        <v-icon name="plus" /> Add New System
+                        <v-icon name="plus"/>
+                        Add New System
                     </b-button>
                     <b-button variant="light" @click="deleteSystem" class="float-left">
-                        <v-icon name="trash-alt" /> Delete
+                        <v-icon name="trash-alt"/>
+                        Delete
                     </b-button>
                 </b-col>
             </b-row>
@@ -39,31 +41,36 @@ import {Units} from "../../../../common/src/lib/measurements";
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Watch } from 'vue-property-decorator'
-import { DocumentState, initialDocumentState } from "../../../src/store/document/types";
+import { Watch } from "vue-property-decorator";
+import { DocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import * as _ from "lodash";
-import {initialDrainageProperties, initialDrawing, NetworkType} from "../../../../common/src/api/document/drawing";
-import {Choice, cloneSimple} from "../../../../common/src/lib/utils";
+import { initialDrainageProperties, initialDrawing, NetworkType } from "../../../../common/src/api/document/drawing";
+import { Choice, cloneSimple } from "../../../../common/src/lib/utils";
 import {
-    getInsulationMaterialChoicesWithThermalConductivity,
+    assertUnreachable,
+    getInsulationThicknessMMKEMBLA,
     INSULATION_JACKET_CHOICES,
-    INSULATION_MATERIAL_CHOICES, InsulationJackets,
+    INSULATION_MATERIAL_CHOICES,
+    InsulationJackets,
     InsulationMaterials,
-    INSULATION_THICKNESS_MMKEMBLA, StandardFlowSystemUids, isGas, isDrainage, assertUnreachable
+    isDrainage,
+    isGas
 } from "../../../../common/src/api/config";
-import { Units } from "../../../../common/src/lib/measurements";
-import {Catalog} from "../../../../common/src/api/catalog/types";
+import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 import { setPropertyByString } from "../../lib/utils";
 import {
     getDrainageMaterials,
     getWaterDrainageMaterials
 } from "../../../../common/src/api/document/entities/pipe-entity";
+import { evaluatePolynomial } from "../../../../common/src/lib/polynomials";
+import { THERMAL_CONDUCTIVITY } from "../../../../common/src/api/constants/air-properties";
 
 @Component({
-    components: {SettingsFieldBuilder, FlowSystemPicker },
+    components: { SettingsFieldBuilder, FlowSystemPicker },
     beforeRouteLeave(to, from, next) {
         if ((this.$refs.fields as any).leave()) {
             next();
@@ -80,53 +87,54 @@ export default class FlowSystems extends Vue {
         const selectedIsDrainage = isDrainage(this.selectedSystem.uid);
         const fields = [
             ["name", "System Name", "text"],
-            ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]],
+            ["fluid", "Fluid", "choice", this.$store.getters["catalog/defaultFluidChoices"]]
         ];
         if (!selectedIsGas) {
             fields.push(
-                ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius],
+                ["temperature", "Temperature", "range", 10, 100, null, Units.Celsius]
             );
         }
         fields.push(
-            ["color", "Colour", "color"],
+            ["color", "Colour", "color"]
         );
 
         if (selectedIsDrainage) {
             fields.push(
-                ["drainageProperties.ventColor", "Vent colour", "color"],
-            )
+                ["drainageProperties.ventColor", "Vent colour", "color"]
+            );
         }
 
         if (!selectedIsGas && !selectedIsDrainage) {
             fields.push(
-                ["hasReturnSystem", "Has Return System", "yesno"],
-            )
+                ["hasReturnSystem", "Has Return System", "yesno"]
+            );
         }
         if (this.selectedSystem.hasReturnSystem && !selectedIsGas && !selectedIsDrainage) {
             fields.push(
-                ['returnIsInsulated', "Return Is Insulated", "yesno"],
+                ["returnIsInsulated", "Return Is Insulated", "yesno"]
             );
 
             if (this.selectedSystem.returnIsInsulated) {
-               fields.push(['insulationMaterial', "Insulation Material", "choice", getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature)]);
+                fields.push(["insulationMaterial", "Insulation Material", "choice",
+                    this.getInsulationMaterialChoicesWithThermalConductivity(this.selectedSystem.temperature, this.document)]);
 
-                if (this.selectedSystem.insulationMaterial !== 'mmKemblaInsulation') {
-                    fields.push(['insulationJacket', "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES],);
+                if (this.selectedSystem.insulationMaterial !== "mmKemblaInsulation") {
+                    fields.push(["insulationJacket", "Insulation Jacket", "choice", INSULATION_JACKET_CHOICES]);
                 }
 
-                fields.push(['returnMaxVelocityMS', "Max. Velocity of Return", "number", Units.MetersPerSecond]);
+                fields.push(["returnMaxVelocityMS", "Max. Velocity of Return", "number", Units.MetersPerSecond]);
 
-                if (this.selectedSystem.insulationMaterial === 'mmKemblaInsulation') {
+                if (this.selectedSystem.insulationMaterial === "mmKemblaInsulation") {
                     fields.push([
-                        'insulationThicknessMM',
+                        "insulationThicknessMM",
                         "Insulation Thickness",
                         "select",
                         Units.Millimeters,
-                        INSULATION_THICKNESS_MMKEMBLA
+                        getInsulationThicknessMMKEMBLA(this.document.drawing.metadata.units)
                     ]);
                 } else {
                     fields.push([
-                        'insulationThicknessMM',
+                        "insulationThicknessMM",
                         "Insulation Thickness",
                         "number",
                         Units.Millimeters
@@ -137,16 +145,16 @@ export default class FlowSystems extends Vue {
 
         if (selectedIsDrainage) {
             for (const netKey of Object.keys(this.selectedSystem.networks) as NetworkType[]) {
-                let drainageTitle = '';
+                let drainageTitle = "";
                 switch (netKey) {
                     case NetworkType.RISERS:
-                        drainageTitle = 'Stacks';
+                        drainageTitle = "Stacks";
                         break;
                     case NetworkType.RETICULATIONS:
-                        drainageTitle = 'Pipes';
+                        drainageTitle = "Pipes";
                         break;
                     case NetworkType.CONNECTIONS:
-                        drainageTitle = 'Vents';
+                        drainageTitle = "Vents";
                         break;
                     default:
                         assertUnreachable(netKey);
@@ -158,13 +166,13 @@ export default class FlowSystems extends Vue {
                         "networks." + netKey + ".material",
                         "Material",
                         "choice",
-                        this.drainageMaterials,
-                    ],
+                        this.drainageMaterials
+                    ]
                 );
             }
 
             fields.push(
-                ["", "Drainage Properties", "title4"],
+                ["", "Drainage Properties", "title4"]
             );
 
             fields.push(
@@ -173,11 +181,11 @@ export default class FlowSystems extends Vue {
                     "Horizontal Pipe Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits", units: Units.None},
-                        {name: "Max Units", key: "maxUnits", units: Units.None},
-                        {name: "Size", key: "sizeMM", units: Units.Millimeters},
-                        {name: "grade %", key: "gradePCT", units: Units.None},
-                    ],
+                        { name: "Min Units", key: "minUnits", units: Units.None },
+                        { name: "Max Units", key: "maxUnits", units: Units.None },
+                        { name: "Size", key: "sizeMM", units: Units.Millimeters },
+                        { name: "grade %", key: "gradePCT", units: Units.None }
+                    ]
                 ],
                 [
                     "drainageProperties.maxUnventedLengthM",
@@ -187,7 +195,7 @@ export default class FlowSystems extends Vue {
                     "Pipe Size",
                     "Unlimited",
                     Units.Millimeters,
-                    Units.Meters,
+                    Units.Meters
                 ],
 
                 [
@@ -206,16 +214,16 @@ export default class FlowSystems extends Vue {
                     "Vent Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits", units: Units.None},
-                        {name: "Max Units", key: "maxUnits", units: Units.None},
-                        {name: "Size (mm)", key: "sizeMM", units: Units.Millimeters},
-                    ],
+                        { name: "Min Units", key: "minUnits", units: Units.None },
+                        { name: "Max Units", key: "maxUnits", units: Units.None },
+                        { name: "Size (mm)", key: "sizeMM", units: Units.Millimeters }
+                    ]
                 ],
 
                 [
                     "drainageProperties.stackSizeDiminish",
                     "Does the stack diminish in size?",
-                    "yesno",
+                    "yesno"
                 ],
 
                 [
@@ -223,17 +231,21 @@ export default class FlowSystems extends Vue {
                     "Stack Pipe Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits", units: Units.None},
-                        {name: "Max Units", key: "maxUnits", units: Units.None},
-                        {name: "Size (mm)", key: "sizeMM", units: Units.Millimeters},
-                        {name: "Maximum Fixture/discharge Units Per Level", key: "maximumUnitsPerLevel", units: Units.None},
-                    ],
+                        { name: "Min Units", key: "minUnits", units: Units.None },
+                        { name: "Max Units", key: "maxUnits", units: Units.None },
+                        { name: "Size (mm)", key: "sizeMM", units: Units.Millimeters },
+                        {
+                            name: "Maximum Fixture/discharge Units Per Level",
+                            key: "maximumUnitsPerLevel",
+                            units: Units.None
+                        }
+                    ]
                 ],
 
                 [
                     "drainageProperties.stackDedicatedVent",
                     "Does the stack have a dedicated vent?",
-                    "yesno",
+                    "yesno"
                 ],
 
                 [
@@ -241,23 +253,26 @@ export default class FlowSystems extends Vue {
                     "Stack Vent Sizing",
                     "array-table",
                     [
-                        {name: "Min Units", key: "minUnits", units: Units.None},
-                        {name: "Max Units", key: "maxUnits", units: Units.None},
-                        {name: "Size (mm)", key: "sizeMM", Units: Units.Millimeters},
-                    ],
-                ],
+                        { name: "Min Units", key: "minUnits", units: Units.None },
+                        { name: "Max Units", key: "maxUnits", units: Units.None },
+                        { name: "Size (mm)", key: "sizeMM", Units: Units.Millimeters }
+                    ]
+                ]
             );
         } else {
             fields.push(
                 ["", "Network Properties", "title3"]
             );
 
-            const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
+            const pipeSizes: { [key: string]: Array<{ key: number, name: string }> } = {};
             Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
-                pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => ({
-                    key: +x,
-                    name: x + "mm",
-                }));
+                pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic).map(x => {
+                    const [units, value] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.PipeDiameterMM, x);
+                    return {
+                        key: +x,
+                        name: value + units
+                    };
+                });
             });
 
             for (const netKey of Object.keys(this.selectedSystem.networks)) {
@@ -272,7 +287,7 @@ export default class FlowSystems extends Vue {
                         "networks." + netKey + ".material",
                         "Material",
                         "choice",
-                        this.waterMaterials,
+                        this.waterMaterials
                     ],
                     [
                         "networks." + netKey + ".minimumPipeSize",
@@ -281,7 +296,7 @@ export default class FlowSystems extends Vue {
                         pipeSizes[this.selectedSystem.networks[netKey as NetworkType].material],
                         this.selectedSystem.networks[netKey as NetworkType].material
                     ],
-                    ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100],
+                    ["networks." + netKey + ".spareCapacityPCT", "Spare Capacity (%)", "range", 0, 100]
                 );
             }
         }
@@ -294,7 +309,7 @@ export default class FlowSystems extends Vue {
     }
 
     get catalog(): Catalog {
-        return this.$store.getters['catalog/default'];
+        return this.$store.getters["catalog/default"];
     }
 
     get drainageMaterials(): Choice[] {
@@ -312,21 +327,21 @@ export default class FlowSystems extends Vue {
     }
 
     get pipeSizes() {
-        const pipeSizes: { [key: string]: Array<{key: number, name: string}> } = {};
-        
+        const pipeSizes: { [key: string]: Array<{ key: number, name: string }> } = {};
+
         Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
             pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic)
-            .filter(x => {
-                if (this.selectedSystemId === 5) {
-                    return +x >= 25;
-                }
-                
-                return true;
-            })
-            .map(x => ({
-                key: +x,
-                name: x + "mm",
-            }));
+                .filter(x => {
+                    if (this.selectedSystemId === 5) {
+                        return +x >= 25;
+                    }
+
+                    return true;
+                })
+                .map(x => ({
+                    key: +x,
+                    name: x + "mm"
+                }));
         });
 
         return pipeSizes;
@@ -336,27 +351,40 @@ export default class FlowSystems extends Vue {
         return this.selectedSystem.networks.RISERS.material;
     }
 
-    @Watch('risersMaterial')
+    getInsulationMaterialChoicesWithThermalConductivity(tempC: number, doc: DocumentState) {
+
+        return INSULATION_MATERIAL_CHOICES.map((c) => {
+            const watts = evaluatePolynomial(THERMAL_CONDUCTIVITY[c.key as string], tempC + 273.15).toFixed(3);
+            const [units, tempConverted] =
+                convertMeasurementSystem(doc.drawing.metadata.units, Units.Celsius, tempC);
+            return {
+                key: c.key,
+                name: c.name + " (" + watts + " W/m.K @ " + (tempConverted as number).toFixed(3) + " " + units + ")"
+            };
+        });
+    }
+
+    @Watch("risersMaterial")
     handleRisersMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.RISERS.minimumPipeSize', this.pipeSizes[val][0].key);
+        setPropertyByString(this.selectedSystem, "networks.RISERS.minimumPipeSize", this.pipeSizes[val][0].key);
     }
 
     get reticulationsMaterial() {
         return this.selectedSystem.networks.RETICULATIONS.material;
     }
 
-    @Watch('reticulationsMaterial')
+    @Watch("reticulationsMaterial")
     handleReticulationsMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.RETICULATIONS.minimumPipeSize', this.pipeSizes[val][0].key);
+        setPropertyByString(this.selectedSystem, "networks.RETICULATIONS.minimumPipeSize", this.pipeSizes[val][0].key);
     }
 
     get connectionsMaterial() {
         return this.selectedSystem.networks.CONNECTIONS.material;
     }
 
-    @Watch('connectionsMaterial')
+    @Watch("connectionsMaterial")
     handleConnectionsMaterialChange(val: string, oldVal: string) {
-        setPropertyByString(this.selectedSystem, 'networks.CONNECTIONS.minimumPipeSize', this.pipeSizes[val][0].key);
+        setPropertyByString(this.selectedSystem, "networks.CONNECTIONS.minimumPipeSize", this.pipeSizes[val][0].key);
     }
 
     get selectedIsDrainage() {
@@ -398,14 +426,14 @@ export default class FlowSystems extends Vue {
                 color: { hex: "#FCDC00" },
                 uid: uuid(),
                 fluid: "water",
-                networks: cloneSimple(initialDrawing.metadata.flowSystems[0].networks),
+                networks: cloneSimple(initialDrawing(this.document.locale).metadata.flowSystems[0].networks),
                 hasReturnSystem: false,
                 returnIsInsulated: false,
                 returnMaxVelocityMS: 1,
                 insulationMaterial: InsulationMaterials.calciumSilicate,
                 insulationJacket: InsulationJackets.allServiceJacket,
                 insulationThicknessMM: 25,
-                drainageProperties: cloneSimple(initialDrainageProperties),
+                drainageProperties: cloneSimple(initialDrainageProperties)
             });
             this.$store.dispatch("document/commit").then(() => {
                 this.selectedSystemId = this.document.drawing.metadata.flowSystems.length - 1;
@@ -416,7 +444,7 @@ export default class FlowSystems extends Vue {
     }
 
     save() {
-        this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
+        this.$store.dispatch("document/commit", { skipUndo: true }).then(() => {
             (this as any).$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });
     }

@@ -1,10 +1,15 @@
-import {DRAINAGE_FLOW_SYSTEMS, DrawingState, initialDrainageProperties, initialDrawing} from "./document/drawing";
+import {
+    DRAINAGE_FLOW_SYSTEMS,
+    DrawingState,
+    initialAustralianDrawing,
+    initialDrainageProperties
+} from "./document/drawing";
 import {EntityType} from "./document/entities/types";
 import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
 import {PlantType} from "./document/entities/plants/plant-types";
 import {cloneSimple} from "../lib/utils";
 import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
 import {ValveType} from "./document/entities/directed-valves/valve-types";
 
@@ -26,7 +31,7 @@ export function upgrade9to10(original: DrawingState) {
 
 export function upgrade10to11(original: DrawingState) {
     if (original.metadata.units === undefined) {
-        original.metadata.units = cloneSimple(initialDrawing.metadata.units);
+        original.metadata.units = cloneSimple(initialAustralianDrawing.metadata.units);
     }
 }
 
@@ -68,13 +73,13 @@ export function upgrade12to13(original: DrawingState) {
 
 export function upgrade13to14(original: DrawingState) {
     if (original.metadata.catalog === undefined) {
-        original.metadata.catalog = cloneSimple(initialDrawing.metadata.catalog);
+        original.metadata.catalog = cloneSimple(initialAustralianDrawing.metadata.catalog);
     }
 }
 
 export function upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
-        original.metadata.priceTable = cloneSimple(initialDrawing.metadata.priceTable);
+        original.metadata.priceTable = cloneSimple(initialAustralianDrawing.metadata.priceTable);
     }
 }
 
@@ -125,7 +130,7 @@ export function upgrade15to16(original: DrawingState) {
                 if (e.plant.type === PlantType.RETURN_SYSTEM) {
                     // Add the missing gas entity
                     if (!e.plant.gasNodeUid) {
-                        const newUid = uuid();
+                        const newUid = uuidv4();
 
                         const newEntity: SystemNodeEntity = {
                             center: {
@@ -197,7 +202,7 @@ export function upgrade16to17(original: DrawingState) {
                 if (e.plant.type === PlantType.RETURN_SYSTEM) {
                     // Add the missing gas entity
                     if (!e.plant.gasNodeUid) {
-                        const newUid = uuid();
+                        const newUid = uuidv4();
 
                         const newEntity: SystemNodeEntity = {
                             center: {
@@ -319,7 +324,7 @@ export function upgrade18to19(original: DrawingState) {
 
 const newSewerNodeOf: {[key: string]: string} = {};
 
-export function upgrade19to20(original: DrawingState) {
+export function upgrade19to20and21(original: DrawingState) {
     if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
         // Vent colour setting to flow systems
         for (const system of original.metadata.flowSystems) {
@@ -351,7 +356,7 @@ export function upgrade19to20(original: DrawingState) {
                         calculationHeightM: null,
                         allowAllSystems: false,
                         systemUid: StandardFlowSystemUids.SewerDrainage,
-                        uid: newSewerNodeOf[e.uid] || uuid.v4(),
+                        uid: newSewerNodeOf[e.uid] || uuidv4(),
                         configuration: FlowConfiguration.INPUT
                     };
                     newSewerNodeOf[e.uid] = newSystemNode.uid;
@@ -368,22 +373,13 @@ export function upgrade19to20(original: DrawingState) {
                 }
             }
 
-
             // Add isVent option of riser.
             else if (e.type === EntityType.RISER) {
                 if (e.isVent === undefined) {
                     e.isVent = false;
                 }
             }
-        }
-    }
-}
 
-// This is to fix problems with the previous upgrade - drainage unit fields for fixtures not set.
-export function upgrade20to21(original: DrawingState) {
-    for (const level of Object.values(original.levels)) {
-        const entities = level.entities;
-        for (const e of Object.values(entities)) {
             if (e.type === EntityType.FIXTURE) {
                 if (e.upcFixtureUnits === undefined) {
                     e.upcFixtureUnits = null;
@@ -405,6 +401,7 @@ export function upgrade20to21(original: DrawingState) {
                     e.node.enDischargeUnits = null;
                 }
             }
+
         }
     }
 }

@@ -21,20 +21,19 @@ import ConcurrentDocument from "./concurrentDocument";
 // For all other operations > 2 hr old, combine anything with less than 1 minute gap
 // Don't combine anything done in the last 2 hours.
 // DO NOT RUN while a document is open by a client. It will cause inconsistent states.
-export async function compressDocumentIfRequired(doc: Document) {
-
-
+export async function compressDocumentIfRequired(doc: Document, entirely: boolean = false) {
     await ConcurrentDocument.withDocumentLockRepeatableRead(doc.id, async (tx, doc) => {
+        
+        console.log('documentCompress', 'start', {docId: doc.id, entirely})        
+
         let removed = 0;
         let added = 0;
         let ignored = 0;
         const start = new Date().getTime();
-        if (start - new Date(doc.lastCompression).getTime() < 60 * 60 * 1) {
-            // don't need upgrading. skip.
+        if (start - new Date(doc.lastCompression).getTime() < 60 * 60 * 1 && !entirely) {
+            console.log('documentCompress', 'skip', {docId: doc.id})
             return;
         }
-
-        console.log("compressing document id " + doc.id + ", \"" + doc.metadata.title + "\"");
 
         const ops = await tx.getRepository(Operation)
             .createQueryBuilder('operation')
@@ -43,10 +42,10 @@ export async function compressDocumentIfRequired(doc: Document) {
             .orderBy("\"orderIndex\"", "ASC")
             .getMany();
 
-        console.log("...with " + ops.length + " operations");
+        console.log('documentCompress', 'starting', {docId: doc.id, operations: ops.length})
 
-        let oldDoc = cloneSimple(initialDrawing);
-        let currentDrawing = cloneSimple(initialDrawing);
+        let oldDoc = initialDrawing(doc.locale);
+        let currentDrawing = initialDrawing(doc.locale);
         let oldOp: Operation | undefined = undefined;
         let opsSinceLast: Operation[] = [];
         let numDiffOpsSinceLast = 0;
@@ -54,10 +53,9 @@ export async function compressDocumentIfRequired(doc: Document) {
         // Sneak an undefined in there to trigger the last update check.
         let opNum = 0;
         for (const o of [...ops, undefined]) {
-            if (!shouldCombine(oldOp, o) && oldOp) {
+            if (!shouldCombine(oldOp, o, entirely) && oldOp) {
                 // We should create a new operation.
                 if (numDiffOpsSinceLast > 1) {
-                    console.log("combining " + opNum);
                     // Replace the last cluster of operations with just one diff-commit pair.
                     const newOps = cloneSimple(diffState(oldDoc, currentDrawing, undefined));
                     if (newOps.length > 0) {
@@ -78,6 +76,9 @@ export async function compressDocumentIfRequired(doc: Document) {
                                 documentId: oldOp.documentId,
                             });
                             added += 2;
+
+
+                            applyDiffNative(oldDoc, newOps[0].diff);
                         }
                     }
                     for (const oo of opsSinceLast) {
@@ -95,18 +96,6 @@ export async function compressDocumentIfRequired(doc: Document) {
 
                 numDiffOpsSinceLast = 0;
                 opsSinceLast = [];
-
-                for (const oo of opsSinceLast) {
-                    switch (oo.operation.type) {
-                        case OPERATION_NAMES.DIFF_OPERATION:
-                            applyDiffNative(oo, oo.operation.diff);
-                            break;
-                        case OPERATION_NAMES.COMMITTED_OPERATION:
-                            break;
-                        default:
-                            assertUnreachable(oo.operation);
-                    }
-                }
             }
 
             if (o) {
@@ -130,11 +119,9 @@ export async function compressDocumentIfRequired(doc: Document) {
 
         await tx.save(doc);
 
-        const totalMs = new Date().getTime() - start;
-        console.log("Completed in " + (totalMs / 1000).toPrecision(3) + "s. Removed " + removed + ", inserted " + added + ", ignored: " + ignored);
+        const timeTakenSeconds = Math.round((new Date().getTime() - start)/1000);
+        console.log('documentCompress', 'completed', {docId: doc.id, timeTakenSeconds, added, removed, ignored})
     });
-
-
 }
 
 // As a tester, group in buckets of 5 second gaps.
@@ -154,12 +141,15 @@ export async function compressDocumentIfRequired(doc: Document) {
 
 // In conclusion, by choosing 2 hours as a break, we can reduce the number of operations stored
 // by 500-1000x. By choosing a 10 minute gap, it is 100-300x. 1 minute, it is 30-100x.
-function shouldCombine(a: Operation | undefined, b: Operation | undefined): boolean {
+function shouldCombine(a: Operation | undefined, b: Operation | undefined, entirely: boolean = false): boolean {
     if (!a) {
         return true;
     }
     if (!b) {
         return false;
+    }
+    if (entirely) {
+        return true;
     }
     if (a.blame && b.blame && a.blame.username !== b.blame.username) {
         return false;

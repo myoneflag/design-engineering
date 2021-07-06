@@ -1,33 +1,33 @@
 import { EntityManager, getManager } from "typeorm";
-import { Document } from "../../../common/src/models/Document";
-import retry from "retry";
 import {IsolationLevel} from "typeorm/driver/types/IsolationLevel";
 
-export function withSerializableTransaction<T>(retryable: (tx: EntityManager) => Promise<T>) {
-    return withTransaction('SERIALIZABLE', retryable);
+export function withSerializableTransaction<T>(transaction: (tx: EntityManager) => Promise<T>) {
+    return withTransaction('SERIALIZABLE', transaction);
 }
 
-export function withTransaction<T>(isolationLevel: IsolationLevel, retryable: (tx: EntityManager) => Promise<T>) {
-    return new Promise<any>((res, rej) => {
-        // randomize so that conflicting transactions don't just cancel each other over and over.
-        const operation = retry.operation({randomize: true, minTimeout: 200, forever: true});
+export function withRepeatableReadTransaction<T>(transaction: (tx: EntityManager) => Promise<T>) {
+    return withTransaction('REPEATABLE READ', transaction);
+}
 
-        operation.attempt(async () => {
+export function withReadUncommittedTransaction<T>(transaction: (tx: EntityManager) => Promise<T>) {
+    return withTransaction('READ UNCOMMITTED', transaction);
+}
+
+export function withTransaction<T>(isolationLevel: IsolationLevel, transaction: (tx: EntityManager) => Promise<T>) {
+    const txid = Date.now()    
+    return new Promise<any>((res, rej) => {    
+        return getManager().transaction(isolationLevel, async (tx) => {
+            console.log(`transaction:${txid}`, 'start', { txid, isolationLevel })
             try {
-                await getManager().transaction(isolationLevel, async (tx) => {
-                    res(await retryable(tx));
-                });
+                let result = await transaction(tx);
+                res(result)
             } catch (e) {
-                if (operation.retry(e)) {
-                    console.log(e);
-                    console.warn('retrying transaction');
-                    console.trace();
-                    return;
-                } else {
-                    console.warn('cannot retry transaction: failed completely and gave up');
-                    rej(e);
-                }
+                console.warn(`transaction:${txid}`, 'error', { txid, e })
+                rej(e)                
+            }
+            finally { 
+                console.log(`transaction:${txid}`, 'end', { txid })
             }
         });
-    });
+    })
 }

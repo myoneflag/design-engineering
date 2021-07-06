@@ -265,7 +265,7 @@ export class LoginController {
         op1.document = Promise.resolve(doc);
         op1.dateTime = now;
         op1.blame = null;
-        op1.operation = diffState(initialDrawing, EXAMPLE_DRAWING, undefined)[0];
+        op1.operation = diffState(initialDrawing(doc.locale), EXAMPLE_DRAWING, undefined)[0];
         op1.orderIndex = 0;
         await op1.save();
         const op2 = Operation.create();
@@ -278,7 +278,7 @@ export class LoginController {
 
         // In case the document is upgraded in development without updating the example document,
         // the example document needs to be upgraded.
-        await DocumentUpgrader.submitDocumentForUpgrade(doc.id);
+        await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
 
         res.status(200).send({
             success: true,
@@ -403,7 +403,6 @@ const router: Router = Router();
 
 const controller = new LoginController();
 
-// Retrieve all Users
 router.post('/login', controller.login.bind(controller));
 router.all('/logout', controller.logout.bind(controller));
 router.all('/session', controller.session.bind(controller));

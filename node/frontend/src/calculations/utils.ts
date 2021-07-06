@@ -38,6 +38,7 @@ import {makeGasApplianceCalculationFields} from "../store/document/calculations/
 import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
+import { SupportedLocales } from "../../../common/src/api/locale";
 
 export interface PsdCountEntry {
     units: number;
@@ -449,7 +450,7 @@ export function zeroContextualPCE(entity: string, correlationGroup: string): Con
     };
 }
 
-export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string; abbreviation: string } {
+export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: SupportedLocales): { name: string; abbreviation: string } {
     switch (psdMethod) {
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
@@ -459,6 +460,14 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards): { name: string
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.bs806:
+            switch (locale) {
+                case SupportedLocales.UK:
+                case SupportedLocales.AU:
+                    return { name: "Loading Units", abbreviation: "LU" };
+                case SupportedLocales.US:
+                    return { name: "Water Supply Fixture Units", abbreviation: "WSFU" };
+            }
+            assertUnreachable(locale);
             return { name: "Loading Units", abbreviation: "LU" };
         case SupportedPsdStandards.din1988300Residential:
         case SupportedPsdStandards.din1988300Hospital:
@@ -530,7 +539,6 @@ export function lookupFlowRate(
                     fromLoading = a * psdU.units ** b - c;
                 }
             }
-
             break;
         }
         case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
@@ -613,7 +621,7 @@ export function getFields(
 ): CalculationField[] {
     switch (entity.type) {
         case EntityType.RISER:
-            return makeRiserCalculationFields(entity, doc, catalog);
+            return makeRiserCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.PIPE:
             return makePipeCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.FITTING:
@@ -627,9 +635,9 @@ export function getFields(
         case EntityType.DIRECTED_VALVE:
             return makeDirectedValveCalculationFields(entity, globalStore, doc.drawing, catalog);
         case EntityType.SYSTEM_NODE:
-            return makeSystemNodeCalculationFields(entity, doc.drawing);
+            return makeSystemNodeCalculationFields(entity, doc);
         case EntityType.LOAD_NODE:
-            return makeLoadNodeCalculationFields(entity, doc.drawing, catalog, globalStore);
+            return makeLoadNodeCalculationFields(entity, doc, catalog, globalStore);
         case EntityType.FLOW_SOURCE:
             return makeFlowSourceCalculationFields(entity, doc);
         case EntityType.PLANT:
@@ -655,4 +663,9 @@ export function addCosts(a: Cost | null, b: Cost | null): Cost {
     const value = (a ? a.value : 0) + (b ? b.value : 0);
     const exact = a !== null && a.exact && b !== null && b.exact;
     return {value, exact};
+}
+
+export function roundNumber(value: number, decimalPlaces: number) {
+    const factor = Math.pow(10, decimalPlaces)
+    return Math.round((value + Number.EPSILON) * factor) / factor
 }

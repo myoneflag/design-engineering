@@ -18,6 +18,7 @@ import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
 import {compressDocumentIfRequired} from "../services/compressDocument";
+import { toSupportedLocale } from "../../../common/src/api/locale";
 
 export class DocumentController {
     @ApiHandleError()
@@ -69,7 +70,8 @@ export class DocumentController {
                 doc.organization = org1;
                 doc.createdBy = user;
                 doc.createdOn = new Date();
-                doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+                doc.locale = toSupportedLocale(req.body.locale);
+                doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
                 doc.version = CURRENT_VERSION;
                 doc.state = DocumentStatus.ACTIVE;
                 doc.shareDocument = sd;
@@ -89,7 +91,8 @@ export class DocumentController {
             doc.organization = null;
             doc.createdBy = user;
             doc.createdOn = new Date();
-            doc.metadata = cloneSimple(initialDrawing.metadata.generalInfo);
+            doc.locale = toSupportedLocale(req.body.locale);
+            doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
             doc.version = CURRENT_VERSION;
             doc.state = DocumentStatus.ACTIVE;
             doc.shareDocument = sd;
@@ -178,27 +181,26 @@ export class DocumentController {
             const user = await session.user;
             await user.reload();
             const org = user.organization;
-            console.log('here in general?')
             console.log(user)
             if (org == null) {
                 results = [];
             } else {
-                results = await Document
-                    .createQueryBuilder("document")
-                    .where("document.organization = :organization", { organization: org.id })
-                    .andWhere(new Brackets((qb) => {
-                        qb.where("document.state = :state", { state: DocumentStatus.ACTIVE });
+                let where = [ 
+                    { organization: org.id, state: DocumentStatus.ACTIVE }
+                ];
+                if (session.user.accessLevel <= AccessLevel.MANAGER) {
+                    where.push({ organization: org.id, state: DocumentStatus.DELETED })
+                }
 
-                        if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                            qb.orWhere("document.state = :state2", { state2: DocumentStatus.DELETED });
-                        }
-                    }))
-                    .orderBy("document.createdOn", "DESC")
-                    .getMany();
+                results = await Document.find( { 
+                    where,
+                    order: {
+                        createdOn: "DESC"
+                    }
+                })
             }
-            await Promise.all(results.map((r) => r.reload()));
         } else {
-            results = await Document.find({ order: { "createdOn": "DESC" } });
+            results = await Document.find({ order: { createdOn: "DESC" } });
         }
 
         res.status(200).send({
@@ -215,6 +217,24 @@ export class DocumentController {
                 success: true,
                 data: doc
             });
+        });
+    }
+
+
+    @ApiHandleError()
+    public async findOneShared(req: Request, res: Response, next: NextFunction, session: Session) {
+        const sd = await ShareDocument.findOne({token: req.params.sharedId});
+        const doc = sd && await Document.findOne({where: {shareDocument: {id: sd.id}}});
+
+        if (!doc) {
+            return res.status(404).send({
+                success: false,
+                message: "Shared document link is invalid"
+            });
+        }
+        res.status(200).send({
+            success: true,
+            data: doc
         });
     }
 
@@ -299,8 +319,8 @@ export class DocumentController {
                 }
                 doc.nextOperationIndex = lastOrderIndex + 1;
 
-                const drawing = cloneSimple(initialDrawing);
-                const drawingWithTitle = cloneSimple(initialDrawing);
+                const drawing = initialDrawing(doc.locale);
+                const drawingWithTitle = initialDrawing(doc.locale);
                 drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
 
 
@@ -351,7 +371,7 @@ router.ws("/:id/websocket", (ws, req) => {
         async (session) => {
             withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
                 // sanity checks.
-                await compressDocumentIfRequired(doc);
+                // await compressDocumentIfRequired(doc);
                 switch (doc.state) {
                     case DocumentStatus.ACTIVE:
                         if (doc.version !== CURRENT_VERSION) {
@@ -479,7 +499,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                 let operations: Operation[] = [];
-                let drawing: DrawingState = cloneSimple(initialDrawing);
+                let drawing: DrawingState = initialDrawing(doc.locale);
                 let lastOpId = -1;
                 // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
                 // initial document state.
@@ -494,7 +514,7 @@ router.ws("/:id/websocket", (ws, req) => {
 
 
                     // form document to get snapshot
-                    drawing = cloneSimple(initialDrawing);
+                    drawing = initialDrawing(doc.locale);
                     for (const op of operations) {
                         if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                             applyDiffNative(drawing, op.operation.diff);
@@ -642,7 +662,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
     ws.on("close", closeHandler);
     
     let operations: Operation[] = [];
-    let drawing: DrawingState = cloneSimple(initialDrawing);
+    let drawing: DrawingState = initialDrawing(doc.locale);
     let lastOpId = -1;
     // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
     // initial document state.
@@ -655,7 +675,7 @@ router.ws("/share/:id/websocket", async (ws, req) => {
             .getMany();
 
         // form document to get snapshot
-        drawing = cloneSimple(initialDrawing);
+        drawing = initialDrawing(doc.locale);
         for (const op of operations) {
             if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                 applyDiffNative(drawing, op.operation.diff);
@@ -709,6 +729,7 @@ router.post("/:id/clone", controller.clone.bind(controller));
 router.get("/:id/operations", controller.findOperations.bind(controller));
 router.put("/:id", controller.update.bind(controller));
 router.get("/:id", controller.findOne.bind(controller));
+router.get("/shared/:sharedId", controller.findOneShared.bind(controller));
 router.post("/:id/restore", controller.restore.bind(controller));
 router.get("/", controller.find.bind(controller));
 

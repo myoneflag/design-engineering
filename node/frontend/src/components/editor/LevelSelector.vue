@@ -79,7 +79,7 @@
                                             class="border-right-0"
                                             @click="$event.stopPropagation()"
                                             v-b-tooltip.hover.top="{
-                                                title: 'Floor Height Above Sea (m)',
+                                                title: `Floor Level (${lengthUnits})`,
                                                 boundary: 'viewport'
                                             }"
                                             type="number"
@@ -92,22 +92,20 @@
                                         </b-form-input>
                                         <b-input-group-append>
                                             <b-input-group-text class="bg-white">
-                                                m
+                                                {{lengthUnits}}
                                             </b-input-group-text>
                                         </b-input-group-append>
                                     </b-input-group>
                                 </b-col>
                                 <b-col cols="1" style="padding: 0">
                                     <label
-                                        v-b-tooltip.hover.top="{ title: 'Height Datum (m)', boundary: 'viewport' }"
+                                        v-b-tooltip.hover.top="{ title: `Height Datum (${lengthUnits})`, boundary: 'viewport' }"
                                         type="number"
                                         size="sm"
                                         >{{
-                                            sortedLevels[idx - 1]
-                                                ? (sortedLevels[idx - 1].floorHeightM - level.floorHeightM).toFixed(2)
-                                                : "??"
+                                            levelHeightText(idx)
                                         }}
-                                        m</label
+                                        {{lengthUnits}}</label
                                     >
                                 </b-col>
 
@@ -166,6 +164,7 @@ import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Level } from "../../../../common/src/api/document/drawing";
 import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { User } from "../../../../common/src/models/User";
+import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../../common/src/lib/measurements";
 
 @Component({
     props: {
@@ -177,16 +176,29 @@ export default class LevelSelector extends Vue {
     // we need this cache during input so that typing doesn't reorder the floor heights.
     floorHeightCache = new Map<string, number>();
 
-    getFloorHeightCached(level: Level): number {
-        if (this.floorHeightCache.has(level.uid)) {
-            return this.floorHeightCache.get(level.uid)!;
-        } else {
-            return level.floorHeightM;
-        }
+    getFloorHeightCachedM(level: Level) {
+      if (this.floorHeightCache.has(level.uid)) {
+        return this.floorHeightCache.get(level.uid)!;
+      } else {
+        return level.floorHeightM;
+      }
     }
 
-    setFloorHeightCached(level: Level, heightM: number) {
-        this.floorHeightCache.set(level.uid, heightM);
+    getFloorHeightCached(level: Level): number {
+      let meters = this.getFloorHeightCachedM(level);
+      const [units, num] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, meters);
+      return num as number;
+    }
+
+    setFloorHeightCached(level: Level, height: number) {
+      const [units, meters] = convertMeasurementToMetric(this.lengthUnits, height);
+      console.log(meters);
+      this.floorHeightCache.set(level.uid, meters as number);
+    }
+
+    get lengthUnits() {
+      const [units] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, null);
+      return units;
     }
 
     get sortedLevels(): Level[] {
@@ -215,6 +227,18 @@ export default class LevelSelector extends Vue {
 
     selectLevel(levelUid: string) {
         this.$store.dispatch("document/setCurrentLevelUid", levelUid);
+    }
+
+    levelHeightText(index: number) {
+      if (this.sortedLevels[index - 1] == null) {
+        return "??";
+      }
+      const meters = (this.sortedLevels[index - 1].floorHeightM - this.sortedLevels[index].floorHeightM);
+      const [units, num] = convertMeasurementSystem(this.document.drawing.metadata.units, Units.Meters, meters);
+      if (typeof num !== 'number') {
+        return "??";
+      }
+      return num.toFixed(2);
     }
 
     addAbove() {
@@ -268,7 +292,7 @@ export default class LevelSelector extends Vue {
     }
 
     commitFloorHeight(level: Level) {
-        level.floorHeightM = Number(this.getFloorHeightCached(level));
+        level.floorHeightM = Number(this.getFloorHeightCachedM(level));
         this.commit();
     }
 
@@ -286,7 +310,10 @@ export default class LevelSelector extends Vue {
                     }
                     text +=
                         Number(result[k].units.toFixed(2)) +
-                        getPsdUnitName(this.document.drawing.metadata.calculationParams.psdMethod).abbreviation;
+                        getPsdUnitName(
+                            this.document.drawing.metadata.calculationParams.psdMethod,
+                            this.document.locale
+                        ).abbreviation;
                 }
                 if (result[k].dwellings) {
                     if (text) {

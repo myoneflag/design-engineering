@@ -142,10 +142,19 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 other = this.globalStore.get(this.entity.linkedToUid);
             }
             
+            const currentLoc = this.toObjectCoord(this.globalStore.get(this.entity.uid)!.toWorldCoord());
+            const name = context.nodes.find(node => node.id === this.entity.customNodeId || node.uid === this.entity.customNodeId)!.name;
+            let newx = currentLoc.x
+            let newy = currentLoc.y
+
+            // the 210 represents the distance from midpoint to new coordinates
+            let distance = 210;
+            if (!this.entity.linkedToUid) {
+                distance = -210;
+            }
+
             if (other) {
                 const otherLoc = this.toObjectCoord(other.toWorldCoord());
-                const name = context.nodes.find(node => node.id === this.entity.customNodeId || node.uid === this.entity.customNodeId)!.name;
-                const currentLoc = this.toObjectCoord(this.globalStore.get(this.entity.uid)!.toWorldCoord());
                 // to get midpoint
                 const midx = (otherLoc.x + currentLoc.x) / 2;
                 const midy = (otherLoc.y + currentLoc.y) / 2;
@@ -155,29 +164,25 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 // in radians, that is Math.PI / 2
                 const angleCD = angleAB + Math.PI / 2;
                 // now we can get the new coordinates
-                // the 210 represents the distance from midpoint to new coordinates
-                let distance = 210;
-                if (!this.entity.linkedToUid) {
-                    distance = -210;
-                }
-
-                const newx = midx + distance * Math.cos(angleCD);
-                const newy = midy + distance * Math.sin(angleCD);
-
-                ctx.save();
-                ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
-                ctx.textBaseline = "top";
-                const nameWidth = ctx.measureText(name).width;
-                const offsetx = nameWidth / 2;
-                ctx.fillStyle = "#00ff1421";
-                // the 70 represents the height of the font
-                const textHight = 70;
-                const offsetY = textHight / 2;
-                ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
-                ctx.fillStyle = "#007b1c";
-                ctx.fillText(name, newx - offsetx, newy - offsetY - 4);
-                ctx.restore();
+                newx = midx + distance * Math.cos(angleCD);
+                newy = midy + distance * Math.sin(angleCD);
+            } else {
+                newy += distance
             }
+
+            ctx.save();
+            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            ctx.textBaseline = "top";
+            const nameWidth = ctx.measureText(name).width;
+            const offsetx = nameWidth / 2;
+            ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = textHight / 2;
+            ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
+            ctx.fillStyle = "#007b1c";
+            ctx.fillText(name, newx - offsetx, newy - offsetY - 4);
+            ctx.restore();
         }
     }
 

@@ -9,3 +9,58 @@ region = "us-west-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 
+
+[stage]
+[stage.deploy]
+[stage.deploy.parameters]
+stack_name = "pdf-renderer-stage"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ojnl9ycp7kvq"
+s3_prefix = "pdf-renderer-stage"
+region = "us-west-1"
+profile = "calin-h2x-testing"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+
+[test]
+[test.deploy]
+[test.deploy.parameters]
+stack_name = "pdf-render-test"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ojnl9ycp7kvq"
+s3_prefix = "pdf-render-test"
+region = "us-west-1"
+profile = "calin-h2x-testing"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+
+[local]
+[local.deploy]
+[local.deploy.parameters]
+stack_name = "pdf-render-local"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ojnl9ycp7kvq"
+s3_prefix = "pdf-render-local"
+region = "us-west-1"
+profile = "calin-h2x-testing"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "pdf-renderer-prod"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-420lvuja3pgj"
+s3_prefix = "pdf-renderer-prod"
+region = "us-west-1"
+profile = "calin-h2x-production"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+
+[demo]
+[demo.deploy]
+[demo.deploy.parameters]
+stack_name = "pdf-renderer-demo"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ojnl9ycp7kvq"
+s3_prefix = "pdf-renderer-demo"
+region = "us-west-1"
+profile = "calin-h2x-testing"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"

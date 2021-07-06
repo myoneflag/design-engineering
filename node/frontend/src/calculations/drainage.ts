@@ -12,6 +12,7 @@ import UnionFind from "./union-find";
 import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {Edge} from "./graph";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
+import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
 
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -310,7 +311,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                         }));
                         return true;
                     } else {
-                        // Check that the pipe will not exceed max unvented length or FU
+                        // Check that the pipe will not exceed max unvented length or FU/DU
                         const unventedLength = (distTo.get(edge.from.connectable) || 0) + pCalc.lengthM!;
                         const unventedLU = pCalc.psdUnits?.drainageUnits || 0;
 
@@ -325,8 +326,14 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 const currPipe = context.globalStore.get(curr.value.uid);
                                 if (currPipe?.entity.type === EntityType.PIPE) {
                                     const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
+                                    const [units, maxConverted] =
+                                        convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM!);
+                                    const [_, unventedConverted] =
+                                        convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM!);
                                     currPCalc.ventTooFarDist = true;
-                                    currPCalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded " + unventedLength;
+                                    currPCalc.warning = 'Max unvented length of ' +
+                                        (maxConverted as number).toFixed(2) + units +
+                                        " exceeded " + (unventedConverted as number).toFixed(2) + units;
                                     currPCalc.warningLayout = 'drainage';
                                     curr = parentOf.get(curr.from.connectable);
                                 }
@@ -614,7 +621,9 @@ export function produceUnventedLengthWarningsAndGetUnventedGroup(context: Calcul
 
                         if (maxUnventedExceeded) {
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
-                            fcalc.warning = 'Max unvented length of ' + maxUnventedLengthM + " exceeded";
+                            const [units, converted] =
+                                convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM);
+                            fcalc.warning = 'Max unvented length of ' + (converted as number).toFixed(2) + units + " exceeded";
                             fcalc.warningLayout = 'drainage';
                         }
                     }

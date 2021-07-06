@@ -60,14 +60,17 @@
         addFinalPsdCounts,
         Cost,
         countPsdUnits,
+        getDrainageUnitName,
         lookupFlowRate,
         PsdUnitsByFlowSystem,
+        roundNumber,
         zeroFinalPsdCounts
     } from "../../calculations/utils";
     import {Catalog} from "../../../../common/src/api/catalog/types";
     import {NetworkType} from "../../../../common/src/api/document/drawing";
     import {ALL_DRAINAGE_SYSTEM_UIDS, StandardFlowSystemUids} from "../../../../common/src/api/config";
     import {convertMeasurementSystem, Units} from "../../../../common/src/lib/measurements";
+    import { I18N } from "@../../../common/src/api/locale/values";
 
     @Component({
         props: {
@@ -110,11 +113,7 @@
         }
 
         cost2str(cost: Cost) {
-            if (cost.exact) {
-                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + '';
-            } else {
-                return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: 'AUD'}) + "+";
-            }
+            return Number(cost.value).toLocaleString(undefined, {style: 'currency', currency: I18N.currency[this.document.locale]}) + (cost.exact ? '' : '+')
         }
 
         get costItems() {
@@ -157,7 +156,8 @@
             }
 
             let x = 80;
-            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}, {'PSD': 'FU'}];
+            const drainageUnits = getDrainageUnitName(this.document.drawing.metadata.calculationParams.drainageMethod);
+            const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}, {'PSD': drainageUnits.abbreviation}];
             for (const [units, fieldName] of [[focusedUnits, this.$props.focusName], [projectUnits, "Project"]]) {
                 let coldFR: number | null | undefined;
                 let hotFR: number | null | undefined;
@@ -173,6 +173,7 @@
                     coldFR = res ? res.flowRateLS : null;
                 } catch (e) {
                     // Exception here
+                    console.warn('Cold water results flow rate exception', e)
                 }
                 try {
                     const res = lookupFlowRate(
@@ -184,7 +185,7 @@
                     );
                     hotFR = res ? res.flowRateLS : null;
                 } catch (e) {
-                    /**/
+                    console.warn('Hot water results flow rate exception', e)
                 }
                 gasMJH = units[StandardFlowSystemUids.Gas].gasMJH;
 
@@ -233,13 +234,13 @@
                     drainageUnits += units[suid].drainageUnits;
                 }
                 if (!isNaN(drainageUnits)) {
-                    drainageText = '' + drainageUnits;
+                    drainageText = '' + roundNumber(drainageUnits,2)
                 }
 
                 res[0][fieldName] = coldSpareText + " " + coldUnits;
                 res[1][fieldName] = hotSpareText + " " + hotUnits;
                 res[2][fieldName] = gasMJHText + " " + gasUnits;
-                res[3][fieldName] = drainageUnits;
+                res[3][fieldName] = drainageText;
             }
 
 
