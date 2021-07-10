@@ -1749,11 +1749,6 @@ export default class CalculationEngine implements CalculationContext {
 
                     const flowRate = lookupFlowRate(psdU, this.doc, this.catalog, entity.systemUid);
 
-                    if (entity.uid.includes('d5e06935-0c32-43a3-925c-9c78de801a8e')) {
-                        console.log(psdU);
-                        console.log(flowRate);
-                        console.log(this.doc);
-                    }
                     if (flowRate === null) {
                         // Warn for no PSD
                         if (isZeroWaterPsdCounts(psdU)) {
