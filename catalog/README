@@ -1,3 +1,0 @@
-These scripts were used to help produce the initial catalog under java/resources/catalog.
-
-Please make modifications in the csvs under csvs/ and then generate the JSONs. We want to keep these csvs as the source of truth for the initial jsons. We can modify this requirement as we go.

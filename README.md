@@ -16,12 +16,6 @@
 This contains the `template.json` AWS Cloudformation template, that creates all resources for deploying a new environment.  
 Also, is updates an existing environment with new Docker images that have been pushed after a production build.
 
-### Others
-
-* `java` folder - obsolete
-* `catalog` folder - obsolete
-* `backup` folder - redundant
-
 ## Local development
 
 ```
