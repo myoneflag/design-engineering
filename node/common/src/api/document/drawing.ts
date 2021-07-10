@@ -881,6 +881,7 @@ export const initialAustralianDrawing: DrawingState = {
                 { manufacturer: "kemblaCu", uid: "copperTypeB", selected: null },
                 { manufacturer: "rehauPex", uid: "pexSdr74", selected: null,},
                 { manufacturer: "kemblaS/s", uid: "stainlessSteel", selected: null,},
+                { manufacturer: "blucherSS", uid: "stainlessSteelSewer", selected: null,},
             ],
             backflowValves: [
                 { manufacturer: "apolloRpzd", uid: "RPZD", selected: null,},

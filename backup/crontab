@@ -1,3 +1,0 @@
-# Backup databases daily at midnight
-0 * * * * /root/cron_task.sh /root/db_backup.sh
-

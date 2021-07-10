@@ -174,26 +174,28 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (!this.isActive()) {
             return false;
         }
-        if (this.lastRadials && this.lastDrawnLength !== undefined && this.lastDrawnWidth !== undefined) {
-            let selected = false;
-            this.lastRadials.forEach(([wc]) => {
-                const oc = this.toObjectCoord(wc);
-                const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
-                if (vec.length > EPS) {
-                    const small = vec.normalize().multiply(this.lastDrawnLength);
-
-                    if (
-                        Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y)).distanceTo(
-                            Flatten.point(moc.x, moc.y)
-                        )[0] <=
-                        this.lastDrawnWidth + radius
-                    ) {
-                        selected = true;
-                    }
-                }
-            });
-            return selected;
-        } else {
+        // DEV-301 https://h2xengineering.atlassian.net/browse/DEV-301
+        // commented out code since the login of determining if a fitting is being clicked does not make sense
+        // if (this.lastRadials && this.lastDrawnLength !== undefined && this.lastDrawnWidth !== undefined) {
+        //     let selected = false;
+        //     this.lastRadials.forEach(([wc]) => {
+        //         const oc = this.toObjectCoord(wc);
+        //         const vec = new Flatten.Vector(Flatten.point(0, 0), Flatten.point(oc.x, oc.y));
+        //         if (vec.length > EPS) {
+        //             const small = vec.normalize().multiply(this.lastDrawnLength);
+        //             if (
+        //                 Flatten.segment(Flatten.point(0, 0), Flatten.point(small.x, small.y))
+        //                     .distanceTo(Flatten.point(moc.x, moc.y)
+        //                 )[0] <=
+        //                 this.lastDrawnWidth + radius
+        //             ) {
+        //                 selected = true;
+        //             }
+        //         }
+        //     });
+        //     return selected;
+        // } else 
+        {
             const l = this.toObjectLength(this.TURN_RADIUS_MM * 1.5);
             return moc.x * moc.x + moc.y * moc.y <= (l + radius) * (l + radius);
         }

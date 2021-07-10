@@ -7,6 +7,7 @@ services:
         image: postgres
         profiles:
             - dev
+            - minimal
         restart: always
         environment:
             - POSTGRES_PASSWORD=postgres
@@ -26,6 +27,7 @@ services:
         restart: always
         profiles:
             - dev
+            - minimal
         depends_on:
             - db
         environment: 
@@ -81,6 +83,7 @@ services:
     backend:
         profiles:
             - dev
+            - minimal
         build: 
             context: ../node/
             dockerfile: ../docker/dev-backend.Dockerfile
@@ -89,7 +92,6 @@ services:
         depends_on:
             - db
             - mq
-            - sqsd
         ports:
             - 8012:80
         environment:
@@ -115,6 +117,7 @@ services:
     frontend:
         profiles:
             - dev
+            - minimal
         build:
             context: ../node/
             dockerfile: ../docker/dev-frontend.Dockerfile
@@ -189,6 +192,7 @@ services:
     nginx:
         profiles:
           - dev
+          - minimal
         image: 'nginx:latest'
         volumes:
             - ./nginx.conf:/etc/nginx/nginx.conf
@@ -197,4 +201,3 @@ services:
         depends_on:
             - backend
             - frontend
-            - worker
