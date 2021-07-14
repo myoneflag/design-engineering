@@ -20,7 +20,7 @@ import {EntityType, getEntityName} from "../../../../../common/src/api/document/
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
-import { convertMeasurementSystem } from "../../../../../common/src/lib/measurements";
+import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { I18N } from "../../../../../common/src/api/locale/values";
 
 export interface Calculated {
@@ -56,7 +56,15 @@ export function CalculatedObject<
         makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
                 const convFun = datum.convert || convertMeasurementSystem;
-                const [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+                const docUnits = context.doc.drawing.metadata.units;
+                let units: Units
+                let value: (string | number | null) | (string | number | null)[]
+                if (Array.isArray(datum.value)) {
+                    value = datum.value.map( v => convFun(docUnits, datum.units, v) ).flatMap( v => v[1] )
+                    units = convFun(docUnits, datum.units, null)[0]
+                } else {
+                    [units, value] = convFun(docUnits, datum.units, datum.value);
+                }
 
                 if (value === undefined) {
                     throw new Error(

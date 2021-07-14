@@ -37,7 +37,7 @@ import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawi
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
-import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
+import { fittingFrictionLossMH, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {lowerBoundNumberTable} from "../utils";
@@ -778,7 +778,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const volLM = (this.largestPipeSizeInternal(context)! ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
         if (kValue) {
-            return (sign * (kValue * velocityMS ** 2)) / (2 * ga);
+            return sign * fittingFrictionLossMH(velocityMS, kValue, ga)
         } else {
             return 0;
         }

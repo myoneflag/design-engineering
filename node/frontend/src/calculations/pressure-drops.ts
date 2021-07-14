@@ -78,7 +78,7 @@ export function getHazenWilliamsMH(flowRateMS: number, pipeInternalDiameterMM: n
 }
 
 export function fittingFrictionLossMH(velocityMS: number, kValue: number, ga: number) {
-    return (kValue * 2 * velocityMS) / (ga * 2);
+    return kValue * (velocityMS ** 2) / (ga * 2);
 }
 
 export function head2kpa(mh: number, densityKGM3: number, ga: number): number {

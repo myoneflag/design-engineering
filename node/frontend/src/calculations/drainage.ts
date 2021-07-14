@@ -670,9 +670,6 @@ export function propagateVentedness(context: CalculationEngine, roots: Map<strin
 export function sizeVents(context: CalculationEngine, roots: Map<string, PsdCountEntry>, exits: FittingEntity[]) {
     const seenPipes = new Set<string>();
 
-    console.log("roots:");
-    console.log(roots);
-
     const exitSet = new Set<string>(exits.map((e) => e.uid));
 
     for (const e of exits) {

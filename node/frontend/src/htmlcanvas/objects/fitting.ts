@@ -39,6 +39,7 @@ import {SnappableObject} from "../lib/object-traits/snappable-object";
 import {getHighlightColor} from "../lib/utils";
 import {PipesTable} from "../../../../common/src/api/catalog/price-table";
 import {fillValveDefaultFields} from "../../store/document/entities/fillDefaultEntityFields";
+import { fittingFrictionLossMH } from "../../../src/calculations/pressure-drops";
 
 @CalculatedObject
 @SelectableObject
@@ -287,7 +288,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             return null;
         }
 
-        let k: number | null = null;
+        let kValue: number | null = null;
         const fromc = this.get3DOffset(from.connection);
         const toc = this.get3DOffset(to.connection);
         const fromv = new math3d.Vector3(fromc.x, fromc.y, fromc.z);
@@ -301,34 +302,34 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
             } else if (isAcuteRad(angle)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
-                if (k) {
-                    k *= 2;
+                kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
+                if (kValue) {
+                    kValue *= 2;
                 }
             } else if (isStraightRad(angle, Math.PI / 8)) {
-                k = 0;
+                kValue = 0;
             } else {
-                k = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
             }
         } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
-                k = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
             } else {
-                k = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
             }
         } else {
             throw new Error("edge shouldn't exist");
         }
 
-        if (k === null) {
+        if (kValue === null) {
             throw new Error("could not find k value of fitting");
         }
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
-        return (sign * (k * velocityMS ** 2)) / (2 * ga);
+        return sign * fittingFrictionLossMH(velocityMS, kValue, ga)
     }
 
     rememberToRegister(): void {

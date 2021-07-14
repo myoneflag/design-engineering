@@ -1037,13 +1037,14 @@ export default class CalculationEngine implements CalculationContext {
                                 finalPressureKPA,
                                 pressurePushMode,
                             );
-                            return hl === null
+                            let pressure = hl === null
                                 ? -Infinity
                                 : head2kpa(
                                     hl,
                                     getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
                                     this.ga
                                 );
+                            return pressure
                         } else {
                             return 1000000;
                         }
