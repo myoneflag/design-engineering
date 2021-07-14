@@ -83,6 +83,8 @@ export function CalculatedObject<
 
                     if (typeof value === 'string') {
                         numberText = value;
+                    } else if ( Array.isArray(value)) {
+                        numberText = value === null ? "??" : value.map( v => (v as number).toFixed(fractionDigits) ).toString()
                     } else {
                         numberText = value === null ? "??" : value.toFixed(fractionDigits);
                     }
