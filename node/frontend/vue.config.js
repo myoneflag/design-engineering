@@ -2,6 +2,13 @@ var webpack = require('webpack');
 
 module.exports = {
     configureWebpack: {
+        devServer: {
+            port: 80,
+            // https://github.com/vuejs-templates/webpack/issues/378
+            watchOptions: {
+              poll: true,
+            },
+          },
         devtool: 'source-map',
         plugins: [
             new webpack.DefinePlugin({
