@@ -27,6 +27,7 @@ import Fitting from "../../objects/fitting";
 import {Coord, Coord3D} from "../../../../../common/src/api/document/drawing";
 import {determineConnectableNetwork, determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {assertUnreachable, ComponentPressureLossMethod} from "../../../../../common/src/api/config";
+import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
@@ -627,7 +628,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                     angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection))
                 );
 
-                const k = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
+                const kValueComputed = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
 
                 if (Math.abs(flowLS) < EPS) {
                     // @ts-ignore
@@ -635,7 +636,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 if (componentHL !== null) {
-                    return sign * ((k * velocityMS ** 2) / (2 * ga)) + componentHL;
+                    return sign * fittingFrictionLossMH(velocityMS, kValueComputed, ga) + componentHL;
                 } else {
                     return null;
                 }
