@@ -1,203 +1,202 @@
-version: '3.2'
+version: "3.2"
 
 services:
-    # Postgres DB instance
-    # hostname: db
-    db:
-        image: postgres
-        profiles:
-            - dev
-            - minimal
-        restart: always
-        environment:
-            - POSTGRES_PASSWORD=postgres
-            - POSTGRES_DB=h2x
-            - POSTGRES_USER=postgres
-            - PGDATA=/var/lib/postgresql/data/pgdata
-        ports:
-            - 5432:5432
-        volumes:
-            - ./temp/pgdata:/var/lib/postgresql/data
+  # Postgres DB instance
+  # hostname: db
+  db:
+    image: postgres
+    profiles:
+      - dev
+      - minimal
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=h2x
+      - POSTGRES_USER=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    volumes:
+      - ./temp/pgdata:/var/lib/postgresql/data
 
+  # ActiveMQ instance
+  # hostname: mq
+  mq:
+    image: webcenter/activemq
+    restart: always
+    profiles:
+      - dev
+      - minimal
+    depends_on:
+      - db
+    environment:
+      - ACTIVEMQ_ADMIN_LOGIN=admin
+      - ACTIVEMQ_ADMIN_PASSWORD=admin
+    ports:
+      - 8161:8161
+      - 61614:61614 #default WS transport protocol port open
 
-    # ActiveMQ instance
-    # hostname: mq
-    mq:
-        image: webcenter/activemq
-        restart: always
-        profiles:
-            - dev
-            - minimal
-        depends_on:
-            - db
-        environment: 
-            - ACTIVEMQ_ADMIN_LOGIN=admin
-            - ACTIVEMQ_ADMIN_PASSWORD=admin
-        ports:
-            - 8161:8161
-            - 61614:61614 #default WS transport protocol port open
+  # Local SQS instance
+  # hostname: sqs
+  sqs:
+    image: softwaremill/elasticmq-native
+    restart: always
+    profiles:
+      - dev
+    depends_on:
+      - mq
+    ports:
+      - 9324:9324
+      - 9325:9325
+    volumes:
+      - ./sqs.conf:/opt/elasticmq.conf
 
-    # Local SQS instance
-    # hostname: sqs
-    sqs:
-        image: softwaremill/elasticmq-native
-        restart: always
-        profiles:
-            - dev
-        depends_on:
-            - mq
-        ports:
-            - 9324:9324
-            - 9325:9325
-        volumes: 
-            - ./sqs.conf:/opt/elasticmq.conf
+  # Local Elastic Beanstalk SQS Daemon instance
+  # hostname: sqsd
+  sqsd:
+    image: mogadanez/sqsd
+    profiles:
+      - dev
+    depends_on:
+      - sqs
+    environment:
+      - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
+      - SQSD_QUEUE_NAME=h2x-worker-queue
+      - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
+      - SQSD_SSL_ENABLED=false
+      - SQSD_RUN_DAEMONIZED=1
+      - SQSD_MAX_MESSAGES_PER_REQUEST=1
+      - AWS_REGION=us-local
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
 
-    # Local Elastic Beanstalk SQS Daemon instance
-    # hostname: sqsd
-    sqsd:
-        image: mogadanez/sqsd
-        profiles:
-            - dev
-        depends_on:
-            - sqs
-        environment:
-            - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
-            - SQSD_QUEUE_NAME=h2x-worker-queue
-            - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
-            - SQSD_SSL_ENABLED=false
-            - SQSD_RUN_DAEMONIZED=1
-            - SQSD_MAX_MESSAGES_PER_REQUEST=1
-            - AWS_REGION=us-local
-            - AWS_ACCESS_KEY_ID=test
-            - AWS_SECRET_ACCESS_KEY=test
+  base:
+    profiles:
+      - donotstart
+    build:
+      context: ../node/
+      dockerfile: ../docker/base.Dockerfile
+    image: "h2x-base:latest"
 
-    base:
-        profiles:
-            - donotstart
-        build: 
-            context: ../node/
-            dockerfile: ../docker/base.Dockerfile
-        image: 'h2x-base:latest'
+  # Development Backend server
+  backend:
+    profiles:
+      - dev
+      - minimal
+    build:
+      context: ../node/
+      dockerfile: ../docker/dev-backend.Dockerfile
+    image: "h2x-dev-backend:latest"
+    restart: always
+    depends_on:
+      - db
+      - mq
+    ports:
+      - 8012:80
+    environment:
+      - PDF_BUCKET=h2x-s3-pdf-local
+      - PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
+      - AWS_REGION=us-west-1
+      - AWS_PROFILE=${AWS_PROFILE}
+      - SES_EMAIL_REGION=us-west-1
+      - EMAIL_ADDRESS=test@h2xtesting.com
+      - DB_NAME=h2x
+      - NODE_OPTIONS=--max_old_space_size=6144
+    volumes:
+      # anonymous volumes to prevent container folders being overwritten by host folders
+      - /usr/src/app/node_modules
+      - /usr/src/app/backend/node_modules
+      - /usr/src/app/backend/dist
+      # current code as bind volume
+      - ../node/:/usr/src/app/
+      # AWS crededentials mapped
+      - $HOME/.aws/credentials:/root/.aws/credentials:ro
 
-    # Development Backend server
-    backend:
-        profiles:
-            - dev
-            - minimal
-        build: 
-            context: ../node/
-            dockerfile: ../docker/dev-backend.Dockerfile
-        image: 'h2x-dev-backend:latest'
-        restart: always
-        depends_on:
-            - db
-            - mq
-        ports:
-            - 8012:80
-        environment:
-            - PDF_BUCKET=h2x-s3-pdf-local
-            - PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
-            - AWS_REGION=us-west-1
-            - AWS_PROFILE=${AWS_PROFILE}
-            - SES_EMAIL_REGION=us-west-1
-            - EMAIL_ADDRESS=test@h2xtesting.com
-            - DB_NAME=h2xstage22
-            - NODE_OPTIONS=--max_old_space_size=6144
-        volumes:
-            # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/backend/node_modules
-            - /usr/src/app/backend/dist
-            # current code as bind volume
-            - ../node/:/usr/src/app/
-            # AWS crededentials mapped
-            - $HOME/.aws/credentials:/root/.aws/credentials:ro
+  # Development Frontend Server
+  frontend:
+    profiles:
+      - dev
+      - minimal
+    build:
+      context: ../node/
+      dockerfile: ../docker/dev-frontend.Dockerfile
+    image: "h2x-dev-frontend:latest"
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - 8011:80
+    volumes:
+      # anonymous volumes to prevent container folders being overwritten by host folders
+      - /usr/src/app/node_modules
+      - /usr/src/app/frontend/node_modules
+      - /usr/src/app/frontend/dist
+      # current code as bind volume
+      - ../node/:/usr/src/app/
 
-    # Development Frontend Server
-    frontend:
-        profiles:
-            - dev
-            - minimal
-        build:
-            context: ../node/
-            dockerfile: ../docker/dev-frontend.Dockerfile
-        image: 'h2x-dev-frontend:latest'
-        restart: always
-        depends_on:
-            - backend
-        ports:
-            - 8011:80
-        volumes:
-            # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/frontend/node_modules
-            - /usr/src/app/frontend/dist
-            # current code as bind volume
-            - ../node/:/usr/src/app/
+  # Development Worker Server
+  worker:
+    profiles:
+      - dev
+    build:
+      context: ../node/
+      dockerfile: ../docker/dev-worker.Dockerfile
+    image: "h2x-dev-worker:latest"
+    restart: always
+    depends_on:
+      - frontend
+    ports:
+      - 8013:80
+    environment:
+      - SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
+      - DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
+      - DEBUG_SQS_SSL_ENABLED=false
+      - AWS_REGION=us-local
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DB_NAME=h2x
+    volumes:
+      # anonymous volumes to prevent container folders being overwritten by host folders
+      - /usr/src/app/node_modules
+      - /usr/src/app/backend/node_modules
+      - /usr/src/app/backend/dist
+      # current code as bind volume
+      - ../node/:/usr/src/app/
 
-    # Development Worker Server
-    worker:
-        profiles:
-            - dev
-        build: 
-            context: ../node/
-            dockerfile: ../docker/dev-worker.Dockerfile
-        image: 'h2x-dev-worker:latest'
-        restart: always
-        depends_on:
-            - frontend
-        ports:
-            - 8013:80
-        environment:
-            - SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
-            - DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
-            - DEBUG_SQS_SSL_ENABLED=false
-            - AWS_REGION=us-local
-            - AWS_ACCESS_KEY_ID=test
-            - AWS_SECRET_ACCESS_KEY=test
-            - DB_NAME=h2xstage22
-        volumes:
-            # anonymous volumes to prevent container folders being overwritten by host folders
-            - /usr/src/app/node_modules
-            - /usr/src/app/backend/node_modules
-            - /usr/src/app/backend/dist
-            # current code as bind volume
-            - ../node/:/usr/src/app/
+  # Production Web Server (backend + frontend combined)
+  prod-web:
+    profiles:
+      - prod
+    build:
+      context: ../node/
+      dockerfile: ../docker/prod-web.Dockerfile
+    image: "h2x-prod-web:latest"
+    restart: always
+    ports:
+      - 80:80
 
-    # Production Web Server (backend + frontend combined)
-    prod-web:
-        profiles:
-            - prod
-        build:
-            context: ../node/
-            dockerfile: ../docker/prod-web.Dockerfile
-        image: 'h2x-prod-web:latest'
-        restart: always
-        ports:
-            - 80:80
+  # Production Worker Server
+  prod-worker:
+    profiles:
+      - prod
+    build:
+      context: ../node/
+      dockerfile: ../docker/prod-worker.Dockerfile
+    image: "h2x-prod-worker:latest"
+    restart: always
+    ports:
+      - 8013:80
 
-    # Production Worker Server
-    prod-worker:
-        profiles:
-            - prod
-        build: 
-            context: ../node/
-            dockerfile: ../docker/prod-worker.Dockerfile
-        image: 'h2x-prod-worker:latest'
-        restart: always
-        ports:
-            - 8013:80
-
-    # Local NGINX proxy server
-    nginx:
-        profiles:
-          - dev
-          - minimal
-        image: 'nginx:latest'
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-        ports:
-            - 8010:80
-        depends_on:
-            - backend
-            - frontend
+  # Local NGINX proxy server
+  nginx:
+    profiles:
+      - dev
+      - minimal
+    image: "nginx:latest"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8010:80
+    depends_on:
+      - backend
+      - frontend
