@@ -628,7 +628,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                     angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection))
                 );
 
-                const kValueComputed = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
+                const kValueComputed = 0
+                // const kValueComputed = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
 
                 if (Math.abs(flowLS) < EPS) {
                     // @ts-ignore
