@@ -1755,6 +1755,7 @@ export default class CalculationEngine implements CalculationContext {
                             this.setPipePSDFlowRate(entity, 0);
                         } else {
                             calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
+                            calculation.warning = "Change the Peak Flow Rate Calculation Method";
                         }
                     } else {
                         this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
