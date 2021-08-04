@@ -29,12 +29,13 @@ import Cached from "../lib/cached";
 import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import PlantCalculation from "../../store/document/calculations/plant-calculation";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
-import { Coord, coordDist2 } from "../../../../common/src/api/document/drawing";
+import { Coord, coordDist2, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
-import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
-import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import { PlantType, ReturnSystemPlant } from "../../../../common/src/api/document/entities/plants/plant-types";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
+import Pipe from "./pipe";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -79,7 +80,44 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             ctx.rect(l, t, r - l, b - t);
             ctx.stroke();
 
+            const inletFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.inletSystemUid);
+            const outletFS = context.doc.drawing.metadata.flowSystems.find(
+                (s) => s.uid === this.entity.outletSystemUid
+            );
+            const GasFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === "gas");
+
+            if (inletFS && !this.getConnectedPipe(this.entity.inletUid, inletFS)) {
+                ctx.strokeStyle = inletFS?.color.hex || "";
+                ctx.beginPath();
+                ctx.rect(l - 50, t + 100, 50, 10);
+                ctx.stroke();
+            }
+            if (outletFS && !this.getConnectedPipe(this.entity.outletUid, outletFS)) {
+                ctx.strokeStyle = outletFS?.color.hex || "";
+                ctx.beginPath();
+                ctx.rect(r, t + 100, 50, 10);
+                ctx.stroke();
+            }
+
+            if (this.entity.plant.type === PlantType.RETURN_SYSTEM) {
+                const gasUId = (this.entity.plant as ReturnSystemPlant).gasNodeUid;
+                const returnUid = (this.entity.plant as ReturnSystemPlant).returnUid;
+                debugger;
+                if (GasFS && !this.getConnectedPipe(gasUId, GasFS)) {
+                    ctx.strokeStyle = GasFS?.color.hex || "";
+                    ctx.beginPath();
+                    ctx.rect(l - 50, t + 200, 50, 10);
+                    ctx.stroke();
+                }
+                if (outletFS && !this.getConnectedPipe(returnUid, outletFS)) {
+                    ctx.strokeStyle = outletFS?.color.hex || "";
+                    ctx.beginPath();
+                    ctx.rect(r, t + 200, 50, 10);
+                    ctx.stroke();
+                }
+            }
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+
             const ts = Math.min(this.entity.widthMM, this.entity.heightMM) * 0.7;
             ctx.beginPath();
             ctx.moveTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), -ts / 2);
@@ -135,7 +173,31 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         return (this.document.uiState.pressureOrDrainage === 'drainage' && iAmDrainage) ||
             (this.document.uiState.pressureOrDrainage === 'pressure' && iAmPressure);
     }
+    getConnectedPipe(connectionUid: string, flowSystem: FlowSystemParameters): any {
+        // connectionUid can be :
+        // this.entity.inletUid;
+        // this.entity.outletUid; ,....
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.find((item) => {
+            return (
+                item.entityBacked.type == EntityType.PIPE &&
+                (item as Pipe).entity.endpointUid.indexOf(connectionUid) != -1 &&
+                (item as Pipe).entity.systemUid == flowSystem.uid
+            );
+        });
+    }
+    validateConnectionPoints(): Boolean {
+        const inletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.inletSystemUid);
+        const outletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.outletSystemUid);
 
+        if (inletFS && !this.getConnectedPipe(this.entity.inletUid, inletFS)) {
+            return false;
+        }
+        if (outletFS && !this.getConnectedPipe(this.entity.outletUid, outletFS)) {
+            return false;
+        }
+        return true;
+    }
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
         const angle = (this.toWorldAngleDeg(0) / 180) * Math.PI;
         const height = data.length * FIELD_HEIGHT;
