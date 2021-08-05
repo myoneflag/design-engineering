@@ -120,6 +120,8 @@ export const defaultPriceTable: PriceTable = {
             80: 70,
             100: 84,
             150: 124,
+            225: 280,
+            300: 450,
         },
         'HDPE (Sewer)': {
             50: 46,
