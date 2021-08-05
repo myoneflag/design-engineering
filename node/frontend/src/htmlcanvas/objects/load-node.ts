@@ -126,9 +126,21 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             }
         }
 
+        const currentLoc = this.toObjectCoord(this.globalStore.get(this.entity.uid)!.toWorldCoord());
+
+        let name = "";
+        let newx = currentLoc.x;
+        let newy = currentLoc.y;
+        let distance = 210; // the 210 represents the distance from midpoint to new coordinates
+        if (!this.entity.linkedToUid) {
+            distance = -210;
+        }
+
         if (typeof this.entity.customNodeId !== "undefined") {
+            name = context.nodes.find(node => node.id === this.entity.customNodeId || node.uid === this.entity.customNodeId)!.name;
+
             const entities = Array.from((this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()).map((u) => this.globalStore.get(u)!.entity);
-            
+
             // get the other node
             let other = null;
             if (!this.entity.linkedToUid) {
@@ -140,17 +152,6 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 }
             } else {
                 other = this.globalStore.get(this.entity.linkedToUid);
-            }
-            
-            const currentLoc = this.toObjectCoord(this.globalStore.get(this.entity.uid)!.toWorldCoord());
-            const name = context.nodes.find(node => node.id === this.entity.customNodeId || node.uid === this.entity.customNodeId)!.name;
-            let newx = currentLoc.x
-            let newy = currentLoc.y
-
-            // the 210 represents the distance from midpoint to new coordinates
-            let distance = 210;
-            if (!this.entity.linkedToUid) {
-                distance = -210;
             }
 
             if (other) {
@@ -169,21 +170,24 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             } else {
                 newy += distance
             }
-
-            ctx.save();
-            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
-            ctx.textBaseline = "top";
-            const nameWidth = ctx.measureText(name).width;
-            const offsetx = nameWidth / 2;
-            ctx.fillStyle = "#00ff1421";
-            // the 70 represents the height of the font
-            const textHight = 70;
-            const offsetY = textHight / 2;
-            ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
-            ctx.fillStyle = "#007b1c";
-            ctx.fillText(name, newx - offsetx, newy - offsetY - 4);
-            ctx.restore();
+        } else if (typeof this.entity.name !== "undefined" && this.entity.name) {
+            name = this.entity.name;
+            newy += distance;
         }
+
+        ctx.save();
+        ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+        ctx.textBaseline = "top";
+        const nameWidth = ctx.measureText(name).width;
+        const offsetx = nameWidth / 2;
+        ctx.fillStyle = "#00ff1421";
+        // the 70 represents the height of the font
+        const textHight = 70;
+        const offsetY = textHight / 2;
+        ctx.fillRect(newx - offsetx, newy - offsetY, nameWidth, 70);
+        ctx.fillStyle = "#007b1c";
+        ctx.fillText(name, newx - offsetx, newy - offsetY - 4);
+        ctx.restore();
     }
 
     strokeShape(context: DrawingContext, radius: number) {
