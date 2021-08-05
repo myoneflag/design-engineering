@@ -3164,6 +3164,22 @@ export const usCatalog: Catalog = {
                         diameterOutsideMM: "150",
                         pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
+                    },
+                    225: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "225",
+                        diameterNominalMM: "225",
+                        diameterOutsideMM: "225",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    300: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "300",
+                        diameterNominalMM: "300",
+                        diameterOutsideMM: "300",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
                     }
                 }
             }
