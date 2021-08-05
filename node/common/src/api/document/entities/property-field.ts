@@ -47,6 +47,8 @@ export interface PropertyFieldBase {
     multiFieldId: string | null;
     type: FieldType;
     units?: Units;
+    description?: string;
+    slot?: boolean;
 }
 
 export interface NumberField extends PropertyFieldBase {

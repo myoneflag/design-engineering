@@ -293,7 +293,7 @@ export default class PropertiesWindow extends Vue {
     background: white;
     border: gray solid 1px;
     border-radius: 5px;
-    padding: 20px;
+    padding: 20px 5px;
 
     max-height: -webkit-calc(100vh - 30px);
     overflow-y: auto;
