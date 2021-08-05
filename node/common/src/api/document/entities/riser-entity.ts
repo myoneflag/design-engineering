@@ -32,7 +32,7 @@ export default interface RiserEntity extends ConnectableEntity {
     topHeightM: number | null;
 }
 
-export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: DrawingState): PropertyField[] {
+export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: DrawingState, defaultEntity?: RiserEntity): PropertyField[] {
     const result = fillRiserDefaults(drawing, entity);
     const materials = Object.keys(catalog.pipes).map((mat) => {
         const c: Choice = {
@@ -129,24 +129,28 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
 
             {
                 property: "bottomHeightM",
-                title: "Bottom Height",
+                title: "Bottom Height Above Floor",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: {min: null, max: null},
                 multiFieldId: "bottomHeightM",
                 units: Units.Meters,
+                slot: true,
+                description: `Height = ${entity.bottomHeightM || defaultEntity?.bottomHeightM}m`,
             },
 
             {
                 property: "topHeightM",
-                title: "Top Height",
+                title: "Top Height Above Floor",
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: {min: null, max: null},
                 multiFieldId: "topHeightM",
                 units: Units.Meters,
+                slot: true,
+                description: `Height = ${entity.topHeightM || defaultEntity?.topHeightM}m`,
             },
 
             {

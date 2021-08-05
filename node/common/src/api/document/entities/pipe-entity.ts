@@ -174,7 +174,8 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             type: FieldType.Number,
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",
-            units: Units.Meters
+            units: Units.Meters,
+            description: `Height = ${+(drawing.levels.ground.floorHeightM + entity.heightAboveFloorM).toFixed(12)}m`,
         },
     );
     return fields;
