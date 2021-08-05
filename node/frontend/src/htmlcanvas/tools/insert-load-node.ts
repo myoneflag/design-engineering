@@ -1,15 +1,9 @@
 import { MainEventBus } from "../../../src/store/main-event-bus";
-import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
-import { ConnectableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import LoadNodeEntity, { NodeType, NodeVariant } from "../../../../common/src/api/document/entities/load-node-entity";
-import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
-import Fitting from "../objects/fitting";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { moveOnto } from "../lib/black-magic/move-onto";
@@ -23,7 +17,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                                        loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1,
                                        variant: NodeVariant) {
     const newUid = uuid();
-    const toReplace: BackedDrawableObject<ConnectableEntityConcrete> | null = null;
+
     MainEventBus.$emit(
         "set-tool-handler",
         new SnappingInsertTool(
@@ -77,9 +71,10 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                     parentUid: null,
                     type: EntityType.LOAD_NODE,
                     linkedToUid: null,
-                    uid: newUid
+                    uid: newUid,
+                    name: '',
                 };
-
+                
                 context.$store.dispatch("document/addEntity", newEntity);
 
                 if (interactive) {
