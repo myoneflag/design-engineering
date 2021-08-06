@@ -36,6 +36,8 @@ import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/sr
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
 import Pipe from "./pipe";
+import { drawPipeCap, drawRectangles } from "../helpers/draw-helper";
+import { Side } from "../helpers/side";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -85,35 +87,71 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 (s) => s.uid === this.entity.outletSystemUid
             );
             const GasFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === "gas");
-
+         
+            const middleOfBox=t - (t - b) / 2;
+               const capTop = middleOfBox - 23;
+            const widthOfConnectionPoint=70;
+            const heightOfConnectionPoint=10;
+            const secondConnectionTop=t - (3 * (t - b)) / 4;
+            const secondConnectionCapTop = secondConnectionTop-23;
             if (inletFS && !this.getConnectedPipe(this.entity.inletUid, inletFS)) {
-                ctx.strokeStyle = inletFS?.color.hex || "";
-                ctx.beginPath();
-                ctx.rect(l - 50, t + 100, 50, 10);
-                ctx.stroke();
+                
+                drawRectangles(ctx, [
+                    {
+                        point: { left: l - widthOfConnectionPoint, top: middleOfBox },
+                        width: widthOfConnectionPoint,
+                        height: heightOfConnectionPoint,
+                        strokeStyle: inletFS?.color.hex || ""
+                    }
+                ]);
+                drawPipeCap(ctx, { top: capTop, left: l - widthOfConnectionPoint - 10 }, Side.LEFT);
+              
             }
             if (outletFS && !this.getConnectedPipe(this.entity.outletUid, outletFS)) {
-                ctx.strokeStyle = outletFS?.color.hex || "";
-                ctx.beginPath();
-                ctx.rect(r, t + 100, 50, 10);
-                ctx.stroke();
+                drawRectangles(ctx, [
+                    {
+                        point: { left: r, top: middleOfBox },
+                        width: widthOfConnectionPoint,
+                        height: heightOfConnectionPoint,
+                        strokeStyle:outletFS?.color.hex || ""
+                    }
+                ]);
+               
+                drawPipeCap(ctx, { top: capTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
+                  
+
             }
 
             if (this.entity.plant.type === PlantType.RETURN_SYSTEM) {
                 const gasUId = (this.entity.plant as ReturnSystemPlant).gasNodeUid;
                 const returnUid = (this.entity.plant as ReturnSystemPlant).returnUid;
-                debugger;
                 if (GasFS && !this.getConnectedPipe(gasUId, GasFS)) {
-                    ctx.strokeStyle = GasFS?.color.hex || "";
-                    ctx.beginPath();
-                    ctx.rect(l - 50, t + 200, 50, 10);
-                    ctx.stroke();
+                  
+                    drawRectangles(ctx, [
+                        {
+                            point: { left: l - widthOfConnectionPoint, top: secondConnectionTop },
+                            width: widthOfConnectionPoint,
+                            height: heightOfConnectionPoint,
+                            strokeStyle: GasFS?.color.hex || ""
+                        }
+                    ]);
+                    drawPipeCap(
+                        ctx,
+                        { top: secondConnectionCapTop, left: l - widthOfConnectionPoint- 10 },
+                        Side.LEFT
+                    );
                 }
                 if (outletFS && !this.getConnectedPipe(returnUid, outletFS)) {
-                    ctx.strokeStyle = outletFS?.color.hex || "";
-                    ctx.beginPath();
-                    ctx.rect(r, t + 200, 50, 10);
-                    ctx.stroke();
+                   drawRectangles(ctx, [
+                       {
+                           point: { left: r, top: secondConnectionTop },
+                           width: widthOfConnectionPoint,
+                           height: heightOfConnectionPoint,
+                           strokeStyle: outletFS?.color.hex || ""
+                       }
+                   ]);
+
+                   drawPipeCap(ctx, { top: secondConnectionCapTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
                 }
             }
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";

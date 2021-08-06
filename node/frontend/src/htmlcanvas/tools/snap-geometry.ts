@@ -62,6 +62,8 @@ export function getSnapSurfaces(context: CanvasContext, snapTargets: string[], p
     }
 
     for (const suid of effectiveSnapTargets) {
+        if(!context)
+            continue;
         const o = context.globalStore.get(suid);
         if (!o) {
             continue;
