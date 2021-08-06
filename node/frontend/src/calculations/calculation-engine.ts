@@ -2800,7 +2800,7 @@ export default class CalculationEngine implements CalculationContext {
                         calc.warning = 'Max pressure exceeded ('
                             + (pConverted as number).toFixed(2) + units + ' > '
                             + (mpConverted as number).toFixed(2) + units;
-                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA) {
+                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA &&  filled.systemUidOption != "gas") {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
 
                         const [units, converted] =
