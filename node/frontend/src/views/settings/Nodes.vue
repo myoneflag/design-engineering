@@ -88,6 +88,7 @@ import { add, remove, update } from "../../api/custom-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import { drawingContainsCustomNode } from "@/../../common/src/api/document/entities/load-node-entity";
 import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../../common/src/lib/measurements";
+import { setPropertyByString } from "../../lib/utils";
 
 function initialForm(): NodeProps {
   return {
@@ -177,6 +178,10 @@ export default class Nodes extends Vue {
     return units;
   }
 
+  setReactiveForm(prop: string, value: any) {
+    return setPropertyByString(this.reactiveForm, prop, value);
+  }
+
   handleViewNode(key: number | string) {
     this.viewNode = key;
     this.originalForm = this.nodes.find((node: NodeProps) => node.id === key || node.uid === key);
@@ -188,15 +193,11 @@ export default class Nodes extends Vue {
     return this.reactiveForm.fixtures.filter((fixture) => fixture === uid).length;
   }
 
-  setFixtureInputValue(uid: string, value: number) {
-    const fixtures = this.reactiveForm.fixtures;
+  setFixtureInputValue(fixtureUid: string, value: number) {
+    const filteredFixture = this.reactiveForm.fixtures.filter(fixture => fixture !== fixtureUid);
+    const addedFixtures = Array(+value).fill(fixtureUid);
 
-    if (this.getFixtureInputValue(uid) < value) {
-      fixtures.push(uid);
-    } else {
-      const index = fixtures.lastIndexOf(uid);
-      fixtures.splice(index, 1);
-    }
+    this.setReactiveForm('fixtures', [...filteredFixture, ...addedFixtures]);
   }
 
   resetForm() {
