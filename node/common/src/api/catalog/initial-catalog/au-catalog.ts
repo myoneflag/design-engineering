@@ -1866,7 +1866,13 @@ export const auCatalog: Catalog = {
                     abbreviation: 'B88 CU',
                     priceTableName: "Copper",
                     uid: 'atsmB88Cu',
-                }                                
+                },
+                {
+                    name: 'Ke Kelit Type X',
+                    abbreviation: 'Ke Kelit CU',
+                    priceTableName: "Copper",
+                    uid: 'keKelitCu',
+                },                            
             ],
             abbreviation: "CU",
             pipesBySize: {
@@ -2221,7 +2227,105 @@ export const auCatalog: Catalog = {
                         pipeUid: "copperTypeB",
                         safeWorkingPressureKPA: "1000"
                     }
-                }
+                },
+                keKelitCu: {
+                    15: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "13.6",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "15",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "4500"
+                    },
+                    18: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "16.4",
+                        diameterNominalMM: "18",
+                        diameterOutsideMM: "18",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "4300"
+                    },
+                    22: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "20.2",
+                        diameterNominalMM: "22",
+                        diameterOutsideMM: "22",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3900"
+                    },
+                    28: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "26.2",
+                        diameterNominalMM: "28",
+                        diameterOutsideMM: "28",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3100"
+                    },
+                    35: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "32.6",
+                        diameterNominalMM: "35",
+                        diameterOutsideMM: "35",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "3300"
+                    },
+                    42: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "39.6",
+                        diameterNominalMM: "42",
+                        diameterOutsideMM: "42",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2700"
+                    },
+                    54: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "51.6",
+                        diameterNominalMM: "54",
+                        diameterOutsideMM: "54",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "2100"
+                    },
+                    67: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "64.3",
+                        diameterNominalMM: "67",
+                        diameterOutsideMM: "67",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1700"
+                    },
+                    76: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "73.1",
+                        diameterNominalMM: "76",
+                        diameterOutsideMM: "76",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1800"
+                    },
+                    108: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "105",
+                        diameterNominalMM: "108",
+                        diameterOutsideMM: "108",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1300"
+                    },
+                    133: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "130",
+                        diameterNominalMM: "133",
+                        diameterOutsideMM: "133",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    159: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "154",
+                        diameterNominalMM: "159",
+                        diameterOutsideMM: "159",
+                        pipeUid: "copperTypeB",
+                        safeWorkingPressureKPA: "1200"
+                    }
+                },
             },
             uid: "copperTypeB"
         },
@@ -2396,7 +2500,7 @@ export const auCatalog: Catalog = {
             uid: "hdpeSdr11"
         },
         pexSdr74: {
-            name: "PEX (SDR 7.4)",
+            name: "PEX",
             manufacturer: [
                 {
                     name: 'Generic',
@@ -2421,7 +2525,13 @@ export const auCatalog: Catalog = {
                     abbreviation: 'EN ISO 15875',
                     priceTableName: "PEX",
                     uid: 'enIso15875pex',
-                }
+                },
+                {
+                    name: 'Ke Kelit Kelox',
+                    abbreviation: 'Ke Kelit PEX',
+                    priceTableName: "PEX",
+                    uid: 'keKelitPex',
+                },
             ],
             abbreviation: "PEX",
             pipesBySize: {
@@ -2672,7 +2782,73 @@ export const auCatalog: Catalog = {
                         pipeUid: "pexSdr74",
                         safeWorkingPressureKPA: "1000"
                     }
-                }                
+                },
+                keKelitPex: {
+                    16: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "12",
+                        diameterNominalMM: "16",
+                        diameterOutsideMM: "16",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "15.5",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "20",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "20",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "25",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "26",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "32",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "32",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "40",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "41",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    63: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "51",
+                        diameterNominalMM: "63",
+                        diameterOutsideMM: "63",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "60",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "pexSdr74",
+                        safeWorkingPressureKPA: "1000"
+                    },
+                },
             },
             uid: "pexSdr74"
         },
@@ -2696,7 +2872,13 @@ export const auCatalog: Catalog = {
                     abbreviation: 'BS 1387 S/S',
                     priceTableName: "Stainless Steel",
                     uid: 'bs1387ss',
-                }                
+                },
+                {
+                    name: 'Ke Kelit SteelFix',
+                    abbreviation: 'Ke Kelit S/S',
+                    priceTableName: "Stainless Steel",
+                    uid: 'keKelitS/s',
+                }
             ],
             abbreviation: "S/S",
             pipesBySize: {
@@ -2921,7 +3103,97 @@ export const auCatalog: Catalog = {
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "4500"
                     }
-                }             
+                },
+                'keKelitS/s': {
+                    15: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "16",
+                        diameterNominalMM: "15",
+                        diameterOutsideMM: "18",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    20: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "19.6",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "22",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "25.6",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "28",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "32",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "35",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "39",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "42",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "51",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "54",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    65: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "72.1",
+                        diameterNominalMM: "65",
+                        diameterOutsideMM: "76.1",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    80: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "84.9",
+                        diameterNominalMM: "80",
+                        diameterOutsideMM: "88.9",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    100: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "104",
+                        diameterNominalMM: "100",
+                        diameterOutsideMM: "108",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    125: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "135.7",
+                        diameterNominalMM: "125",
+                        diameterOutsideMM: "139.7",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    150: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "162.3",
+                        diameterNominalMM: "150",
+                        diameterOutsideMM: "168.3",
+                        pipeUid: "stainlessSteel",
+                        safeWorkingPressureKPA: "1600"
+                    }
+                },
             },
             uid: "stainlessSteel"
         },
@@ -3162,6 +3434,22 @@ export const auCatalog: Catalog = {
                         diameterInternalMM: "150",
                         diameterNominalMM: "150",
                         diameterOutsideMM: "150",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    225: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "225",
+                        diameterNominalMM: "225",
+                        diameterOutsideMM: "225",
+                        pipeUid: "uPVCSewer",
+                        safeWorkingPressureKPA: "1600"
+                    },
+                    300: {
+                        colebrookWhiteCoefficient: "0.0015",
+                        diameterInternalMM: "300",
+                        diameterNominalMM: "300",
+                        diameterOutsideMM: "300",
                         pipeUid: "uPVCSewer",
                         safeWorkingPressureKPA: "1600"
                     }

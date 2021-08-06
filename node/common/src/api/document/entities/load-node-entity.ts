@@ -83,6 +83,16 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
         }
     ];
 
+    const nameField: PropertyField = {
+        property: "name",
+        title: "Name",
+        hasDefault: false,
+        isCalculated: false,
+        type: FieldType.Text,
+        params: null,
+        multiFieldId: "name",
+    };
+
     const system = drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
 
     const nodeIsGas = isGas(system ? system.fluid : 'water', catalog);
@@ -94,6 +104,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     case undefined:
                     case null:
                     case NodeVariant.FIXTURE:
+                        fields.unshift(nameField);
+
                         fields.push(
                             {
                                 property: "node.loadingUnits",
@@ -147,6 +159,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         );
                         break;
                     case NodeVariant.CONTINUOUS:
+                        fields.unshift(nameField);
+
                         fields.push(
                             {
                                 property: "node.continuousFlowLS",

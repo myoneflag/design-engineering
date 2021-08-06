@@ -1,4 +1,3 @@
-import {Units} from "../../../../common/src/lib/measurements";
 <template>
     <div>
         <SettingsFieldBuilder
@@ -61,7 +60,7 @@ import {
 } from "../../../../common/src/api/config";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
 import { Catalog } from "../../../../common/src/api/catalog/types";
-import { setPropertyByString } from "../../lib/utils";
+import { getNextPipeSize, setPropertyByString } from "../../lib/utils";
 import {
     getDrainageMaterials,
     getWaterDrainageMaterials
@@ -183,7 +182,13 @@ export default class FlowSystems extends Vue {
                     [
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
-                        { name: "Size", key: "sizeMM", units: Units.Millimeters },
+                        {
+                            name: "Size",
+                            key: "sizeMM",
+                            units: Units.Millimeters,
+                            type: "select",
+                            options: this.networkPipeSizesToSelectOptions[this.reticulationsMaterial],
+                        },
                         { name: "grade %", key: "gradePCT", units: Units.None }
                     ]
                 ],
@@ -216,7 +221,13 @@ export default class FlowSystems extends Vue {
                     [
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
-                        { name: "Size (mm)", key: "sizeMM", units: Units.Millimeters }
+                        {
+                            name: "Size (mm)",
+                            key: "sizeMM",
+                            units: Units.Millimeters,
+                            type: "select",
+                            options: this.networkPipeSizesToSelectOptions[this.connectionsMaterial],
+                        }
                     ]
                 ],
 
@@ -233,7 +244,13 @@ export default class FlowSystems extends Vue {
                     [
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
-                        { name: "Size (mm)", key: "sizeMM", units: Units.Millimeters },
+                        {
+                            name: "Size (mm)",
+                            key: "sizeMM",
+                            units: Units.Millimeters,
+                            type: "select",
+                            options: this.networkPipeSizesToSelectOptions[this.risersMaterial],
+                        },
                         {
                             name: "Maximum Fixture/discharge Units Per Level",
                             key: "maximumUnitsPerLevel",
@@ -255,7 +272,13 @@ export default class FlowSystems extends Vue {
                     [
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
-                        { name: "Size (mm)", key: "sizeMM", Units: Units.Millimeters }
+                        {
+                            name: "Size (mm)",
+                            key: "sizeMM",
+                            units: Units.Millimeters,
+                            type: "select",
+                            options: this.networkPipeSizesToSelectOptions[this.connectionsMaterial]
+                        }
                     ]
                 ]
             );
@@ -330,7 +353,8 @@ export default class FlowSystems extends Vue {
         const pipeSizes: { [key: string]: Array<{ key: number, name: string }> } = {};
 
         Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
-            pipeSizes[key] = Object.keys(pipeProp.pipesBySize.generic)
+            const manufacturer = this.document.drawing.metadata.catalog.pipes.find(pipe => pipe.uid === pipeProp.uid)?.manufacturer || 'generic';
+            pipeSizes[key] = Object.keys(pipeProp.pipesBySize[manufacturer])
                 .filter(x => {
                     if (this.selectedSystemId === 5) {
                         return +x >= 25;
@@ -351,6 +375,30 @@ export default class FlowSystems extends Vue {
         return this.selectedSystem.networks.RISERS.material;
     }
 
+    get networkPipeSizesToSelectOptions() {
+        const selectOptionMapping = (size: { key: string|number; }) => {
+            const newMeasurement = convertMeasurementSystem(
+                this.document.drawing.metadata.units,
+                Units.PipeDiameterMM,
+                size.key,
+            );
+            
+            return { 
+                value: size.key, 
+                text: newMeasurement[1] + "" + newMeasurement[0],
+            };
+        };
+
+        return {
+            [this.connectionsMaterial]: this.pipeSizes[this.connectionsMaterial]
+                .map(selectOptionMapping),
+            [this.reticulationsMaterial]:  this.pipeSizes[this.reticulationsMaterial]
+                .map(selectOptionMapping),
+            [this.risersMaterial]: this.pipeSizes[this.risersMaterial]
+                .map(selectOptionMapping),
+        };
+    }
+
     getInsulationMaterialChoicesWithThermalConductivity(tempC: number, doc: DocumentState) {
 
         return INSULATION_MATERIAL_CHOICES.map((c) => {
@@ -367,6 +415,22 @@ export default class FlowSystems extends Vue {
     @Watch("risersMaterial")
     handleRisersMaterialChange(val: string, oldVal: string) {
         setPropertyByString(this.selectedSystem, "networks.RISERS.minimumPipeSize", this.pipeSizes[val][0].key);
+
+        const selectedMaterialPipeSizes = this.pipeSizes[val];
+        const lastPipeSize = selectedMaterialPipeSizes[selectedMaterialPipeSizes.length - 1].key;
+        // adjust property values that relies on this property
+        // drainageProperties.stackPipeSizing
+        this.selectedSystem.drainageProperties.stackPipeSizing.forEach((sPSizeItem, index) => {
+            if (this.pipeSizes[val].findIndex(pSizeItem => pSizeItem.key === sPSizeItem.sizeMM) === -1) {
+                // Getting next/above current size if not exist is safe
+                const newSize = getNextPipeSize(sPSizeItem.sizeMM, this.pipeSizes[val].map(size => size.key));
+                setPropertyByString(
+                    this.selectedSystem, 
+                    `drainageProperties.stackPipeSizing.${index}.sizeMM`,
+                    newSize || lastPipeSize, // select last size from the list if no higher
+                );
+            }
+        });
     }
 
     get reticulationsMaterial() {
@@ -376,6 +440,22 @@ export default class FlowSystems extends Vue {
     @Watch("reticulationsMaterial")
     handleReticulationsMaterialChange(val: string, oldVal: string) {
         setPropertyByString(this.selectedSystem, "networks.RETICULATIONS.minimumPipeSize", this.pipeSizes[val][0].key);
+
+        const selectedMaterialPipeSizes = this.pipeSizes[val];
+        const lastPipeSize = selectedMaterialPipeSizes[selectedMaterialPipeSizes.length - 1].key;
+        // adjust property values that relies on this property
+        // drainageProperties.horizontalPipeSizing
+        this.selectedSystem.drainageProperties.horizontalPipeSizing.forEach((sPSizeItem, index) => {
+            if (this.pipeSizes[val].findIndex(pSizeItem => pSizeItem.key === sPSizeItem.sizeMM) === -1) {
+                // Getting next/above current size if not exist is safe
+                const newSize = getNextPipeSize(sPSizeItem.sizeMM, this.pipeSizes[val].map(size => size.key));
+                setPropertyByString(
+                    this.selectedSystem,
+                    `drainageProperties.horizontalPipeSizing.${index}.sizeMM`,
+                    newSize || lastPipeSize, // select last size from the list if no higher
+                );
+            }
+        });
     }
 
     get connectionsMaterial() {
@@ -385,6 +465,35 @@ export default class FlowSystems extends Vue {
     @Watch("connectionsMaterial")
     handleConnectionsMaterialChange(val: string, oldVal: string) {
         setPropertyByString(this.selectedSystem, "networks.CONNECTIONS.minimumPipeSize", this.pipeSizes[val][0].key);
+
+        const selectedMaterialPipeSizes = this.pipeSizes[val];
+        const lastPipeSize = selectedMaterialPipeSizes[selectedMaterialPipeSizes.length - 1].key;
+        // adjust property values that relies on this property
+        // drainageProperties.ventSizing
+        this.selectedSystem.drainageProperties.ventSizing.forEach((sPSizeItem, index) => {
+            if (selectedMaterialPipeSizes.findIndex(pSizeItem => pSizeItem.key === sPSizeItem.sizeMM) === -1) {
+                // Getting next/above current size if not exist is safe
+                const newSize = getNextPipeSize(sPSizeItem.sizeMM, selectedMaterialPipeSizes.map(size => size.key));
+                setPropertyByString(
+                    this.selectedSystem,
+                    `drainageProperties.ventSizing.${index}.sizeMM`,
+                    newSize || lastPipeSize, // select last size from the list if no higher
+                );
+            }
+        });
+
+        // drainageProperties.stackVentPipeSizing
+        this.selectedSystem.drainageProperties.stackVentPipeSizing.forEach((sPSizeItem, index) => {
+            if (this.pipeSizes[val].findIndex(pSizeItem => pSizeItem.key === sPSizeItem.sizeMM) === -1) {
+                // Getting next/above current size if not exist is safe
+                const newSize = getNextPipeSize(sPSizeItem.sizeMM, this.pipeSizes[val].map(size => size.key));
+                setPropertyByString(
+                    this.selectedSystem,
+                    `drainageProperties.stackVentPipeSizing.${index}.sizeMM`,
+                    newSize || lastPipeSize, // select last size from the list if no higher
+                );
+            }
+        });
     }
 
     get selectedIsDrainage() {

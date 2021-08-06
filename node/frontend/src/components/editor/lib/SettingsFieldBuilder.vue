@@ -132,23 +132,40 @@
                         <b-table-simple
                             v-else-if="field[2] === 'array-table'"
                             small
+                            fixed
                         >
                             <b-thead>
                                 <b-tr>
-                                    <b-th v-for="col in field[3]">{{col.name}}</b-th>
+                                    <b-th v-for="col in field[3]" :key="col.name">{{col.name}}</b-th>
                                 </b-tr>
                             </b-thead>
                             <b-tbody>
-                                <b-tr v-for="(rowVal, rowIndex) in getReactiveData(field[0])">
-                                    <b-td v-for="col in field[3]">
+                                <b-tr v-for="(rowVal, rowIndex) in getReactiveData(field[0])" :key="rowIndex">
+                                    <b-td v-for="(col, colIndex) in field[3]" :key="rowIndex + '-' + colIndex">
+                                        <b-input-group
+                                            v-if="col.type === 'select'"
+                                            :prepend="col.units ? convertUnits(col.units) : undefined"
+                                            size="sm"
+                                        >
+                                            <b-form-select
+                                                :options="col.options"
+                                                :value="getReactiveData(`${field[0]}.${rowIndex}.${col.key}`)"
+                                                @input="setReactiveData(`${field[0]}.${rowIndex}.${col.key}`, $event)"
+                                                size="sm"
+                                            ></b-form-select>
+                                        </b-input-group>
 
-                                        <b-input-group :prepend="col.units ? convertUnits(col.units) : undefined" size="sm">
+                                        <b-input-group 
+                                            v-else 
+                                            :prepend="col.units ? convertUnits(col.units) : undefined" 
+                                            size="sm"
+                                        >
                                             <b-form-input
-                                                    size="sm"
-                                                    :value="displayWithCorrectUnits(col.units, `${field[0]}.${rowIndex}.${col.key}`)"
-                                                    @input="setRenderedDataNumeric(col.units, `${field[0]}.${rowIndex}.${col.key}`, Number($event))"
-                                                    :id="'input-' + `${field[0]}.${rowIndex}.${col.key}`"
-                                                    type="number"
+                                                size="sm"
+                                                :value="displayWithCorrectUnits(col.units, `${field[0]}.${rowIndex}.${col.key}`)"
+                                                @input="setRenderedDataNumeric(col.units, `${field[0]}.${rowIndex}.${col.key}`, Number($event))"
+                                                :id="'input-' + `${field[0]}.${rowIndex}.${col.key}`"
+                                                type="number"
                                             />
                                         </b-input-group>
                                     </b-td>
@@ -168,7 +185,7 @@
                                 </b-tr>
                             </b-thead>
                             <b-tbody>
-                                <b-tr v-for="row in field[3]">
+                                <b-tr v-for="(row, rowIndex) in field[3]" :key="rowIndex">
                                     <b-td>{{row}}</b-td>
                                     <b-td>
                                         <b-input-group :prepend="field[7] ? convertUnits(field[7]) : undefined" size="sm">
