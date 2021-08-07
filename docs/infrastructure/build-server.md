@@ -31,4 +31,9 @@ nano docker.hub.password
 sudo mv ~/docker.hub.password /home/gitlab-runner/
 sudo chown gitlab-runner /home/gitlab-runner/docker.hub.password
 sudo chgrp gitlab-runner /home/gitlab-runner/docker.hub.password
+
+sudo visudo
+# edit file and add following line to allow sudo no password privileges for gitlab-runner user
+# gitlab-runner ALL=(ALL) NOPASSWD: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/deploy.sh
+
 "

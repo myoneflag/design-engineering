@@ -1,9 +1,12 @@
+set -e
+
 cd docker
 npm install
 npm run login:dockerhub
 npm run login:aws
 npm run build:all --target=prod
 npm run publish
+
 cd ../cloudformation
 npm install
 if [[ $(npm run stack-exists) == *false ]]; then

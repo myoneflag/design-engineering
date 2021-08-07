@@ -38,7 +38,7 @@ deploy_test:
     env: test
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - ./deploy.sh
+    - sudo ./deploy.sh
   environment:
     name: test
     url: https://app-test.h2xtesting.com
@@ -51,7 +51,7 @@ deploy_stage:
     env: stage
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - ./deploy.sh    
+    - sudo ./deploy.sh    
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
