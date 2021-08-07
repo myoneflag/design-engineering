@@ -8,23 +8,21 @@ cache:
         - node/backend/node_modules/
         - node/common/node_modules/
 
-build:common:
-    stage: build
-    script: 
-        - cd node/common/
-        - npm install
-
 build:frontend:
     stage: build
     script:
-        - cd node/frontend/
+        - cd node/common/
+        - npm install
+        - cd ../../node/frontend/
         - npm install
         - npm run build
         
 build:backend:
     stage: build
     script:
-        - cd node/backend/
+        - cd node/common/
+        - npm install
+        - cd ../../node/backend/
         - npm install
         - npm run build
 
