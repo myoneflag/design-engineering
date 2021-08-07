@@ -22,5 +22,13 @@ echo \
   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
+
+# create file for dockerhub credentials
+touch docker.hub.password
+nano docker.hub.password
+# edit file and add password
+sudo mv ~/docker.hub.password /home/gitlab-runner/
+sudo chown gitlab-runner /home/gitlab-runner/docker.hub.password
+sudo chgrp gitlab-runner /home/gitlab-runner/docker.hub.password
 "
