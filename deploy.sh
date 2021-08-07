@@ -1,8 +1,14 @@
-pushd docker && npm run login && npm run build:all --target=prod && npm run publish && popd
-pushd cloudformation
+cd docker
+npm install
+npm run login:dockerhub
+npm run login:aws
+npm run build:all --target=prod
+npm run publish
+cd ../cloudformation
+npm install
 if [[ $(npm run stack-exists) == *false ]]; then
     npm run create
 else
     npm run update
 fi
-popd
+cd ..
