@@ -26,3 +26,22 @@ build:backend:
         - npm install
         - npm run build
 
+deploy_test:
+  stage: deploy
+  script:
+    - echo "Deploy test branch to app-test"
+  environment:
+    name: test
+    url: https://app-test.h2xtesting.com
+  rules:
+    - if: $CI_COMMIT_BRANCH == "test"
+
+deploy_stage:
+  stage: deploy
+  script:
+    - echo "Deploy release* branch to app-stage"
+  environment:
+    name: stage
+    url: https://app-stage.h2xtesting.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /release.*/'
