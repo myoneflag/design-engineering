@@ -24,16 +24,7 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
 
-# create file for dockerhub credentials
-touch docker.hub.password
-nano docker.hub.password
-# edit file and add password
-sudo mv ~/docker.hub.password /home/gitlab-runner/
-sudo chown gitlab-runner /home/gitlab-runner/docker.hub.password
-sudo chgrp gitlab-runner /home/gitlab-runner/docker.hub.password
-
 sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
 # gitlab-runner ALL=(ALL) NOPASSWD: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/deploy.sh
-
 "
