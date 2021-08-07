@@ -4,7 +4,7 @@ cd docker
 npm install
 npm run login:dockerhub
 npm run login:aws
-target=prod npm run build:all
+npm run build:all --target=prod
 npm run publish
 
 cd ../cloudformation

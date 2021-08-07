@@ -2,17 +2,17 @@
 
 ## Production build
 
-```target=prod npm run build:all ```
+```npm run build:all --target=prod```
 * Build `prod-web` and `prod-worker` images
 
 ## Development
 
 ### Build
 
-```target=dev npm run build:all```
+```npm run build:all --target=dev```
 * Build all development images: `backend`, `frontend`, `worker`, etc.
 
-```target=dev npm run rebuild:all```
+```npm run rebuild:all --target=dev```
 * Use this when performing changes to docker images that require rebuilding and not using cached layers. e.g. changing volumes
 
 ### Run
@@ -23,17 +23,17 @@
 ```npm run down```
 * Stops all development containers.
 
-```service=[backend|frontend|worker|sqsd|...] npm run logs```
+```npm run logs --service=[backend|frontend|worker|sqsd|...]```
 * Shows and follows logs for specified containers
 
-```service=[backend|frontend|worker|sqsd|...] npm run restart```
+```npm run restart --service=[backend|frontend|worker|sqsd|...]```
 * Restarts specified container
 * Use when service crashes, or you make container changes like ports volumes, etc.
 
-```service=[backend|frontend|worker|sqsd|...] npm run build```
+```npm run build --service=[backend|frontend|worker|sqsd|...]```
 * Rebuild specified container
 
-```service=[backend|frontend|worker|sqsd|...] npm run exec```
+```npm run exec --service=[backend|frontend|worker|sqsd|...]```
 * Opens a terminal in the specified container
 
 ### Troubleshooting
