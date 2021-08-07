@@ -4,6 +4,7 @@ cd docker
 npm install
 npm run login:dockerhub
 npm run login:aws
+export target=prod 
 npm run build:all
 npm run publish
 
