@@ -10,6 +10,8 @@ cache:
 
 build:frontend:
     stage: build
+    only:
+        - merge_requests
     script:
         - cd node/common/
         - npm install
@@ -19,6 +21,8 @@ build:frontend:
         
 build:backend:
     stage: build
+    only:
+        - merge_requests
     script:
         - cd node/common/
         - npm install
@@ -29,19 +33,20 @@ build:backend:
 deploy_test:
   stage: deploy
   script:
-    - echo "Deploy test branch to app-test"
+    - echo "Deploy $CI_COMMIT_BRANCH branch to app-test"
   environment:
     name: test
     url: https://app-test.h2xtesting.com
-  rules:
-    - if: $CI_COMMIT_BRANCH == "test"
+  only:
+    - /^test$/
+    - dev-245-automated-build
 
 deploy_stage:
   stage: deploy
   script:
-    - echo "Deploy release* branch to app-stage"
+    - echo "Deploy $CI_COMMIT_BRANCH branch to app-stage"
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
-  rules:
-    - if: '$CI_COMMIT_BRANCH =~ /release.*/'
+  only:
+    - /^release-.*$/
