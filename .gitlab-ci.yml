@@ -11,6 +11,7 @@ cache:
 build:frontend:
     stage: build
     only:
+        # - branches
         - merge_requests
     script:
         - cd node/common/
@@ -22,6 +23,7 @@ build:frontend:
 build:backend:
     stage: build
     only:
+        # - branches      
         - merge_requests
     script:
         - cd node/common/
@@ -32,19 +34,24 @@ build:backend:
 
 deploy_test:
   stage: deploy
+  variables:
+    env: test
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to app-test"
+    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
+    - ./deploy.sh
   environment:
     name: test
     url: https://app-test.h2xtesting.com
   only:
-    - /^test$/
-    - dev-245-automated-build
+    - test
 
 deploy_stage:
   stage: deploy
+  variables:
+    env: stage
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to app-stage"
+    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
+    - ./deploy.sh    
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
