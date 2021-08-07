@@ -34,11 +34,9 @@ build:backend:
 
 deploy_test:
   stage: deploy
-  variables:
-    env: test
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - sudo ./deploy.sh
+    - echo "Deploy $CI_COMMIT_BRANCH branch to test"
+    - sudo env=test ./deploy.sh
   environment:
     name: test
     url: https://app-test.h2xtesting.com
@@ -47,11 +45,9 @@ deploy_test:
 
 deploy_stage:
   stage: deploy
-  variables:
-    env: stage
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - sudo ./deploy.sh    
+    - echo "Deploy $CI_COMMIT_BRANCH branch to stage"
+    - sudo env=stage ./deploy.sh
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
