@@ -8,11 +8,19 @@ Using [Gitlab - Installing GitLab Runner](https://docs.gitlab.com/runner/install
 curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 sudo apt-get install gitlab-runner
 
+# reguster GitLab runner, choose executor type shell and provide runner key and URL from gitlab.com repo
 sudo gitlab-runner register
-# choose executor type shell
 
 # Install build dependencies
 # https://github.com/nodesource/distributions/blob/master/README.md#debinstall
 curl -fsSL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install -y nodejs
+sudo apt-get install -y nodejs awscli
+
+# docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 "
