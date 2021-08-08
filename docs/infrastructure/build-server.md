@@ -37,10 +37,4 @@ sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
 # path contains gitlab runner ID from above register command
 # gitlab-runner ALL=(ALL) NOPASSWD:SETENV: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/deploy.sh
-
-# Fix permissions for cleanup for gitlab-runner
-sudo nano /etc/gitlab-runner
-# edit file and add following line in the [[runners]] section
-# pre_clone_script = "sudo chown -R gitlab-runner:gitlab-runner ."
-sudo gitlab-runner restart
 "
