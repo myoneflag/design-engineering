@@ -37,6 +37,7 @@ deploy_test:
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to test"
     - sudo env=test ./cloudformation/deploy.sh
+  after_script:
     - sudo ./cloudformation/clean.sh
   environment:
     name: test
@@ -49,6 +50,7 @@ deploy_stage:
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to stage"
     - sudo env=stage ./cloudformation/deploy.sh
+  after_script:
     - sudo ./cloudformation/clean.sh
   environment:
     name: stage
