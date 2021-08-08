@@ -1,11 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { IsNull } from 'typeorm';
+import { getRepository, IsNull } from 'typeorm';
 import { ApiHandleError } from '../helpers/apiWrapper';
 import { AuthRequired } from '../helpers/withAuth';
 import { Session } from '../../../common/src/models/Session';
 import { CustomEntity } from '../../../common/src/models/CustomEntity';
 import { EntityType } from '../../../common/src/api/document/entities/types';
-import { ShareDocument } from '../../../common/src/models/ShareDocument';
+import { Document } from '../../../common/src/models/Document';
 
 export class CustomEntityController {
 
@@ -18,13 +18,14 @@ export class CustomEntityController {
                 deletedAt: IsNull(),
             }
         });
+
         const result = data.map(row => {
             return {
                 id: row.id,
                 ...row.entity,
             }
         })
-        console.log(result)
+
         return result;
     }
 
@@ -43,16 +44,21 @@ export class CustomEntityController {
     public async getEntityShare(req: Request, res: Response) {
 
         const token = req.query.id;
-        const sd = await ShareDocument.findOne({token: token});
 
-        if (!sd) {
+        const doc = await getRepository(Document)
+            .createQueryBuilder("document")
+            .innerJoin("document.shareDocument", "shareDocument")
+            .where("shareDocument.token= :token", { token: token })
+            .getOne();
+        
+        if (!doc) {
             return res.status(401).send({
                 success: false,
-                message: "Invalid link!",
+                message: "Shared document link is invalid",
             });
         }
 
-        const entities = await CustomEntityController.getDocumentEntities(sd.id, req.query.type)
+        const entities = await CustomEntityController.getDocumentEntities(doc.id, req.query.type)
 
         res.send({
             success: true,
