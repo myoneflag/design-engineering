@@ -10,13 +10,12 @@ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/s
 sudo apt-get install gitlab-runner
 
 # Register GitLab runner, choose executor type shell and provide runner key and URL from gitlab.com repo
-# copy gitlab runner ID to use below in sudo pesmissions file
 sudo gitlab-runner register
 
 # Install build dependencies
 # https://github.com/nodesource/distributions/blob/master/README.md#debinstall
 curl -fsSL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install -y nodejs awscli
+sudo apt-get install -y nodejs awscli zip
 
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -35,6 +34,5 @@ docker-compose -v
 # Allow sudo permissions for gitlab-runner user
 sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
-# path contains gitlab runner ID from above register command
-# gitlab-runner ALL=(ALL) NOPASSWD:SETENV: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/cloudformation/deploy.sh /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/cloudformation/clean.sh
+# %gitlab-runner ALL=(ALL) NOPASSWD:SETENV: ALL
 "
