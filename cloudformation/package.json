@@ -24,7 +24,7 @@
     "wait-create-stack": "aws cloudformation wait stack-create-complete --stack-name $CFStackName --region ${AWSRegion}",
     "update-stack": "aws cloudformation update-stack --stack-name $CFStackName --template-body file://dist/${GIT_COMMIT}/template.cfn.json --parameters file://dist/${GIT_COMMIT}/parameters.cfn.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion}",
     "wait-update-stack": "aws cloudformation wait stack-update-complete --stack-name $CFStackName --region ${AWSRegion}",
-    "describe-stack": "aws cloudformation describe-stack-resources --stack-name $CFStackName --output json --query 'StackResources[*].{LogicalResourceId:LogicalResourceId,PhysicalResourceId:PhysicalResourceId,ResourceStatus:ResourceStatus}'",
+    "describe-stack": "aws cloudformation describe-stack-resources --stack-name $CFStackName --output json --query 'StackResources[*].{LogicalResourceId:LogicalResourceId,PhysicalResourceId:PhysicalResourceId,ResourceStatus:ResourceStatus}' --region ${AWSRegion}",
     "delete-stack": "aws cloudformation delete-stack --stack-name $CFStackName --region ${AWSRegion}",
     "wait-delete-stack": "aws cloudformation wait stack-delete-complete --stack-name $CFStackName --region ${AWSRegion}"
   },
