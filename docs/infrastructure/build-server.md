@@ -36,5 +36,5 @@ docker-compose -v
 sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
 # path contains gitlab runner ID from above register command
-# gitlab-runner ALL=(ALL) NOPASSWD:SETENV: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/deploy.sh
+# gitlab-runner ALL=(ALL) NOPASSWD:SETENV: /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/cloudformation/deploy.sh /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/cloudformation/clean.sh
 "
