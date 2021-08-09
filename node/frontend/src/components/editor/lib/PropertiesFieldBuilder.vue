@@ -1,215 +1,217 @@
 <template>
     <b-row>
         <b-col>
-            <b-form-group
-                label-size="sm"
-                v-for="field in fields"
-                :key="field.property"
-                :id="'input-group-' + field.property"
-                :label-for="'input-' + field.property"
-                label-cols="12"
-                @blur="onCommitInternal"
-                :disabled="isDisabled(field)"
-                :description="field.description"
-            >
-                <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  v-if="!field.hideFromPropertyWindow">
-                        <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
-                        <b-col>
-                            <template v-if="field.type !== 'title'">
-                                <table style="width: 100%">
-                                    <tbody>
-                                    <tr>
-                                        <td>
+            <template v-for="field in fields" >
+                <b-form-group
+                    label-size="sm"
+                    v-if="!field.hideFromPropertyWindow"
+                    :key="field.property"
+                    :id="'input-group-' + field.property"
+                    :label-for="'input-' + field.property"
+                    label-cols="12"
+                    @blur="onCommitInternal"
+                    :disabled="isDisabled(field)"
+                    :description="field.description"
+                >
+                    <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  >
+                            <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
+                            <b-col>
+                                <template v-if="field.type !== 'title'">
+                                    <table style="width: 100%">
+                                        <tbody>
+                                        <tr>
+                                            <td>
 
-                                            <label
-                                                    class="float-left"
-                                                    style="text-align: left; font-size: 15px;"
-                                            >
-                                                {{ field.title }}
-                                            </label>
+                                                <label
+                                                        class="float-left"
+                                                        style="text-align: left; font-size: 15px;"
+                                                >
+                                                    {{ field.title }}
+                                                </label>
 
-                                        </td>
-                                        <td v-if="field.units">
+                                            </td>
+                                            <td v-if="field.units">
 
-                                            <label
-                                                    class="float-right"
-                                                    style="text-align: left; font-size: 15px;"
-                                            >
-                                                {{ convertUnits(field) }}
-                                            </label>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </template>
-                            <hr v-else />
-                        </b-col>
-                        <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
-                            <b-check
-                                class="float-right"
-                                :checked="isDefaultOverridden(field.property)"
-                                :indeterminate="isDefaultIndeterminate(field.property)"
-                                @input="setIsDefault(field.property, !$event, true)"
-                                :disabled="readonly"
+                                                <label
+                                                        class="float-right"
+                                                        style="text-align: left; font-size: 15px;"
+                                                >
+                                                    {{ convertUnits(field) }}
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <hr v-else />
+                            </b-col>
+                            <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
+                                <b-check
+                                    class="float-right"
+                                    :checked="isDefaultOverridden(field.property)"
+                                    :indeterminate="isDefaultIndeterminate(field.property)"
+                                    @input="setIsDefault(field.property, !$event, true)"
+                                    :disabled="readonly"
+                                />
+                            </b-col>
+                            <b-col cols="4" v-if="field.isCalculated" v-b-tooltip.hover title="Computed value">
+                                <b-button
+                                    class="computed-btn float-right"
+                                    v-if="isDisabled(field)"
+                                    @click="setIsComputed(field, false)"
+                                    size="sm"
+                                    variant="outline-secondary"
+                                    :disabled="readonly"
+                                >
+                                    Computed
+                                </b-button>
+                                <b-button
+                                    class="computed-btn float-right"
+                                    v-else
+                                    @click="setIsComputed(field, true, true)"
+                                    size="sm"
+                                    variant="outline-secondary"
+                                    :disabled="readonly"
+                                >
+                                    Overriden
+                                </b-button>
+                            </b-col>
+                        </b-row>
+
+                        <template v-if="!field.isCalculated || renderedData(field.property) != null">
+                            <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
+                            
+                            <b-form-textarea
+                                v-else-if="field.type === 'textarea'"
+                                :value="renderedData(field.property)"
+                                @input="setRenderedData(field, $event)"
+                                :id="'input-' + field.property"
+                                rows="5"
+                                size="sm"
+                                :placeholder="'Enter ' + field.title"
+                                :disabled="isDisabled(field)"
+                                @blur="onCommitInternal"
+                            ></b-form-textarea>
+
+                            <b-row
+                                style="(missingRequired(field) ? 'background-color: red' : '')"
+                                v-else-if="
+                                    field.type === 'number' && field.params.min != null && field.params.max != null
+                                "
+                            >
+                                <b-col cols="7">
+                                    <b-form-input
+                                        :value="displayWithCorrectUnits(field)"
+                                        @input="setRenderedDataNumeric(field, $event)"
+                                        :id="'input-' + field.property"
+                                        :min="convertValueToUnits(field.units, field.params.min)"
+                                        :max="convertValueToUnits(field.units, field.params.max)"
+                                        size="sm"
+                                        type="range"
+                                        :disabled="isDisabled(field)"
+                                        @blur="onCommitInternal"
+                                    />
+                                </b-col>
+                                <b-col cols="5">
+                                    <b-form-input
+                                        :value="displayWithCorrectUnits(field)"
+                                        @input="setRenderedDataNumeric(field, $event)"
+                                        :id="'input-' + field.property"
+                                        :min="convertValueToUnits(field.units, field.params.min)"
+                                        :max="convertValueToUnits(field.units, field.params.max)"
+                                        size="sm"
+                                        type="number"
+                                        :placeholder="'Enter ' + field.title"
+                                        :disabled="isDisabled(field)"
+                                        @blur="onCommitInternal"
+                                    />
+                                </b-col>
+                            </b-row>
+
+                            <b-row v-else-if="field.type === 'number'">
+                                <b-col cols="12">
+                                    <b-form-input
+                                        :value="displayWithCorrectUnits(field)"
+                                        @input="setRenderedDataNumeric(field, $event)"
+                                        :id="'input-' + field.property"
+                                        size="sm"
+                                        :min="field.params.min == null ? undefined : convertValueToUnits(field.units, field.params.min)"
+                                        :max="field.params.max == null ? undefined : convertValueToUnits(field.units, field.params.max)"
+                                        type="number"
+                                        :placeholder="'Enter ' + field.title"
+                                        :disabled="isDisabled(field)"
+                                        @blur="onCommitInternal"
+                                    />
+                                </b-col>
+                            </b-row>
+
+                            <b-dropdown
+                                v-else-if="field.type === 'choice'"
+                                class="float-left"
+                                size="sm"
+                                id="dropdown-1"
+                                :text="choiceName(renderedData(field.property), field.params.choices)"
+                                variant="outline-secondary"
+                                :disabled="isDisabled(field)"
+                            >
+                                <b-dropdown-item
+                                    v-for="(choice, index) in field.params.choices"
+                                    @click="setRenderedData(field, choice.key, true)"
+                                    :key="index"
+                                    size="sm"
+                                >
+                                    {{ choice.name }}
+                                </b-dropdown-item>
+                            </b-dropdown>
+
+                            <PopoutColourPicker
+                                v-else-if="field.type === 'color'"
+                                size="sm"
+                                :value="renderedData(field.property)"
+                                @input="setRenderedData(field, $event, true)"
+                                :disabled="isDisabled(field)"
                             />
-                        </b-col>
-                        <b-col cols="4" v-if="field.isCalculated" v-b-tooltip.hover title="Computed value">
-                            <b-button
-                                class="computed-btn float-right"
-                                v-if="isDisabled(field)"
-                                @click="setIsComputed(field, false)"
-                                size="sm"
-                                variant="outline-secondary"
-                                :disabled="readonly"
-                            >
-                                Computed
-                            </b-button>
-                            <b-button
-                                class="computed-btn float-right"
+
+                            <flow-system-picker
+                                v-else-if="field.type === 'flow-system-choice'"
+                                :flow-systems="field.params.systems"
+                                :selected-system-uid="renderedData(field.property)"
+                                @selectSystem="setRenderedData(field, field.params.systems[$event].uid, true)"
+                            />
+
+                            <rotation-picker
+                                v-else-if="field.type === 'rotation'"
+                                :value="renderedData(field.property)"
+                                @input="setRenderedData(field, $event, true)"
+                                :disabled="isDisabled(field)"
+                            />
+
+                            <boolean-picker
+                                v-else-if="field.type === 'boolean'"
+                                :value="renderedData(field.property)"
+                                @input="setRenderedData(field, $event, true)"
+                                :disabled="isDisabled(field)"
+                            />
+
+                            <h5 v-else-if="field.type === 'title'">
+                                {{ field.title }}
+                            </h5>
+
+                            <b-form-input
                                 v-else
-                                @click="setIsComputed(field, true, true)"
+                                :value="renderedData(field.property)"
+                                @input="setRenderedData(field, $event)"
+                                :id="'input-' + field.property"
+                                :type="field.type"
+                                :placeholder="'Enter ' + field[1]"
                                 size="sm"
-                                variant="outline-secondary"
-                                :disabled="readonly"
-                            >
-                                Overriden
-                            </b-button>
-                        </b-col>
-                    </b-row>
-
-                    <template v-if="!field.isCalculated || renderedData(field.property) != null">
-                        <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
-                        
-                        <b-form-textarea
-                            v-else-if="field.type === 'textarea'"
-                            :value="renderedData(field.property)"
-                            @input="setRenderedData(field, $event)"
-                            :id="'input-' + field.property"
-                            rows="5"
-                            size="sm"
-                            :placeholder="'Enter ' + field.title"
-                            :disabled="isDisabled(field)"
-                            @blur="onCommitInternal"
-                        ></b-form-textarea>
-
-                        <b-row
-                            style="(missingRequired(field) ? 'background-color: red' : '')"
-                            v-else-if="
-                                field.type === 'number' && field.params.min != null && field.params.max != null
-                            "
-                        >
-                            <b-col cols="7">
-                                <b-form-input
-                                    :value="displayWithCorrectUnits(field)"
-                                    @input="setRenderedDataNumeric(field, $event)"
-                                    :id="'input-' + field.property"
-                                    :min="convertValueToUnits(field.units, field.params.min)"
-                                    :max="convertValueToUnits(field.units, field.params.max)"
-                                    size="sm"
-                                    type="range"
-                                    :disabled="isDisabled(field)"
-                                    @blur="onCommitInternal"
-                                />
-                            </b-col>
-                            <b-col cols="5">
-                                <b-form-input
-                                    :value="displayWithCorrectUnits(field)"
-                                    @input="setRenderedDataNumeric(field, $event)"
-                                    :id="'input-' + field.property"
-                                    :min="convertValueToUnits(field.units, field.params.min)"
-                                    :max="convertValueToUnits(field.units, field.params.max)"
-                                    size="sm"
-                                    type="number"
-                                    :placeholder="'Enter ' + field.title"
-                                    :disabled="isDisabled(field)"
-                                    @blur="onCommitInternal"
-                                />
-                            </b-col>
-                        </b-row>
-
-                        <b-row v-else-if="field.type === 'number'">
-                            <b-col cols="12">
-                                <b-form-input
-                                    :value="displayWithCorrectUnits(field)"
-                                    @input="setRenderedDataNumeric(field, $event)"
-                                    :id="'input-' + field.property"
-                                    size="sm"
-                                    :min="field.params.min == null ? undefined : convertValueToUnits(field.units, field.params.min)"
-                                    :max="field.params.max == null ? undefined : convertValueToUnits(field.units, field.params.max)"
-                                    type="number"
-                                    :placeholder="'Enter ' + field.title"
-                                    :disabled="isDisabled(field)"
-                                    @blur="onCommitInternal"
-                                />
-                            </b-col>
-                        </b-row>
-
-                        <b-dropdown
-                            v-else-if="field.type === 'choice'"
-                            class="float-left"
-                            size="sm"
-                            id="dropdown-1"
-                            :text="choiceName(renderedData(field.property), field.params.choices)"
-                            variant="outline-secondary"
-                            :disabled="isDisabled(field)"
-                        >
-                            <b-dropdown-item
-                                v-for="(choice, index) in field.params.choices"
-                                @click="setRenderedData(field, choice.key, true)"
-                                :key="index"
-                                size="sm"
-                            >
-                                {{ choice.name }}
-                            </b-dropdown-item>
-                        </b-dropdown>
-
-                        <PopoutColourPicker
-                            v-else-if="field.type === 'color'"
-                            size="sm"
-                            :value="renderedData(field.property)"
-                            @input="setRenderedData(field, $event, true)"
-                            :disabled="isDisabled(field)"
-                        />
-
-                        <flow-system-picker
-                            v-else-if="field.type === 'flow-system-choice'"
-                            :flow-systems="field.params.systems"
-                            :selected-system-uid="renderedData(field.property)"
-                            @selectSystem="setRenderedData(field, field.params.systems[$event].uid, true)"
-                        />
-
-                        <rotation-picker
-                            v-else-if="field.type === 'rotation'"
-                            :value="renderedData(field.property)"
-                            @input="setRenderedData(field, $event, true)"
-                            :disabled="isDisabled(field)"
-                        />
-
-                        <boolean-picker
-                            v-else-if="field.type === 'boolean'"
-                            :value="renderedData(field.property)"
-                            @input="setRenderedData(field, $event, true)"
-                            :disabled="isDisabled(field)"
-                        />
-
-                        <h5 v-else-if="field.type === 'title'">
-                            {{ field.title }}
-                        </h5>
-
-                        <b-form-input
-                            v-else
-                            :value="renderedData(field.property)"
-                            @input="setRenderedData(field, $event)"
-                            :id="'input-' + field.property"
-                            :type="field.type"
-                            :placeholder="'Enter ' + field[1]"
-                            size="sm"
-                            :disabled="isDisabled(field)"
-                            @blur="onCommitInternal"
-                        />
-                    </template>
-                </div>
-            </b-form-group>
+                                :disabled="isDisabled(field)"
+                                @blur="onCommitInternal"
+                            />
+                        </template>
+                    </div>
+                </b-form-group>
+            </template>
         </b-col>
     </b-row>
 </template>
