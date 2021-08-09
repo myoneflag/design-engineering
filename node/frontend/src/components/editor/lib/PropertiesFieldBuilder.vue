@@ -12,8 +12,8 @@
                 :disabled="isDisabled(field)"
                 :description="field.description"
             >
-                <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
-                        <b-row :style="'margin-top: -10px; margin-bottom: -5px;'"  v-if="!field.hideFromPropertyWindow">
+                <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  v-if="!field.hideFromPropertyWindow">
+                        <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
                         <b-col>
                             <template v-if="field.type !== 'title'">
                                 <table style="width: 100%">
