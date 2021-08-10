@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@flatten-js/core": "1.0.18",
+    "@johmun/vue-tags-input": "^2.1.0",
     "@types/assert": "^1.4.3",
     "@types/blob-stream": "^0.1.29",
     "@types/deep-equal": "^1.0.1",
