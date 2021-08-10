@@ -42,6 +42,7 @@ export interface PropertyFieldBase {
     hasDefault: boolean;
     isCalculated: boolean;
     highlightOnOverride?: Color;
+    hideFromPropertyWindow?: boolean;
     requiresInput?: boolean;
     readonly?: boolean;
     multiFieldId: string | null;
