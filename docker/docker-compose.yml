@@ -75,6 +75,7 @@ services:
   base:
     profiles:
       - donotstart
+      - prod
     build:
       context: ../node/
       dockerfile: ../docker/base.Dockerfile
