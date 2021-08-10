@@ -38,7 +38,7 @@
                     </b-tr>
                     <b-tr v-if="currentProgress.drawingsNeeded">
                         <b-td>
-                            Create {{ currentProgress.drawingsNeeded }} Drawings
+                            Create {{ currentProgress.drawingsNeeded }} Projects
                         </b-td>
                         <b-td>
                             <v-icon name="check" variant="success" v-if="currentProgress.drawingsComplete"/>
@@ -46,7 +46,7 @@
                         </b-td>
                         <b-td>
                             <p v-if="currentProgress.drawingsComplete">All Good!</p>
-                            <b-button v-else :to="'/'" variant="success">Create Drawing</b-button>
+                            <b-button v-else :to="'/'" variant="success">Create Project</b-button>
                         </b-td>
                     </b-tr>
 

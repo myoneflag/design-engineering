@@ -10,6 +10,18 @@
                     ><v-icon name="upload" scale="1.3" style="float:left; margin-top:5px"></v-icon> Upload Floor Plan
                     (PDF)</b-button
                 >
+                <b-button
+                    :class="
+                        floorLockStatus
+                            ? 'btn-light border border-dark text-dark'
+                            : 'btn-dark text-white border border-dark'
+                    "
+                    class="source btn-sm"
+                    @click="$emit('lock-unlock-floor')"
+                    ><v-icon :name="floorLockStatus ? 'unlock' : 'lock'"    
+                     v-b-tooltip.hover.right="{ title: `Click to ${floorLockStatus?'Lock':'Unlock'} the PDF` }" 
+                     class=" mx-2" scale="1.3"></v-icon>
+                </b-button>
                 <input
                     ref="uploadPdfButton"
                     type="file"
@@ -27,7 +39,11 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-@Component
+@Component({
+    props: {
+        floorLockStatus: Boolean
+    }
+})
 export default class FloorPlanInsertPanel extends Vue {
     uploadFloorPlanClicked() {
         (this.$refs.uploadPdfButton as any).click();

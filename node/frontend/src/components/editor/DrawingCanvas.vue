@@ -28,6 +28,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
         <LevelSelector
             v-if="levelSelectorVisible && initialized" 
+             @level-changed="floorLockStatus = false"
             :object-store="globalStore"
             :class="{ onboarding: checkOnboardingClass(5) }"
         ></LevelSelector>
@@ -61,12 +62,14 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 </div>
             </div>
 
-            <ModeButtons :mode.sync="document.uiState.drawingMode" v-if="shouldDisplayModeButtons"/>
+            <ModeButtons :mode.sync="document.uiState.drawingMode"  @floor-plan="floorLockStatus = false" v-if="shouldDisplayModeButtons"/>
 
             <HistoryView v-if="showHistoryBar"></HistoryView>
 
             <FloorPlanInsertPanel 
                 @insert-floor-plan="onFloorPlanSelected" 
+                 @lock-unlock-floor="lockUnlockFloor"
+                  :floor-lock-status="floorLockStatus"
                 v-if="document.uiState.drawingMode === 0 && profile"
             />
 
@@ -255,7 +258,12 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         get globalStore(): GlobalStore {
             return globalStore;
         }
-
+        floorLockStatus: boolean = false;
+        lockUnlockFloor() {
+            this.floorLockStatus = this.floorLockStatus && this.floorLockStatus === true ? false : true;
+            this.select([], SelectMode.Replace);
+            this.scheduleDraw();
+        }
         get catalogLoaded(): boolean {
             return this.$store.getters["catalog/loaded"];
         }
@@ -697,8 +705,22 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             for (const luid of Object.keys(this.document.drawing.levels)) {
                 this.changedLevelsSinceLastPLUCalc.add(luid);
             }
+          
+
+           this.setDrawingMode();
+
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
+        }
+
+        setDrawingMode() {
+            if (this.document.uiState.viewOnly) {
+                this.document.uiState.drawingMode = DrawingMode.Calculations;
+            }
+            const mode = this.$route.params.mode;
+            if ([DrawingMode.FloorPlan, DrawingMode.Hydraulics, DrawingMode.Calculations].indexOf(parseInt(mode)) != -1) {
+                this.document.uiState.drawingMode = parseInt(mode);
+            }
         }
 
         destroyed() {
@@ -1713,7 +1735,8 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                         shouldContinue,
                         reactive,
                         this.currentTool,
-                        forExport
+                        forExport,
+                        this.floorLockStatus
                     );
                 }
 

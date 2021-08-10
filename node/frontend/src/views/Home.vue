@@ -1,29 +1,27 @@
 <template>
     <div>
         <MainNavBar :profile="profile"></MainNavBar>
-        <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)" :class="[ (profile && !profile.email_verified_at) && 'isEmailVerification']">
-            <LocaleSelector/>
+        <div
+            style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)"
+            :class="[profile && !profile.email_verified_at && 'isEmailVerification']"
+        >
+            <LocaleSelector />
             <b-container class="home">
                 <b-row>
-                    <b-col>
-                        <h1 class="title">
-                            Your Drawings
+                    <b-col class="text-left">
+                        <h1 class="title text-primary">
+                            Projects
+                        </h1>
+                    </b-col>
+                    <b-col class="text-right">
+                        <h1>
+                            <b-button size="lg" class=" btn mt-3 btn-success" @click="createDocument"
+                                ><v-icon name="plus"></v-icon> New project</b-button
+                            >
                         </h1>
                     </b-col>
                 </b-row>
-                <b-row style="margin-bottom: 30px">
-                    <b-col></b-col>
-                    <b-col>
-                        <b-button size="lg" variant="success" @click="createDocument"
-                            ><v-icon name="plus"></v-icon> New Drawing</b-button
-                        >
-                    </b-col>
-                    <b-col>
-                        <b-checkbox v-if="(profile ? profile.accessLevel <= AccessLevel.MANAGER : false)" @change="toggleShowDeleted">
-                            Show Deleted
-                        </b-checkbox>
-                    </b-col>
-                </b-row>
+
                 <b-row>
                     <b-col>
                         <b-alert variant="success" v-if="documents.length === 0 && loaded" show
@@ -33,91 +31,303 @@
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-modal id="modal-1" scrollable title="What's New" v-if="compiledChangeLogs.length >= 0" size="lg" @hidden="changeLogModalHidden">
+                        <b-modal
+                            id="modal-1"
+                            scrollable
+                            title="What's New"
+                            v-if="compiledChangeLogs.length >= 0"
+                            size="lg"
+                            @hidden="changeLogModalHidden"
+                        >
                             <b-card v-for="log in compiledChangeLogs" :key="log.id">
                                 <b-card-text style="text-align: left;">
                                     <b>Version:</b> {{ log.version }}<br />
                                     <span style="white-space: pre-wrap">{{ log.message }}</span> <br /><br />
                                     {{ new Date(log.createdOn).toLocaleString() }}<br />
                                     <b>Submitted by:</b> {{ log.submittedBy.username }}<br />
-                                    <b-badge pill variant="primary" v-for="badge in log.tags.split(',')" :key="badge">{{ badge }}</b-badge>
+                                    <b-badge pill variant="primary" v-for="badge in log.tags.split(',')" :key="badge">{{
+                                        badge
+                                    }}</b-badge>
                                 </b-card-text>
                             </b-card>
                         </b-modal>
                     </b-col>
                 </b-row>
                 <b-row>
-                    <template v-for="doc in documents">
-                        <b-col sm="6" md="4" lg="3" :key="doc.id" v-if="docVisible(doc)">
+                    <b-col cols="6">
+                        <div class="text-left  mt-4">
+                            <b-button
+                                class=" btn border "
+                                :class="{
+                                    'btn-success border-success': projectFilter === 'my-projects',
+                                    'btn-light border-secondary': projectFilter != 'my-projects'
+                                }"
+                                @click="
+                                    changeTab('my-projects')
+                                 
+                                "
+                            >
+                                My projects
+                            </b-button>
+                            <b-button
+                                class=" btn border  ml-2"
+                                :class="{
+                                    'btn-success border-success': projectFilter === 'organization-projects',
+                                    'btn-light  border-secondary': projectFilter != 'organization-projects'
+                                }"
+                                @click="  changeTab('organization-projects')
+                            
+                                "
+                            >
+                                Organization projects
+                            </b-button>
+                            <b-button
+                                v-if="profile && profile.accessLevel == 0"
+                                class=" btn border ml-2"
+                                :class="{
+                                    'btn-success border-success': projectFilter === 'all-projects',
+                                    'btn-light  border-secondary': projectFilter != 'all-projects'
+                                }"
+                                @click=" changeTab('all-projects')
+                                    
+                                "
+                            >
+                                Show all projects
+                            </b-button>
+                        </div>
+                    </b-col>
+                    <b-col cols="4">
+                        <div class="text-right  mt-4">
+                            <div class="form-outline">
+                                <input
+                                    type="search"
+                                    id="searchbox"
+                                    v-model="searchCondition"
+                                    class="form-control d-flex-inline"
+                                    placeholder="Search project name..."
+                                    aria-label="Search"
+                                />
+                            </div>
+                        </div>
+                    </b-col>
+                    <b-col cols="2" class="p-1">                        
+                        <b-checkbox
+                            class="mt-4"
+                            v-if="profile ? profile.accessLevel <= AccessLevel.MANAGER : false"
+                            @change="toggleShowDeleted"
+                        >
+                            Show deleted
+                        </b-checkbox>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col class="text-left mt-2">
+                        <button-tag
+                            v-if="documentTags.length == 0"
+                            :classList="
+                                ' pill border-secondary  text-secondary border p-2 btn-sm text-sm btn-small  mb-1 ml-1 px-2'
+                            "
+                            v-b-tooltip.hover="{
+                                title: 'Use tags to organize your projects'
+                            }"
+                            :item="'Tag'"
+                            :startWith="'#'"
+                        ></button-tag>
+                        <button-tag
+                            v-for="item in documentTags"
+                            @tag-clicked="tagClicked"
+                            :selectedTags="selectedTags"
+                            :key="item"
+                            :classList="' pill border-primary mt-1 text-primary border  btn-sm p-2 mr-1'"
+                            :item="item"
+                            :startWith="'#'"
+                        ></button-tag>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <template v-for="doc in filteredDocuments">
+                        <b-col sm="6" md="4" lg="3" :class="'mt-4'" :key="doc.id" v-if="docVisible(doc)">
                             <b-card
-                                :title="doc.metadata.title"
                                 :img-src="docIcon(doc)"
                                 img-alt="Image"
                                 img-top
                                 tag="article"
                                 style="max-width: 20rem;"
-                                class="mb-2 doc-tile"
+                                class="mb-2 doc-tile "
                             >
-                                <b-card-text>
-                                    <template v-if="doc.metadata.description">{{ doc.metadata.description }}</template>
+                                <div class="detail-container">
+                                    <h5 class="card-title text-left">
+                                        {{ doc.metadata.title }}
+                                        <span
+                                            class="d-inline-flex ml-2 m-2 circle-border border border-primary rounded-circle  text-primary ml-2"
+                                            v-if="doc.metadata.description"
+                                            v-b-tooltip.hover="{ title: doc.metadata.description }"
+                                        >
+                                            <v-icon name="info"></v-icon>
+                                        </span>
+                                    </h5>
 
-                                    <table style="text-align: left; font-size: 14px">
-                                        <tr>
-                                            <td>Owner:</td>
-                                            <td>{{ doc.createdBy.username }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Created:</td>
-                                            <td>{{ new Date(doc.createdOn).toLocaleDateString(locale) }}</td>
-                                        </tr>
-                                        <template v-if="shouldShowCompany() && doc.organization"
-                                            ><tr>
-                                                <td>Company:</td>
-                                                <td>{{ doc.organization.name }}</td>
-                                            </tr></template
+                                    <b-card-text class="mt-3">
+                                        <table
+                                            v-if="editTag == null || (editTag && editTag != doc)"
+                                            style="text-align: left; font-size: 14px"
                                         >
-                                        <template v-if="doc.lastModifiedBy"
-                                            ><tr>
-                                                <td>Modified By:</td>
-                                                <td>{{ doc.lastModifiedBy.username }}</td>
-                                            </tr></template
-                                        >
-                                        <template v-if="doc.lastModifiedOn"
-                                            ><tr>
-                                                <td>Modified On:</td>
-                                                <td>{{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}</td>
-                                            </tr></template
-                                        >
-                                    </table>
-                                </b-card-text>
+                                            <tr>
+                                                <td>Owner:</td>
+                                                <td class="pl-2">{{ doc.createdBy.username }}</td>
+                                            </tr>
+                                            <template v-if="shouldShowCompany() && doc.organization"
+                                                ><tr>
+                                                    <td>Company:</td>
+                                                    <td class="pl-2">{{ doc.organization.name }}</td>
+                                                </tr></template
+                                            >
+                                            <tr>
+                                                <td>Created:</td>
+                                                <td class="pl-2">
+                                                    {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
+                                                </td>
+                                            </tr>
+                                            <template v-if="doc.lastModifiedBy"
+                                                ><tr>
+                                                    <td>Modified By:</td>
+                                                    <td class="pl-2">{{ doc.lastModifiedBy.username }}</td>
+                                                </tr></template
+                                            >
+                                            <template v-if="doc.lastModifiedOn"
+                                                ><tr>
+                                                    <td>Modified On:</td>
+                                                    <td class="pl-2">
+                                                        {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
+                                                    </td>
+                                                </tr></template
+                                            >
+                                        </table>
 
-                                <b-dropdown
-                                    split
-                                    :split-to="'/document/' + doc.id"
-                                    variant="primary"
-                                    text="Open Drawing"
-                                    class="m-2"
-                                    no-caret
-                                >
-                                    <b-dropdown-item @click="clone(doc)">Make Copy</b-dropdown-item>
-                                    <b-dropdown-item
-                                        href="#"
+                                        <div class="d-inline-flex text-left w-100">
+                                            <div
+                                                v-if="editTag == null || (editTag && editTag != doc)"
+                                                class="text-left mt-3 w-100"
+                                                style="margin-left:-3px"
+                                            >
+                                                <div v-if="doc.tags && doc.tags != ''" class="">
+                                                    <button-tag
+                                                        v-for="item in doc.tags.split(',')"
+                                                        @tag-clicked="tagClicked"
+                                                        :selectedTags="selectedTags"
+                                                        :key="item"
+                                                        :classList="
+                                                            ` pill border-primary  d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
+                                                        "
+                                                        :item="item"
+                                                        :startWith="'#'"
+                                                    ></button-tag>
+                                                    <div
+                                                        class=" pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        v-b-tooltip.hover="{ title: 'Edit tags' }"
+                                                        role="button"
+                                                        @click="
+                                                            editTag = doc;
+                                                            doc.tagsArray = doc.tags.split(',');
+                                                        "
+                                                    >
+                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                    </div>
+                                                </div>
+                                                <div v-else>
+                                                    <div
+                                                        class=" pill border-secondary  d-inline-flex text-secondary border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        v-b-tooltip.hover="{
+                                                            title: 'Use tags to organize your projects'
+                                                        }"
+                                                        role="button"
+                                                    >
+                                                        #Tag
+                                                    </div>
+                                                    <div
+                                                        class=" pill border-success  d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        v-b-tooltip.hover="{ title: 'Edit tags' }"
+                                                        role="button"
+                                                        @click="
+                                                            editTag = doc;
+                                                            doc.tagsArray = doc.tags.split(',');
+                                                        "
+                                                    >
+                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="editTag == doc">
+                                                <div class="w-100 px-1">
+                                                    <vue-tags-input
+                                                        v-model="tag"
+                                                        :tags="tags"
+                                                        :autocomplete-items="selectedTagsAutoComplete"
+                                                        :delete-on-backspace="true"
+                                                        :placeholder="'Tags...'"
+                                                        @tags-changed="
+                                                            (newTags) =>
+                                                                (doc.tagsArray = newTags.map((t) => {
+                                                                    return t.text;
+                                                                }))
+                                                        "
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </b-card-text>
+                                </div>
+                                <div class="text-center mt-3 " v-if="editTag == null || (editTag && editTag != doc)">
+                                    <b-button
+                                        @click="openDoc(doc.id)"
+                                        variant="primary"
+                                        text="Open"
+                                        class="d-inline-flex "
+                                        no-caret
+                                    >
+                                        Open
+                                    </b-button>
+                                    <b-button
+                                        @click="clone(doc)"
+                                        class=" btn ml-2 btn-secondary"
+                                        v-b-tooltip.hover="{ title: 'Make a copy of your project' }"
+                                    >
+                                        <v-icon name="copy"></v-icon>
+                                    </b-button>
+                                    <b-button
                                         v-if="canDeleteDoc(doc)"
-                                        variant="danger"
                                         @click="deleteDoc(doc)"
+                                        v-b-tooltip.hover="{ title: 'Delete project' }"
+                                        class="ml-2 btn btn-danger"
                                     >
-                                        Delete
-                                    </b-dropdown-item>
+                                        <v-icon name="trash"></v-icon>
+                                    </b-button>
 
-                                    <b-dropdown-item
-                                        href="#"
+                                    <b-button
                                         v-if="canRestoreDoc(doc)"
-                                        variant="success"
                                         @click="restoreDoc(doc)"
+                                        v-b-tooltip.hover="{ title: 'Restore project' }"
+                                        class="ml-2 btn btn-success"
                                     >
-                                        Restore
-                                    </b-dropdown-item>
-                                </b-dropdown>
+                                        <v-icon name="redo"></v-icon>
+                                    </b-button>
+                                </div>
+                                <div class="mt-3 text-center" v-else>
+                                    <b-button
+                                        @click="editTag = null"
+                                        v-b-tooltip.hover="{ title: 'Discard tag changes' }"
+                                        class=" btn btn-danger"
+                                    >
+                                        <v-icon name="ban"></v-icon>
+                                    </b-button>
+                                    <b-button
+                                        @click="saveTags(doc)"
+                                        v-b-tooltip.hover="{ title: 'Save tags' }"
+                                        class="ml-2 btn btn-success"
+                                    >
+                                        <v-icon name="save"></v-icon>
+                                    </b-button>
+                                </div>
                             </b-card>
                         </b-col>
                     </template>
@@ -129,29 +339,41 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
+
+import VueTagsInput from "@johmun/vue-tags-input";
 import {
     canUserDeleteDocument,
     canUserRestoreDocument,
     Document,
     DocumentStatus
-} from "../../../common/src/models/Document";
-import { cloneDocument, createDocument, deleteDocument, getDocuments, restoreDocument } from "../api/document";
+} from "../../../common/src//models/Document";
+import {
+    cloneDocument,
+    createDocument,
+    deleteDocument,
+    updateDocument,
+    getDocuments,
+    restoreDocument
+} from "../api/document";
 import { getChangeLogMessages, saveChangeLogMessage } from "../api/change-log";
 import { updateLastNoticeSeen } from "../api/users";
-import { AccessLevel, User } from "../../../common/src/models/User";
-import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
-import { ChangeLogMessage } from "../../../common/src/models/ChangeLogMessage";
+import { AccessLevel, User } from "../../../common/src//models/User";
+import { assertUnreachable, CURRENT_VERSION } from "../../../common/src//api/config";
+import { ChangeLogMessage } from "../../../common/src//models/ChangeLogMessage";
 import { ONBOARDING_SCREEN } from "../store/onboarding/types";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import Onboarding from "../../src/components/Onboarding.vue";
 import LocaleSelector from "../components/LocaleSelector.vue";
-import { SupportedLocales } from "../../../common/src/api/locale";
-
+import { SupportedLocales } from "../../../common/src//api/locale";
+import ButtonTag from "../components/tags/ButtonTag.vue";
 @Component({
     components: {
         LocaleSelector,
-        MainNavBar, Onboarding
+        MainNavBar,
+        Onboarding,
+        ButtonTag,
+        VueTagsInput
     }
 })
 export default class Home extends Vue {
@@ -160,12 +382,139 @@ export default class Home extends Vue {
     showDeleted: boolean = false;
     hasNewChangeLogs: boolean = true;
     compiledChangeLogs: ChangeLogMessage[] = [];
+    selectedTags: string[] = [];
 
+    projectFilter: string = "my-projects";
+    searchCondition: string = "";
+    editTag: any = null;
+    tag: string = "";
     mounted() {
         this.reloadDocuments();
         this.getChangeLogs();
     }
-
+    changeTab(tab:string){
+        this.selectedTags=[];
+        this.projectFilter = tab;
+       
+    }
+    tagClicked(tag: string) {
+        this.selectedTags.indexOf(tag) == -1
+            ? this.selectedTags.push(tag)
+            : this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
+    
+    }
+    get tags() {
+        return this.editTag.tags
+            .split(",")
+            .filter((item: string) => {
+                return item && item != "";
+            })
+            .map((item: string) => ({ text: item }));
+    }
+    get selectedTagsAutoComplete() {
+        return this.documentTags
+            .filter((item) => {
+                return item.toLowerCase().indexOf(this.tag.toLowerCase()) !== -1;
+            })
+            .map((item: string) => {
+                return { text: item };
+            });
+    }
+    get documentTags() {
+          const tabDocuments=   this.projectFilter === "my-projects"
+        ? this.documents.filter((doc: Document) => {
+                return (
+                    doc.createdBy.username === this.profile.username 
+                );
+            })
+        : this.projectFilter === "organization-projects"
+        ? this.documents.filter((doc: Document) => {
+                return (
+                    this.profile &&
+                    this.profile.organization &&
+                    this.profile.organization.id &&
+                    doc.organization.id === this.profile.organization.id 
+                );
+            })
+        : this.documents
+        var docTags = tabDocuments
+        .filter((item) => {
+                return item.state != DocumentStatus.DELETED;
+            })
+            .map((item) => {
+                return item.tags;
+            })
+            .filter((item) => {
+                return item != "";
+            });
+        let arr: string[] = [];
+        docTags.forEach((item: string) => {
+            if (item) {
+                let currentArray = item.split(",");
+                currentArray.forEach((i) => {
+                    if (arr.indexOf(i) == -1) arr.push(i);
+                });
+            }
+        });
+        return arr
+            .map((item) => {
+                return item.toLowerCase();
+            })
+            .filter((value: string, index: number, self: any) => {
+                return self.indexOf(value) === index;
+            }).sort()   ;
+    }
+    get filteredDocuments() {
+    
+             return   this.projectFilter === "my-projects"
+                ? this.documents.filter((doc: Document) => {
+                      return (
+                          doc.createdBy.username === this.profile.username &&
+                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              this.searchCondition === "") &&
+                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
+                      );
+                  })
+                : this.projectFilter === "organization-projects"
+                ? this.documents.filter((doc: Document) => {
+                      return (
+                          this.profile &&
+                          this.profile.organization &&
+                          this.profile.organization.id &&
+                          doc.organization.id === this.profile.organization.id &&
+                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              this.searchCondition === "") &&
+                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
+                      );
+                  })
+                : this.documents.filter((doc: Document) => {
+                      return (
+                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                              this.searchCondition === "") &&
+                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
+                      );
+                  });
+        
+    }
+    saveTags(doc:Document){
+        doc.tags = (doc as any).tagsArray.map( (item:string) => { return item.toLowerCase()} ).join(',');
+        if(this.tag && this.tag !='')
+            doc.tags+=`,${this.tag}`
+        this.editTag = null;
+        this.tag="";
+        this.updateDoc(doc);
+    }
+    containsTag(doc: Document) {
+        if (!doc.tags) return false;
+        return (
+            doc.tags.split(",").filter((tag: string) => {
+                return this.selectedTags.indexOf(tag) != -1;
+            }).length >= this.selectedTags.length
+        );
+    }
     get onboardingScreen() {
         return ONBOARDING_SCREEN.HOME;
     }
@@ -177,7 +526,6 @@ export default class Home extends Vue {
     get locale(): SupportedLocales {
         return this.$store.getters["profile/locale"];
     }
-
     docIcon(doc: Document) {
         switch (doc.state) {
             case DocumentStatus.ACTIVE:
@@ -221,6 +569,9 @@ export default class Home extends Vue {
         getDocuments().then((res) => {
             if (res.success) {
                 this.documents.splice(0, this.documents.length, ...res.data);
+                this.documents.map((item) => {
+                    item.tags = item.tags || "";
+                });
                 this.loaded = true;
             } else {
                 this.$bvToast.toast(res.message, {
@@ -239,7 +590,7 @@ export default class Home extends Vue {
         if (this.profile.organization) {
             createDocument(this.profile.organization.id, this.locale).then((res) => {
                 if (res.success) {
-                    this.$router.push("/document/" + res.data.id);
+                    this.$router.push(`/document/${res.data.id}/0`);
                 } else {
                     this.$bvToast.toast(res.message, {
                         variant: "danger",
@@ -247,13 +598,12 @@ export default class Home extends Vue {
                     });
                 }
 
-
-                this.$store.dispatch('profile/refreshOnBoardingStats');
+                this.$store.dispatch("profile/refreshOnBoardingStats");
             });
         } else if (this.profile.temporaryUser) {
             createDocument(null, this.locale).then((res) => {
                 if (res.success) {
-                    this.$router.push("/document/" + res.data.id);
+                      this.$router.push(`/document/${res.data.id}/0`);
                 } else {
                     this.$bvToast.toast(res.message, {
                         variant: "danger",
@@ -261,11 +611,9 @@ export default class Home extends Vue {
                     });
                 }
 
-
-                this.$store.dispatch('profile/refreshOnBoardingStats');
+                this.$store.dispatch("profile/refreshOnBoardingStats");
             });
         } else {
-
             this.$bvToast.toast("You need to belong to an organization to create a document", {
                 variant: "danger",
                 title: "Error creating new document"
@@ -288,7 +636,15 @@ export default class Home extends Vue {
 
         return canUserRestoreDocument(doc, this.profile);
     }
-
+    async updateDoc(doc: Document) {
+        const res = await updateDocument(doc.id, undefined, doc.metadata,doc.tags);
+        if (!res.success) {
+            this.$bvToast.toast(res.message, {
+                variant: "danger",
+                title: "Failed to update Project"
+            });
+        }
+    }
     async deleteDoc(doc: Document) {
         const confirm = await this.$bvModal.msgBoxConfirm(
             'Are you sure you want to delete the document "' + doc.metadata.title + '"?'
@@ -300,12 +656,14 @@ export default class Home extends Vue {
             } else {
                 this.$bvToast.toast(res.message, {
                     variant: "danger",
-                    title: "Failed to Delete Drawing"
+                    title: "Failed to Delete Project"
                 });
             }
         }
     }
-
+    openDoc(documentId: number) {
+        this.$router.push(`/document/${documentId}/1`);
+    }
     async restoreDoc(doc: Document) {
         const res = await restoreDocument(doc.id);
         if (res.success) {
@@ -313,7 +671,7 @@ export default class Home extends Vue {
         } else {
             this.$bvToast.toast(res.message, {
                 variant: "danger",
-                title: "Failed to Restore Drawing"
+                title: "Failed to Restore Project"
             });
         }
     }
@@ -330,7 +688,7 @@ export default class Home extends Vue {
                 });
             }
         } else {
-            this.$bvToast.toast("You need to be part of an organization to store drawings", {
+            this.$bvToast.toast("You need to be part of an organization to store projects", {
                 variant: "danger",
                 title: "Cannot Make Copy"
             });
@@ -342,7 +700,7 @@ export default class Home extends Vue {
         if (res.success && res.data.length > 0) {
             this.hasNewChangeLogs = true;
             this.compiledChangeLogs = res.data;
-            this.$bvModal.show('modal-1');
+            this.$bvModal.show("modal-1");
             setTimeout(() => {
                 updateLastNoticeSeen();
                 this.profile.lastNoticeSeenOn = new Date();
@@ -356,17 +714,54 @@ export default class Home extends Vue {
     }
 }
 </script>
-
-<style lang="less">
+<style lang="less" scoped>
 h1 {
     padding-top: 50px;
 }
 
 .doc-tile img {
-    max-height: 150px;
+    max-height: 75px;
+    object-fit: contain;
 }
 
 .isEmailVerification {
     height: calc(100vh - 102px) !important;
+}
+.circle-border {
+    height: 24px;
+    width: 24px;
+    text-align: center;
+    padding-left: 8px;
+    padding-top: 2px;
+}
+.circle-border-md {
+    display: inline-block !important;
+    text-align: center;
+}
+.card-title {
+    font-size: 1.1rem;
+}
+.card-body {
+    padding: 1rem;
+}
+.rounded-border {
+    border-radius: 40px;
+}
+.detail-container {
+    height: 18rem;
+    overflow-y: auto;
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 3px;
+    margin-left: 10px;
+    margin-right: -5px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 132, 255, 0.5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 </style>

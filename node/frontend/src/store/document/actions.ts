@@ -67,7 +67,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
         // We need to wait for entity mutation watchers to fire and update the filter.
 
         if (!_.isEqual(state.drawing.metadata.generalInfo, state.committedDrawing.metadata.generalInfo)) {
-            updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo);
+            updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo,undefined);
         }
 
         // We have to clone to stop reactivity affecting the async post values later.

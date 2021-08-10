@@ -38,7 +38,7 @@ const router = new Router({
             }
         },
         {
-            path: "/document/:id",
+            path: "/document/:id/:mode?",
             // props: true,
             props(route) {
                 const id = Number.parseInt(route.params.id, 10) || 0;
