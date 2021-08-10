@@ -1,5 +1,19 @@
 # H2X Development Guidelines
 
+## Principles
+* Product work first, project work second.  
+  All the improvements we need to make to the project/code/automation/doc are important, but they need to come SECOND to completing the feature work, bugfixes and development.  
+* Test things well.  
+  When you say you're done, that should include testing. After coding is completed, put on your User hat and use it.
+* Leave code always better than you found it.  
+  Never make it messier, or change more than you really need to.
+* Think like a customer.  
+  If you did completed the feature as requested, but it doesn't make sense, say so, and make the change to make it better.  
+* Work smart.  
+  Most problems that we work on optimizing, can be avoided.
+* Pay attention to details.  
+  Details in comments in Jira, comments to MRs, details of how it looks and how it works.
+
 ## Merge requests
 * Make small, specific code changes in MRs.  
   It makes development cleaner as we merge in one change at a time.
@@ -27,7 +41,7 @@
 ## Deployment
 * If you want your changes deployed, merge your branch to `test`, and it will be automatically deployed to `app-test`.
 * DO NOT merge from **test** into your branch.  
-  Chnages in `test` might not make it in `master`. If other MRs have been merged, update from `master`.
+  Changes in `test` might not make it in `master`. If other MRs have been merged, update from `master`.
 
 ## Jira updates
 * All updates about the feature or task should be added to the Jira ticket.  
