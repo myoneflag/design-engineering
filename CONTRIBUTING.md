@@ -32,6 +32,8 @@
 ## Jira updates
 * All updates about the feature or task should be added to the Jira ticket.  
   Adding updates in #slack will make those updates get lost. This includes comments, videos or screenshots about progress reports.
+  And not added to the MR comments. Feature updates go in Jira, so that non-devs can follow.
 
 ## Merge Request comments
-* Always address merge request comments seriously, and make sure all threads have been answered before being ready to merge.
+* Always address merge request comments seriously, and make sure all threads have been answered before being ready to merge.  
+  And not added to the Jira comments. Code comments go in MRs, so that devs can follow.
