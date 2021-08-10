@@ -8,6 +8,7 @@ services:
     profiles:
       - dev
       - minimal
+      - local
     restart: always
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -27,6 +28,7 @@ services:
     profiles:
       - dev
       - minimal
+      - local
     depends_on:
       - db
     environment:
@@ -187,7 +189,7 @@ services:
     ports:
       - 8013:80
 
-  # Local NGINX proxy server
+  # Docker NGINX proxy server
   nginx:
     profiles:
       - dev
@@ -200,3 +202,14 @@ services:
     depends_on:
       - backend
       - frontend
+
+  # Local NGINX proxy server
+  nginx_local:
+    profiles:
+      - local
+    image: "nginx:latest"
+    volumes:
+      - ./nginx_local.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8010:80
+
