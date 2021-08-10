@@ -100,8 +100,8 @@ services:
       - AWS_PROFILE=${AWS_PROFILE}
       - SES_EMAIL_REGION=us-west-1
       - EMAIL_ADDRESS=test@h2xtesting.com
-      - DB_NAME=h2x
-      - NODE_OPTIONS=--max_old_space_size=6144
+      - DB_HOSTNAME=db
+      - MQ_URL="ws://mq:61614"
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
@@ -154,7 +154,7 @@ services:
       - AWS_REGION=us-local
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - DB_NAME=h2x
+      - DB_HOSTNAME=db
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
