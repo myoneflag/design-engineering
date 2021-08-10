@@ -34,11 +34,11 @@ build:backend:
 
 deploy_test:
   stage: deploy
-  variables:
-    env: test
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - ./deploy.sh
+    - echo "Deploy $CI_COMMIT_BRANCH branch to test"
+    - sudo env=test ./cloudformation/deploy.sh
+  after_script:
+    - sudo ./cloudformation/clean.sh
   environment:
     name: test
     url: https://app-test.h2xtesting.com
@@ -47,11 +47,11 @@ deploy_test:
 
 deploy_stage:
   stage: deploy
-  variables:
-    env: stage
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - ./deploy.sh    
+    - echo "Deploy $CI_COMMIT_BRANCH branch to stage"
+    - sudo env=stage ./cloudformation/deploy.sh
+  after_script:
+    - sudo ./cloudformation/clean.sh
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
