@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 
 const type = "postgres"
-const host = process.env.RDS_HOSTNAME || process.env.DB_HOSTNAME || "db"
+const host = process.env.RDS_HOSTNAME || process.env.DB_HOSTNAME || "localhost"
 const port = process.env.RDS_PORT || process.env.DB_PORT || 5432
 const username = process.env.RDS_USERNAME || process.env.DB_USERNAME || "postgres"
 const database = process.env.RDS_DB_NAME || process.env.DB_NAME || "h2x"

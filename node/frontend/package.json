@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 3001",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@flatten-js/core": "1.0.18",
+    "@johmun/vue-tags-input": "^2.1.0",
     "@types/assert": "^1.4.3",
     "@types/blob-stream": "^0.1.29",
     "@types/deep-equal": "^1.0.1",

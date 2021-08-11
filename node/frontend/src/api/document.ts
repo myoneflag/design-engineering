@@ -119,13 +119,15 @@ export function openDocumentShare(
 export async function updateDocument(
     id: number,
     organization: string | undefined,
-    metadata: GeneralInfo | undefined
+    metadata: GeneralInfo | undefined,
+    tags:string | undefined
 ): Promise<APIResult<Document>> {
     try {
         return (
             await axios.put("/api/documents/" + id, {
                 organization,
-                metadata
+                metadata,
+                tags
             })
         ).data;
     } catch (e) {

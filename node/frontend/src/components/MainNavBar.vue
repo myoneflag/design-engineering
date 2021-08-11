@@ -37,11 +37,11 @@
         <b-navbar type="light">
             <b-navbar-nav>
                 <b-navbar-brand href="https://h2xengineering.com" v-b-tooltip.hover="{ title: 'Public Site' }">
-                    <img src="@/assets/h2x.png" class="d-inline-block align-top" height="30" />
+                    <img src="@/assets/h2x.png" class="d-inline-block   mr-0 align-top" height="30" />
                 </b-navbar-brand>
             </b-navbar-nav>
             <b-navbar-nav>
-                <b-nav-item :to="{ name: 'home' }" active-class="active" exact>Your Drawings</b-nav-item>
+                <b-nav-item :to="{ name: 'home' }" active-class="active" exact>Projects</b-nav-item>
             </b-navbar-nav>
             <b-progress id="progressBar" :value="progressValue.value" variant="info" animated></b-progress>
             <b-popover target="progressBar" triggers="hover" placement="top">

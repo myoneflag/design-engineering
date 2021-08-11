@@ -67,7 +67,7 @@ export default class Document extends Vue {
             resetDocument(Number(this.$route.params.id)).then((res) => {
                 if (res.success) {
                     this.$bvModal.msgBoxConfirm("The document has been reset.").then(() => {
-                        this.$router.push("/document/" + this.$route.params.id);
+                        this.$router.push("/document/" + this.$route.params.id+"/0");
                     });
                 } else {
                     this.$bvToast.toast(res.message, {

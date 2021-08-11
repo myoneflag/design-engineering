@@ -13,7 +13,7 @@ export default {
   DEBUG_SQS_ENDPOINT_URL: process.env.DEBUG_SQS_ENDPOINT_URL,
   DEBUG_SQS_SSL_ENABLED: process.env.DEBUG_SQS_SSL_ENABLED,
 
-  MQ_URL: process.env.MQ_URL || "ws://mq:61614",
+  MQ_URL: process.env.MQ_URL || "ws://localhost:61614",
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
   MQ_PASSWORD: process.env.MQ_PASSWORD || 'admin',
 
