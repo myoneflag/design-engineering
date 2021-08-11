@@ -88,7 +88,7 @@ export function CalculatedObject<
                     if (typeof value === 'string') {
                         numberText = value;
                     } else {
-                        numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                        numberText = value === null ? "??" : (value as number).toFixed(fractionDigits);
                     }
                 }
                 
