@@ -18,6 +18,38 @@ Also, is updates an existing environment with new Docker images that have been p
 
 ## Local development
 
+This development mode will run the main parts of the app, `frontend`, `backend` and `worker` on the local machine, and will start docker containers only for DB, MQ and a Nginx proxy.
+
+**Start local servers**
+1. Ensure you use node 12  
+   ```node --version```  
+   If not, use `nvm` to install or switch to node 12.
+2. cd h2x
+3. ```
+   npm install -g typescript vue-cli
+   ```
+4. ```
+   cd node/backend
+   npm install
+   npm run dev
+   ```
+5. *(optional, in a new terminal)*
+   ```
+   npm run dev-worker
+   ```
+6. ```
+   cd ../frontend
+   npm install
+   npm run serve
+   ```
+**Start docker services**
+1. ```
+   cd docker
+   npm run dev:local
+   ```
+
+## Local development inside of Docker
+
 ```
 cd docker
 npm run dev
@@ -37,6 +69,11 @@ This also runs in the `backend` folder `npm run dev-worker` - dev server with ho
 * start a ActiveMQ broker container `mq`
 * start a NGinx container `nginx`  
 This runs NginX that exposes all 3 webservers (configured default for port *80*) to serve over 8011,8012,8013 to avoid port 80 conflicts
+
+You can also run a minimal set of docker containers:
+```
+npm run dev:minimal
+```
 
 ## AWS Development
 
