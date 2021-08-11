@@ -226,6 +226,7 @@ export default class LevelSelector extends Vue {
     }
 
     selectLevel(levelUid: string) {
+        this.$emit("level-changed", levelUid);
         this.$store.dispatch("document/setCurrentLevelUid", levelUid);
     }
 

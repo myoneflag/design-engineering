@@ -73,7 +73,8 @@ export default class ModeButtons extends Vue {
     }
 
     toggleFloorPlan() {
-        this.$emit('update:mode', 0);
+        this.$emit("update:mode", 0);
+        this.$emit("floor-plan");
     }
 
     togglePlumbing() {

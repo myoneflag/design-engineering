@@ -232,7 +232,7 @@
                     Save
                 </b-button>
                 <b-button variant="secondary" @click="cancel">
-                    {{ isUnchanged ? "Back to Drawing" : "Revert" }}
+                    {{ isUnchanged ? "Back to Project" : "Revert" }}
                 </b-button>
             </b-col>
         </b-row>
