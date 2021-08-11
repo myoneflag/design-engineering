@@ -1,19 +1,20 @@
 <template>
-    <b-container>
-        <b-row>
-            <b-col>
+    <b-row>
+        <b-col>
+            <template v-for="field in fields" >
                 <b-form-group
                     label-size="sm"
-                    v-for="field in fields"
+                    v-if="!field.hideFromPropertyWindow"
                     :key="field.property"
                     :id="'input-group-' + field.property"
                     :label-for="'input-' + field.property"
                     label-cols="12"
                     @blur="onCommitInternal"
                     :disabled="isDisabled(field)"
+                    :description="field.description"
                 >
-                    <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
-                        <b-row :style="'margin-top: -10px; margin-bottom: -5px;'">
+                    <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  >
+                            <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
                             <b-col>
                                 <template v-if="field.type !== 'title'">
                                     <table style="width: 100%">
@@ -78,8 +79,10 @@
                         </b-row>
 
                         <template v-if="!field.isCalculated || renderedData(field.property) != null">
+                            <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
+                            
                             <b-form-textarea
-                                v-if="field.type === 'textarea'"
+                                v-else-if="field.type === 'textarea'"
                                 :value="renderedData(field.property)"
                                 @input="setRenderedData(field, $event)"
                                 :id="'input-' + field.property"
@@ -208,9 +211,9 @@
                         </template>
                     </div>
                 </b-form-group>
-            </b-col>
-        </b-row>
-    </b-container>
+            </template>
+        </b-col>
+    </b-row>
 </template>
 
 <script lang="ts">
@@ -456,5 +459,9 @@ export default class PropertiesFieldBuilder extends Vue {
     100% {
         background-color: #ffeeaa;
     }
+}
+
+.form-row {
+    text-align: left;
 }
 </style>

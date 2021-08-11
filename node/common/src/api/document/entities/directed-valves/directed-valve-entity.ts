@@ -83,11 +83,12 @@ export function makeDirectedValveFields(
                 title: "Size",
                 hasDefault: false,
                 isCalculated: true,
+                hideFromPropertyWindow: true,
                 type: FieldType.Choice,
                 params: { choices: sizes, initialValue: sizes[0].key },
                 multiFieldId: "diameterMM",
                 requiresInput: false,
-                units: Units.Millimeters
+                units: Units.Millimeters,
             });
             if (entity.valve.type === ValveType.RPZD_DOUBLE_ISOLATED) {
                 fields.push({
@@ -121,11 +122,12 @@ export function makeDirectedValveFields(
                 title: "Size",
                 hasDefault: false,
                 isCalculated: true,
+                hideFromPropertyWindow: true,
                 type: FieldType.Choice,
                 params: { choices: sizes, initialValue: sizes[0].key },
                 multiFieldId: "diameterMM",
                 requiresInput: false,
-                units: Units.Millimeters
+                units: Units.Millimeters,
             });
             fields.push({
                 property: "valve.targetPressureKPA",

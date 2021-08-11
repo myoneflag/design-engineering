@@ -105,9 +105,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
                 selected = false;
             }
         }
-
-
-        this.drawEntity(context, { ...args, overrideColorList, selected, layerActive: args.active});
+        if (this.isActive() || !args.forExport) {
+            this.drawEntity(context, { ...args, overrideColorList, selected, layerActive: args.active });
+        }
     }
 
     drawCalculationBox(

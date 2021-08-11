@@ -42,11 +42,14 @@ export interface PropertyFieldBase {
     hasDefault: boolean;
     isCalculated: boolean;
     highlightOnOverride?: Color;
+    hideFromPropertyWindow?: boolean;
     requiresInput?: boolean;
     readonly?: boolean;
     multiFieldId: string | null;
     type: FieldType;
     units?: Units;
+    description?: string;
+    slot?: boolean;
 }
 
 export interface NumberField extends PropertyFieldBase {

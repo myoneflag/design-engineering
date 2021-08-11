@@ -3,6 +3,9 @@
         <b-row>
             <b-col>
                 <h3>{{ title }}</h3>
+                <h4 v-if="reactiveData.name">
+                    ({{ reactiveData.name }})
+                </h4>
             </b-col>
         </b-row>
         <PropertiesFieldBuilder
@@ -28,15 +31,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../../src/store/document/types";
-import PipeEntity, {
-    fillPipeDefaultFields,
-    makePipeFields
-} from "../../../../../common/src/api/document/entities/pipe-entity";
 import LoadNodeEntity, {
     makeLoadNodesFields,
     NodeType
 } from "../../../../../common/src/api/document/entities/load-node-entity";
-import LoadNode from "../../../htmlcanvas/objects/load-node";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import {Catalog} from "../../../../../common/src/api/catalog/types";
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";

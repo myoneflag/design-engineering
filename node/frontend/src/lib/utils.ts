@@ -232,3 +232,17 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
     }
     return build;
 }
+
+export function getNextPipeSize(currentSize: number, pipeSizes: number[]): number {
+    pipeSizes.sort((a, b) => (a - b)); // To make sure the sizes are sorted from low to high
+
+    let newPipeSize = 0;
+    for (const size of pipeSizes) {
+        if (size > currentSize) {
+            newPipeSize = size;
+            break;
+        }
+    }
+
+    return newPipeSize;
+}

@@ -53,13 +53,18 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
         ? filled.topHeightM! > doc.drawing.levels[lvlAboveUid].floorHeightM
         : filled.topHeightM! > doc.drawing.levels[lvlUid!].floorHeightM + LEVEL_HEIGHT_DIFF_M;
 
-    addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", {
-        title: "Pressure At Floor",
-        short: "at floor",
-    }, { title: "Static Pressure At Floor", short: "at floor" });
+    // TODO uncomment and fix DEV-325
+    // addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", 
+    // {
+    //     title: "Pressure At Floor",
+    //     short: "at floor",
+    // }, 
+    // { 
+    //     title: "Static Pressure At Floor", 
+    //     short: "at floor" 
+    // });
 
     const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
-
 
     if (extendsToBottom) {
 

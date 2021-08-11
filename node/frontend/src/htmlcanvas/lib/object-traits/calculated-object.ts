@@ -86,7 +86,7 @@ export function CalculatedObject<
                     } else if ( Array.isArray(value)) {
                         numberText = value === null ? "??" : value.map( v => (v as number).toFixed(fractionDigits) ).toString()
                     } else {
-                        numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                        numberText = value === null ? "??" : (value as number).toFixed(fractionDigits);
                     }
                 }
                 
