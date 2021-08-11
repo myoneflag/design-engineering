@@ -162,7 +162,7 @@ export class DocumentController {
                 doc.metadata = metadata;
             }
             if (tags!==undefined){
-                doc.tags = tags.toLowerCase();
+                doc.tags = tags;
             } 
             console.log({ doc });
 

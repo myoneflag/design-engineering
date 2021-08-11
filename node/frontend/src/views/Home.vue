@@ -264,6 +264,7 @@
                                                         :tags="tags"
                                                         :autocomplete-items="selectedTagsAutoComplete"
                                                         :delete-on-backspace="true"
+                                                        :validation="validation"
                                                         :placeholder="'Tags...'"
                                                         @tags-changed="
                                                             (newTags) =>
@@ -395,7 +396,15 @@ export default class Home extends Vue {
     editTag: any = null;
     tag: string = "";
     tagsArray: string[]=[];
-    
+    validation:any= [{
+      disableAdd:true,
+      classes:"no-class",
+      rule: (newTag:any) => !this.isTagValid(newTag) ,
+    }]
+    isTagValid(newTag:any){
+        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag==""
+        
+    }
     mounted(): void {
         this.reloadDocuments();
         this.getChangeLogs();
@@ -419,11 +428,22 @@ export default class Home extends Vue {
             })
             .map((item: string) => ({ text: item }));
     }
+    filterArray(array:string[],condition:string, contain:boolean=false){
+        return array
+            .filter((item:string)=>{
+                return item.toLowerCase()
+                .indexOf(condition.toLowerCase())!=-1
+                && (item.length==condition.length || contain)})
+            
+    }
+    containsText(text:string,condition:string) {
+        return text.toLowerCase().indexOf(condition.toLowerCase()) != -1;
+    }
     get selectedTagsAutoComplete() {
-        return this.documentTags
-            .filter((item) => {
-                return item.toLowerCase().indexOf(this.tag.toLowerCase()) !== -1;
-            })
+        if(this.tag.length < 3)
+            return [];
+        return this.filterArray(this.documentTags,this.tag,true)
+            .filter(item=>{return this.isTagValid({text:item})})
             .map((item: string) => {
                 return { text: item };
             });
@@ -448,7 +468,7 @@ export default class Home extends Vue {
         });
         return arr
             .map((item) => {
-                return item.toLowerCase();
+                return item;
             })
             .filter((value: string, index: number, self: any) => {
                 return self.indexOf(value) === index;
@@ -465,8 +485,8 @@ export default class Home extends Vue {
     }
 
     applySearchCondition(doc:Document) {
-        return  (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+        return  (this.containsText(doc.metadata.title,this.searchCondition) ||
+                this.containsText(doc.tags,this.searchCondition) ||
                 this.searchCondition === "")
     }
 
@@ -481,9 +501,22 @@ export default class Home extends Vue {
         })
     }
     saveTags(doc:Document){
-        doc.tags = this.tagsArray.map( (item:string) => { return item.toLowerCase()} ).join(',');
+        if(!this.isTagValid({text:this.tag}))
+        {
+            this.$bvToast.toast(`the tag ${this.tag} is invalid or repeated`, {
+                    variant: "danger",
+                    title: "Invalid tag"
+            });
+            return ;
+        }
+        
+        
+        doc.tags = this.tagsArray.join(',');
+
         if(this.tag && this.tag !='')
             doc.tags+=`,${this.tag}`
+        
+              
         this.editTag = null;
         this.tag="";
         this.updateDoc(doc);
