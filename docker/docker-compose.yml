@@ -8,6 +8,7 @@ services:
     profiles:
       - dev
       - minimal
+      - local
     restart: always
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -27,6 +28,7 @@ services:
     profiles:
       - dev
       - minimal
+      - local
     depends_on:
       - db
     environment:
@@ -73,6 +75,7 @@ services:
   base:
     profiles:
       - donotstart
+      - prod
     build:
       context: ../node/
       dockerfile: ../docker/base.Dockerfile
@@ -100,8 +103,8 @@ services:
       - AWS_PROFILE=${AWS_PROFILE}
       - SES_EMAIL_REGION=us-west-1
       - EMAIL_ADDRESS=test@h2xtesting.com
-      - DB_NAME=h2x
-      - NODE_OPTIONS=--max_old_space_size=6144
+      - DB_HOSTNAME=db
+      - MQ_URL="ws://mq:61614"
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
@@ -154,7 +157,7 @@ services:
       - AWS_REGION=us-local
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - DB_NAME=h2x
+      - DB_HOSTNAME=db
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
@@ -187,7 +190,7 @@ services:
     ports:
       - 8013:80
 
-  # Local NGINX proxy server
+  # Docker NGINX proxy server
   nginx:
     profiles:
       - dev
@@ -200,3 +203,14 @@ services:
     depends_on:
       - backend
       - frontend
+
+  # Local NGINX proxy server
+  nginx_local:
+    profiles:
+      - local
+    image: "nginx:latest"
+    volumes:
+      - ./nginx_local.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8010:80
+

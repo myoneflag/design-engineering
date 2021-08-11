@@ -2787,6 +2787,10 @@ export default class CalculationEngine implements CalculationContext {
                 }
                 case EntityType.RISER:
                 case EntityType.PLANT:
+                    const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                    if (!(o as Plant).validateConnectionPoints()) {
+                        calculation.warning = "Flow System Not Connected to Plant";
+                    }
                     break;
                 case EntityType.LOAD_NODE: {
                     const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity, this.catalog, this.nodes);

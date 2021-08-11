@@ -75,12 +75,13 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     shiftKey: boolean = false;
     selectable = true;
 
+    floorLockStatus?: boolean;
     oldKey: string = "";
 
     imageCache = new Map<string, HTMLImageElement | null>(); // null means we are loading.
 
     renderIndex: FloorPlanRenders | null | false = null; // false means loading
-
+    isLocked: true;
     drawPoint(context: DrawingContext, objectCoord: Coord, label: string) {
         const { ctx } = context;
         this.withScreen(context, objectCoord, () => {
@@ -237,6 +238,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         forExport: boolean
     ) {
         const ctx = context.ctx;
+
         const image = this.chooseImage(context, forExport);
 
         if (image) {
@@ -302,7 +304,6 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         // We use an inverse viewport to find the appropriate clip bounds.
         const ctx = context.ctx;
         const image = this.chooseImage(context, forExport);
-
         if (image) {
             const imgScaleX = this.width / image.width;
             const imgScaleY = this.height / image.height;
@@ -346,8 +347,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     drawEntity(context: DrawingContext, { selected, layerActive, forExport }: EntityDrawingArgs) {
         const { ctx, vp } = context;
         const image = this.chooseImage(context, forExport);
-
-        if (selected && image) {
+        if ( selected && image) {
             const imgScaleX = this.width / image.width;
             const imgScaleY = this.height / image.height;
 
@@ -421,6 +421,8 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+        
+        if (!this.floorLockStatus) return false;
         this.shiftKey = event.shiftKey; // shift click moves the pdf but not the crop box or child points.
         const w = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
         const o = this.toObjectCoord(w);
@@ -480,6 +482,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
     }
 
     onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+         
         if (this.grabbedPoint || this.grabbedCenterState) {
             context.isLayerDragging = false;
             this.grabbedPoint = null;

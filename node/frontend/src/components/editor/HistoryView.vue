@@ -41,7 +41,7 @@ import { DrawingMode } from "../../htmlcanvas/types";
                     </p>
                 </template>
                 <b-card-text v-else>
-                    Blank Drawing
+                    Blank Project
                 </b-card-text>
             </b-card-text>
             <b-button-group>

@@ -1,19 +1,20 @@
 <template>
     <b-row>
         <b-col>
+            <template v-for="field in fields" >
             <b-form-group
                 label-size="sm"
-                v-for="field in fields"
+                    v-if="!field.hideFromPropertyWindow"
                 :key="field.property"
                 :id="'input-group-' + field.property"
                 :label-for="'input-' + field.property"
                 label-cols="12"
                 @blur="onCommitInternal"
                 :disabled="isDisabled(field)"
-                :description="field.description"
+                    :description="field.description"
             >
-                <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property">
-                    <b-row :style="'margin-top: -10px; margin-bottom: -5px;'">
+                    <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  >
+                            <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
                         <b-col>
                             <template v-if="field.type !== 'title'">
                                 <table style="width: 100%">
@@ -78,10 +79,10 @@
                     </b-row>
 
                     <template v-if="!field.isCalculated || renderedData(field.property) != null">
-                        <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
-                        
+                            <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
+                            
                         <b-form-textarea
-                            v-else-if="field.type === 'textarea'"
+                                v-else-if="field.type === 'textarea'"
                             :value="renderedData(field.property)"
                             @input="setRenderedData(field, $event)"
                             :id="'input-' + field.property"
@@ -202,7 +203,7 @@
                             @input="setRenderedData(field, $event)"
                             :id="'input-' + field.property"
                             :type="field.type"
-                            :placeholder="'Enter ' + field[1]"
+                                :placeholder="'Enter ' + field[1]"
                             size="sm"
                             :disabled="isDisabled(field)"
                             @blur="onCommitInternal"
@@ -210,6 +211,7 @@
                     </template>
                 </div>
             </b-form-group>
+            </template>
         </b-col>
     </b-row>
 </template>

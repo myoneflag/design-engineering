@@ -21,21 +21,13 @@ export class Document extends BaseEntity {
     @Column({ default: DocumentStatus.ACTIVE })
     state: DocumentStatus;
 
-    @OneToMany(
-        () => Operation,
-        (op: Operation) => op.document,
-        { cascade: true }
-    )
+    @OneToMany(() => Operation, (op: Operation) => op.document, { cascade: true })
     operations: Promise<Operation[]>;
 
-    @OneToMany(
-        () => Drawing,
-        ( dr: Drawing ) => dr.document,
-        { cascade: true }
-    )
+    @OneToMany(() => Drawing, (dr: Drawing) => dr.document, { cascade: true })
     drawings: Promise<Drawing[]>;
 
-    @Column({default: 0})
+    @Column({ default: 0 })
     nextOperationIndex: number;
 
     @ManyToOne(() => Organization, { eager: true, nullable: true })
@@ -65,19 +57,22 @@ export class Document extends BaseEntity {
      *
      * When a job is received for upgrade, we use this field to check whether something else is already upgrading it or
      * not. If we are upgrading, we update this field regularly.
-      */
-    @Column({ default: 'now' })
+     */
+    @Column({ default: "now" })
     upgradingLockExpires: Date;
 
     @OneToOne(() => ShareDocument, { eager: true })
     @JoinColumn()
     shareDocument: ShareDocument;
 
-    @Column({default: new Date(2000, 0, 0)})
+    @Column({ default: new Date(2000, 0, 0) })
     lastCompression: Date;
 
-    @Column({type: "enum", enum: SupportedLocales, default: SupportedLocales.AU})
+    @Column({ type: "enum", enum: SupportedLocales, default: SupportedLocales.AU })
     locale: SupportedLocales;
+
+    @Column({nullable:true})
+    tags: string;
 }
 
 export function canUserDeleteDocument(doc: Document, user: User) {

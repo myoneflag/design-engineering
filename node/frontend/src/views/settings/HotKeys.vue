@@ -34,7 +34,7 @@
                 <b-button variant="success" style="margin-right: 20px" @click="save" v-if="!isUnchanged" :disabled="isLoading">
                     Save <b-spinner v-if="isLoading" style="width: 1.0rem; height: 1.0rem;"></b-spinner>
                 </b-button>
-                <b-button v-if="isUnchanged" @click="back">Back to Drawing</b-button>
+                <b-button v-if="isUnchanged" @click="back">Back to Project</b-button>
                 <b-button v-else @click="revert" :disabled="isLoading">Revert</b-button>
             </b-col>
         </b-row>

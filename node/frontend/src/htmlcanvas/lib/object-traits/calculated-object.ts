@@ -56,7 +56,19 @@ export function CalculatedObject<
         makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
                 const convFun = datum.convert || convertMeasurementSystem;
-                const [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+                
+                let value = null;
+                let units = datum.units;
+                if (Array.isArray(datum.value)) {
+                    value = [];
+                    datum.value.forEach(v => {
+                        const convertedValue = convFun(context.doc.drawing.metadata.units, datum.units, v);
+                        value.push(convertedValue[1]);
+                        units = convertedValue[0];
+                    });
+                } else {
+                    [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+                }
 
                 if (value === undefined) {
                     throw new Error(
@@ -76,7 +88,7 @@ export function CalculatedObject<
                     if (typeof value === 'string') {
                         numberText = value;
                     } else {
-                        numberText = value === null ? "??" : value.toFixed(fractionDigits);
+                        numberText = value === null ? "??" : (value as number).toFixed(fractionDigits);
                     }
                 }
                 
