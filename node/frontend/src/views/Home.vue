@@ -59,11 +59,11 @@
                             <b-button
                                 class=" btn border "
                                 :class="{
-                                    'btn-success border-success': projectFilter === 'my-projects',
-                                    'btn-light border-secondary': projectFilter != 'my-projects'
+                                    'btn-success border-success': projectFilter ===   ProjectTabFilters.MY_PROJECTS,
+                                    'btn-light border-secondary': projectFilter !=  ProjectTabFilters.MY_PROJECTS
                                 }"
                                 @click="
-                                    changeTab('my-projects')
+                                    changeTab(ProjectTabFilters.MY_PROJECTS)
                                  
                                 "
                             >
@@ -72,10 +72,10 @@
                             <b-button
                                 class=" btn border  ml-2"
                                 :class="{
-                                    'btn-success border-success': projectFilter === 'organization-projects',
-                                    'btn-light  border-secondary': projectFilter != 'organization-projects'
+                                    'btn-success border-success': projectFilter ===  ProjectTabFilters.ORGANIZATION_PROJECTS,
+                                    'btn-light  border-secondary': projectFilter != ProjectTabFilters.ORGANIZATION_PROJECTS
                                 }"
-                                @click="  changeTab('organization-projects')
+                                @click=" changeTab(ProjectTabFilters.ORGANIZATION_PROJECTS)
                             
                                 "
                             >
@@ -85,10 +85,10 @@
                                 v-if="profile && profile.accessLevel == 0"
                                 class=" btn border ml-2"
                                 :class="{
-                                    'btn-success border-success': projectFilter === 'all-projects',
-                                    'btn-light  border-secondary': projectFilter != 'all-projects'
+                                    'btn-success border-success': projectFilter === ProjectTabFilters.ALL_PROJECTS,
+                                    'btn-light  border-secondary': projectFilter != ProjectTabFilters.ALL_PROJECTS
                                 }"
-                                @click=" changeTab('all-projects')
+                                @click="changeTab(ProjectTabFilters.ALL_PROJECTS)
                                     
                                 "
                             >
@@ -228,7 +228,7 @@
                                                         role="button"
                                                         @click="
                                                             editTag = doc;
-                                                            doc.tagsArray = doc.tags.split(',');
+                                                            tagsArray = doc.tags.split(',');
                                                         "
                                                     >
                                                         # <v-icon class="ml-1" name="pen"></v-icon>
@@ -250,7 +250,7 @@
                                                         role="button"
                                                         @click="
                                                             editTag = doc;
-                                                            doc.tagsArray = doc.tags.split(',');
+                                                            tagsArray = doc.tags.split(',');
                                                         "
                                                     >
                                                         # <v-icon class="ml-1" name="pen"></v-icon>
@@ -267,7 +267,7 @@
                                                         :placeholder="'Tags...'"
                                                         @tags-changed="
                                                             (newTags) =>
-                                                                (doc.tagsArray = newTags.map((t) => {
+                                                                (tagsArray = newTags.map((t) => {
                                                                     return t.text;
                                                                 }))
                                                         "
@@ -367,6 +367,13 @@ import Onboarding from "../../src/components/Onboarding.vue";
 import LocaleSelector from "../components/LocaleSelector.vue";
 import { SupportedLocales } from "../../../common/src//api/locale";
 import ButtonTag from "../components/tags/ButtonTag.vue";
+
+ enum ProjectTabFilters {
+  MY_PROJECTS = 0,
+  ORGANIZATION_PROJECTS = 1,
+  ALL_PROJECTS = 2,
+}
+
 @Component({
     components: {
         LocaleSelector,
@@ -383,16 +390,17 @@ export default class Home extends Vue {
     hasNewChangeLogs: boolean = true;
     compiledChangeLogs: ChangeLogMessage[] = [];
     selectedTags: string[] = [];
-
-    projectFilter: string = "my-projects";
+    projectFilter: number = ProjectTabFilters.MY_PROJECTS;
     searchCondition: string = "";
     editTag: any = null;
     tag: string = "";
-    mounted() {
+    tagsArray: string[]=[];
+    
+    mounted(): void {
         this.reloadDocuments();
         this.getChangeLogs();
     }
-    changeTab(tab:string){
+    changeTab(tab:ProjectTabFilters){
         this.selectedTags=[];
         this.projectFilter = tab;
        
@@ -421,26 +429,8 @@ export default class Home extends Vue {
             });
     }
     get documentTags() {
-          const tabDocuments=   this.projectFilter === "my-projects"
-        ? this.documents.filter((doc: Document) => {
-                return (
-                    doc.createdBy.username === this.profile.username 
-                );
-            })
-        : this.projectFilter === "organization-projects"
-        ? this.documents.filter((doc: Document) => {
-                return (
-                    this.profile &&
-                    this.profile.organization &&
-                    this.profile.organization.id &&
-                    doc.organization.id === this.profile.organization.id 
-                );
-            })
-        : this.documents
-        var docTags = tabDocuments
-        .filter((item) => {
-                return item.state != DocumentStatus.DELETED;
-            })
+        
+        var docTags = this.documents.filter((item:Document) => {return this.applyTabFilter(item) && item.state != DocumentStatus.DELETED})
             .map((item) => {
                 return item.tags;
             })
@@ -464,43 +454,34 @@ export default class Home extends Vue {
                 return self.indexOf(value) === index;
             }).sort()   ;
     }
+
+    applyTabFilter(doc:Document){
+        return  (this.projectFilter === ProjectTabFilters.MY_PROJECTS && doc.createdBy.username === this.profile.username) || 
+
+                (this.projectFilter === ProjectTabFilters.ORGANIZATION_PROJECTS &&
+                this.profile!.organization!.id ==doc!.organization!.id) || 
+
+                (this.projectFilter === ProjectTabFilters.ALL_PROJECTS)
+    }
+
+    applySearchCondition(doc:Document) {
+        return  (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
+                this.searchCondition === "")
+    }
+
+    applyTagFilter(doc:Document) {
+        return  (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
+    }
+
     get filteredDocuments() {
-    
-             return   this.projectFilter === "my-projects"
-                ? this.documents.filter((doc: Document) => {
-                      return (
-                          doc.createdBy.username === this.profile.username &&
-                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              this.searchCondition === "") &&
-                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
-                      );
-                  })
-                : this.projectFilter === "organization-projects"
-                ? this.documents.filter((doc: Document) => {
-                      return (
-                          this.profile &&
-                          this.profile.organization &&
-                          this.profile.organization.id &&
-                          doc.organization.id === this.profile.organization.id &&
-                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              this.searchCondition === "") &&
-                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
-                      );
-                  })
-                : this.documents.filter((doc: Document) => {
-                      return (
-                          (doc.metadata.title.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              doc.tags.toLowerCase().indexOf(this.searchCondition.toLowerCase()) != -1 ||
-                              this.searchCondition === "") &&
-                          (this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc)))
-                      );
-                  });
-        
+        return   this.documents.filter((doc: Document) => {
+                return ( this.applyTabFilter(doc) && this.applySearchCondition(doc) && this.applyTagFilter(doc)
+            );
+        })
     }
     saveTags(doc:Document){
-        doc.tags = (doc as any).tagsArray.map( (item:string) => { return item.toLowerCase()} ).join(',');
+        doc.tags = this.tagsArray.map( (item:string) => { return item.toLowerCase()} ).join(',');
         if(this.tag && this.tag !='')
             doc.tags+=`,${this.tag}`
         this.editTag = null;
@@ -559,7 +540,9 @@ export default class Home extends Vue {
     get AccessLevel() {
         return AccessLevel;
     }
-
+    get ProjectTabFilters(){
+        return ProjectTabFilters;
+    }
     shouldShowCompany() {
         return this.profile ? this.profile.accessLevel <= AccessLevel.ADMIN : false;
     }
