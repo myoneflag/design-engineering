@@ -52,6 +52,7 @@ export default class FloorPlanInsertPanel extends Vue {
     floorPlanChosen(file: Event) {
         if ((file.target as any).files[0]) {
             this.$emit("insert-floor-plan", (file.target as any).files[0]);
+            this.$emit('lock-unlock-floor',false);
         }
     }
 }

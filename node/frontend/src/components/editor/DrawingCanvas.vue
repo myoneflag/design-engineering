@@ -47,6 +47,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
             <canvas
                 ref="drawingCanvas"
+                :title="!floorLockStatus && this.document.uiState.drawingMode==DrawingMode.FloorPlan ?'Click on the padlock to unlock':''"
                 @contextmenu="disableContextMenu"
                 v-bind:style="{
                     backgroundColor: 'aliceblue',
@@ -259,8 +260,11 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             return globalStore;
         }
         floorLockStatus: boolean = false;
-        lockUnlockFloor() {
-            this.floorLockStatus = this.floorLockStatus && this.floorLockStatus === true ? false : true;
+        lockUnlockFloor(val:boolean | undefined) {
+            if(val)
+                this.floorLockStatus = val;
+            else
+                this.floorLockStatus = this.floorLockStatus && this.floorLockStatus === true ? false : true;
             this.select([], SelectMode.Replace);
             this.scheduleDraw();
         }
