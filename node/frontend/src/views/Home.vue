@@ -512,7 +512,9 @@ export default class Home extends Vue {
         }
         
         
-        doc.tags = this.tagsArray.join(',');
+        doc.tags = this.tagsArray
+        .map(item=>{return item.trim()})
+        .filter(item=>{return item && item!=""}).join(',');
 
         if(this.tag && this.tag !='')
             doc.tags+=`,${this.tag}`
