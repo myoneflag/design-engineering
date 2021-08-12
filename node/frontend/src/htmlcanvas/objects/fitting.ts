@@ -315,7 +315,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
         } else if (connections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 4)) {
-                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+                // kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+                kValue = 0
             } else {
                 kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
             }
@@ -329,6 +330,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
+        console.log( {angle, flowLS, volLM, velocityMS, kValue, smallestDiameterNominalMM} )
         return sign * fittingFrictionLossMH(velocityMS, kValue, ga)
     }
 

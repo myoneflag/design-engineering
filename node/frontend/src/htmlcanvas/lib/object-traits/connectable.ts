@@ -578,6 +578,9 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 // @ts-ignore
                 const componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
 
+                if (this.entity.type == 'FITTING')
+                    console.log( {uid: this.entity.uid, type: this.entity.type, componentHL: componentHL} )
+
                 if (this.entity.type === EntityType.SYSTEM_NODE) {
                     // @ts-ignore
                     return componentHL;
@@ -628,8 +631,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                     angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection))
                 );
 
-                const kValueComputed = 0
                 // const kValueComputed = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
+                const kValueComputed = 0
 
                 if (Math.abs(flowLS) < EPS) {
                     // @ts-ignore
@@ -637,7 +640,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 if (componentHL !== null) {
-                    return sign * fittingFrictionLossMH(velocityMS, kValueComputed, ga) + componentHL;
+                    const combinedHL = sign * fittingFrictionLossMH(velocityMS, kValueComputed, ga) + componentHL;
+                    return combinedHL;
                 } else {
                     return null;
                 }
