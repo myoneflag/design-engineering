@@ -510,16 +510,13 @@ export default class Home extends Vue {
             });
             return ;
         }
-        
+        if(this.tag && this.tag !='')
+            this.tagsArray.push(this.tag)
         
         doc.tags = this.tagsArray
         .map(item=>{return item.trim()})
         .filter(item=>{return item && item!=""}).join(',');
-
-        if(this.tag && this.tag !='')
-            doc.tags+=`,${this.tag}`
-        
-              
+          
         this.editTag = null;
         this.tag="";
         this.updateDoc(doc);
