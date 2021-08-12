@@ -21,7 +21,8 @@ export default class BackgroundLayer extends LayerImplementation {
         shouldContinue: () => boolean,
         reactive: Set<string>,
         selectedTool: ToolConfig,
-        forExport: boolean
+        forExport: boolean,
+        floorLockStatus: boolean = true
     ) {
         this.updateSelectionBox();
 
@@ -31,6 +32,7 @@ export default class BackgroundLayer extends LayerImplementation {
             const selectId = this.uidsInOrder[i];
             const background = context.globalStore.get(selectId);
             if (background && background instanceof BackgroundImage) {
+                background.floorLockStatus = floorLockStatus;
                 if (!this.isSelected(selectId) || !active || !background.hasDragged) {
                     background.draw(context, {
                         active: active && !selectedTool.focusSelectedObject,
@@ -55,6 +57,7 @@ export default class BackgroundLayer extends LayerImplementation {
                     this.isSelected(background) &&
                     (background.hasDragged || selectedTool.focusSelectedObject)
                 ) {
+                    background.floorLockStatus = floorLockStatus;
                     background.draw(context, {
                         active,
                         withCalculation: false,

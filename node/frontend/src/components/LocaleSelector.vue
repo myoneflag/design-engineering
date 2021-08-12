@@ -1,5 +1,5 @@
 <template>
-    <div class="locale-selector">
+    <div class="locale-selector  m-2">
         <img v-if="isActiveLocale(SupportedLocales.UK)"
              class="flag active"
              :src="require('../assets/flags/UK.svg')"

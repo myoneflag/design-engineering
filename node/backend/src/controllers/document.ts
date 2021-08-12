@@ -145,7 +145,7 @@ export class DocumentController {
     @AuthRequired()
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.UPDATE, async (doc) => {
-            const { organization, metadata } = req.body;
+            const { organization, metadata,tags } = req.body;
 
             if (organization !== undefined) {
                 let called = false;
@@ -161,6 +161,10 @@ export class DocumentController {
             if (metadata !== undefined) {
                 doc.metadata = metadata;
             }
+            if (tags!==undefined){
+                doc.tags = tags;
+            } 
+            console.log({ doc });
 
             await doc.save();
             res.status(200).send({

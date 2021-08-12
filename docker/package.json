@@ -13,6 +13,7 @@
   "scripts": {
     "dev:minimal": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile minimal up --detach",
     "dev:minimal-win": "set COMPOSE_HTTP_TIMEOUT=1200 && set AWS_PROFILE=$npm_config_profile && docker-compose --profile minimal up --detach",
+    "dev:local": "docker-compose --profile local up --detach",
     "dev": "export COMPOSE_HTTP_TIMEOUT=240 && export AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up --detach",
     "dev-win": "set COMPOSE_HTTP_TIMEOUT=1200 && set AWS_PROFILE=$npm_config_profile && docker-compose --profile dev up --detach",
     "down": "run-s _require_service && docker-compose rm $npm_config_service",
