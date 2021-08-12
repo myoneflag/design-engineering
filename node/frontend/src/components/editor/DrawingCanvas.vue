@@ -679,6 +679,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
             MainEventBus.$on("set-scale", this.onSetScale);
             MainEventBus.$on("set-detail-scale", this.onDetailScale);
+            MainEventBus.$on("set-preview", this.setIsPreview);
             this.$watch(
                 () => this.document.uiState.drawingMode,
                 (newVal, oldVal) => {
@@ -712,7 +713,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
           
 
            this.setDrawingMode();
-
+            this.setIsPreview(false);
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
         }
@@ -822,7 +823,10 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 this.selectedIds.splice(0, this.selectedIds.length, this.selectedIds[backgroundEntityIndex]);
             }
         }
-
+        setIsPreview(state:boolean){
+            
+            this.$store.dispatch('document/setPreviewMode',state);
+        }
         onDrawingLoaded() {
             this.onValidateAndCommit(false, true);
         }
@@ -1390,6 +1394,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         }
 
         scheduleDraw() {
+            
             if (this.reactiveRenderQueue.length === 0) {
                 this.reactiveRenderQueue.push(
                     this.drawFast().then(() => {

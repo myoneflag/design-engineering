@@ -169,6 +169,8 @@ export default class CalculationsSidebar extends Vue {
     }
 
     pdfSnapshot() {
+        this.$store.dispatch("document/setPreviewMode", true);
+        MainEventBus.$emit("redraw");
         MainEventBus.$emit("set-tool-handler", new PdfSnapshotTool());
     }
 
