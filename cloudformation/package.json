@@ -16,7 +16,7 @@
     "prep-dist": "mkdir -p ${WEB_DIST} && mkdir -p ${WORKER_DIST}",
     "prep-template": "jsmin template.json > dist/${GIT_COMMIT}/template.cfn.json.1 && export DATESTAMP=`date +\"%m%d%y%H%M%S\"` && sed \"s/_DATESTAMP_/${DATESTAMP}/g\" dist/${GIT_COMMIT}/template.cfn.json.1 > dist/${GIT_COMMIT}/template.cfn.json",
     "prep-params": "( echo \"cat <<EOF\" ; cat parameters.json ; echo EOF ) | sh > dist/${GIT_COMMIT}/parameters.cfn.json",
-    "prep-artifacts": "cp ../docker/${WEB_DIST}/Dockerrun.aws.json ${WEB_DIST} && cp ../docker/${WORKER_DIST}/Dockerrun.aws.json ${WORKER_DIST} && cp -r elasticbeanstalk/web/ ${WEB_DIST} && cp -r elasticbeanstalk/worker/ ${WORKER_DIST} && cd ${WEB_DIST} && zip web.zip -r . && mv web.zip ../ && cd ../worker && zip worker.zip -r . && mv worker.zip ../",
+    "prep-artifacts": "cp ../docker/${WEB_DIST}/Dockerrun.aws.json ${WEB_DIST} && cp ../docker/${WORKER_DIST}/Dockerrun.aws.json ${WORKER_DIST} && cp -r elasticbeanstalk/web/ ${WEB_DIST} && cp -r elasticbeanstalk/worker/ ${WORKER_DIST} && cd ${WEB_DIST} && zip web.zip -r . -x .. && mv web.zip ../ && cd ../worker && zip worker.zip -r . -x .. && mv worker.zip ../",
     "upload-artifacts": "aws s3 cp ${WEB_DIST}.zip s3://${SourceBucketName}/${SourcePathWeb} && aws s3 cp ${WORKER_DIST}.zip s3://${SourceBucketName}/${SourcePathWorker}",
     "validate-template": "aws cloudformation validate-template --template-body file://dist/${GIT_COMMIT}/template.cfn.json",
     "stack-exists": ". ../config/build.env && aws cloudformation describe-stacks --region ${AWSRegion} --stack-name ${CFStackName} || echo 'false'",
