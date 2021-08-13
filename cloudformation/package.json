@@ -22,8 +22,8 @@
     "stack-exists": ". ../config/build.env && aws cloudformation describe-stacks --region ${AWSRegion} --stack-name ${CFStackName} || echo 'false'",
     "create-stack": "aws cloudformation create-stack --stack-name $CFStackName --template-body file://dist/${GIT_COMMIT}/template.cfn.json --parameters file://dist/${GIT_COMMIT}/parameters.cfn.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion}",
     "wait-create-stack": "aws cloudformation wait stack-create-complete --stack-name $CFStackName --region ${AWSRegion}",
-    "update-stack": "aws cloudformation update-stack --stack-name $CFStackName --template-body file://dist/${GIT_COMMIT}/template.cfn.json --parameters file://dist/${GIT_COMMIT}/parameters.cfn.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion}",
-    "wait-update-stack": "aws cloudformation wait stack-update-complete --stack-name $CFStackName --region ${AWSRegion}",
+    "update-stack": "exit 0 && aws cloudformation update-stack --stack-name $CFStackName --template-body file://dist/${GIT_COMMIT}/template.cfn.json --parameters file://dist/${GIT_COMMIT}/parameters.cfn.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion}",
+    "wait-update-stack": "exit 0 && aws cloudformation wait stack-update-complete --stack-name $CFStackName --region ${AWSRegion}",
     "describe-stack": "aws cloudformation describe-stack-resources --stack-name $CFStackName --output json --query 'StackResources[*].{LogicalResourceId:LogicalResourceId,PhysicalResourceId:PhysicalResourceId,ResourceStatus:ResourceStatus}' --region ${AWSRegion}",
     "delete-stack": "aws cloudformation delete-stack --stack-name $CFStackName --region ${AWSRegion}",
     "wait-delete-stack": "aws cloudformation wait stack-delete-complete --stack-name $CFStackName --region ${AWSRegion}"

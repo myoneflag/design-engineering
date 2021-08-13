@@ -11,7 +11,7 @@ cache:
 build:frontend:
     stage: build
     only:
-        - branches
+        # - branches
         - merge_requests
     script:
         - cd node/common/
@@ -23,7 +23,7 @@ build:frontend:
 build:backend:
     stage: build
     only:
-        - branches      
+        # - branches      
         - merge_requests
     script:
         - cd node/common/
@@ -44,6 +44,7 @@ deploy_test:
     url: https://app-test.h2xtesting.com
   only:
     - test
+    - dev-245-automated-build
 
 deploy_stage:
   stage: deploy
