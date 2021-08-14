@@ -42,7 +42,7 @@ deploy_test:
     url: https://app-test.h2xtesting.com
   only:
     - test
-    - test-*
+    - /^test-.*$/
 
 deploy_stage:
   stage: deploy
