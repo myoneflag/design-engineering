@@ -402,7 +402,7 @@ export default class Home extends Vue {
       rule: (newTag:any) => !this.isTagValid(newTag) ,
     }]
     isTagValid(newTag:any){
-        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag==""
+        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag.trim()===""
         
     }
     mounted(): void {
@@ -501,6 +501,7 @@ export default class Home extends Vue {
         })
     }
     saveTags(doc:Document){
+        this.tag= this.tag.trim();
         if(!this.isTagValid({text:this.tag}))
         {
             this.$bvToast.toast(`the tag ${this.tag} is invalid or repeated`, {
@@ -509,14 +510,13 @@ export default class Home extends Vue {
             });
             return ;
         }
-        
-        
-        doc.tags = this.tagsArray.join(',');
-
         if(this.tag && this.tag !='')
-            doc.tags+=`,${this.tag}`
+            this.tagsArray.push(this.tag)
         
-              
+        doc.tags = this.tagsArray
+        .map(item=>{return item.trim()})
+        .filter(item=>{return item && item!=""}).join(',');
+          
         this.editTag = null;
         this.tag="";
         this.updateDoc(doc);
