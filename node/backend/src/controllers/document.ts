@@ -164,7 +164,6 @@ export class DocumentController {
             if (tags!==undefined){
                 doc.tags = tags;
             } 
-            console.log({ doc });
 
             await doc.save();
             res.status(200).send({
