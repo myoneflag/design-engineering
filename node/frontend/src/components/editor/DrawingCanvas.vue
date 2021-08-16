@@ -691,7 +691,12 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                     this.scheduleDraw();
                 }
             );
-
+             this.$watch(
+                () => this.document.uiState.pressureOrDrainage,
+                () => {
+                    this.considerCalculating();
+                }
+            );
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
             (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
@@ -1818,13 +1823,11 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
         considerCalculating() {
             if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-                if (!this.$store.getters["document/calculationsUpToDate"]) {
                     if (!this.document.uiState.isCalculating) {
                         this.calculationLayer.calculate(this, () => {
                             this.scheduleDraw();
                         });
                     }
-                }
             }
         }
 

@@ -11,7 +11,7 @@ import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import FixtureEntity, { RoughInRecord } from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -29,13 +29,16 @@ import {
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import FixtureCalculation from "../../store/document/calculations/fixture-calculation";
 import Cached from "../lib/cached";
-import { Coord } from "../../../../common/src/api/document/drawing";
+import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import { StandardFlowSystemUids } from "../../../../common/src/api/config";
+import { isDrainage, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { rgb2style } from "../../lib/utils";
 import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
+import Pipe from "./pipe";
+import { drawPipeCap } from "../helpers/draw-helper";
+import { Side } from "../helpers/side";
 
 @CalculatedObject
 @SelectableObject
@@ -121,7 +124,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         ctx.stroke();
 
         if (selected || overrideColorList.length) {
-            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, {hex: '#A0C8A0'}), 0.6);
+            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList, { hex: "#A0C8A0" }), 0.6);
             if (this.entity.roughInsInOrder.length > 2) {
                 ctx.fillRect(xm1, ym1, x9 - xm1, y7 - ym1);
             } else {
@@ -158,16 +161,88 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         ctx.stroke();
 
+        for (const systemUidIter of Object.keys(this.entity.roughIns)) {
+            const FS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
+    
+            if (!FS) continue;
+                 const connectedPipe = this.getConnectedPipe(this.entity.roughIns[systemUidIter], FS);
+            if (FS && !connectedPipe) {
+                let startPoint = { top: 0, left: 0 };
+                if (this.entity.roughInsInOrder.length > 2) {
+                    startPoint =
+                        FS.uid === StandardFlowSystemUids.WarmWater || FS.uid === StandardFlowSystemUids.HotWater
+                            ? { top: y0, left: x2 }
+                            : FS.uid === StandardFlowSystemUids.ColdWater
+                            ? { top: y0, left: x6 }
+                            : FS.uid === StandardFlowSystemUids.SewerDrainage
+                            ? { top: y0, left: x4 }
+                            : { top: 0, left: 0 };
+                } else {
+                    startPoint =
+                        FS.uid === StandardFlowSystemUids.WarmWater || FS.uid === StandardFlowSystemUids.HotWater
+                            ? { top: y0, left: x4 }
+                            : FS.uid === StandardFlowSystemUids.ColdWater
+                            ? { top: y0, left: x4 }
+                            : FS.uid === StandardFlowSystemUids.SewerDrainage
+                            ? { top: y0, left: x4 }
+                            : { top: 0, left: 0 };
+                }
+                if (this.isFlowSystemActive(FS))
+                    drawPipeCap(
+                        ctx,
+                        startPoint,
+                        Side.TOP,
+                        this.entity.roughIns[systemUidIter].allowAllSystems ? "gray" : FS.color.hex
+                    );
+            }
+        }
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM * 1.2 }, () => {
             ctx.font = this.entity.pipeDistanceMM / 2 + "pt " + DEFAULT_FONT_NAME;
             const abbreviation = this.entity.abbreviation ? this.entity.abbreviation : "";
             const bounds = ctx.measureText(abbreviation);
             const left = -bounds.width / 2;
             ctx.fillStyle = "#000";
-            ctx.fillText(abbreviation, left, this.entity.pipeDistanceMM * 0.3);
+            // this.entityBacked.type==EntityType.FIXTURE ?20:-10
+
+            ctx.fillText(
+                abbreviation,
+                left,
+                this.entity.pipeDistanceMM * 0.3 + (this.entity.roughInsInOrder.length <= 2 ? 20 : -20)
+            );
         });
     }
 
+    getConnectedPipe(connection:RoughInRecord, flowSystem: FlowSystemParameters): Pipe {
+        // connectionUid can be :
+        // this.entity.inletUid;
+        // this.entity.outletUid; ,....
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return (GlobalStoreObjects.find((item) => {
+            return (
+                (item.entityBacked.type == EntityType.PIPE &&
+                    (item as Pipe).entity.endpointUid.indexOf(connection.uid) != -1 &&
+                    ((item as Pipe).entity.systemUid == flowSystem.uid || connection.allowAllSystems))
+            );
+        }) as Pipe);
+    }
+    validateConnectionPoints(): Boolean {
+        
+        for (const systemUidIter of Object.keys(this.entity.roughIns)) {
+            const FS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
+            if(!FS)
+                continue;
+            if (FS && !this.getConnectedPipe(this.entity.roughIns[systemUidIter], FS) && this.isFlowSystemActive(FS)) {
+          
+                return false;
+            }
+                
+        }
+        return true;
+    }
+    isFlowSystemActive(FS:FlowSystemParameters):Boolean {
+        return (this.document.uiState.pressureOrDrainage === "drainage" && isDrainage(FS.uid)) ||
+               (this.document.uiState.pressureOrDrainage === "pressure" && !isDrainage(FS.uid))
+    }
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]> {
@@ -346,10 +421,12 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         const catalog = context.catalog.fixtures[this.entity.name];
         return {
             cost: context.priceTable.Fixtures[catalog.priceTableName],
-            breakdown: [{
-                qty: 1,
-                path: `Fixtures.${catalog.priceTableName}`,
-            }],
+            breakdown: [
+                {
+                    qty: 1,
+                    path: `Fixtures.${catalog.priceTableName}`
+                }
+            ]
         };
     }
 }

@@ -289,7 +289,6 @@ export default class RiserProperties extends Vue {
 }
 
 .dropdown-toggle {
-    max-width: 140px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
