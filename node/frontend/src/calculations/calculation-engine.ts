@@ -2627,6 +2627,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     createWarnings() {
+        
         for (const o of this.networkObjects()) {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -2722,7 +2723,12 @@ export default class CalculationEngine implements CalculationContext {
                                 units;
                         }
                     }
-                    break;
+                    if (!(o as Fixture).validateConnectionPoints()) {
+                        calculation.warning = "Connect the fixture to a flow system";
+                        calculation.warningLayout =this.doc.uiState.pressureOrDrainage;
+                    }  
+                    if(calculation.warning && calculation.warning===" ")  calculation.warning=null;
+                  break;
                 }
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
