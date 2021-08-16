@@ -61,6 +61,7 @@ deploy_stage:
     name: stage
     url: https://app-stage.h2xtesting.com
   only:
+    - tags
     - /^release-.*$/
 
 deploy_prod:
