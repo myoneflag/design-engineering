@@ -30,6 +30,7 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import { BackgroundImage } from "../../objects/background-image";
 import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { DrawingContext } from "../types";
+import { User } from "../../../../../common/src/models/User";
 
 export function mm2pt(mm: number) {
     return (72 * mm) / 25.4;
@@ -97,7 +98,9 @@ async function getCompanyName(context: CanvasContext): Promise<string | null> {
     }
     return companyNameCache.get(Number(context.document.documentId))!;
 }
-
+function getUserProfile(context:CanvasContext):User{
+    return ( context.$store.getters["profile/profile"] as User);
+}
 async function drawTitleBar(
     pdf: PDFKit.PDFDocument,
     context: CanvasContext,
@@ -135,16 +138,19 @@ async function drawTitleBar(
 
     // h2x logo credit
     titleBarBottom -= 100;
-    pdf.text("Powered by H2X Engineering Software", mm2pt(titleBarLeft + PADDING_MM), mm2pt(titleBarBottom), {
-        link: "https://h2xengineering.com"
-    });
-    pdf.image(
-        await fetchDataUrl(require("../../../assets/h2x.png")),
-        // mm2pt(titleBarLeft + INFO_BAR_SIZE_MM - 20),
-        // mm2pt(titleBarTop),
-        { width: mm2pt(20), link: "https://h2xengineering.com" as any }
-    );
-
+  
+    if(getUserProfile(context).temporaryUser)
+    {
+        pdf.text("Powered by H2X Engineering Software", mm2pt(titleBarLeft + PADDING_MM), mm2pt(titleBarBottom), {
+            link: "https://h2xengineering.com"
+        });
+        pdf.image(
+            await fetchDataUrl(require("../../../assets/h2x.png")),
+            // mm2pt(titleBarLeft + INFO_BAR_SIZE_MM - 20),
+            // mm2pt(titleBarTop),
+            { width: mm2pt(20), link: "https://h2xengineering.com" as any }
+        );
+    }
     // level
     pdf.fontSize(Math.round(mm2pt(8)));
     const levelString = getLevelName(context, levelUid);
@@ -282,7 +288,7 @@ function drawGeneralTable(
     return height;
 }
 
-async function drawFooter(doc: PDFKit.PDFDocument) {
+async function drawFooter(doc: PDFKit.PDFDocument,context:CanvasContext) {
     const ox = doc.x;
     const oy = doc.y;
     doc.fontSize(8);
@@ -291,20 +297,23 @@ async function drawFooter(doc: PDFKit.PDFDocument) {
     doc.fillColor([0, 0, 238]);
     doc.text("https://h2xengineering.com", 60, doc.page.height - 40, { link: "https://h2xengineering.com" });
     doc.fillColor("black");
-    doc.text("Powered By H2X Engineering ", doc.page.width - 200, doc.page.height - 40, {
-        link: "https://h2xengineering.com"
-    });
-    doc.image(await fetchDataUrl(require("../../../assets/h2x.png")), doc.page.width - 80, doc.page.height - 45, {
-        width: 30,
-        link: "https://h2xengineering.com" as any
-    });
+      
+    if (getUserProfile(context).temporaryUser) {
+        doc.text("Powered By H2X Engineering ", doc.page.width - 200, doc.page.height - 40, {
+            link: "https://h2xengineering.com"
+        });
+        doc.image(await fetchDataUrl(require("../../../assets/h2x.png")), doc.page.width - 80, doc.page.height - 45, {
+            width: 30,
+            link: "https://h2xengineering.com" as any
+        });
+    }   
     doc.x = ox;
     doc.y = oy;
 }
 
 async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, options: ExportPdfOptions) {
     doc.addPage({ size: [mm2pt(options.paperSize.widthMM), mm2pt(options.paperSize.heightMM)] });
-    await drawFooter(doc);
+    await drawFooter(doc, context);
     const generalInfo = context.document.drawing.metadata.generalInfo;
     const calculationParams = context.document.drawing.metadata.calculationParams;
     const flowSystems = context.document.drawing.metadata.flowSystems;
@@ -492,7 +501,7 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
 
 async function drawReportCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, options: ExportPdfOptions) {
     doc.addPage({ size: [mm2pt(PAPER_SIZES.A4.heightMM), mm2pt(PAPER_SIZES.A4.widthMM)] });
-    await drawFooter(doc);
+    await drawFooter(doc, context);
     const generalInfo = context.document.drawing.metadata.generalInfo;
     const calculationParams = context.document.drawing.metadata.calculationParams;
     const flowSystems = context.document.drawing.metadata.flowSystems;
@@ -525,7 +534,7 @@ async function drawReportCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocum
     const cursorY = columnYStart;
 
     doc.addPage({ size: [mm2pt(PAPER_SIZES.A4.heightMM), mm2pt(PAPER_SIZES.A4.widthMM)] });
-    await drawFooter(doc);
+    await drawFooter(doc, context);
 
     doc.lineGap(10);
     doc.fillColor("Black");
@@ -565,7 +574,7 @@ async function drawReportCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocum
     for (const fs of flowSystems) {
         if (doc.y > doc.page.height * 0.8) {
             doc.addPage({ size: [mm2pt(PAPER_SIZES.A4.heightMM), mm2pt(PAPER_SIZES.A4.widthMM)] });
-            await drawFooter(doc);
+            await drawFooter(doc, context);
         }
 
         const rgb = hexToRgb(fs.color.hex);
