@@ -157,14 +157,8 @@
                             >
                                 <div class="detail-container">
                                     <h5 class="card-title text-left">
-                                        {{ doc.metadata.title }}
-                                        <span
-                                            class="d-inline-flex ml-2 m-2 circle-border border border-primary rounded-circle  text-primary ml-2"
-                                            v-if="doc.metadata.description"
-                                            v-b-tooltip.hover="{ title: doc.metadata.description }"
-                                        >
-                                            <v-icon name="info"></v-icon>
-                                        </span>
+                                        {{ doc.metadata.title | truncate(40)}}
+                                       
                                     </h5>
 
                                     <b-card-text class="mt-3">
@@ -172,10 +166,6 @@
                                             v-if="editTag == null || (editTag && editTag != doc)"
                                             style="text-align: left; font-size: 14px"
                                         >
-                                            <tr>
-                                                <td>Owner:</td>
-                                                <td class="pl-2">{{ doc.createdBy.username }}</td>
-                                            </tr>
                                             <template v-if="shouldShowCompany() && doc.organization"
                                                 ><tr>
                                                     <td>Company:</td>
@@ -185,20 +175,14 @@
                                             <tr>
                                                 <td>Created:</td>
                                                 <td class="pl-2">
-                                                    {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
+                                                   {{ doc.createdBy.username | truncate }} {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
                                                 </td>
                                             </tr>
-                                            <template v-if="doc.lastModifiedBy"
-                                                ><tr>
-                                                    <td>Modified By:</td>
-                                                    <td class="pl-2">{{ doc.lastModifiedBy.username }}</td>
-                                                </tr></template
-                                            >
                                             <template v-if="doc.lastModifiedOn"
                                                 ><tr>
-                                                    <td>Modified On:</td>
+                                                    <td>Modified:</td>
                                                     <td class="pl-2">
-                                                        {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
+                                                       {{ doc.lastModifiedBy.username | truncate }} {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
                                                     </td>
                                                 </tr></template
                                             >
@@ -312,6 +296,13 @@
                                     >
                                         <v-icon name="redo"></v-icon>
                                     </b-button>
+                                     <span
+                                        class="d-inline-flex ml-3 m-2 circle-border border border-primary rounded-circle  text-primary ml-2"
+                                        v-if="doc.metadata.description"
+                                        v-b-tooltip.hover="{ title: doc.metadata.description }"
+                                    >
+                                        <v-icon name="info"></v-icon>
+                                    </span>
                                 </div>
                                 <div class="mt-3 text-center" v-else>
                                     <b-button
@@ -764,19 +755,21 @@ h1 {
     border-radius: 40px;
 }
 .detail-container {
-    height: 18rem;
+    height: 12rem;
     overflow-y: auto;
 }
 
 ::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 3px;
+    height: 3px;
     margin-left: 10px;
     margin-right: -5px;
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 4px;
+    height: 3px;
     background-color: rgba(0, 132, 255, 0.5);
     box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
