@@ -153,7 +153,6 @@
                                 img-top
                                 tag="article"
                                 style="max-width: 20rem;"
-                                class="mb-2 doc-tile "
                                 class="mb-2 doc-tile"
                             >
                                 <div class="detail-container">
