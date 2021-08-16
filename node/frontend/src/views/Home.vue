@@ -167,19 +167,19 @@
                                         >
                                             <template v-if="shouldShowCompany() && doc.organization"
                                                 ><tr>
-                                                    <td>Company:</td>
+                                                    <td>Company</td>
                                                     <td class="pl-2">{{ doc.organization.name }}</td>
                                                 </tr></template
                                             >
                                             <tr>
-                                                <td>Created:</td>
+                                                <td>Created</td>
                                                 <td class="pl-2">
                                                    {{ doc.createdBy.username | truncate }} {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
                                                 </td>
                                             </tr>
                                             <template v-if="doc.lastModifiedOn"
                                                 ><tr>
-                                                    <td>Modified:</td>
+                                                    <td>Modified</td>
                                                     <td class="pl-2">
                                                        {{ doc.lastModifiedBy.username | truncate }} {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
                                                     </td>
