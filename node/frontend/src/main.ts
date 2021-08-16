@@ -6,7 +6,8 @@ import "./registerServiceWorker";
 import StackTrace from "stacktrace-js";
 
 import VueYouTubeEmbed from "vue-youtube-embed";
-
+import filters from "./filters";
+Vue.use(filters);
 // @ts-ignore
 import VueInputAutowidth from "vue-input-autowidth";
 // @ts-ignore
