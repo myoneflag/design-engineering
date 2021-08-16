@@ -197,7 +197,6 @@
                                                     <button-tag
                                                         v-for="item in doc.tags.split(',')"
                                                         @tag-clicked="tagClicked"
-                                                        :selectedTags="selectedTags"
                                                         :key="item"
                                                         :classList="
                                                             `pill border-primary d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
