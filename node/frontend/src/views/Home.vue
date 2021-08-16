@@ -125,7 +125,7 @@
                         <button-tag
                             v-if="documentTags.length == 0"
                             :classList="
-                                ' pill border-secondary  text-secondary border p-2 btn-sm text-sm btn-small  mb-1 ml-1 px-2'
+                                'pill border-secondary text-secondary border p-2 btn-sm text-sm btn-small mb-1 ml-1 px-2'
                             "
                             v-b-tooltip.hover="{
                                 title: 'Use tags to organize your projects'
@@ -138,7 +138,7 @@
                             @tag-clicked="tagClicked"
                             :selectedTags="selectedTags"
                             :key="item"
-                            :classList="' pill border-primary mt-1 text-primary border  btn-sm p-2 mr-1'"
+                            :classList="'pill border-primary mt-1 text-primary border btn-sm p-2 mr-1'"
                             :item="item"
                             :startWith="'#'"
                         ></button-tag>
@@ -154,11 +154,11 @@
                                 tag="article"
                                 style="max-width: 20rem;"
                                 class="mb-2 doc-tile "
+                                class="mb-2 doc-tile"
                             >
                                 <div class="detail-container">
                                     <h5 class="card-title text-left">
                                         {{ doc.metadata.title | truncate(40)}}
-                                       
                                     </h5>
 
                                     <b-card-text class="mt-3">
@@ -201,13 +201,13 @@
                                                         :selectedTags="selectedTags"
                                                         :key="item"
                                                         :classList="
-                                                            ` pill border-primary  d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
+                                                            `pill border-primary d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
                                                         "
                                                         :item="item"
                                                         :startWith="'#'"
                                                     ></button-tag>
                                                     <div
-                                                        class=" pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{ title: 'Edit tags' }"
                                                         role="button"
                                                         @click="
@@ -220,7 +220,7 @@
                                                 </div>
                                                 <div v-else>
                                                     <div
-                                                        class=" pill border-secondary  d-inline-flex text-secondary border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-secondary d-inline-flex text-secondary border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{
                                                             title: 'Use tags to organize your projects'
                                                         }"
@@ -229,7 +229,7 @@
                                                         #Tag
                                                     </div>
                                                     <div
-                                                        class=" pill border-success  d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{ title: 'Edit tags' }"
                                                         role="button"
                                                         @click="
