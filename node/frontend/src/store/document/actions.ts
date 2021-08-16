@@ -18,7 +18,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
     applyRemoteOperation({ commit, state }, op) {
         commit("applyRemoteOperation", op);
     },
-
+    setPreviewMode({commit},value){
+        commit("setPreviewMode", value);
+    },  
     addEntity({ commit, state }, entity) {
         commit("addEntity", entity);
     },
