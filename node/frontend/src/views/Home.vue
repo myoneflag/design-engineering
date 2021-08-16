@@ -214,7 +214,7 @@
                                                             tagsArray = doc.tags.split(',');
                                                         "
                                                     >
-                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                        &#8203;<v-icon class="ml-1" name="pen"></v-icon>
                                                     </div>
                                                 </div>
                                                 <div v-else>
@@ -236,7 +236,7 @@
                                                             tagsArray = doc.tags.split(',');
                                                         "
                                                     >
-                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                        &#8203;<v-icon class="ml-1" name="pen"></v-icon>
                                                     </div>
                                                 </div>
                                             </div>
