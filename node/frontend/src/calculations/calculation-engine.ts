@@ -2635,11 +2635,11 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.PIPE: {
                     const thisIsDrainage = isDrainage(o.entity.systemUid);
-
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     if (!thisIsDrainage) {
                         const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
                         const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
-                        const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                        
                         if (pipeSpec) {
                             const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
                             const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
@@ -2656,6 +2656,9 @@ export default class CalculationEngine implements CalculationContext {
                                 }
                             }
                         }
+                    }
+                    if (!calc || (o.entity.systemUid===StandardFlowSystemUids.Gas &&  calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
+                        calc.warning =`Pressure at upstream source/regulator needs to be higher than downstream regulator/appliance`
                     }
                     break;
                 }
