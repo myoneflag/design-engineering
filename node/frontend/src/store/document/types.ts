@@ -85,6 +85,7 @@ export interface FilterKey {
  * A document is a drawing + all of its history and meta attributes.
  */
 export interface DocumentState {
+    isPreview: boolean | undefined;
     // This is the drawing that we last received or last sent to the server.
     committedDrawing: DrawingState;
     diffFilter: DiffFilter;
@@ -183,6 +184,7 @@ export const initialDocumentState: DocumentState = {
     shareToken: '',
     isLoading: false,
     locale: SupportedLocales.AU,
+    isPreview:false
 };
 
 export interface EntityParam {
