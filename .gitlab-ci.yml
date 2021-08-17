@@ -37,9 +37,9 @@ deploy_test:
     env: test
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - sudo -E -u gitlab-runner ./cloudformation/deploy.sh
+    - sudo -E ./cloudformation/deploy.sh
   after_script:
-    - sudo -E -u gitlab-runner ./cloudformation/clean.sh
+    - sudo -E ./cloudformation/clean.sh
   environment:
     name: test
     url: https://app-test.h2xtesting.com
@@ -54,9 +54,9 @@ deploy_stage:
     env: stage
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - sudo -E -u gitlab-runner ./cloudformation/deploy.sh
+    - sudo -E ./cloudformation/deploy.sh
   after_script:
-    - sudo -E -u gitlab-runner ./cloudformation/clean.sh
+    - sudo -E ./cloudformation/clean.sh
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
@@ -71,9 +71,9 @@ deploy_prod:
     env: prod
   script:    
     - echo "Deploy $CI_COMMIT_TAG branch to PRODUCTION. Initiated manually."
-    - sudo -E -u gitlab-runner ./cloudformation/deploy.sh
+    - sudo -E ./cloudformation/deploy.sh
   after_script:
-    - sudo -E -u gitlab-runner ./cloudformation/clean.sh
+    - sudo -E ./cloudformation/clean.sh
   environment:
     name: prod
     url: https://app.h2xengineering.com
