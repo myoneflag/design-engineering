@@ -35,4 +35,45 @@ docker-compose -v
 sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
 # %gitlab-runner ALL=(ALL) NOPASSWD:SETENV: ALL
-"
+```
+
+## Configure credentials for AWS deployments
+
+If the gitlab-runner instance performs only build tasks, AWS credentials are not needed.  
+For AWS deployments to `test` \ `stage` or `prod` environment, AWS credentials configures are required.  
+
+1. Create AWS IAM user  
+Allow `Administrator` permissions.
+Copy user's Access Key and Secret Key.
+
+2. Create AWS CLI profile on build machine  
+Log in to build server and use AK, SK of created AWS user to configure AWS profile.
+```
+aws configure --profile h2x-gitlab-runner-ACCOUNT-profile
+```
+Copy profile configuration to home folder of `gitlab-runner` user.  
+```
+sudo mkdir -p /home/gitlab-runner/.aws
+sudo cp .aws/*  /home/gitlab-runner/.aws/
+sudo chown gitlab-runner /home/gitlab-runner/.aws/*
+sudo chgrp gitlab-runner /home/gitlab-runner/.aws/*
+```
+
+3.  Allow loggin in to dockerhub
+```
+sudo chown gitlab-runner /home/gitlab-runner/docker.hub.password
+```
+
+4. Use the profile name in `.gitlab-ci.yaml` jobs
+Use `sudo -E` to pass all env vars to script execution.
+```
+variables:
+  AWS_PROFILE: h2x-gitlab-runner-ACCOUNT-profile
+  env: ENVIRONMENT
+...
+script:
+  sudo -E ./cloudformation/deploy.sh
+```
+
+5. Start deploy build
+
