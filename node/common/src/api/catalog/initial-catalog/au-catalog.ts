@@ -5536,5 +5536,157 @@ export const auCatalog: Catalog = {
                 "3.056": "9.814",
             }
         }
+    },
+    greaseArrestor: {
+        manufacturer: [
+            {
+                name: 'Generic',
+                abbreviation: 'Generic',
+                priceTableName: 'Generic',
+                uid: 'generic',
+            },
+            {
+                name: 'Viking',
+                abbreviation: 'Viking',
+                priceTableName: 'Viking',
+                uid: 'viking',
+            },
+        ],
+        location: [
+            {
+                name: 'NSW',
+                uid: 'nsw',
+            },
+            {
+                name: 'ACT',
+                uid: 'act',
+            },
+        ],
+        size: {
+            generic: {
+                nsw: {
+                    belowGround: {
+                        100: {
+                            size: '100L',
+                            lengthMM: 900,
+                            widthMM: 600,
+                            result: ['NPT9BGD', '100'],
+                        },
+                        150: {
+                            size: '150L',
+                            lengthMM: 1000,
+                            widthMM: 650,
+                            result: ['NPT9BGD', '150'],
+                        },
+                    },
+                    aboveGround: {
+                        600: {
+                            size: '600L',
+                            lengthMM: 1360,
+                            widthMM: 850,
+                            result: ['NPT9AG', '600'],
+                        },
+                        150: {
+                            size: '750L',
+                            lengthMM: 1660,
+                            widthMM: 850,
+                            result: ['NPT9AG', '750'],
+                        },
+                    },
+                },
+                act: {
+                    belowGround: {
+                        100: {
+                            size: '100L',
+                            lengthMM: 900,
+                            widthMM: 600,
+                            result: ['NPT9BGD', '100'],
+                        },
+                        150: {
+                            size: '150L',
+                            lengthMM: 1000,
+                            widthMM: 650,
+                            result: ['NPT9BGD', '150'],
+                        },
+                    },
+                    aboveGround: {
+                        600: {
+                            size: '600L',
+                            lengthMM: 1360,
+                            widthMM: 850,
+                            result: ['NPT9AG', '600'],
+                        },
+                        150: {
+                            size: '750L',
+                            lengthMM: 1660,
+                            widthMM: 850,
+                            result: ['NPT9AG', '750'],
+                        },
+                    },
+                }
+            },
+            viking: {
+                nsw: {
+                    belowGround: {
+                        100: {
+                            size: '100L',
+                            lengthMM: 900,
+                            widthMM: 600,
+                            result: ['NPT9BGD', '100'],
+                        },
+                        150: {
+                            size: '150L',
+                            lengthMM: 1000,
+                            widthMM: 650,
+                            result: ['NPT9BGD', '150'],
+                        },
+                    },
+                    aboveGround: {
+                        600: {
+                            size: '600L',
+                            lengthMM: 1360,
+                            widthMM: 850,
+                            result: ['NPT9AG', '600'],
+                        },
+                        150: {
+                            size: '750L',
+                            lengthMM: 1660,
+                            widthMM: 850,
+                            result: ['NPT9AG', '750'],
+                        },
+                    },
+                },
+                act: {
+                    belowGround: {
+                        100: {
+                            size: '100L',
+                            lengthMM: 900,
+                            widthMM: 600,
+                            result: ['NPT9BGD', '100'],
+                        },
+                        150: {
+                            size: '150L',
+                            lengthMM: 1000,
+                            widthMM: 650,
+                            result: ['NPT9BGD', '150'],
+                        },
+                    },
+                    aboveGround: {
+                        600: {
+                            size: '600L',
+                            lengthMM: 1360,
+                            widthMM: 850,
+                            result: ['NPT9AG', '600'],
+                        },
+                        150: {
+                            size: '750L',
+                            lengthMM: 1660,
+                            widthMM: 850,
+                            result: ['NPT9AG', '750'],
+                        },
+                    },
+                },
+            },
+        },
     }
 };

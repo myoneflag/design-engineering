@@ -275,6 +275,7 @@ export interface Catalog {
     balancingValves: SelectedMaterialManufacturer[];
     hotWaterPlant: SelectedMaterialManufacturer[];
     fixtures: SelectedMaterialManufacturer[];
+    greaseArrestor: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[];
 }
 
@@ -900,6 +901,7 @@ export const initialAustralianDrawing: DrawingState = {
                 { manufacturer: "grundfos", uid: "hotWaterPlant", selected: null,},
             ],
             fixtures: [],
+            greaseArrestor: [],
         },
         priceTable: {},
     },

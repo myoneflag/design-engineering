@@ -42,6 +42,34 @@ export interface BackflowValveSpec {
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
+export type GreaseArrestorManufacturer = Manufacturer<'Generic' | 'Viking'>;
+
+export enum GreaseArrestorLocationCategory {
+    'belowGround' = 'Below Ground',
+    'aboveGround' = 'Above Ground',
+}
+
+export interface GreaseArrestor {
+    manufacturer: GreaseArrestorManufacturer[];
+    location: any[];
+    size: {
+        [key: string]: {
+            [key: string]: {
+                [key in keyof typeof GreaseArrestorLocationCategory | string]: {
+                    [key: number]: {
+                        size: string;
+                        lengthMM: number;
+                        widthMM: number;
+                        result: string[];
+                    }
+                }
+            }
+        }
+    },
+}
+
+
+
 export interface Catalog {
     fixtures: { [key: string]: FixtureSpec };
     pipes: { [key: string]: PipeMaterial };
@@ -56,6 +84,7 @@ export interface Catalog {
     prv: PRVSpec;
     balancingValves: BalancingValveSpec;
     hotWaterPlant: HotWaterPlant;
+    greaseArrestor?: GreaseArrestor;
 }
 
 export type DwellingDiversificationTable = {[key: number]: number};

@@ -410,3 +410,9 @@ export function upgraded21to22(original: DrawingState) {
     // no-op.
     // Just exist here to invoke the compression.
 }
+
+export function upgraded22to23(original: DrawingState) {
+    if (original.metadata.catalog.greaseArrestor === undefined) {
+        original.metadata.catalog.greaseArrestor = [];
+    }
+}
