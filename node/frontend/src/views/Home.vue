@@ -125,7 +125,7 @@
                         <button-tag
                             v-if="documentTags.length == 0"
                             :classList="
-                                ' pill border-secondary  text-secondary border p-2 btn-sm text-sm btn-small  mb-1 ml-1 px-2'
+                                'pill border-secondary text-secondary border p-2 btn-sm text-sm btn-small mb-1 ml-1 px-2'
                             "
                             v-b-tooltip.hover="{
                                 title: 'Use tags to organize your projects'
@@ -138,7 +138,7 @@
                             @tag-clicked="tagClicked"
                             :selectedTags="selectedTags"
                             :key="item"
-                            :classList="' pill border-primary mt-1 text-primary border  btn-sm p-2 mr-1'"
+                            :classList="'pill border-primary mt-1 text-primary border btn-sm p-2 mr-1'"
                             :item="item"
                             :startWith="'#'"
                         ></button-tag>
@@ -153,18 +153,11 @@
                                 img-top
                                 tag="article"
                                 style="max-width: 20rem;"
-                                class="mb-2 doc-tile "
+                                class="mb-2 doc-tile"
                             >
                                 <div class="detail-container">
                                     <h5 class="card-title text-left">
-                                        {{ doc.metadata.title }}
-                                        <span
-                                            class="d-inline-flex ml-2 m-2 circle-border border border-primary rounded-circle  text-primary ml-2"
-                                            v-if="doc.metadata.description"
-                                            v-b-tooltip.hover="{ title: doc.metadata.description }"
-                                        >
-                                            <v-icon name="info"></v-icon>
-                                        </span>
+                                        {{ doc.metadata.title | truncate(40)}}
                                     </h5>
 
                                     <b-card-text class="mt-3">
@@ -172,33 +165,23 @@
                                             v-if="editTag == null || (editTag && editTag != doc)"
                                             style="text-align: left; font-size: 14px"
                                         >
-                                            <tr>
-                                                <td>Owner:</td>
-                                                <td class="pl-2">{{ doc.createdBy.username }}</td>
-                                            </tr>
                                             <template v-if="shouldShowCompany() && doc.organization"
                                                 ><tr>
-                                                    <td>Company:</td>
+                                                    <td>Company</td>
                                                     <td class="pl-2">{{ doc.organization.name }}</td>
                                                 </tr></template
                                             >
                                             <tr>
-                                                <td>Created:</td>
+                                                <td>Created</td>
                                                 <td class="pl-2">
-                                                    {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
+                                                   {{ doc.createdBy.username | truncate }} {{ new Date(doc.createdOn).toLocaleDateString(locale) }}
                                                 </td>
                                             </tr>
-                                            <template v-if="doc.lastModifiedBy"
-                                                ><tr>
-                                                    <td>Modified By:</td>
-                                                    <td class="pl-2">{{ doc.lastModifiedBy.username }}</td>
-                                                </tr></template
-                                            >
                                             <template v-if="doc.lastModifiedOn"
                                                 ><tr>
-                                                    <td>Modified On:</td>
+                                                    <td>Modified</td>
                                                     <td class="pl-2">
-                                                        {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
+                                                       {{ doc.lastModifiedBy.username | truncate }} {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
                                                     </td>
                                                 </tr></template
                                             >
@@ -214,16 +197,15 @@
                                                     <button-tag
                                                         v-for="item in doc.tags.split(',')"
                                                         @tag-clicked="tagClicked"
-                                                        :selectedTags="selectedTags"
                                                         :key="item"
                                                         :classList="
-                                                            ` pill border-primary  d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
+                                                            `pill border-primary d-inline-flex text-primary border p-1 btn-sm text-sm mb-1 ml-1 px-2`
                                                         "
                                                         :item="item"
                                                         :startWith="'#'"
                                                     ></button-tag>
                                                     <div
-                                                        class=" pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{ title: 'Edit tags' }"
                                                         role="button"
                                                         @click="
@@ -231,12 +213,12 @@
                                                             tagsArray = doc.tags.split(',');
                                                         "
                                                     >
-                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                        &#8203;<v-icon class="ml-1" name="pen"></v-icon>
                                                     </div>
                                                 </div>
                                                 <div v-else>
                                                     <div
-                                                        class=" pill border-secondary  d-inline-flex text-secondary border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-secondary d-inline-flex text-secondary border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{
                                                             title: 'Use tags to organize your projects'
                                                         }"
@@ -245,7 +227,7 @@
                                                         #Tag
                                                     </div>
                                                     <div
-                                                        class=" pill border-success  d-inline-flex text-success border p-1 btn-sm text-sm btn-small  mb-1 ml-1 px-2"
+                                                        class="pill border-success d-inline-flex text-success border p-1 btn-sm text-sm btn-small mb-1 ml-1 px-2"
                                                         v-b-tooltip.hover="{ title: 'Edit tags' }"
                                                         role="button"
                                                         @click="
@@ -253,7 +235,7 @@
                                                             tagsArray = doc.tags.split(',');
                                                         "
                                                     >
-                                                        # <v-icon class="ml-1" name="pen"></v-icon>
+                                                        &#8203;<v-icon class="ml-1" name="pen"></v-icon>
                                                     </div>
                                                 </div>
                                             </div>
@@ -312,6 +294,13 @@
                                     >
                                         <v-icon name="redo"></v-icon>
                                     </b-button>
+                                     <span
+                                        class="d-inline-flex ml-3 m-2 circle-border border border-primary rounded-circle  text-primary ml-2"
+                                        v-if="doc.metadata.description"
+                                        v-b-tooltip.hover="{ title: doc.metadata.description }"
+                                    >
+                                        <v-icon name="info"></v-icon>
+                                    </span>
                                 </div>
                                 <div class="mt-3 text-center" v-else>
                                     <b-button
@@ -402,7 +391,7 @@ export default class Home extends Vue {
       rule: (newTag:any) => !this.isTagValid(newTag) ,
     }]
     isTagValid(newTag:any){
-        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag==""
+        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag.trim()===""
         
     }
     mounted(): void {
@@ -501,6 +490,7 @@ export default class Home extends Vue {
         })
     }
     saveTags(doc:Document){
+        this.tag= this.tag.trim();
         if(!this.isTagValid({text:this.tag}))
         {
             this.$bvToast.toast(`the tag ${this.tag} is invalid or repeated`, {
@@ -509,14 +499,13 @@ export default class Home extends Vue {
             });
             return ;
         }
-        
-        
-        doc.tags = this.tagsArray.join(',');
-
         if(this.tag && this.tag !='')
-            doc.tags+=`,${this.tag}`
+            this.tagsArray.push(this.tag)
         
-              
+        doc.tags = this.tagsArray
+        .map(item=>{return item.trim()})
+        .filter(item=>{return item && item!=""}).join(',');
+          
         this.editTag = null;
         this.tag="";
         this.updateDoc(doc);
@@ -764,19 +753,21 @@ h1 {
     border-radius: 40px;
 }
 .detail-container {
-    height: 18rem;
+    height: 12rem;
     overflow-y: auto;
 }
 
 ::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 3px;
+    height: 3px;
     margin-left: 10px;
     margin-right: -5px;
 }
 
 ::-webkit-scrollbar-thumb {
     border-radius: 4px;
+    height: 3px;
     background-color: rgba(0, 132, 255, 0.5);
     box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }

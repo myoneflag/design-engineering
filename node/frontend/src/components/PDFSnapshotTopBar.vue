@@ -137,7 +137,9 @@ export default class PDFSnapshotTopBar extends Vue {
     get supportsCoverSheet() {
         return COVER_SHEET_SUPPORTED.includes(this.document.uiState.exportSettings.paperSize.name);
     }
-
+    destroyed() {
+         MainEventBus.$emit("set-preview",false);
+    }
     cancel() {
         MainEventBus.$emit("set-tool-handler", null);
     }

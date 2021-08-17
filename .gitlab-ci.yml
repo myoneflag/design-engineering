@@ -1,10 +1,6 @@
-
-# :(
-variables:
-  GIT_SSL_NO_VERIFY: "true"
-
 stages:
     - build
+    - deploy
 
 cache:
     paths:
@@ -12,33 +8,76 @@ cache:
         - node/backend/node_modules/
         - node/common/node_modules/
 
-
 build:frontend:
     stage: build
-    image: node:latest
+    only:
+        - merge_requests
     script:
-        - cd node/frontend/
+        - cd node/common/
         - npm install
+        - cd ../../node/frontend/
+        - npm install
+        - npm run build
         
 build:backend:
     stage: build
-    image: node:latest
+    only:
+        - merge_requests
     script:
-        - cd node/backend/
-        - npm install
-
-build:common:
-    stage: build
-    image: node:latest
-    script: 
         - cd node/common/
         - npm install
+        - cd ../../node/backend/
+        - npm install
+        - npm run build
 
+deploy_test:
+  stage: deploy
+  variables:  
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
+    env: test
+  script:
+    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  environment:
+    name: test
+    url: https://app-test.h2xtesting.com
+  only:
+    - test
+    - /^test-.*$/
 
-#test:frontend:
-#    stage: test
-#    image: node:latest
-#    script: 
-#        - cd node/frontend/
-#        - npm run test:unit
+deploy_stage:
+  stage: deploy
+  variables:  
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
+    env: stage
+  script:
+    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  environment:
+    name: stage
+    url: https://app-stage.h2xtesting.com
+  only:
+    - tags
+    - /^release-.*$/
+
+deploy_prod:
+  stage: deploy
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-prod-profile
+    env: prod
+  script:    
+    - echo "Deploy $CI_COMMIT_TAG branch to PRODUCTION. Initiated manually."
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  environment:
+    name: prod
+    url: https://app.h2xengineering.com
+  only:
+    - tags
+  when: manual
 

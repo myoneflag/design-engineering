@@ -2625,6 +2625,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     createWarnings() {
+        
         for (const o of this.networkObjects()) {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -2633,11 +2634,11 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.PIPE: {
                     const thisIsDrainage = isDrainage(o.entity.systemUid);
-
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     if (!thisIsDrainage) {
                         const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
                         const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
-                        const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                        
                         if (pipeSpec) {
                             const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
                             const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
@@ -2654,6 +2655,9 @@ export default class CalculationEngine implements CalculationContext {
                                 }
                             }
                         }
+                    }
+                    if (!calc || (o.entity.systemUid===StandardFlowSystemUids.Gas &&  calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
+                        calc.warning =`Pressure at upstream source/regulator needs to be higher than downstream regulator/appliance`
                     }
                     break;
                 }
@@ -2720,7 +2724,12 @@ export default class CalculationEngine implements CalculationContext {
                                 units;
                         }
                     }
-                    break;
+                    if (!(o as Fixture).validateConnectionPoints()) {
+                        calculation.warning = "Connect the fixture to a flow system";
+                        calculation.warningLayout =this.doc.uiState.pressureOrDrainage;
+                    }  
+                    if(calculation.warning && calculation.warning===" ")  calculation.warning=null;
+                  break;
                 }
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);

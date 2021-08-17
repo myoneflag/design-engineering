@@ -131,7 +131,9 @@ function beforeEvent(event: string, args: any, state: DocumentState) {
         onDeleteLevel(args, state);
     }
 }
-
+function  onSetPreviewMode(state: DocumentState,value:boolean){
+    state.isPreview=value;
+}
 function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
     if (levelUid === null) {
         if (entity.type !== EntityType.RISER) {
@@ -382,7 +384,9 @@ export const mutations: MutationTree<DocumentState> = {
             addEntityOn(state, { entity, levelUid: state.uiState.levelUid! });
         }
     },
-
+    setPreviewMode(state,value:boolean){
+        onSetPreviewMode(state,value);
+    },
     setId(state, id: number) {
         state.documentId = id;
     },
