@@ -1,37 +1,62 @@
 # Build server on AWS
 
+- [Build server on AWS](#build-server-on-aws)
+  - [Gitlab Runner setup](#gitlab-runner-setup)
+    - [Install GitLab runner](#install-gitlab-runner)
+    - [Register GitLab runner](#register-gitlab-runner)
+    - [Install build dependencies](#install-build-dependencies)
+    - [Install Docker](#install-docker)
+    - [Install Docker Compose](#install-docker-compose)
+    - [Allow sudo permissions for gitlab-runner user](#allow-sudo-permissions-for-gitlab-runner-user)
+  - [Configure credentials for AWS deployments](#configure-credentials-for-aws-deployments)
+  - [Backup](#backup)
+
 ## Gitlab Runner setup
 
 Using [Gitlab - Installing GitLab Runner](https://docs.gitlab.com/runner/install/linux-repository.html#installing-gitlab-runner)
 
+### Install GitLab runner
 ```
-# Install GitLab runner
 curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
 sudo apt-get install gitlab-runner
+```
 
-# Register GitLab runner, choose executor type shell and provide runner key and URL from gitlab.com repo
+### Register GitLab runner  
+Choose executor type shell and provide runner key and URL from gitlab.com repo
+```
 sudo gitlab-runner register
+```
 
-# Install build dependencies
-# https://github.com/nodesource/distributions/blob/master/README.md#debinstall
+### Install build dependencies
+https://github.com/nodesource/distributions/blob/master/README.md#debinstall
+
+```
 curl -fsSL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs awscli zip
+```
 
-# Install Docker
+### Install Docker
+```
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 echo \
   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+```
 
-# Install Docker Compose - must be version > 1.28.0
+### Install Docker Compose
+Docker-compose must be version > 1.28.0
+
+```
 docker-compose -v
 sudo curl -L "https://github.com/docker/compose/releases/download/1.28.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
 sudo chmod +x /usr/bin/docker-compose
 docker-compose -v
+```
 
-# Allow sudo permissions for gitlab-runner user
+### Allow sudo permissions for gitlab-runner user
+```
 sudo visudo
 # edit file and add following line to allow sudo no password privileges for gitlab-runner user
 # %gitlab-runner ALL=(ALL) NOPASSWD:SETENV: ALL
@@ -77,3 +102,8 @@ script:
 
 5. Start deploy build
 
+## Backup
+
+Build server is backed up nightly with 30 day retention using AWS Backup.  
+See [backup plan](https://us-west-1.console.aws.amazon.com/backup/home?region=us-west-1#/backupplan/details/fb7a3b75-b13e-47cf-a105-051d64d2d2fe).  
+  
