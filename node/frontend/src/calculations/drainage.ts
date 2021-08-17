@@ -3,7 +3,7 @@ import {CalculationContext} from "./types";
 import {FlowSystemParameters, NetworkType} from "../../../common/src/api/document/drawing";
 import CalculationEngine, {EdgeType, FlowEdge, FlowNode} from "./calculation-engine";
 import {EntityType} from "../../../common/src/api/document/entities/types";
-import {assertUnreachable, isDrainage, SupportedDrainageMethods} from "../../../common/src/api/config";
+import {assertUnreachable, isDrainage, StandardFlowSystemUids, SupportedDrainageMethods} from "../../../common/src/api/config";
 import {addPsdCounts, compareDrainagePsdCounts, PsdCountEntry, subPsdCounts, zeroPsdCounts} from "./utils";
 import FittingEntity from "../../../common/src/api/document/entities/fitting-entity";
 import Pipe from "../htmlcanvas/objects/pipe";
@@ -13,6 +13,7 @@ import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtu
 import {Edge} from "./graph";
 import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
+import Fixture from "src/htmlcanvas/objects/fixture";
 
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -342,8 +343,11 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 return true;
                             };
                         }
+     
 
-                        if ((maxUnventedWCs != null && unventedLU > maxUnventedWCs * unitsPerWc)
+                        const connectedWCs= calculateConnectedWCs(pipe).filter((value, index, self)=>{ return self.indexOf(value) === index}).length;
+                        console.log({connectedWCs})
+                        if ((maxUnventedWCs != null && connectedWCs > maxUnventedWCs )
                             || pCalc.ventTooFarWC
                         ) {
 
@@ -371,7 +375,15 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
     return result;
 }
-
+function calculateConnectedWCs(pipe:Pipe):string[]{
+    let fixtures:string[]=[];
+    pipe.getConnectedFixtures("WC").map((fix:Fixture)=>{fixtures.push(fix.entity.uid)})
+    pipe.getConnectedPipes()
+    .map(p=>{
+         calculateConnectedWCs(p).map((fixUid:string)=>{fixtures.push(fixUid)})
+    });
+    return fixtures;
+}
 export function produceUnventedWarnings(context: CalculationEngine, roots: Map<string, PsdCountEntry>) {
     produceUnventedLengthWarningsAndGetUnventedGroup(context);
     produceUnventedUnitsWarnings(context, roots);

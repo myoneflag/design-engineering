@@ -38,7 +38,7 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from "../../../src/htmlcanva
 import Cached from "../lib/cached";
 import {GlobalStore} from "../lib/global-store";
 import {PipeMaterial, PipeSpec} from "../../../../common/src/api/catalog/types";
-import {Coord, Coord3D} from "../../../../common/src/api/document/drawing";
+import {Coord, Coord3D, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -53,6 +53,7 @@ import {
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
+import Fixture from "./fixture";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -406,6 +407,26 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             normal: Flatten.vector(a, b).rotate90CCW(),
             pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
         };
+    }
+    getConnectedPipes(): Pipe[] {
+      
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.filter((item) => {
+            return (
+                (item.entityBacked.type == EntityType.PIPE &&
+                    (item as Pipe).entity.endpointUid.indexOf(this.entity.uid.substr(0,36)) != -1  &&
+                    ((item as Pipe).entity.systemUid == this.entity.systemUid))
+            )
+        }).map(item=>{return (item as Pipe)});
+    }
+    getConnectedFixtures(abbreviation:string): Fixture[] {
+      const GlobalStoreObjects = Array.from(this.globalStore.values());
+      return (GlobalStoreObjects.filter((fix) => {
+        return  fix.entityBacked.type == EntityType.FIXTURE 
+        && (fix as Fixture).entity.abbreviation==abbreviation
+        && this.entity.uid.indexOf((fix as Fixture).entity.roughIns[this.entity.systemUid].uid )!=-1
+        && (fix as Fixture).uid.indexOf("calculation")===-1
+    }) as Fixture[]);
     }
 
     projectEndpoint(
