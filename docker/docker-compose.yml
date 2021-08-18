@@ -104,7 +104,7 @@ services:
       - SES_EMAIL_REGION=us-west-1
       - EMAIL_ADDRESS=test@h2xtesting.com
       - DB_HOSTNAME=db
-      - MQ_URL="ws://mq:61614"
+      - MQ_URL=ws://mq:61614
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
@@ -193,7 +193,6 @@ services:
   # Docker NGINX proxy server
   nginx_minimal:
     profiles:
-      - dev
       - minimal
     image: "nginx:latest"
     volumes:
