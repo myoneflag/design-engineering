@@ -259,11 +259,11 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
         }
 
+        // determine smallest diameter pipe on currently computed to-from path
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
         let smallestDiameterNominalMM: number | undefined;
-        const connections = this.globalStore.getConnections(this.entity.uid);
-        const internals: string[] = [];
+        const connections = [ from.connection, to.connection ];
         connections.forEach((p) => {
             const pipe = this.globalStore.get(p) as Pipe;
             const thisDiameter = parseCatalogNumberExact(
@@ -299,9 +299,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
         }
 
-        if (connections.length === 2) {
             // through valve
             if (isRightAngleRad(angle, Math.PI / 8)) {
+        const allConnections = this.globalStore.getConnections(this.entity.uid);
+        if (allConnections.length === 2) {
                 kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
             } else if (isAcuteRad(angle)) {
                 kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
