@@ -331,8 +331,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
-        console.log( {angle, flowLS, volLM, velocityMS, kValue, smallestDiameterNominalMM} )
-        return sign * fittingFrictionLossMH(velocityMS, kValue, ga)
+        const frictionLoss = sign * fittingFrictionLossMH(velocityMS, kValue, ga);
+        return frictionLoss
     }
 
     rememberToRegister(): void {
