@@ -1,7 +1,7 @@
-import {OPERATION_NAMES, OperationTransformConcrete} from "../document/operation-transforms";
 import {DrawingState} from "../document/drawing";
 
-export const EXAMPLE_DRAWING_VERSION = 22;
+// increase every time there is new document upgrade
+export const EXAMPLE_DRAWING_VERSION = 23;
 
 export const EXAMPLE_DRAWING: DrawingState = {
     "metadata": {
@@ -2258,7 +2258,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "selected": null
                 }
             ],
-            "fixtures": []
+            "fixtures": [],
+            "greaseArrestor": [],
         },
         "priceTable": {}
     },

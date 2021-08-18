@@ -166,7 +166,7 @@ export default class GreaseArrestorCatalog extends Vue {
         return this.form.location 
             ? Object.values(this.catalog.size[this.selectedManufacturer][this.form.location][position])
                 .map(value => {
-                    let item = {};
+                    let item: {[key: string]: any} = {};
                     this.fields.forEach(field => {
                         if (field.key === 'result') {
                             item[field.key] = value[field.key][0];
@@ -181,7 +181,7 @@ export default class GreaseArrestorCatalog extends Vue {
             : [];
     }
 
-    navigateLink(location = null) {
+    navigateLink(location = '') {
         let prop = 'greaseArrestor';
         if (location) prop += `.${location}`;
 

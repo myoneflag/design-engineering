@@ -57,6 +57,7 @@ export interface GreaseArrestor {
             [key: string]: {
                 [key in keyof typeof GreaseArrestorLocationCategory | string]: {
                     [key: number]: {
+                        [key: string]: any;
                         size: string;
                         lengthMM: number;
                         widthMM: number;
