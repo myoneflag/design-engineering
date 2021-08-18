@@ -191,18 +191,31 @@ services:
       - 8013:80
 
   # Docker NGINX proxy server
-  nginx:
+  nginx_minimal:
     profiles:
       - dev
       - minimal
     image: "nginx:latest"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx_minimal.conf:/etc/nginx/nginx.conf
     ports:
-      - 8010:80
+      - 8010:8010
     depends_on:
       - backend
       - frontend
+
+  nginx_dev:
+    profiles:
+      - dev
+    image: "nginx:latest"
+    volumes:
+      - ./nginx_dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8010:8010
+    depends_on:
+      - backend
+      - frontend
+      - worker    
 
   # Local NGINX proxy server
   nginx_local:
@@ -212,5 +225,5 @@ services:
     volumes:
       - ./nginx_local.conf:/etc/nginx/nginx.conf
     ports:
-      - 8010:80
+      - 8010:8010
 
