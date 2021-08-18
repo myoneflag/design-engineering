@@ -136,6 +136,9 @@ services:
       - /usr/src/app/frontend/dist
       # current code as bind volume
       - ../node/:/usr/src/app/
+    mem_reservation: 2560m
+    cpu_count: 2
+    cpu_percent: 50
 
   # Development Worker Server
   worker:
