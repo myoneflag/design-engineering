@@ -576,10 +576,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 // @ts-ignore
-                const componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
-
-                if (this.entity.type == 'FITTING')
-                    console.log( {uid: this.entity.uid, type: this.entity.type, componentHL: componentHL} )
+                let componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
 
                 if (this.entity.type === EntityType.SYSTEM_NODE) {
                     // @ts-ignore
@@ -602,49 +599,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                     return 0;
                 }
 
-                const sizes =
-                    pipeSizes ||
-                    [from, to].map((n) => {
-                        const o = context.globalStore.get(n.connection);
-                        if (o && o.type === EntityType.PIPE) {
-                            const p = o as Pipe;
-                            const calculation = context.globalStore.getCalculation(p.entity);
-                            if (calculation) {
-                                return calculation.realInternalDiameterMM;
-                            }
-                        }
-                    });
-
-                if (sizes[0] === undefined || sizes[1] === undefined) {
-                    throw new Error(
-                        "pipe size undefined " + this.entity.uid + " " + JSON.stringify(from) + " " + JSON.stringify(to)
-                    );
-                }
-
-                const largeSize = Math.max(sizes[0]!, sizes[1]!);
-                const smallSize = Math.min(sizes[0]!, sizes[1]!);
-
-                const volLM = (smallSize ** 2 * Math.PI) / 4 / 1000;
-                const velocityMS = flowLS / volLM;
-
-                const angle = Math.abs(
-                    angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection))
-                );
-
-                // const kValueComputed = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
-                const kValueComputed = 0
-
-                if (Math.abs(flowLS) < EPS) {
-                    // @ts-ignore
-                    return componentHL;
-                }
-
-                if (componentHL !== null) {
-                    const combinedHL = sign * fittingFrictionLossMH(velocityMS, kValueComputed, ga) + componentHL;
-                    return combinedHL;
-                } else {
-                    return null;
-                }
+                return componentHL;
             }
 
             connect(uid: string) {
