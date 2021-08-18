@@ -1,7 +1,7 @@
 /* tslint:disable:no-bitwise */
 
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { cloneSimple, EPS, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
+import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import BaseBackedObject from "../htmlcanvas/lib/base-backed-object";
 import { CalculationFilters, DocumentState } from "../store/document/types";
 import { getFields } from "../calculations/utils";
@@ -78,36 +78,6 @@ export function grayscale(col: string) {
         str = "0" + str;
     }
     return "#" + str;
-}
-
-export function canonizeAngleRad(a: number) {
-    return ((((a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) - Math.PI;
-}
-
-export function angleDiffRad(a: number, b: number) {
-    return canonizeAngleRad(a - b);
-}
-
-export function angleDiffDeg(a: number, b: number) {
-    return ((a - b + (180 % 360) + 360) % 360) - 180;
-}
-
-export function isRightAngleRad(a: number, tolerance: number = EPS) {
-    return (
-        Math.abs(angleDiffRad(canonizeAngleRad(a), Math.PI / 2)) <= tolerance ||
-        Math.abs(angleDiffRad(canonizeAngleRad(a), -Math.PI / 2)) <= tolerance
-    );
-}
-
-export function is45AngleRad(a: number, tolerance: number = EPS) {
-    return (
-        Math.abs(angleDiffRad(angleDiffRad(a, Math.PI), Math.PI / 4)) <= tolerance ||
-        Math.abs(angleDiffRad(angleDiffRad(a, Math.PI), -Math.PI / 4)) <= tolerance        
-    );
-}
-
-export function isStraightRad(a: number, tolerance: number = EPS) {
-    return angleDiffRad(Math.PI, canonizeAngleRad(a)) <= tolerance;
 }
 
 export function getPropertyByString(obj: any, s: string, existential: boolean = false) {

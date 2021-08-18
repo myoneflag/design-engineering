@@ -8,10 +8,12 @@ import Flatten from "@flatten-js/core";
 import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
     canonizeAngleRad,
-    getValveK,
     isRightAngleRad,
     isStraightRad,
-    is45AngleRad,
+    is45AngleRad
+} from "../../../src/lib/trigonometry";
+import {
+    getValveK,
     lighten,
     rgb2style
 } from "../../../src/lib/utils";
