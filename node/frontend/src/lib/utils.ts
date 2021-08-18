@@ -99,12 +99,15 @@ export function isRightAngleRad(a: number, tolerance: number = EPS) {
     );
 }
 
-export function isStraightRad(a: number, tolerance: number = EPS) {
-    return angleDiffRad(Math.PI, canonizeAngleRad(a)) <= tolerance;
+export function is45AngleRad(a: number, tolerance: number = EPS) {
+    return (
+        Math.abs(angleDiffRad(angleDiffRad(a, Math.PI), Math.PI / 4)) <= tolerance ||
+        Math.abs(angleDiffRad(angleDiffRad(a, Math.PI), -Math.PI / 4)) <= tolerance        
+    );
 }
 
-export function isAcuteRad(a: number, tolerance: number = EPS) {
-    return canonizeAngleRad(a) <= Math.PI / 2 + tolerance;
+export function isStraightRad(a: number, tolerance: number = EPS) {
+    return angleDiffRad(Math.PI, canonizeAngleRad(a)) <= tolerance;
 }
 
 export function getPropertyByString(obj: any, s: string, existential: boolean = false) {
