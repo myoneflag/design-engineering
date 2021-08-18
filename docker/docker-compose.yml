@@ -95,7 +95,7 @@ services:
       - db
       - mq
     ports:
-      - 8012:80
+      - 8012:8012
     environment:
       - PDF_BUCKET=h2x-s3-pdf-local
       - PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
@@ -128,7 +128,7 @@ services:
     depends_on:
       - backend
     ports:
-      - 8011:80
+      - 8011:8011
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules
@@ -149,7 +149,7 @@ services:
     depends_on:
       - frontend
     ports:
-      - 8013:80
+      - 8013:8013
     environment:
       - SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
       - DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
