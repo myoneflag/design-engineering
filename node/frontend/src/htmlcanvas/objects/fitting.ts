@@ -9,9 +9,9 @@ import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object
 import {
     canonizeAngleRad,
     getValveK,
-    isAcuteRad,
     isRightAngleRad,
     isStraightRad,
+    is45AngleRad,
     lighten,
     rgb2style
 } from "../../../src/lib/utils";
@@ -298,28 +298,36 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (fromv.magnitude > EPS && tov.magnitude > EPS) {
             angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
         }
-
-            // through valve
-            if (isRightAngleRad(angle, Math.PI / 8)) {
         const allConnections = this.globalStore.getConnections(this.entity.uid);
+        // elbows
         if (allConnections.length === 2) {
+            if (isStraightRad(angle, Math.PI / 8)) {
+                kValue = 0;
+            } else if (is45AngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
+            } else if (isRightAngleRad(angle, Math.PI / 8)) {
                 kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
-            } else if (isAcuteRad(angle)) {
+            } else {
                 kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
                 if (kValue) {
                     kValue *= 2;
                 }
-            } else if (isStraightRad(angle, Math.PI / 8)) {
-                kValue = 0;
-            } else {
-                kValue = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
             }
-        } else if (connections.length >= 3) {
-            if (isStraightRad(angle, Math.PI / 4)) {
-                // kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
-                kValue = 0
+        // Tees
+        } else if (allConnections.length >= 3) {
+            let convergentTee = sign > 0
+            if (isStraightRad(angle, Math.PI / 8)) {
+                kValue = 0;
+            } else if (is45AngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+            } else if (isRightAngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK(convergentTee ? "tThruFlow" : "tThruBranch", context.catalog, smallestDiameterNominalMM);
             } else {
-                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
+                console.log("sharp tee")                
+                kValue = getValveK(convergentTee ? "tThruFlow" : "tThruBranch", context.catalog, smallestDiameterNominalMM);
+                if (kValue) {
+                    kValue *= 2;
+                }
             }
         } else {
             throw new Error("edge shouldn't exist");
