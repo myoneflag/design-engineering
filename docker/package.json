@@ -10,9 +10,9 @@
     "npm-run-all": "^4.1.5"
   },
   "scripts": {
-    "dev:minimal": "COMPOSE_HTTP_TIMEOUT=240 docker-compose --profile minimal up --detach",
+    "dev": "docker-compose --profile dev up --detach",
+    "dev:minimal": "docker-compose --profile minimal up --detach",
     "dev:local": "docker-compose --profile local up --detach",
-    "dev": "COMPOSE_HTTP_TIMEOUT=240 docker-compose --profile dev up --detach",
     "down": "docker-compose rm $npm_config_service",
     "logs": "docker-compose logs --follow --tail=100 $npm_config_service",
     "start": "docker-compose up --no-deps --detach $npm_config_service",
