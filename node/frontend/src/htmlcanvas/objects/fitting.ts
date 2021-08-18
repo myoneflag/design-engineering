@@ -32,7 +32,7 @@ import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-t
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
 import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
-import {Coord, NetworkType} from "../../../../common/src/api/document/drawing";
+import {Coord} from "../../../../common/src/api/document/drawing";
 import {EPS, parseCatalogNumberExact} from "../../../../common/src/lib/utils";
 import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../../../common/src/api/config";
 import {SnappableObject} from "../lib/object-traits/snappable-object";
@@ -269,11 +269,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             const thisDiameter = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM
             )!;
-
             const thisDiameterNominal = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realNominalPipeDiameterMM
             )!;
-            internals.push("" + thisDiameter);
             if (smallestDiameterMM == null || (thisDiameter != null && thisDiameter < smallestDiameterMM)) {
                 smallestDiameterMM = thisDiameter;
                 smallestDiameterNominalMM = thisDiameterNominal;
@@ -288,6 +286,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             return null;
         }
 
+        // determine kValue
         let kValue: number | null = null;
         const fromc = this.get3DOffset(from.connection);
         const toc = this.get3DOffset(to.connection);
