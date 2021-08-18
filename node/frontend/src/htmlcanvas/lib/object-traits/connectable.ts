@@ -13,7 +13,7 @@ import Flatten from "@flatten-js/core";
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from "../../../../src/config";
 import {CalculationContext, PressurePushMode} from "../../../../src/calculations/types";
 import {FlowNode} from "../../../../src/calculations/calculation-engine";
-import {angleDiffRad} from "../../../../src/lib/utils";
+import {angleDiffRad} from "../../../../src/lib/trigonometry";
 import {EntityDrawingArgs} from "../../../../src/htmlcanvas/lib/drawable-object";
 import {CalculationData} from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
@@ -27,7 +27,6 @@ import Fitting from "../../objects/fitting";
 import {Coord, Coord3D} from "../../../../../common/src/api/document/drawing";
 import {determineConnectableNetwork, determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {assertUnreachable, ComponentPressureLossMethod} from "../../../../../common/src/api/config";
-import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;

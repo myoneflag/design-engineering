@@ -14,7 +14,8 @@ import * as TM from "transformation-matrix";
 import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import { canonizeAngleRad, lighten } from "../../../src/lib/utils";
+import { canonizeAngleRad } from "../../../src/lib/trigonometry"
+import { lighten } from "../../../src/lib/utils";
 import { IsolationValve, ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     drawRpzdDouble,
