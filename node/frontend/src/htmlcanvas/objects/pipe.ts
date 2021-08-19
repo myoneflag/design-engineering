@@ -38,7 +38,7 @@ import {Calculated, CalculatedObject, FIELD_HEIGHT} from "../../../src/htmlcanva
 import Cached from "../lib/cached";
 import {GlobalStore} from "../lib/global-store";
 import {PipeMaterial, PipeSpec} from "../../../../common/src/api/catalog/types";
-import {Coord, Coord3D} from "../../../../common/src/api/document/drawing";
+import {Coord, Coord3D, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -53,6 +53,10 @@ import {
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
+import Fixture from "./fixture";
+import Fitting from "./fitting";
+import SystemNode from "./big-valve/system-node";
+import FlowSource from "./flow-source";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -65,6 +69,7 @@ let lastDrawnScale: number = 1;
 @DraggableObject
 @SnappableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
+    connectedWCs: number;
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
         // location is determined by other objects.
@@ -406,6 +411,82 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             normal: Flatten.vector(a, b).rotate90CCW(),
             pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
         };
+    }
+    getConnectedPipes(exclude:string): Pipe[] {
+        let pipes:Pipe[]=[]
+        let connectedPipes=this.getConnectedPipesByUid(this.entity.uid.substr(0,36),this.entity.systemUid);
+        pipes.push.apply(pipes,connectedPipes.filter((item:Pipe)=>{return exclude.indexOf(item.entity.uid)===-1})) ;
+        let fittings= this.getConnectedFittings();
+        fittings.map((fit:Fitting)=>{
+             let fittingPipes= this.getConnectedPipesByUid(fit.entity.uid.substr(0,36),this.entity.systemUid)
+                pipes.push.apply(pipes,
+                    fittingPipes.filter((item:Pipe)=>{ return exclude.indexOf(item.entity.uid)===-1})
+                ) ;
+        })       
+        return pipes;
+    }
+    getConnectedPipesByUid(uid:string,systemUid:string){
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.filter((item) => {
+            return (
+                ((item.entityBacked.type == EntityType.PIPE ) &&
+                    (item as Pipe).entity.endpointUid.indexOf(uid) != -1  &&
+                    ((item as Pipe).entity.systemUid == systemUid))
+            )
+        }).map(item=>{return (item as Pipe)});
+    }
+    getConnectedFittings(): Fitting[] {
+      
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.filter((item) => {
+            return (
+                ((item.entityBacked.type == EntityType.FITTING ) &&
+                    this.entity.endpointUid.indexOf((item as Fitting).entity.uid )!=-1 &&
+                    ((item as Fitting).entity.systemUid == this.entity.systemUid))
+            )
+        }).map(item=>{return (item as Fitting)});
+    }
+    getConnectedNodes(): SystemNode[] {
+      
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.filter((item) => {
+            return (
+                ((item.entityBacked.type == EntityType.SYSTEM_NODE ) &&
+                    this.entity.endpointUid.indexOf((item as SystemNode).entity.uid )!=-1 &&
+                    ((item as SystemNode).entity.systemUid == this.entity.systemUid))
+            )
+        }).map(item=>{return (item as SystemNode)});
+    }
+    getConnectedFixtures(abbreviation:string): Fixture[] {
+      let fixtures:Fixture[]=[]
+      fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
+      let connectedNodes=this.getConnectedNodes();
+      connectedNodes.map((node:SystemNode)=>{
+        let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
+            fixtures.push.apply(fixtures,fittingPipes) ;
+        })  
+      return fixtures;
+    }
+    getConnectedFlowSource(): FlowSource {
+        
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        let flowSource:FlowSource= GlobalStoreObjects.find((flowSource) => {
+            return  flowSource.entityBacked.type == EntityType.FLOW_SOURCE 
+            // && (flowSource as FlowSource).entity.systemUid==this.entity.systemUid
+            && this.entity.endpointUid.indexOf(flowSource.entity.uid) != -1 
+            && (flowSource as Fixture).uid.indexOf("calculation")===-1
+          }) as FlowSource
+          
+          return flowSource;
+    }
+    getConnectedFixturesByUid(uid:string,systemUid:string,abbreviation:string):Fixture[]{
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        return GlobalStoreObjects.filter((fix) => {
+            return  fix.entityBacked.type == EntityType.FIXTURE 
+            && (fix as Fixture).entity.abbreviation==abbreviation
+            && uid.indexOf((fix as Fixture).entity.roughIns[systemUid].uid )!=-1
+            && (fix as Fixture).uid.indexOf("calculation")===-1
+      }) as Fixture[]
     }
 
     projectEndpoint(
