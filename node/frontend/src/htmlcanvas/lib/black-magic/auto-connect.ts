@@ -149,7 +149,10 @@ export class AutoConnector {
                             break;
                         case EntityType.FIXTURE:
                             for (const suid of o.entity.roughInsInOrder) {
-                                subs.push(o.entity.roughIns[suid].uid);
+                                
+                                    if(isDrainage(suid) && this.context.document.uiState.pressureOrDrainage === 'drainage'
+                                    || !isDrainage(suid) && this.context.document.uiState.pressureOrDrainage === 'pressure')
+                                        subs.push(o.entity.roughIns[suid].uid)
                             }
                             break;
                         case EntityType.GAS_APPLIANCE:
