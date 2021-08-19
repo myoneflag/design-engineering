@@ -70,6 +70,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import {User} from "../../../common/src/models/User";
 import { LOCALE_NAMES, SupportedLocales } from "../../../common/src/api/locale";
+    import { I18N } from "@../../../common/src/api/locale/values";
 
 @Component
 export default class LocaleSelector extends Vue {
@@ -90,14 +91,7 @@ export default class LocaleSelector extends Vue {
         return SupportedLocales;
     }
     get currency(){
-        return this.locale==SupportedLocales.AU?
-         {symbol:`$`,name:'AUD'}
-        :this.locale==SupportedLocales.US?
-         {symbol:`$`,name:'USD'}
-         :this.locale==SupportedLocales.UK?
-         {symbol:`£`,name:'GBP'}
-         :
-         {symbol:`$`,name:'AUD'}
+        return {symbol:I18N.currencySymbol[this.locale],name: I18N.currency[this.locale]}
     }
     isActiveLocale(locale: string) {
         return locale === this.locale;

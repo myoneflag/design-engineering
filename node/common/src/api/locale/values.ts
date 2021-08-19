@@ -1,3 +1,4 @@
+import { CurrencySymbol } from "../../lib/measurements";
 import { SupportedLocales } from "./index";
 
 export const I18N = {
@@ -35,5 +36,11 @@ export const I18N = {
         [SupportedLocales.AU]: "AUD",
         [SupportedLocales.UK]: "GBP",
         [SupportedLocales.US]: "USD",
+    },
+
+    currencySymbol:{
+        [SupportedLocales.AU]: CurrencySymbol.DOLLARS,
+        [SupportedLocales.UK]: CurrencySymbol.POUNDS,
+        [SupportedLocales.US]: CurrencySymbol.DOLLARS,
     }
 }
