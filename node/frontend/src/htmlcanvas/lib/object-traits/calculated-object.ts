@@ -62,6 +62,15 @@ export function CalculatedObject<
                 if (Array.isArray(datum.value)) {
                     value = datum.value.map( v => convFun(docUnits, datum.units, v) ).flatMap( v => v[1] )
                     units = convFun(docUnits, datum.units, null)[0]
+
+                    // if values are the same, coallesce into one
+                    if (value.length == 2 && value[0] == value[1]) {
+                        value = value[0]
+                    } else if (value.length == 2 && (value[0] == 0 || value[1] == 0) ) {
+                        // if one of the values is 0, we skip it
+                        value = value[0] ? value[0] : value[1]
+                    }
+
                 } else {
                     [units, value] = convFun(docUnits, datum.units, datum.value);
                 }
