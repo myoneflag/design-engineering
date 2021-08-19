@@ -6,11 +6,14 @@
                     <span>Home set to {{ localeName }}</span>
                 </div>
             </template>
-            <span>. This includes:</span>
+            <span>
+                New projects will now be created with defaults for {{localeName}}. <br/>
+                This includes:</span>
             <ul>
                  
                 <li>Relevant pipe materials</li>
-                <li>Imperial units ({{locale==SupportedLocales.UK ? `bar` : locale==SupportedLocales.AU ? `kPa` :`psi` }}, feet, gallons)</li> 
+                <li>{{locale==SupportedLocales.US ? "Imperial": "Metric"}} units 
+                    {{locale==SupportedLocales.US ? "(psi, feet, gallons)" : locale==SupportedLocales.UK ? "(bar, meters, liters)" : "(kPa, meters, liters)" }}</li> 
                 <li>Industry-standard parameters</li>
                 <li>{{currency.symbol}} {{currency.name}} currency </li>
             </ul>
