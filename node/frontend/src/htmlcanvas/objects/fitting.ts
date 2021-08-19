@@ -314,18 +314,16 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     kValue *= 2;
                 }
             }
-        // Tees
+        // tees
         } else if (allConnections.length >= 3) {
-            let convergentTee = sign > 0
             if (isStraightRad(angle, Math.PI / 8)) {
-                kValue = 0;
+                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
             } else if (is45AngleRad(angle, Math.PI / 8)) {
                 kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
             } else if (isRightAngleRad(angle, Math.PI / 8)) {
-                kValue = getValveK(convergentTee ? "tThruFlow" : "tThruBranch", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
             } else {
-                console.log("sharp tee")                
-                kValue = getValveK(convergentTee ? "tThruFlow" : "tThruBranch", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
                 if (kValue) {
                     kValue *= 2;
                 }
