@@ -1,5 +1,9 @@
-import { CurrencySymbol } from "../../lib/measurements";
 import { SupportedLocales } from "./index";
+
+export enum CurrencySymbol {
+    DOLLARS = '$',
+    POUNDS = '£'
+}
 
 export const I18N = {
     pressureReducingValve: {
