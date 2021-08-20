@@ -13,7 +13,7 @@
                  
                 <li>Relevant pipe materials</li>
                 <li>{{locale==SupportedLocales.US ? "Imperial": "Metric"}} units 
-                    {{locale==SupportedLocales.US ? "(psi, feet, gallons)" : locale==SupportedLocales.UK ? "(bar, meters, liters)" : "(kPa, meters, liters)" }}</li> 
+                    {{locale==SupportedLocales.US ? "(psi, feet, gallons)" : locale==SupportedLocales.UK ? "(bar, meters, litres)" : "(kPa, meters, litres)" }}</li> 
                 <li>Industry-standard parameters</li>
                 <li>{{currency.symbol}} {{currency.name}} currency </li>
             </ul>
