@@ -7,7 +7,7 @@
                     <b-button v-if="showDocument" variant="primary" @click="paste">Paste from clipboard</b-button> &nbsp;
                     <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
                     <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
-                    <b-button v-if="showDocument" variant="danger" @click="generateAnError">Generate an error</b-button>
+                    <b-button variant="danger" @click="generateAnError">Generate an error</b-button>
                     <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
                 </b-form-group>
             </b-col>
