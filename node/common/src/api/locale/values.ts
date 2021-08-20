@@ -1,5 +1,10 @@
 import { SupportedLocales } from "./index";
 
+export enum CurrencySymbol {
+    DOLLARS = '$',
+    POUNDS = '£'
+}
+
 export const I18N = {
     pressureReducingValve: {
         [SupportedLocales.AU]: "Pressure Reducing Valve",
@@ -35,5 +40,11 @@ export const I18N = {
         [SupportedLocales.AU]: "AUD",
         [SupportedLocales.UK]: "GBP",
         [SupportedLocales.US]: "USD",
+    },
+
+    currencySymbol:{
+        [SupportedLocales.AU]: CurrencySymbol.DOLLARS,
+        [SupportedLocales.UK]: CurrencySymbol.POUNDS,
+        [SupportedLocales.US]: CurrencySymbol.DOLLARS,
     }
 }

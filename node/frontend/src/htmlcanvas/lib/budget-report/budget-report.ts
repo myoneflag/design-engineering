@@ -15,8 +15,9 @@ import {assertUnreachable, StandardFlowSystemUids} from "../../../../../common/s
 import {determineConnectableSystemUid} from "../../../store/document/entities/lib";
 import {lowerCase} from "../../../../../common/src/lib/utils";
 import {BigValveType} from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { convertMeasurementSystemNonNull, CurrencySymbol, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
+import { convertMeasurementSystemNonNull, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { UnitsParameters } from "../../../../../common/src/api/document/drawing";
+import { CurrencySymbol } from "../../../../../common/src/api/locale/values";
 
 class BudgetReport {
 

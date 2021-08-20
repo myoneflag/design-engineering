@@ -1,5 +1,23 @@
 <template>
     <div class="locale-selector  m-2">
+        <b-toast id="locale-toast" variant="success" toaster="b-toaster-top-left" toast-class="locale"  solid>
+            <template #toast-title >
+                <div class="d-flex flex-grow-1 align-items-baseline">
+                    <span>Home set to {{ localeName }}</span>
+                </div>
+            </template>
+            <span>
+                New projects will now be created with defaults for {{localeName}}. <br/>
+                This includes:</span>
+            <ul>
+                 
+                <li>Relevant pipe materials</li>
+                <li>{{locale==SupportedLocales.US ? "Imperial": "Metric"}} units 
+                    {{locale==SupportedLocales.US ? "(psi, feet, gallons)" : locale==SupportedLocales.UK ? "(bar, meters, litres)" : "(kPa, meters, litres)" }}</li> 
+                <li>Industry-standard parameters</li>
+                <li>{{currency.symbol}} {{currency.name}} currency </li>
+            </ul>
+        </b-toast>
         <img v-if="isActiveLocale(SupportedLocales.UK)"
              class="flag active"
              :src="require('../assets/flags/UK.svg')"
@@ -55,6 +73,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import {User} from "../../../common/src/models/User";
 import { LOCALE_NAMES, SupportedLocales } from "../../../common/src/api/locale";
+    import { I18N } from "@../../../common/src/api/locale/values";
 
 @Component
 export default class LocaleSelector extends Vue {
@@ -74,17 +93,18 @@ export default class LocaleSelector extends Vue {
     get SupportedLocales() {
         return SupportedLocales;
     }
-
+    get currency(){
+        return {symbol:I18N.currencySymbol[this.locale],name: I18N.currency[this.locale]}
+    }
     isActiveLocale(locale: string) {
         return locale === this.locale;
     }
-
+    get localeName(){
+        return LOCALE_NAMES[this.locale];
+    }
     changeLocale(locale: SupportedLocales) {
-        this.$bvToast.toast(
-            `New projects will now be created with defaults for ${LOCALE_NAMES[locale]}`,
-            {variant: 'success', title: "Home set to " + LOCALE_NAMES[locale]}
-        )
-        this.locale = locale;
+        this.$bvToast.show('locale-toast');
+        this.locale=locale;
     }
 }
 </script>
