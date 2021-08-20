@@ -7,6 +7,7 @@
                     <b-button v-if="showDocument" variant="primary" @click="paste">Paste from clipboard</b-button> &nbsp;
                     <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
                     <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
+                    <b-button v-if="showDocument" variant="danger" @click="generateAnError">Generate an error</b-button>
                     <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
                 </b-form-group>
             </b-col>
@@ -90,7 +91,9 @@ export default class Debug extends Vue {
         await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
         //window.location.reload();
     }
-
+    generateAnError(){
+        throw new Error('this is sample error');  
+    }
     log() {
         // tslint:disable-next-line:no-console
 	    console.log(JSON.parse(JSON.stringify(this.document)));
