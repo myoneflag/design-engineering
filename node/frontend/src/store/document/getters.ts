@@ -13,7 +13,9 @@ export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
         return state.drawing.metadata.generalInfo.title;
     },
-
+    isPreview(state):boolean {
+        return state.isPreview || false;
+    },
     document(state): DocumentState {
         return state;
     },

@@ -105,7 +105,8 @@ export default abstract class BaseBackedObject extends DrawableObject {
                 selected = false;
             }
         }
-        if (this.isActive() || !args.forExport) {
+     
+        if ((this.isActive() && context.doc.isPreview) || (!args.forExport && !context.doc.isPreview)) {
             this.drawEntity(context, { ...args, overrideColorList, selected, layerActive: args.active });
         }
     }

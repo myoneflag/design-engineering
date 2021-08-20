@@ -679,6 +679,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
             MainEventBus.$on("set-scale", this.onSetScale);
             MainEventBus.$on("set-detail-scale", this.onDetailScale);
+            MainEventBus.$on("set-preview", this.setIsPreview);
             this.$watch(
                 () => this.document.uiState.drawingMode,
                 (newVal, oldVal) => {
@@ -691,7 +692,12 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                     this.scheduleDraw();
                 }
             );
-
+             this.$watch(
+                () => this.document.uiState.pressureOrDrainage,
+                () => {
+                    this.considerCalculating();
+                }
+            );
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
             (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
             (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
@@ -712,7 +718,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
           
 
            this.setDrawingMode();
-
+            this.setIsPreview(false);
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
         }
@@ -822,7 +828,10 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 this.selectedIds.splice(0, this.selectedIds.length, this.selectedIds[backgroundEntityIndex]);
             }
         }
-
+        setIsPreview(state:boolean){
+            
+            this.$store.dispatch('document/setPreviewMode',state);
+        }
         onDrawingLoaded() {
             this.onValidateAndCommit(false, true);
         }
@@ -1390,6 +1399,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         }
 
         scheduleDraw() {
+            
             if (this.reactiveRenderQueue.length === 0) {
                 this.reactiveRenderQueue.push(
                     this.drawFast().then(() => {
@@ -1818,13 +1828,11 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
 
         considerCalculating() {
             if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
-                if (!this.$store.getters["document/calculationsUpToDate"]) {
                     if (!this.document.uiState.isCalculating) {
                         this.calculationLayer.calculate(this, () => {
                             this.scheduleDraw();
                         });
                     }
-                }
             }
         }
 

@@ -93,8 +93,12 @@ export default class RiserProperties extends Vue {
         this.selectedLevelUidByProp.topHeightM = topHeightClosestLevel.uid;
     }
 
+    get levels(): Level[] {
+        return this.$store.getters["document/sortedLevels"].slice().reverse();
+    }
+
     get levelsToOptions() {
-        return Object.values(this.document.drawing.levels)
+        return Object.values(this.levels)
             .map((level: Level) => ({
                 value: level.uid,
                 text: level.name,
@@ -253,11 +257,19 @@ export default class RiserProperties extends Vue {
 
     getHeightBySelectedFloor(field: PropertyField) {
         const value = this.displayWithCorrectUnits(field) || 0;
-        return +(value - this.selectedLevel[field.property].floorHeightM).toFixed(12);
+
+        let floorHeightM = this.selectedLevel[field.property].floorHeightM;
+        if (field.property === 'bottomHeightM') floorHeightM -= this.levels[0].floorHeightM;
+
+        return +(value - floorHeightM).toFixed(12);
     }
 
     setRealHeight(field: PropertyField, value: string) {
-        const converted = +(Number.parseFloat(value) + this.selectedLevel[field.property].floorHeightM).toFixed(12);
+        let floorHeightM = this.selectedLevel[field.property].floorHeightM;
+        if (field.property === 'bottomHeightM') floorHeightM -= this.levels[0].floorHeightM;
+
+        const converted = +(Number.parseFloat(value) + floorHeightM).toFixed(12);
+
         this.setRenderedDataNumeric(field, converted);
     }
 }
@@ -289,7 +301,6 @@ export default class RiserProperties extends Vue {
 }
 
 .dropdown-toggle {
-    max-width: 140px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
