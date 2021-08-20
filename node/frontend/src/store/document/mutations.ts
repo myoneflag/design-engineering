@@ -134,6 +134,9 @@ function beforeEvent(event: string, args: any, state: DocumentState) {
 function  onSetPreviewMode(state: DocumentState,value:boolean){
     state.isPreview=value;
 }
+function onSetActiveFlowSystem(state: DocumentState,value:number){
+    state.activeflowSystemId=value;
+}
 function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
     if (levelUid === null) {
         if (entity.type !== EntityType.RISER) {
@@ -386,6 +389,9 @@ export const mutations: MutationTree<DocumentState> = {
     },
     setPreviewMode(state,value:boolean){
         onSetPreviewMode(state,value);
+    },
+    setActiveFlowSystem(state,value:number){
+        onSetActiveFlowSystem(state,value);
     },
     setId(state, id: number) {
         state.documentId = id;

@@ -16,6 +16,9 @@ export const getters: GetterTree<DocumentState, RootState> = {
     isPreview(state):boolean {
         return state.isPreview || false;
     },
+    activeFlowSystem(state):number {
+        return state.activeflowSystemId;
+    },
     document(state): DocumentState {
         return state;
     },

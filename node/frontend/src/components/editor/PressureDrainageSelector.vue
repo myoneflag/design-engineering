@@ -39,11 +39,17 @@
         }
 
         onDrainageClick() {
+            if(this.document.uiState.pressureOrDrainage !== 'drainage') {
+                this.$store.dispatch('document/setActiveFlowSystem',0);
+            }
             this.document.uiState.pressureOrDrainage = 'drainage';
             MainEventBus.$emit('redraw');
         }
 
         onPressureClick() {
+            if(this.document.uiState.pressureOrDrainage !== 'pressure') {
+                    this.$store.dispatch('document/setActiveFlowSystem',0);
+            }
             this.document.uiState.pressureOrDrainage = 'pressure';
             MainEventBus.$emit('redraw');
         }
