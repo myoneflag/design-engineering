@@ -290,6 +290,11 @@
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
               },
               {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "RootVolumeSize",
+                "Value" : "64"
+              },
+              {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Endpoint",
                 "Value": { "Ref": "NotificationsEmail" }
@@ -463,6 +468,11 @@
                 "OptionName" : "EC2KeyName",
                 "Value" : { "Ref": "Ec2InstanceKeyname" }
               },
+              {
+                "Namespace" : "aws:autoscaling:launchconfiguration",
+                "OptionName" : "RootVolumeSize",
+                "Value" : "64"
+              },              
               {
                 "Namespace": "aws:elasticbeanstalk:sns:topics",
                 "OptionName": "Notification Endpoint",
