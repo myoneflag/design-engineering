@@ -253,6 +253,14 @@
                         v-b-tooltip.hover
                         title="Pit"
                 ></b-button>
+                <b-button
+                    v-if="systemLayout === 'drainage'"
+                    variant="outline-dark"
+                    class="insertBtn greaseArrestor btn-sm"
+                    @click="toggleGreaseArrestor"
+                    v-b-tooltip.hover
+                    title="Grease Arrestor"
+                ></b-button>
             </b-button-group>
         </b-col>
 
@@ -756,6 +764,16 @@ export default class HydraulicsInsertPanel extends Vue {
         });
     }
 
+    toggleGreaseArrestor() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.DRAINAGE_GREASE_ARRESTOR,
+            title: 'GA',
+        });
+    }
+
     toggleSewerConnection() {
         this.$emit('insert', {
             entityName: this.entityNames.FLOW_SOURCE,
@@ -916,6 +934,12 @@ export default class HydraulicsInsertPanel extends Vue {
 
 .insertBtn.pit {
     background-image: url("../../../src/assets/object-icons/valves/pit.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.insertBtn.greaseArrestor {
+    background-image: url("../../../src/assets/object-icons/valves/grease-arrestor.png");
     background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;

@@ -15,7 +15,7 @@ import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/center
 import { getHighlightColor, getPlantPressureLossKPA } from "../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
@@ -202,6 +202,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 iAmDrainage = iAmPressure = true;
                 break;
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_ARRESTOR:
                 iAmDrainage = true;
                 break;
             default:
@@ -297,11 +298,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 result.push(this.entity.plant.gasNodeUid);
                 break;
             case PlantType.TANK:
-                break;
             case PlantType.CUSTOM:
-                break;
             case PlantType.PUMP:
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_ARRESTOR:
                 break;
             default:
                 assertUnreachable(this.entity.plant);
@@ -355,12 +355,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
                 break;
             case PlantType.TANK:
-                break;
             case PlantType.CUSTOM:
-                break;
             case PlantType.PUMP:
-                break;
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_ARRESTOR:
                 break;
             default:
                 assertUnreachable(e.plant);
@@ -564,6 +562,14 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                     breakdown: [{
                         qty: 1,
                         path: 'Equipment.Drainage Pit',
+                    }],
+                };
+            case PlantType.DRAINAGE_GREASE_ARRESTOR:
+                return {
+                    cost: context.priceTable.Equipment["Grease Arrestor"],
+                    breakdown: [{
+                        qty: 1,
+                        path: 'Equipment.Grease Arrestor',
                     }],
                 };
         }

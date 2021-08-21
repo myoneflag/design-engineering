@@ -29,6 +29,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             iAmDrainage = iAmPressure = true;
             break;
         case PlantType.DRAINAGE_PIT:
+        case PlantType.DRAINAGE_GREASE_ARRESTOR:
             iAmDrainage = true;
             break;
         default:

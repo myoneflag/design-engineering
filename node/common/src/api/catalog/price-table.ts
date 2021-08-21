@@ -101,6 +101,7 @@ export interface EquipmentTable {
     'Inspection Opening': number;
     'Floor Waste': number;
     'Drainage Pit': number;
+    'Grease Arrestor': number;
 }
 
 export function getEquipmentTitle(name: keyof EquipmentTable, locale: SupportedLocales): string {
@@ -129,6 +130,8 @@ export function getEquipmentTitle(name: keyof EquipmentTable, locale: SupportedL
             return 'Inspection Openings';
         case "Drainage Pit":
             return 'Drainage Pit';
+        case "Grease Arrestor":
+            return 'Grease Arrestor';
     }
     assertUnreachable(name);
 }
@@ -159,6 +162,8 @@ export function getEquipmentDescription(name: keyof EquipmentTable, locale: Supp
             return 'Inspection Opening';
         case "Drainage Pit":
             return 'Allowance for drainage pit, engineer to define size and specification';
+        case "Grease Arrestor":
+            return 'Allowance for grease arrestor, engineer to define size and specification';
     }
     assertUnreachable(name);
 }

@@ -235,6 +235,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 }
             };
         case PlantType.DRAINAGE_PIT:
+        case PlantType.DRAINAGE_GREASE_ARRESTOR:
             return {
                 type,
                 pressureLoss: {

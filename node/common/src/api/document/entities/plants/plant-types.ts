@@ -4,6 +4,7 @@ export enum PlantType {
     TANK = 'TANK',
     DRAINAGE_PIT = 'DRAINAGE_PIT',
     CUSTOM = 'CUSTOM',
+    DRAINAGE_GREASE_ARRESTOR = 'DRAINAGE_GREASE_ARRESTOR',
 }
 
 export enum HotWaterPlantGrundfosSettingsName {
@@ -74,9 +75,14 @@ export interface DrainagePit extends Plant {
     pressureLoss: StaticPressure;
 }
 
+export interface DrainageGreaseArrestor extends Plant {
+    type: PlantType.DRAINAGE_GREASE_ARRESTOR;
+    pressureLoss: StaticPressure;
+}
+
 export interface CustomPlant extends Plant {
     type: PlantType.CUSTOM;
     pressureLoss: AnyPressure;
 }
 
-export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit;
+export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit | DrainageGreaseArrestor;

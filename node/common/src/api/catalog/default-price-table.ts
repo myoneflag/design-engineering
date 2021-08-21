@@ -713,6 +713,7 @@ export const defaultPriceTable: PriceTable = {
         'Inspection Opening': 0,
         'Floor Waste': 350,
         'Drainage Pit': 10000,
+        'Grease Arrestor': 10000,
     },
     'Fixtures': {
         "Basin": 1655,

@@ -46,6 +46,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     {name: 'Pump', key: PlantType.PUMP},
                     {name: 'Custom', key: PlantType.CUSTOM},
                     {name: 'Drainage Pit', key: PlantType.DRAINAGE_PIT},
+                    {name: 'Grease Arrestor', key: PlantType.DRAINAGE_GREASE_ARRESTOR},
                 ],
             },
             readonly: true,
@@ -102,21 +103,21 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
         },
     ];
 
-    res.push(
-        {
-            property: "heightAboveFloorM",
-            title: "Height Above Floor",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: null, max: null },
-            multiFieldId: "heightAboveFloorM",
-            units: Units.Meters,
-        },
-    );
-
     switch (entity.plant.type) {
         case PlantType.RETURN_SYSTEM:
+            res.push(
+                {
+                    property: "heightAboveFloorM",
+                    title: "Height Above Floor",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: null, max: null },
+                    multiFieldId: "heightAboveFloorM",
+                    units: Units.Meters,
+                },
+            );
+
             res.push(
                 {
                     property: "plant.returnMinimumTemperatureC",
@@ -183,8 +184,33 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             break;
         case PlantType.TANK:
         case PlantType.PUMP:
+            res.push(
+                {
+                    property: "heightAboveFloorM",
+                    title: "Height Above Floor",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: null, max: null },
+                    multiFieldId: "heightAboveFloorM",
+                    units: Units.Meters,
+                },
+            );
             break;
         case PlantType.CUSTOM:
+            res.push(
+                {
+                    property: "heightAboveFloorM",
+                    title: "Height Above Floor",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: null, max: null },
+                    multiFieldId: "heightAboveFloorM",
+                    units: Units.Meters,
+                },
+            );
+
             res.push(
                 {
                     property: "plant.pressureLoss.pressureMethod",
@@ -202,6 +228,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                 },
             );
         case PlantType.DRAINAGE_PIT:
+        case PlantType.DRAINAGE_GREASE_ARRESTOR:
             break;
         default:
             assertUnreachable(entity.plant);
@@ -346,6 +373,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
         case PlantType.CUSTOM:
         case PlantType.PUMP:
         case PlantType.DRAINAGE_PIT:
+        case PlantType.DRAINAGE_GREASE_ARRESTOR:
             break;
         default:
             assertUnreachable(result.plant);
