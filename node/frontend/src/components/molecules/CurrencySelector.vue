@@ -22,7 +22,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { CurrencySymbol } from "../../../../common/src/lib/measurements";
+import { CurrencySymbol } from "../../../../common/src/api/locale/values";
 import { DocumentState } from "../../store/document/types";
 
 @Component({

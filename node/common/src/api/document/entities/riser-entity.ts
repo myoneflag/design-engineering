@@ -6,6 +6,7 @@ import {
     ConnectableEntity,
     Coord,
     DrawingState,
+    Level,
     NetworkType,
     SelectedMaterialManufacturer
 } from "../drawing";
@@ -33,6 +34,10 @@ export default interface RiserEntity extends ConnectableEntity {
 }
 
 export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: DrawingState, defaultEntity?: RiserEntity): PropertyField[] {
+    const levels = (Object.values(drawing.levels) as Level[])
+        .sort((a, b) => -(a.floorHeightM - b.floorHeightM))
+        .slice()
+        .reverse();
     const result = fillRiserDefaults(drawing, entity);
     const materials = Object.keys(catalog.pipes).map((mat) => {
         const c: Choice = {
@@ -137,7 +142,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 multiFieldId: "bottomHeightM",
                 units: Units.Meters,
                 slot: true,
-                description: `Height = ${entity.bottomHeightM || defaultEntity?.bottomHeightM}m`,
+                description: `Height = ${(entity.bottomHeightM || defaultEntity?.bottomHeightM || 0) + levels[0].floorHeightM}m`,
             },
 
             {

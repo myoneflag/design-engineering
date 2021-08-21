@@ -73,4 +73,8 @@ export default class App extends Vue {
 body {
     background-color: #f8f9fa;
 }
+.locale{
+   margin-top:9rem;
+
+}
 </style>

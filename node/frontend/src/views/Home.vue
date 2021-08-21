@@ -163,7 +163,7 @@
                                     <b-card-text class="mt-3">
                                         <table
                                             v-if="editTag == null || (editTag && editTag != doc)"
-                                            style="text-align: left; font-size: 14px"
+                                            style="text-align: left; font-size: 12px"
                                         >
                                             <template v-if="shouldShowCompany() && doc.organization"
                                                 ><tr>
