@@ -293,7 +293,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeLoadNodesFields(this.doc.drawing, obj.entity, this.catalog, this.doc.locale, systemUid || null);
                     break;
                 case EntityType.PLANT:
-                    fields = makePlantEntityFields(obj.entity, []);
+                    fields = makePlantEntityFields(this.catalog, this.drawing, obj.entity, []);
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:

@@ -75,9 +75,28 @@ export interface DrainagePit extends Plant {
     pressureLoss: StaticPressure;
 }
 
+export enum GreaseArrestorLocation {
+    'nsw'   = 'NSW',
+    'act'   = 'ACT',
+    'vic'   = 'VIC',
+    'qld'   = 'QLD',
+    'sa'    = 'SA',
+    'wa'    = 'WA',
+    'tas'   = 'TAS',
+    'nt'    = 'NT',
+}
+
+export enum GreaseArrestorPosition {
+    'aboveGround' = 'Above Ground',
+    'belowGround' = 'Below Ground',
+}
+
 export interface DrainageGreaseArrestor extends Plant {
     type: PlantType.DRAINAGE_GREASE_ARRESTOR;
     pressureLoss: StaticPressure;
+    location: keyof typeof GreaseArrestorLocation;
+    position: keyof typeof GreaseArrestorPosition;
+    size: number;
 }
 
 export interface CustomPlant extends Plant {

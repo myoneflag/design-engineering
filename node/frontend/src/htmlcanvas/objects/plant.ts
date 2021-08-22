@@ -38,6 +38,7 @@ import { rgb2style } from "../../lib/utils";
 import Pipe from "./pipe";
 import { drawPipeCap, drawRectangles } from "../helpers/draw-helper";
 import { Side } from "../helpers/side";
+import { DrainageGreaseArrestor } from './../../../../common/src/api/document/entities/plants/plant-types';
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -169,12 +170,14 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 ctx.fillRect(boxl, boxt, boxw, boxh);
             }
 
-            const fontSize = Math.round(this.toWorldLength(this.entity.widthMM) / this.entity.name.length);
+            const name = this.resolveDisplayName(context, this.entity);
+
+            const fontSize = Math.round(this.toWorldLength(this.entity.widthMM) / name.length);
             ctx.font = fontSize + "px " + DEFAULT_FONT_NAME;
-            const measure = ctx.measureText(this.entity.name.toUpperCase());
+            const measure = ctx.measureText(name.toUpperCase());
 
             ctx.fillStyle = "#000000";
-            ctx.fillText(this.entity.name.toUpperCase(), -measure.width / 2, +fontSize / 3);
+            ctx.fillText(name.toUpperCase(), -measure.width / 2, +fontSize / 3);
 
             ctx.globalAlpha = lastAlpha;
         });
@@ -574,5 +577,33 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 };
         }
         assertUnreachable(this.entity.plant);
+    }
+
+    resolveDisplayName(context: DrawingContext, entity: PlantEntity): string {
+        let name = this.entity.name;
+        switch(entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+            case PlantType.PUMP:
+            case PlantType.TANK:
+            case PlantType.DRAINAGE_PIT:
+            case PlantType.CUSTOM:
+                break;
+            case PlantType.DRAINAGE_GREASE_ARRESTOR:
+                const catalog = context.catalog;
+                const plant = this.entity.plant as DrainageGreaseArrestor;
+                const manufacturer = context.doc.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+                
+                let manufacturerName = '';
+                if (manufacturer !== 'generic') {
+                    manufacturerName = catalog.greaseArrestor!.manufacturer.find(i => i.uid === manufacturer)!.name;
+                }
+
+                name = `${manufacturerName} ${plant.size}L ${this.entity.name}`
+                break;
+            default:
+                assertUnreachable(entity.plant);
+        }
+
+        return name;
     }
 }

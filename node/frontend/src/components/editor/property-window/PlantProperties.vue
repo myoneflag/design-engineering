@@ -45,7 +45,7 @@ import {getEntityName} from "../../../../../common/src/api/document/entities/typ
 })
 export default class PlantProperties extends Vue {
     get fields() {
-        return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
+        return makePlantEntityFields(this.defaultCatalog, this.document.drawing, this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
     }
 
     get name() {

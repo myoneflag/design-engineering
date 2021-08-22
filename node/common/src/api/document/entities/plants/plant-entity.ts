@@ -5,6 +5,7 @@ import {cloneSimple} from "../../../../lib/utils";
 import {PlantConcrete, PlantType, PressureMethod} from "./plant-types";
 import {assertUnreachable, isDrainage} from "../../../config";
 import {Units} from "../../../../lib/measurements";
+import { Catalog } from './../../../catalog/types';
 
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
@@ -29,7 +30,7 @@ export default interface PlantEntity extends CenteredEntity {
     plant: PlantConcrete;
 }
 
-export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
+export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
     const iAmDrainage = isDrainage(entity.outletSystemUid) || isDrainage(entity.inletSystemUid);
 
     const res: PropertyField[] = [
@@ -288,9 +289,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     assertUnreachable(entity.plant.pressureLoss);
             }
         }
-    }
 
-    if (!iAmDrainage) {
         res.push(
             {
                 property: "outletTemperatureC",
@@ -317,8 +316,8 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { min: 0, max: null },
             multiFieldId: "widthMM",
             units: Units.Millimeters,
+            readonly: isReadonly(catalog, drawing, entity),
         },
-
         {
             property: "heightMM",
             title: "Height",
@@ -328,6 +327,7 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { min: 0, max: null },
             multiFieldId: "heightMM",
             units: Units.Millimeters,
+            readonly: isReadonly(catalog, drawing, entity),
         }
     );
 
@@ -391,4 +391,23 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
     }
 
     return result;
+}
+
+function isReadonly(catalog: Catalog, drawing: DrawingState, entity: PlantEntity) {
+    let isReadonly = false;
+    switch(entity.plant.type) {
+        case PlantType.RETURN_SYSTEM:
+        case PlantType.TANK:
+        case PlantType.CUSTOM:
+        case PlantType.PUMP:
+        case PlantType.DRAINAGE_PIT:
+            break;
+        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+            const manufacturer = drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+            isReadonly = manufacturer !== 'generic';
+            break;
+        default:
+            assertUnreachable(entity.plant);
+    }
+    return isReadonly;
 }
