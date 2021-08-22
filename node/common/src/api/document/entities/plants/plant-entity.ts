@@ -61,7 +61,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: null,
             multiFieldId: "rightToLeft"
         },
-
         {
             property: "inletSystemUid",
             title: "Inlet Flow System",
@@ -71,7 +70,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { systems },
             multiFieldId: "inletSystemUid"
         },
-
         {
             property: "outletSystemUid",
             title: "Outlet Flow System",
@@ -81,17 +79,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
             params: { systems },
             multiFieldId: "outletSystemUid"
         },
-
-        {
-            property: "name",
-            title: "Name",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.Text,
-            params: null,
-            multiFieldId: "name"
-        },
-
         {
             property: "rotation",
             title: "Rotation",
@@ -107,6 +94,15 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
         case PlantType.RETURN_SYSTEM:
             res.push(
                 {
+                    property: "name",
+                    title: "Name",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Text,
+                    params: null,
+                    multiFieldId: "name"
+                },
+                {
                     property: "heightAboveFloorM",
                     title: "Height Above Floor",
                     hasDefault: false,
@@ -116,9 +112,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "heightAboveFloorM",
                     units: Units.Meters,
                 },
-            );
-
-            res.push(
                 {
                     property: "plant.returnMinimumTemperatureC",
                     title: "Minimum Return Temperature",
@@ -130,9 +123,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "returnMinimumTemperatureC",
                     units: Units.Celsius,
                 },
-            );
-
-            res.push(
                 {
                     property: "plant.returnVelocityMS",
                     title: "Maximum Return Velocity (M/s)",
@@ -144,10 +134,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "returnVelocityMS",
                     units: Units.MetersPerSecond,
                 },
-            );
-
-
-            res.push(
                 {
                     property: "plant.addReturnToPSDFlowRate",
                     title: "Add Return to PSD Flow Rate",
@@ -157,34 +143,40 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     params: null,
                     multiFieldId: "addReturnToPSDFlowRate",
                 },
+                {
+                    property: "plant.gasConsumptionMJH",
+                    title: "Gas Consumption",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "gasConsumptionMJH",
+                    units: Units.MegajoulesPerHour,
+                },
+                {
+                    property: "plant.gasPressureKPA",
+                    title: "Gas Pressure",
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "gasPressureKPA",
+                    units: Units.KiloPascals,
+                }
             );
-
-            res.push({
-                property: "plant.gasConsumptionMJH",
-                title: "Gas Consumption",
-                hasDefault: true,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "gasConsumptionMJH",
-                units: Units.MegajoulesPerHour,
-            });
-
-
-            res.push({
-                property: "plant.gasPressureKPA",
-                title: "Gas Pressure",
-                hasDefault: true,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: 0, max: null },
-                multiFieldId: "gasPressureKPA",
-                units: Units.KiloPascals,
-            });
             break;
         case PlantType.TANK:
         case PlantType.PUMP:
             res.push(
+                {
+                    property: "name",
+                    title: "Name",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Text,
+                    params: null,
+                    multiFieldId: "name"
+                },
                 {
                     property: "heightAboveFloorM",
                     title: "Height Above Floor",
@@ -200,6 +192,15 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
         case PlantType.CUSTOM:
             res.push(
                 {
+                    property: "name",
+                    title: "Name",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Text,
+                    params: null,
+                    multiFieldId: "name"
+                },
+                {
                     property: "heightAboveFloorM",
                     title: "Height Above Floor",
                     hasDefault: false,
@@ -209,9 +210,6 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "heightAboveFloorM",
                     units: Units.Meters,
                 },
-            );
-
-            res.push(
                 {
                     property: "plant.pressureLoss.pressureMethod",
                     title: "Pressure Type",
@@ -227,7 +225,20 @@ export function makePlantEntityFields(entity: PlantEntity, systems: FlowSystemPa
                     multiFieldId: "pressureMethod"
                 },
             );
+            break;
         case PlantType.DRAINAGE_PIT:
+            res.push(
+                {
+                    property: "name",
+                    title: "Name",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Text,
+                    params: null,
+                    multiFieldId: "name"
+                },
+            )
+            break;
         case PlantType.DRAINAGE_GREASE_ARRESTOR:
             break;
         default:
