@@ -167,7 +167,7 @@ export default class GreaseArrestorCatalog extends Vue {
     }
 
     @Watch('selectedManufacturer')
-    resolveTableFields(val) {
+    resolveTableFields(val: string) {
         if (this.selectedManufacturer === 'generic') {
             this.fields.splice(4, 1);
         } else {

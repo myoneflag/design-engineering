@@ -667,12 +667,12 @@ export default class CalculationEngine implements CalculationContext {
             } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_ARRESTOR) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 const manufacturer = this.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
-                const manufacturerName = this.catalog.greaseArrestor!.manufacturer.find(i => i.uid === manufacturer)!.name;
+                const manufacturerName = manufacturer !== 'generic' && this.catalog.greaseArrestor!.manufacturer.find(i => i.uid === manufacturer)!.name || '';
                 const location = o.entity.plant.location;
                 const position = o.entity.plant.position;
                 const selectedSize = this.catalog.greaseArrestor!.size[manufacturer][location][position][o.entity.plant.size];
                 const size = selectedSize?.result[0];
-                const sizeCode = selectedSize?.result[2];
+                const sizeCode = selectedSize?.result[1] || '';
                 
                 c.size = `${selectedSize.lengthMM}mm x ${selectedSize.widthMM}mm`;
                 c.model = `${manufacturerName} ${sizeCode && (sizeCode+'-')}${size}`.trim();

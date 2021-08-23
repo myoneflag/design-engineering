@@ -66,8 +66,10 @@ export function CalculatedObject<
                         value.push(convertedValue[1]);
                         units = convertedValue[0];
                     });
-                } else {
+                } else if (typeof datum.value !== 'string') {
                     [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+                } else {
+                    value = datum.value;
                 }
 
                 if (value === undefined) {
