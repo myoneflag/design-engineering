@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 
 module.exports = {
+    productionSourceMap: true,
     configureWebpack: {
         devServer: {
             port: 80,
