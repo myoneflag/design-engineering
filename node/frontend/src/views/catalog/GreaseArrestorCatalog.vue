@@ -75,7 +75,7 @@
                     <b-table
                         striped
                         responsive
-                        style="margin-top:25px"
+                        style="margin-top:25px;margin-bottom:0px;"
                         :items="items.belowGround"
                         :fields="fields"
                     >
@@ -88,7 +88,6 @@
                     <b-table
                         striped
                         responsive
-                        style="margin-top:25px"
                         :items="items.aboveGround"
                         :fields="fields"
                     >
@@ -109,6 +108,7 @@ import Component from 'vue-class-component';
 import { DocumentState } from '../../store/document/types';
 import { GreaseArrestor } from '../../../../common/src/api/catalog/types';
 import { DrawingState } from '../../../../common/src/api/document/drawing';
+import { Watch } from 'vue-property-decorator';
 
 @Component
 export default class GreaseArrestorCatalog extends Vue {
@@ -130,6 +130,10 @@ export default class GreaseArrestorCatalog extends Vue {
         this.form.location = this.$route.params.prop !== 'greaseArrestor' 
             && this.$route.params.prop?.replace('greaseArrestor.','') 
             || 'nsw';
+
+        if (this.selectedManufacturer === 'generic') {
+            this.fields.splice(4, 1);
+        }
     }
     
     get document(): DocumentState {
@@ -160,6 +164,15 @@ export default class GreaseArrestorCatalog extends Vue {
             belowGround: this.resolveItem('belowGround'),
             aboveGround: this.resolveItem('aboveGround'),
         };
+    }
+
+    @Watch('selectedManufacturer')
+    resolveTableFields(val) {
+        if (this.selectedManufacturer === 'generic') {
+            this.fields.splice(4, 1);
+        } else {
+            this.fields.splice(4, 0, { key: 'result2', label: '' });
+        }
     }
 
     resolveItem(position: 'belowGround' | 'aboveGround') {
