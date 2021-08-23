@@ -6,6 +6,7 @@ import {PlantConcrete, PlantType, PressureMethod} from "./plant-types";
 import {assertUnreachable, isDrainage} from "../../../config";
 import {Units} from "../../../../lib/measurements";
 import { Catalog } from './../../../catalog/types';
+import { auCatalog } from "../../../catalog/initial-catalog/au-catalog";
 
 export default interface PlantEntity extends CenteredEntity {
     type: EntityType.PLANT;
@@ -241,6 +242,48 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             )
             break;
         case PlantType.DRAINAGE_GREASE_ARRESTOR:
+            const manufacturer = drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+
+            res.splice(2, 0, {
+                property: 'plant.location',
+                title: 'Location',
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Choice,
+                params: {
+                    choices: auCatalog.greaseArrestor!.location.map(i => ({name: i.name, key: i.uid})),
+                },
+                multiFieldId: 'plant.location',
+            },
+            {
+                property: 'plant.position',
+                title: 'Position',
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Choice,
+                params: {
+                    choices: [
+                        { name: 'Below Ground', key: 'belowGround' },
+                        { name: 'Above Ground', key: 'aboveGround' },
+                    ]
+                },
+                multiFieldId: 'plant.position',
+            },
+            {
+                property: 'plant.size',
+                title: 'Grease Arrestor Size',
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Choice,
+                params: {
+                    choices: Object.entries(auCatalog.greaseArrestor!.size[manufacturer]?.[entity.plant.location]?.[entity.plant.position] || [])
+                        .map(([key, val]) => ({
+                            name: val.size,
+                            key: Number(key),
+                        }))
+                },
+                multiFieldId: 'plant.size',
+            })
             break;
         default:
             assertUnreachable(entity.plant);
