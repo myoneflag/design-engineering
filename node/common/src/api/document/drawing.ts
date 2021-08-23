@@ -17,8 +17,8 @@ import { EntityType } from "./entities/types";
 import { Choice, cloneSimple, DeepPartial } from "../../lib/utils";
 import { PriceTable } from "../catalog/price-table";
 import { SupportedLocales } from "../locale";
+import { CurrencySymbol } from "../locale/values";
 import {
-    CurrencySymbol,
     EnergyMeasurementSystem,
     MeasurementSystem,
     PressureMeasurementSystem,

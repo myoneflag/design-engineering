@@ -1,5 +1,6 @@
 import { UnitsParameters } from "../api/document/drawing";
 import { assertUnreachable } from "../api/config";
+import { CurrencySymbol } from "../api/locale/values";
 
 export enum Units {
     None = "",
@@ -66,11 +67,6 @@ export enum VolumeMeasurementSystem {
 export enum VelocityMeasurementSystem {
     METRIC = "METRIC",
     IMPERIAL = "IMPERIAL"
-}
-
-export enum CurrencySymbol {
-    DOLLARS = '$',
-    POUNDS = '£'
 }
 
 export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {

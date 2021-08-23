@@ -14,7 +14,8 @@
         <b-row>
             <b-col>
                 <b-button variant="success" @click="download">Download</b-button> &nbsp;
-                <b-button variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;              
+                <b-button variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;
+                <b-button variant="danger" @click="generateAnError">Generate an error</b-button>
             </b-col>
         </b-row>
         <br/>
@@ -90,7 +91,9 @@ export default class Debug extends Vue {
         await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
         //window.location.reload();
     }
-
+    generateAnError(){
+        throw new Error('this is sample error');  
+    }
     log() {
         // tslint:disable-next-line:no-console
 	    console.log(JSON.parse(JSON.stringify(this.document)));
