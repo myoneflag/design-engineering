@@ -98,12 +98,15 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.strokeStyle = "#000";
         ctx.lineCap = "round";
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillStyle = !this.pressureDrainageActive()?'rgba(150, 150, 150, 0.65)':"rgba(255, 255, 255, 0.8)";
+    
         ctx.fillRect(l, t, r - l, bm);
         ctx.strokeStyle = "#000";
 
         if (selected || overrideColorList.length) {
-            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+            ctx.fillStyle = !this.pressureDrainageActive()?'rgba(150, 150, 150, 0.65)':rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+        
+
             ctx.fillRect(boxl, boxt, boxw, boxh);
         }
 
@@ -130,11 +133,13 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const t = 0;
 
         ctx.lineWidth = this.entity.valveLengthMM * 0.1;
-        ctx.strokeStyle = "#222222";
+        ctx.strokeStyle ="#222222";
         ctx.lineCap = "square";
 
         if (selected || overrideColorList.length) {
-            ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+            ctx.fillStyle =!this.pressureDrainageActive()?'rgba(150, 150, 150, 0.65)': rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+            
+
             ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
         }
 
@@ -217,8 +222,16 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     refreshObjectInternal(obj: BigValveEntity): void {
         //
     }
+    pressureDrainageActive(): boolean {
+        
+        return this.document.uiState.pressureOrDrainage==="pressure"
+        
+    }
 
     inBounds(objectCoord: Coord) {
+         if (!this.pressureDrainageActive()) {
+            return false;
+        }
         if (Math.abs(objectCoord.x) <= this.entity.pipeDistanceMM) {
             if (objectCoord.y > -this.entity.pipeDistanceMM * 0.3) {
                 if (objectCoord.y < this.entity.valveLengthMM * 1.2) {
