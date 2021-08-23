@@ -283,6 +283,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                         }))
                 },
                 multiFieldId: 'plant.size',
+                slot: true,
             })
             break;
         default:

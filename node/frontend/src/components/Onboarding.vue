@@ -356,15 +356,17 @@ export default class Onboarding extends Vue {
 }
 </script>
 
-<style lang="less">
-.modal-dialog {
-    margin-top: 300px;
-}
+<style scoped lang="less">
+
 .onboarding {
     z-index: 9999 !important;
     background-color: #ffffff !important;
     color: #343a40 !important;
     position: relative !important;
+
+    .modal-dialog {
+        margin-top: 300px;
+    }
 }
 #step-indicator {
     flex: 1;
