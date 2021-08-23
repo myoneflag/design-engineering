@@ -125,9 +125,11 @@ export default class PlantProperties extends Vue {
     handleGreaseArrestorSizeUpdate() {
         const manufacturer = this.document.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
         const selectedSize = this.defaultCatalog.greaseArrestor!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.size];
+        console.log(selectedSize);
         if (!!selectedSize) {
             setPropertyByString(this.reactiveData, 'heightMM', selectedSize.lengthMM);
             setPropertyByString(this.reactiveData, 'widthMM', selectedSize.widthMM);
+            this.onCommit();
         }
     }
 }
