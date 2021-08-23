@@ -671,7 +671,7 @@ export default class CalculationEngine implements CalculationContext {
                 const location = o.entity.plant.location;
                 const position = o.entity.plant.position;
                 const selectedSize = this.catalog.greaseArrestor!.size[manufacturer][location][position][o.entity.plant.size];
-                const size = selectedSize?.result[0];
+                const size = selectedSize?.size;
                 const sizeCode = selectedSize?.result[1] || '';
                 
                 c.size = `${selectedSize.lengthMM}mm x ${selectedSize.widthMM}mm`;
