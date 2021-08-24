@@ -304,7 +304,7 @@
                                 </div>
                                 <div class="mt-3 text-center" v-else>
                                     <b-button
-                                        @click="editTag = null"
+                                        @click="editTag = null;tag='';"
                                         v-b-tooltip.hover="{ title: 'Discard tag changes' }"
                                         class=" btn btn-danger"
                                     >
@@ -391,7 +391,7 @@ export default class Home extends Vue {
       rule: (newTag:any) => !this.isTagValid(newTag) ,
     }]
     isTagValid(newTag:any){
-        return this.filterArray(this.tagsArray,newTag.text).length==0 || this.tag.trim()===""
+        return (this.filterArray(this.tagsArray,newTag.text).length==0 && this.tagsArray.length < 10) || this.tag.trim()===""
         
     }
     mounted(): void {
@@ -493,7 +493,7 @@ export default class Home extends Vue {
         this.tag= this.tag.trim();
         if(!this.isTagValid({text:this.tag}))
         {
-            this.$bvToast.toast(`the tag ${this.tag} is invalid or repeated`, {
+            this.$bvToast.toast(this.tagsArray.length>=10?`Maximum number of tags exceeded`:`The tag ${this.tag} is invalid or repeated`, {
                     variant: "danger",
                     title: "Invalid tag"
             });
