@@ -12,6 +12,10 @@
                         <h1 class="title text-primary">
                             Projects
                         </h1>
+                            <context-menu id="context-menu" ref="ctxMenu"  >
+                                <li @click="openOnNewTab(`document/${contextId}/1`)" class="context-link" >Open in new tab</li>
+                            </context-menu>
+                        
                     </b-col>
                     <b-col class="text-right">
                         <h1>
@@ -265,6 +269,7 @@
                                         @click="openDoc(doc.id)"
                                         variant="primary"
                                         text="Open"
+                                        @contextmenu.prevent="contextMenu(doc.id,$event)"
                                         class="d-inline-flex "
                                         no-caret
                                     >
@@ -358,6 +363,7 @@ import LocaleSelector from "../components/LocaleSelector.vue";
 import { SupportedLocales } from "../../../common/src//api/locale";
 import ButtonTag from "../components/tags/ButtonTag.vue";
 
+import contextMenu from "vue-context-menu";
  enum ProjectTabFilters {
   MY_PROJECTS = 0,
   ORGANIZATION_PROJECTS = 1,
@@ -370,7 +376,8 @@ import ButtonTag from "../components/tags/ButtonTag.vue";
         MainNavBar,
         Onboarding,
         ButtonTag,
-        VueTagsInput
+        VueTagsInput,
+        contextMenu
     }
 })
 export default class Home extends Vue {
@@ -382,8 +389,11 @@ export default class Home extends Vue {
     selectedTags: string[] = [];
     projectFilter: number = ProjectTabFilters.MY_PROJECTS;
     searchCondition: string = "";
+    contextId:number=0;
     editTag: any = null;
     tag: string = "";
+    positionX:number=0;
+    positionY:number=0;
     tagsArray: string[]=[];
     validation:any= [{
       disableAdd:true,
@@ -408,6 +418,16 @@ export default class Home extends Vue {
             ? this.selectedTags.push(tag)
             : this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
     
+    }
+    
+    contextMenu(docId:number,$event:any){
+        this.contextId=docId;
+        (this.$refs.ctxMenu as any).open();
+
+    }
+    
+    openOnNewTab(docPath:string){
+        window.open(docPath);
     }
     get tags() {
         return this.editTag.tags
@@ -771,4 +791,10 @@ h1 {
     background-color: rgba(0, 132, 255, 0.5);
     box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
+.context-link{
+    text-decoration: none;
+    margin:10px;
+    cursor:pointer;
+}
+
 </style>
