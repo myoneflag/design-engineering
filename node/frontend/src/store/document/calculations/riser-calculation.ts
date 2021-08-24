@@ -77,18 +77,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 systemUid: entity.systemUid,
                 category: FieldCategory.FlowRate,
             },
-            {
-                property: "heights." + lvlUid + ".sizeMM",
-                title: "Size To Below",
-                short: "\u00f8 to below",
-                bold: true,
-                units: Units.PipeDiameterMM,
-                systemUid: entity.systemUid,
-                category: FieldCategory.Size,
-                hideUnits: true,
-                layouts: ['drainage', 'pressure'],
-                significantDigits: 0
-            }
+
         );
 
         if (drawing.metadata.calculationParams.psdMethod !== null) {
@@ -114,6 +103,20 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 layouts: layoutOptionDrainage,
                 format: (v) => "" + Number((v?v:0).toFixed(5))
             });
+        }
+        if(doc.uiState.pressureOrDrainage==="pressure"){
+            result.push({
+                property: "heights." + lvlUid + ".sizeMM",
+                title: "Size To Below",
+                short: "\u00f8 to below",
+                bold: true,
+                units: Units.PipeDiameterMM,
+                systemUid: entity.systemUid,
+                category: FieldCategory.Size,
+                hideUnits: true,
+                layouts: ['drainage', 'pressure'],
+                significantDigits: 0
+            })
         }
 
         if (drawing.metadata.calculationParams.dwellingMethod !== null) {
