@@ -527,21 +527,21 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
             }
 
-            @Cached(
-                (kek) =>
-                    new Set(
-                        [kek]
-                            .map((n) => [n, n.getParentChain(), n.getNeighbours()])
-                            .flat(2)
-                            .map((n) => [n, n.getParentChain(), n.getNeighbours()])
-                            .flat(2)
-                            .map((n) => n.getParentChain())
-                            .flat()
-                            .map((o) => o.uid)
-                    ),
-                (context, flowLS, from, to, signed, mode, pipeSizes) =>
-                    flowLS + from.connectable + to.connectable + signed + mode + stringify(pipeSizes)
-            )
+            // @Cached(
+            //     (kek) =>
+            //         new Set(
+            //             [kek]
+            //                 .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+            //                 .flat(2)
+            //                 .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+            //                 .flat(2)
+            //                 .map((n) => n.getParentChain())
+            //                 .flat()
+            //                 .map((o) => o.uid)
+            //         ),
+            //     (context, flowLS, from, to, signed, mode, pipeSizes) =>
+            //         flowLS + from.connectable + to.connectable + signed + mode + stringify(pipeSizes)
+            // )
             getFrictionHeadLoss(
                 context: CalculationContext,
                 flowLS: number,
