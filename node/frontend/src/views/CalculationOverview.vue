@@ -153,7 +153,7 @@ export default class ProjectSettings extends Vue {
                         id: "fitting-pressure-loss",
                         content:
                             "<p>The pressure loss through a fitting is determined based on the k value of the fitting and at what velocity the water passes through the fitting.<p>" +
-                            "Fitting friction loss (mH) = k * (2 * velocity/9.81*2)<p>" +
+                            "Fitting friction loss (mH) = k * (velocity^2)/(9.81*2)<p>" +
                             "When a bend is drawn that is <45 or between 45 + 90, the greater size bend will be used for the pressure loss calculation."
                     },
 
