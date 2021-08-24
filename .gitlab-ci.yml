@@ -80,4 +80,4 @@ deploy_prod:
   only:
     - tags
   when: manual
-
+  allow_failure: false
