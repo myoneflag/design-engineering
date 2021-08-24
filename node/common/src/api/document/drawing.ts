@@ -535,6 +535,11 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
     const result = cloneSimple(initialAustralianDrawing);
     switch (locale) {
         case SupportedLocales.AU:
+            result.metadata.catalog.greaseArrestor.push({
+                uid: 'greaseArrestor',
+                manufacturer: 'viking',
+                selected: null,
+            });
             break;
         case SupportedLocales.UK:
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;

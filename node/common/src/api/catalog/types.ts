@@ -61,6 +61,7 @@ export interface GreaseArrestor {
                         size: string;
                         lengthMM: number;
                         widthMM: number;
+                        depthMM: number;
                         result: string[];
                     }
                 }

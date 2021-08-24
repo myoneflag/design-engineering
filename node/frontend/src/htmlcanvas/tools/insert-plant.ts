@@ -255,7 +255,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 },
                 location: 'nsw',
                 position: 'belowGround',
-                size: 100,
+                size: 1000,
             };
     }
     assertUnreachable(type);
@@ -275,8 +275,8 @@ function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEnti
         case PlantType.DRAINAGE_GREASE_ARRESTOR:
             const plant = entity.plant;
             const selectedSize = catalog.greaseArrestor!.size[selectedManufacturer][plant.location][plant.position][plant.size];
-            entity.heightMM = selectedSize.lengthMM;
-            entity.widthMM = selectedSize.widthMM;
+            entity.heightMM = selectedSize.widthMM;
+            entity.widthMM = selectedSize.lengthMM;
             break;
         default:
             assertUnreachable(entity.plant);

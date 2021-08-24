@@ -81,7 +81,7 @@
                     >
                         <template #thead-top>
                             <b-tr>
-                                <b-th class="text-center" colspan="5" variant="warning">Below Ground</b-th>
+                                <b-th class="text-center" colspan="6" variant="warning">Below Ground</b-th>
                             </b-tr>
                         </template>
                     </b-table>
@@ -93,7 +93,7 @@
                     >
                         <template #thead-top>
                             <b-tr>
-                                <b-th class="text-center" colspan="5" variant="warning">Above Ground</b-th>
+                                <b-th class="text-center" colspan="6" variant="warning">Above Ground</b-th>
                             </b-tr>
                         </template>
                     </b-table>
@@ -116,6 +116,7 @@ export default class GreaseArrestorCatalog extends Vue {
         { key: 'size', label: 'Size' },
         { key: 'lengthMM', label: 'Length(mm)' },
         { key: 'widthMM', label: 'Width(mm)' },
+        { key: 'depthMM', label: 'Depth(mm)' },
         { key: 'result', label: 'Result' },
         { key: 'result2', label: '' },
     ];
@@ -132,7 +133,7 @@ export default class GreaseArrestorCatalog extends Vue {
             || 'nsw';
 
         if (this.selectedManufacturer === 'generic') {
-            this.fields.splice(4, 1);
+            this.fields.splice(5, 1);
         }
     }
     
@@ -169,9 +170,9 @@ export default class GreaseArrestorCatalog extends Vue {
     @Watch('selectedManufacturer')
     resolveTableFields(val: string) {
         if (this.selectedManufacturer === 'generic') {
-            this.fields.splice(4, 1);
+            this.fields.splice(5, 1);
         } else {
-            this.fields.splice(4, 0, { key: 'result2', label: '' });
+            this.fields.splice(5, 0, { key: 'result2', label: '' });
         }
     }
 

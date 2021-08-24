@@ -254,7 +254,7 @@
                         title="Pit"
                 ></b-button>
                 <b-button
-                    v-if="systemLayout === 'drainage'"
+                    v-if="systemLayout === 'drainage' && document.locale === 'en-au'"
                     variant="outline-dark"
                     class="insertBtn greaseArrestor btn-sm"
                     @click="toggleGreaseArrestor"

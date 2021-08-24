@@ -2259,7 +2259,13 @@ export const EXAMPLE_DRAWING: DrawingState = {
                 }
             ],
             "fixtures": [],
-            "greaseArrestor": [],
+            "greaseArrestor": [
+                {
+                    "manufacturer": "viking",
+                    "uid": "greaseArrestor",
+                    "selected": null,
+                }
+            ],
         },
         "priceTable": {}
     },
