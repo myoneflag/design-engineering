@@ -127,8 +127,8 @@ export default class PlantProperties extends Vue {
         const selectedSize = this.defaultCatalog.greaseArrestor!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.size];
         console.log(selectedSize);
         if (!!selectedSize) {
-            setPropertyByString(this.reactiveData, 'heightMM', selectedSize.lengthMM);
-            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.widthMM);
+            setPropertyByString(this.reactiveData, 'heightMM', selectedSize.widthMM);
+            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.lengthMM);
             this.onCommit();
         }
     }
