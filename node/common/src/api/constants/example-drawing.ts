@@ -7587,7 +7587,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "abd9c7c7-5092-48db-a075-868b390992b4",
                     "valve": {
                         "type": "INSPECTION_OPENING",
-                        "catalogId": "floorWaste"
+                        "catalogId": "inspectionOpening"
                     }
                 },
                 "8ea8365d-0842-4a3d-9b73-a9bada86e978": {
@@ -12653,7 +12653,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "553e118d-931c-460e-9009-25d830e77605",
                     "valve": {
                         "type": "INSPECTION_OPENING",
-                        "catalogId": "floorWaste"
+                        "catalogId": "inspectionOpening"
                     }
                 },
                 "afa9835e-f9d9-4a14-b872-25276d47bf56": {
