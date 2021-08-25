@@ -59,7 +59,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         res.push(
             {
                 property: "minPressureKPA",
-                title: "Min. Pressure",
+                title: "Residual Pressure",
                 hasDefault: false,
                 isCalculated: false,
                 requiresInput: true,
@@ -72,7 +72,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
 
             {
                 property: "maxPressureKPA",
-                title: "Max. Pressure",
+                title: "Static Pressure",
                 hasDefault: false,
                 isCalculated: false,
                 requiresInput: true,

@@ -13,12 +13,24 @@
             :on-change="onChange"
             :target="targetProperty"
         />
-        <b-row>
+        <b-row >
             <b-col>
                 <b-button size="sm" variant="danger" @click="onDelete">
                     Delete
                 </b-button>
             </b-col>
+        </b-row>
+        <b-row class="htc-row border border-secondary mt-4"  v-if="waterSystem">
+            <b-col class="d-flex p-0" @click="openTestingSite" >
+                
+                    <span class="htc d-flex-inline "><img width="80px" src="../../../assets/htctesting.png" /></span><p class=" htctext">Request a <br/><b>Flow & Pressure Test </b><br/> (5 day lead time)</p>
+            </b-col>
+        </b-row>
+        <b-row class="mt-2"  v-if="waterSystem">
+            <b-col>
+                <small class="px-2 ">Service only available in QLD and VIC</small>
+            </b-col>
+            
         </b-row>
     </b-container>
 </template>
@@ -34,6 +46,7 @@ import {
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
 import {getEntityName} from "../../../../../common/src/api/document/entities/types";
+import { isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -52,11 +65,18 @@ export default class FlowSourceProperties extends Vue {
             this.$props.selectedEntity,
         );
     }
-
+    openTestingSite(){
+        window.open(`https://www.hydranttesting.com.au/`)
+    }
+    get waterSystem(){
+        return this.$props.selectedEntity.systemUid!=StandardFlowSystemUids.Gas && !isDrainage(this.$props.selectedEntity.systemUid)
+    }
     get name() {
         return getEntityName(this.$props.selectedEntity);
     }
-
+    get StandardFlowSystemUids(){
+        return StandardFlowSystemUids;
+    }
     get reactiveData() {
         return this.$props.selectedEntity;
     }
@@ -98,5 +118,25 @@ export default class FlowSourceProperties extends Vue {
         margin-left: -50%;
         text-align: right;
     }
+}
+.htc{    
+    padding:0px;
+    width: 100px;
+    margin: 2px;
+    background-color: white;
+    padding-top: 10px;
+}
+.htctext{
+    padding:0px;
+    font-size: small;
+    margin:3px;
+    
+}
+.htc-row{
+    cursor:pointer;
+    background-color:lightgray;
+    margin-left:5px;
+    margin-right:5px;
+
 }
 </style>
