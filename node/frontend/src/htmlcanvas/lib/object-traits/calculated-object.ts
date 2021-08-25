@@ -57,8 +57,8 @@ export function CalculatedObject<
             if (datum.type === CalculationDataType.VALUE) {
                 const convFun = datum.convert || convertMeasurementSystem;
                 const docUnits = context.doc.drawing.metadata.units;
-                let units: Units
-                let value: (string | number | null) | (string | number | null)[]
+                let units: Units = datum.units;
+                let value: (string | number | null) | (string | number | null)[] = datum.value;
                 if (Array.isArray(datum.value)) {
                     value = datum.value.map( v => convFun(docUnits, datum.units, v) ).flatMap( v => v[1] )
                     units = convFun(docUnits, datum.units, null)[0]
@@ -71,10 +71,10 @@ export function CalculatedObject<
                         value = value[0] ? value[0] : value[1]
                     }
 
-                } else {
+                } else if (typeof datum.value !== 'string') {
                     [units, value] = convFun(docUnits, datum.units, datum.value);
                 }
-
+                
                 if (value === undefined) {
                     throw new Error(
                         "undefined value: " +
@@ -100,7 +100,7 @@ export function CalculatedObject<
                 }
                 
                 const calc = context.globalStore.getCalculation(this.entity);
-                const text = numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short;
+                const text = (numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short).trim();
 
                 const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && `${calc.manufacturer}` || ''; 
                 if (datum.property === "circulationPressureLoss" && manufacturer) {
