@@ -4,8 +4,8 @@ copy ./frontend/package*.json /usr/src/app/frontend/
 workdir /usr/src/app/frontend/
 run npm install
 
-expose 80
-env PORT 80
+expose 8011
+env PORT 8011
 
 # DEVELOPMENT
-cmd [ "npm", "run", "serve" ]
+cmd npm install && npm run serve

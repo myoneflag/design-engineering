@@ -1,8 +1,24 @@
 # H2X WEB APP
 
 ## Documentation
-
 First, check out the [documentation](./docs/README.md).
+
+- [H2X WEB APP](#h2x-web-app)
+  - [Project structure](#project-structure)
+    - [`node`](#node)
+    - [`docker`](#docker)
+    - [`cloudformation`](#cloudformation)
+  - [Local development](#local-development)
+    - [Overview](#overview)
+  - [Docker modes](#docker-modes)
+    - [Run full docker dev environment: `dev`](#run-full-docker-dev-environment-dev)
+    - [Run minimal docker dev environment: `minimal`](#run-minimal-docker-dev-environment-minimal)
+  - [Local development on host: `local`](#local-development-on-host-local)
+  - [Start the app](#start-the-app)
+  - [Configure local dev to use AWS resources](#configure-local-dev-to-use-aws-resources)
+  - [AWS Development](#aws-development)
+    - [Production build](#production-build)
+- [Deployment scripts](#deployment-scripts)
 
 ## Project structure
 
@@ -22,9 +38,88 @@ Also, is updates an existing environment with new Docker images that have been p
 
 ## Local development
 
+### Overview
+We can run local development in 3 modes: dev [docker], minimal [docker] and local [on host].  
+
+| Mode | Service  | Runs on |
+| ---- | -------- | ------- |
+| dev  | backend  | docker  |
+|      | frontend | docker  |
+|      | worker   | docker  |
+|      | db       | docker  |
+|      | mq       | docker  |
+|      | sqs      | docker  |
+|      | sqsd     | docker  |
+|      | nginx    | docker  |
+
+| Mode    | Service  | Runs on |
+| ------- | -------- | ------- |
+| minimal | backend  | docker  |
+|         | frontend | docker  |
+|         | db       | docker  |
+|         | mq       | docker  |
+|         | nginx    | docker  |
+
+| Mode  | Service  | Runs on  |
+| ----- | -------- | -------- |
+| local | backend  | **host** |
+|       | frontend | **host** |
+|       | db       | docker   |
+|       | mq       | docker   |
+|       | nginx    | docker   |
+
+## Docker modes
+
+Build base image: 
+```
+cd docker
+npm run login:dockerhub
+npm run build --service=base
+```
+Notes:  
+* `npm run login:dockerhub` can be run only the first time you re setting up
+* `npm run build --service=base` can be run only the first time, and when there are major changes to the installation process of the app. Usually rarely!
+
+### Run full docker dev environment: `dev`
+
+```
+npm run dev
+```
+
+This will start the following containers:
+* Node.JS webserver container `frontend` for the frontend Vue app  
+This runs in the `frontend` folder `npm run serve` - Vue CLI dev server with hot reload
+* Node.JS webserver container `backend` for the backend API  
+This runs in the `backend` folder `npm run dev` - dev server with hot reload
+* Node.JS webserver container `worker` for the worker web app  
+This also runs in the `backend` folder `npm run dev-worker` - dev server with hot reload
+* start a Postgres DB container `db`
+* start a ActiveMQ broker container `mq`
+* start a NGinx container `nginx`  
+This runs NginX that exposes all 3 webservers (configured default for port *80*) to serve over 8011,8012,8013 to avoid port 80 conflicts
+
+### Run minimal docker dev environment: `minimal`
+
+```
+npm run dev:minimal
+```
+
+This will not start `worker` and related services like `sqs`, `sqsd`.
+
+## Local development on host: `local`
+
 This development mode will run the main parts of the app, `frontend`, `backend` and `worker` on the local machine, and will start docker containers only for DB, MQ and a Nginx proxy.
 
-**Start local servers**
+**Start docker services**
+1. ```
+   cd docker
+   npm run login:dockerhub
+   npm run dev:local
+   ```
+
+**Start local servers**  
+All commands to be execute on the host machine.
+
 1. Ensure you use node 12  
    ```node --version```  
    If not, use `nvm` to install or switch to node 12.
@@ -46,40 +141,19 @@ This development mode will run the main parts of the app, `frontend`, `backend` 
    npm install
    npm run serve
    ```
-**Start docker services**
-1. ```
-   cd docker
-   npm run dev:local
-   ```
 
-## Local development inside of Docker
+## Start the app
+Open your browser to http://localhost:8010. Log in with username "admin", and password ... *heh!* Ask your coleagues.
 
-```
-cd docker
-npm run dev
-```
-This runs:
-```
-docker-compose --profile dev up
-```
-This will start the following containers:
-* Node.JS webserver container `frontend` for the frontend Vue app  
-This runs in the `frontend` folder `npm run serve` - Vue CLI dev server with hot reload
-* Node.JS webserver container `backend` for the backend API  
-This runs in the `backend` folder `npm run dev` - dev server with hot reload
-* Node.JS webserver container `worker` for the worker web app  
-This also runs in the `backend` folder `npm run dev-worker` - dev server with hot reload
-* start a Postgres DB container `db`
-* start a ActiveMQ broker container `mq`
-* start a NGinx container `nginx`  
-This runs NginX that exposes all 3 webservers (configured default for port *80*) to serve over 8011,8012,8013 to avoid port 80 conflicts
+## Configure local dev to use AWS resources
 
-You can also run a minimal set of docker containers:
-```
-npm run dev:minimal
-```
+The local dev app uses S3 to store background files and images.
+For that, a local configuration and a small AWS deployment needs to be performed.
+**Details TBD.**
 
 ## AWS Development
+
+This refers to deveopment on the cloudformation stack for AWS resources being deployed.
 
 Issue AK, SK for your IAM user. Create local AWS profile using:
 ```
@@ -104,7 +178,7 @@ This is a breakdown of the process. For a single line deployment, see below unde
 Set environment
 ```
 export env=stage
-export profile=awsprofile
+export AWS_PROFILE=awsprofile
 ```
 
 Prep and build docker
@@ -133,6 +207,6 @@ Executing a full docker build, and aws update with that build:
 
 ```
 export env=test
-export profile=awsprofile
+export AWS_PROFILE=_awsprofile_
 ./deploy.sh
 ```

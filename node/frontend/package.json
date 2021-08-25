@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve --port 3001",
+    "serve:docker": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 8011",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
