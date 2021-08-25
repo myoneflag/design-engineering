@@ -13,7 +13,7 @@ import Flatten from "@flatten-js/core";
 import {PIPE_HEIGHT_GRAPHIC_EPS_MM} from "../../../../src/config";
 import {CalculationContext, PressurePushMode} from "../../../../src/calculations/types";
 import {FlowNode} from "../../../../src/calculations/calculation-engine";
-import {angleDiffRad} from "../../../../src/lib/utils";
+import {angleDiffRad} from "../../../../src/lib/trigonometry";
 import {EntityDrawingArgs} from "../../../../src/htmlcanvas/lib/drawable-object";
 import {CalculationData} from "../../../../src/store/document/calculations/calculation-field";
 import * as TM from "transformation-matrix";
@@ -527,21 +527,21 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
             }
 
-            @Cached(
-                (kek) =>
-                    new Set(
-                        [kek]
-                            .map((n) => [n, n.getParentChain(), n.getNeighbours()])
-                            .flat(2)
-                            .map((n) => [n, n.getParentChain(), n.getNeighbours()])
-                            .flat(2)
-                            .map((n) => n.getParentChain())
-                            .flat()
-                            .map((o) => o.uid)
-                    ),
-                (context, flowLS, from, to, signed, mode, pipeSizes) =>
-                    flowLS + from.connectable + to.connectable + signed + mode + stringify(pipeSizes)
-            )
+            // @Cached(
+            //     (kek) =>
+            //         new Set(
+            //             [kek]
+            //                 .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+            //                 .flat(2)
+            //                 .map((n) => [n, n.getParentChain(), n.getNeighbours()])
+            //                 .flat(2)
+            //                 .map((n) => n.getParentChain())
+            //                 .flat()
+            //                 .map((o) => o.uid)
+            //         ),
+            //     (context, flowLS, from, to, signed, mode, pipeSizes) =>
+            //         flowLS + from.connectable + to.connectable + signed + mode + stringify(pipeSizes)
+            // )
             getFrictionHeadLoss(
                 context: CalculationContext,
                 flowLS: number,
@@ -575,7 +575,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 // @ts-ignore
-                const componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
+                let componentHL = super.getFrictionHeadLoss(context, oFlowLS, oFrom, oTo, signed, pressureKPA);
 
                 if (this.entity.type === EntityType.SYSTEM_NODE) {
                     // @ts-ignore
@@ -598,47 +598,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                     return 0;
                 }
 
-                const sizes =
-                    pipeSizes ||
-                    [from, to].map((n) => {
-                        const o = context.globalStore.get(n.connection);
-                        if (o && o.type === EntityType.PIPE) {
-                            const p = o as Pipe;
-                            const calculation = context.globalStore.getCalculation(p.entity);
-                            if (calculation) {
-                                return calculation.realInternalDiameterMM;
-                            }
-                        }
-                    });
-
-                if (sizes[0] === undefined || sizes[1] === undefined) {
-                    throw new Error(
-                        "pipe size undefined " + this.entity.uid + " " + JSON.stringify(from) + " " + JSON.stringify(to)
-                    );
-                }
-
-                const largeSize = Math.max(sizes[0]!, sizes[1]!);
-                const smallSize = Math.min(sizes[0]!, sizes[1]!);
-
-                const volLM = (smallSize ** 2 * Math.PI) / 4 / 1000;
-                const velocityMS = flowLS / volLM;
-
-                const angle = Math.abs(
-                    angleDiffRad(this.getAngleOfRad(from.connection), this.getAngleOfRad(to.connection))
-                );
-
-                const k = 0.8 * Math.sin(angle / 2) * (1 - smallSize ** 2 / largeSize ** 2);
-
-                if (Math.abs(flowLS) < EPS) {
-                    // @ts-ignore
-                    return componentHL;
-                }
-
-                if (componentHL !== null) {
-                    return sign * ((k * velocityMS ** 2) / (2 * ga)) + componentHL;
-                } else {
-                    return null;
-                }
+                return componentHL;
             }
 
             connect(uid: string) {

@@ -20,7 +20,7 @@ import {EntityType, getEntityName} from "../../../../../common/src/api/document/
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
 import { assertUnreachable } from "../../../../../common/src/api/config";
-import { convertMeasurementSystem } from "../../../../../common/src/lib/measurements";
+import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { I18N } from "../../../../../common/src/api/locale/values";
 
 export interface Calculated {
@@ -56,20 +56,23 @@ export function CalculatedObject<
         makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
                 const convFun = datum.convert || convertMeasurementSystem;
-                
-                let value = null;
-                let units = datum.units;
+                const docUnits = context.doc.drawing.metadata.units;
+                let units: Units
+                let value: (string | number | null) | (string | number | null)[]
                 if (Array.isArray(datum.value)) {
-                    value = [];
-                    datum.value.forEach(v => {
-                        const convertedValue = convFun(context.doc.drawing.metadata.units, datum.units, v);
-                        value.push(convertedValue[1]);
-                        units = convertedValue[0];
-                    });
-                } else if (typeof datum.value !== 'string') {
-                    [units, value] = convFun(context.doc.drawing.metadata.units, datum.units, datum.value);
+                    value = datum.value.map( v => convFun(docUnits, datum.units, v) ).flatMap( v => v[1] )
+                    units = convFun(docUnits, datum.units, null)[0]
+
+                    // if values are the same, coallesce into one
+                    if (value.length == 2 && value[0] == value[1]) {
+                        value = value[0]
+                    } else if (value.length == 2 && (value[0] == 0 || value[1] == 0) ) {
+                        // if one of the values is 0, we skip it
+                        value = value[0] ? value[0] : value[1]
+                    }
+
                 } else {
-                    value = datum.value;
+                    [units, value] = convFun(docUnits, datum.units, datum.value);
                 }
 
                 if (value === undefined) {
@@ -89,6 +92,8 @@ export function CalculatedObject<
 
                     if (typeof value === 'string') {
                         numberText = value;
+                    } else if ( Array.isArray(value)) {
+                        numberText = value === null ? "??" : value.map( v => (v as number).toFixed(fractionDigits) ).toString()
                     } else {
                         numberText = value === null ? "??" : (value as number).toFixed(fractionDigits);
                     }
@@ -224,6 +229,7 @@ export function CalculatedObject<
                     );
                 }
 
+                let datumDrawn: boolean = false;
                 for (let i = data.length - 1; i >= 0; i--) {
                     const datum = data[i];
 
@@ -258,46 +264,50 @@ export function CalculatedObject<
                             ctx.fillText(text, -maxWidth / 2, y);
                             y -= multiplier * FIELD_HEIGHT;
                         }
+
+                        datumDrawn = true 
                     }
                 }
 
-                // line too
-                const boxShape = new Flatten.Polygon();
-                const worldMin = vp.toWorldCoord(
-                    TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })
-                );
-                const worldMax = vp.toWorldCoord(
-                    TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmax, y: box.ymax })
-                );
-                if (this.hasWarning(context) && !forExport) {
-                    worldMin.x -= WARNING_WIDTH;
-                }
-                const worldBox = new Flatten.Box(
-                    Math.min(worldMin.x, worldMax.x) - 1,
-                    Math.min(worldMin.y, worldMax.y) - 1,
-                    Math.max(worldMin.x, worldMax.x) + 1,
-                    Math.max(worldMin.y, worldMax.y + 1)
-                );
-
-                boxShape.addFace(worldBox);
-                const line = this.shape()!.distanceTo(boxShape);
-                if (!boxShape.contains(line[1].start) || true) {
-                    // line is now in world position. Transform line back to current position.
-                    const world2curr = TM.transform(
-                        TM.inverse(context.vp.currToScreenTransform(ctx)),
-                        vp.world2ScreenMatrix
+                if (datumDrawn) {
+                    // line too
+                    const boxShape = new Flatten.Polygon();
+                    const worldMin = vp.toWorldCoord(
+                        TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmin, y: box.ymin })
+                    );
+                    const worldMax = vp.toWorldCoord(
+                        TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmax, y: box.ymax })
+                    );
+                    if (this.hasWarning(context) && !forExport) {
+                        worldMin.x -= WARNING_WIDTH;
+                    }
+                    const worldBox = new Flatten.Box(
+                        Math.min(worldMin.x, worldMax.x) - 1,
+                        Math.min(worldMin.y, worldMax.y) - 1,
+                        Math.max(worldMin.x, worldMax.x) + 1,
+                        Math.max(worldMin.y, worldMax.y + 1)
                     );
 
-                    const currLine = line[1].transform(tm2flatten(world2curr));
+                    boxShape.addFace(worldBox);
+                    const line = this.shape()!.distanceTo(boxShape);
+                    if (!boxShape.contains(line[1].start) || true) {
+                        // line is now in world position. Transform line back to current position.
+                        const world2curr = TM.transform(
+                            TM.inverse(context.vp.currToScreenTransform(ctx)),
+                            vp.world2ScreenMatrix
+                        );
 
-                    ctx.strokeStyle = "#AAA";
-                    ctx.setLineDash([5, 5]);
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.moveTo(currLine.start.x, currLine.start.y);
-                    ctx.lineTo(currLine.end.x, currLine.end.y);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
+                        const currLine = line[1].transform(tm2flatten(world2curr));
+
+                        ctx.strokeStyle = "#AAA";
+                        ctx.setLineDash([5, 5]);
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(currLine.start.x, currLine.start.y);
+                        ctx.lineTo(currLine.end.x, currLine.end.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
                 }
             }
 
