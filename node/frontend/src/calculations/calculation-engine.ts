@@ -968,13 +968,12 @@ export default class CalculationEngine implements CalculationContext {
                                 finalPressureKPA,
                                 pressurePushMode,
                             );
-                            return hl === null
-                                ? -Infinity
-                                : head2kpa(
+                            let pressure = ( hl === null ) ? -Infinity : head2kpa(
                                     hl,
                                     getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
                                     this.ga
                                 );
+                            return pressure
                         } else {
                             throw new Error("misconfigured flow graph");
                         }
@@ -1049,13 +1048,12 @@ export default class CalculationEngine implements CalculationContext {
                                 finalPressureKPA,
                                 pressurePushMode,
                             );
-                            return hl === null
-                                ? -Infinity
-                                : head2kpa(
+                            let pressure = ( hl === null ) ? -Infinity : head2kpa(
                                     hl,
                                     getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
                                     this.ga
                                 );
+                            return pressure
                         } else {
                             return 1000000;
                         }

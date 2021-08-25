@@ -8,10 +8,12 @@ import Flatten from "@flatten-js/core";
 import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
     canonizeAngleRad,
-    getValveK,
-    isAcuteRad,
     isRightAngleRad,
     isStraightRad,
+    is45AngleRad
+} from "../../../src/lib/trigonometry";
+import {
+    getValveK,
     lighten,
     rgb2style
 } from "../../../src/lib/utils";
@@ -32,13 +34,14 @@ import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-t
 import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
 import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
-import {Coord, NetworkType} from "../../../../common/src/api/document/drawing";
+import {Coord} from "../../../../common/src/api/document/drawing";
 import {EPS, parseCatalogNumberExact} from "../../../../common/src/lib/utils";
 import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../../../common/src/api/config";
 import {SnappableObject} from "../lib/object-traits/snappable-object";
 import {getHighlightColor} from "../lib/utils";
 import {PipesTable} from "../../../../common/src/api/catalog/price-table";
 import {fillValveDefaultFields} from "../../store/document/entities/fillDefaultEntityFields";
+import { fittingFrictionLossMH } from "../../../src/calculations/pressure-drops";
 
 @CalculatedObject
 @SelectableObject
@@ -258,21 +261,19 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             }
         }
 
+        // determine smallest diameter pipe on currently computed to-from path
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
         let smallestDiameterNominalMM: number | undefined;
-        const connections = this.globalStore.getConnections(this.entity.uid);
-        const internals: string[] = [];
+        const connections = [ from.connection, to.connection ];
         connections.forEach((p) => {
             const pipe = this.globalStore.get(p) as Pipe;
             const thisDiameter = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realInternalDiameterMM
             )!;
-
             const thisDiameterNominal = parseCatalogNumberExact(
                 context.globalStore.getCalculation(pipe.entity)!.realNominalPipeDiameterMM
             )!;
-            internals.push("" + thisDiameter);
             if (smallestDiameterMM == null || (thisDiameter != null && thisDiameter < smallestDiameterMM)) {
                 smallestDiameterMM = thisDiameter;
                 smallestDiameterNominalMM = thisDiameterNominal;
@@ -287,7 +288,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             return null;
         }
 
-        let k: number | null = null;
+        // determine kValue
+        let kValue: number | null = null;
         const fromc = this.get3DOffset(from.connection);
         const toc = this.get3DOffset(to.connection);
         const fromv = new math3d.Vector3(fromc.x, fromc.y, fromc.z);
@@ -297,38 +299,47 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         if (fromv.magnitude > EPS && tov.magnitude > EPS) {
             angle = Math.abs(canonizeAngleRad(Math.acos(fromv.normalize().dot(tov.normalize()))));
         }
-
-        if (connections.length === 2) {
-            // through valve
-            if (isRightAngleRad(angle, Math.PI / 8)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
-            } else if (isAcuteRad(angle)) {
-                k = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
-                if (k) {
-                    k *= 2;
+        const allConnections = this.globalStore.getConnections(this.entity.uid);
+        // elbows
+        if (allConnections.length === 2) {
+            if (isStraightRad(angle, Math.PI / 8)) {
+                kValue = 0;
+            } else if (is45AngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
+            } else if (isRightAngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
+            } else {
+                kValue = getValveK("90Elbow", context.catalog, smallestDiameterNominalMM);
+                if (kValue) {
+                    kValue *= 2;
                 }
-            } else if (isStraightRad(angle, Math.PI / 8)) {
-                k = 0;
-            } else {
-                k = getValveK("45Elbow", context.catalog, smallestDiameterNominalMM);
             }
-        } else if (connections.length >= 3) {
-            if (isStraightRad(angle, Math.PI / 4)) {
-                k = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+        // tees
+        } else if (allConnections.length >= 3) {
+            if (isStraightRad(angle, Math.PI / 8)) {
+                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+            } else if (is45AngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
+            } else if (isRightAngleRad(angle, Math.PI / 8)) {
+                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
             } else {
-                k = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
+                kValue = getValveK("tThruBranch", context.catalog, smallestDiameterNominalMM);
+                if (kValue) {
+                    kValue *= 2;
+                }
             }
         } else {
             throw new Error("edge shouldn't exist");
         }
 
-        if (k === null) {
+        if (kValue === null) {
             throw new Error("could not find k value of fitting");
         }
 
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
-        return (sign * (k * velocityMS ** 2)) / (2 * ga);
+        const frictionLoss = sign * fittingFrictionLossMH(velocityMS, kValue, ga);
+        return frictionLoss
     }
 
     rememberToRegister(): void {
