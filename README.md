@@ -1,5 +1,8 @@
 # H2X WEB APP
 
+## Documentation
+First, check out the [documentation](./docs/README.md).
+
 - [H2X WEB APP](#h2x-web-app)
   - [Project structure](#project-structure)
     - [`node`](#node)
