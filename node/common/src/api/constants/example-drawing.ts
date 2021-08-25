@@ -1,7 +1,6 @@
 import {DrawingState} from "../document/drawing";
 
-// increase every time there is new document upgrade
-export const EXAMPLE_DRAWING_VERSION = 23;
+export const EXAMPLE_DRAWING_VERSION = 22;
 
 export const EXAMPLE_DRAWING: DrawingState = {
     "metadata": {

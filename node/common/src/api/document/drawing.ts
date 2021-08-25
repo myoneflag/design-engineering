@@ -906,7 +906,9 @@ export const initialAustralianDrawing: DrawingState = {
                 { manufacturer: "grundfos", uid: "hotWaterPlant", selected: null,},
             ],
             fixtures: [],
-            greaseArrestor: [],
+            greaseArrestor: [
+                { uid: 'greaseArrestor', manufacturer: 'viking', selected: null, },
+            ],
         },
         priceTable: {},
     },
