@@ -1,6 +1,7 @@
 <template>
     <b-modal 
         id="onboarding" 
+        centered
         hide-footer 
         hide-header 
         no-close-on-backdrop
@@ -363,10 +364,6 @@ export default class Onboarding extends Vue {
     background-color: #ffffff !important;
     color: #343a40 !important;
     position: relative !important;
-
-    .modal-dialog {
-        margin-top: 300px;
-    }
 }
 #step-indicator {
     flex: 1;
