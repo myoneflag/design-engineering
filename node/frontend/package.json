@@ -83,6 +83,7 @@
     "vue-test-utils": "^1.0.0-beta.11",
     "vue-youtube-embed": "^2.2.2",
     "vuex": "^3.0.1",
+    "vue-context-menu": "^2.0.6",
     "vuex-class": "^0.3.2",
     "webpack": "^4.40.2",
     "websocket": "^1.0.30",

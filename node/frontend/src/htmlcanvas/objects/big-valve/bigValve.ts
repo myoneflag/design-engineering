@@ -45,8 +45,8 @@ import {
 import { Color, Coord, coordDist2, SelectedMaterialManufacturer } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 import { SnappableObject } from "../../lib/object-traits/snappable-object";
+import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
 import { prepareFill, prepareStroke } from "../../../../src/htmlcanvas/helpers/draw-helper";
-
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
 @CalculatedObject
@@ -458,16 +458,17 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
             }
 
             // pressure drop is an elbow and a tee for the cold part.
-            const k1 = getValveK("tThruBranch", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
-            const k2 = getValveK("90Elbow", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
+            const kValue1 = getValveK("tThruBranch", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
+            const kValue2 = getValveK("90Elbow", context.catalog, BIG_VALVE_DEFAULT_PIPE_WIDTH_MM);
 
-            if (k1 === null || k2 === null) {
+            if (kValue1 === null || kValue2 === null) {
                 return null;
             }
 
+            const kValue = kValue1 + kValue2;
             const volLM = (BIG_VALVE_DEFAULT_PIPE_WIDTH_MM ** 2 * Math.PI) / 4 / 1000;
             const velocityMS = flowLS / volLM;
-            return (sign * ((k1 + k2) * velocityMS ** 2)) / (2 * ga);
+            return sign * fittingFrictionLossMH(velocityMS, kValue, ga);
         } else {
             switch (entity.valve.type) {
                 case BigValveType.TMV: {

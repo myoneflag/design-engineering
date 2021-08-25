@@ -7,7 +7,8 @@ import {CalculationFilters, DocumentState} from "../../../src/store/document/typ
 import Flatten from "@flatten-js/core";
 import {Draggable, DraggableObject} from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import {canonizeAngleRad, lighten, rgb2style} from "../../../src/lib/utils";
+import {canonizeAngleRad} from "../../../src/lib/trigonometry";
+import {lighten, rgb2style} from "../../../src/lib/utils";
 import {Interaction, InteractionType} from "../../../src/htmlcanvas/lib/interaction";
 import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
