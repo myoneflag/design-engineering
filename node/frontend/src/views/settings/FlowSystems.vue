@@ -516,9 +516,10 @@ export default class FlowSystems extends Vue {
     deleteSystem() {
         
         const flowSystem=this.document.drawing.metadata.flowSystems.find((item:FlowSystemParameters)=>{return item.name===this.selectedSystem.name});
+
         const GlobalStoreObjects = Array.from(this.globalStore.values());
         const foundedObj=GlobalStoreObjects.find((item:any) => {
-            return item && item.entity && item.entity.systemUid && item.entity.systemUid==flowSystem.uid
+            return item && item.entity && item.entity.systemUid && flowSystem && flowSystem.uid &&item.entity.systemUid==flowSystem.uid
         });
         if(foundedObj)
         {
