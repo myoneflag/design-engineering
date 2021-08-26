@@ -1,4 +1,3 @@
-
 import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
@@ -1698,15 +1697,37 @@ export default class CalculationEngine implements CalculationContext {
                             }];
                         }
                     case NodeType.DWELLING:
-                        return [{
-                            units: 0,
-                            continuousFlowLS: filled.node.continuousFlowLS!,
-                            dwellings: filled.node.dwellings,
-                            entity: filled.uid,
-                            gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
-                            drainageUnits: drainageUnits!,
-                            correlationGroup
-                        }];
+                        if (!!this.doc.drawing.metadata.calculationParams.dwellingMethod) {
+                            return [{
+                                units: 0,
+                                continuousFlowLS: filled.node.continuousFlowLS!,
+                                dwellings: filled.node.dwellings,
+                                entity: filled.uid,
+                                gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                                drainageUnits: drainageUnits!,
+                                correlationGroup
+                            }];
+                        } else if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
+                            return [{
+                                units: filled.node.designFlowRateLS!,
+                                continuousFlowLS: filled.node.continuousFlowLS!,
+                                dwellings: filled.node.dwellings,
+                                entity: filled.uid,
+                                gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                                drainageUnits: drainageUnits!,
+                                correlationGroup
+                            }];
+                        } else {
+                            return [{
+                                units: filled.node.loadingUnits!,
+                                continuousFlowLS: filled.node.continuousFlowLS!,
+                                dwellings: filled.node.dwellings,
+                                entity: filled.uid,
+                                gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
+                                drainageUnits: drainageUnits!,
+                                correlationGroup
+                            }];
+                        }
                     default:
                         assertUnreachable(filled.node);
                 }
