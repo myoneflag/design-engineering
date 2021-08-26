@@ -722,6 +722,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             this.setIsPreview(false);
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
+             this.scheduleDraw();
         }
 
         setDrawingMode() {
