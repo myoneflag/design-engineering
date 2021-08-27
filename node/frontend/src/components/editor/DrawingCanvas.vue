@@ -710,7 +710,8 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             }
 
             // set view on groundiest floor
-            this.selectGroundFloor();
+            if(!this.currentLevel)
+                this.selectGroundFloor();
 
             for (const luid of Object.keys(this.document.drawing.levels)) {
                 this.changedLevelsSinceLastPLUCalc.add(luid);
@@ -721,6 +722,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             this.setIsPreview(false);
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
+             this.scheduleDraw();
         }
 
         setDrawingMode() {
