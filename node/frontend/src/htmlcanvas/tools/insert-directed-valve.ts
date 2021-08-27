@@ -252,11 +252,19 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 pressureDropKPA: 0,
             };
         case ValveType.FLOOR_WASTE:
-        case ValveType.INSPECTION_OPENING:
-        case ValveType.REFLUX_VALVE:
             return {
                 type,
                 catalogId: 'floorWaste',
+            };
+        case ValveType.INSPECTION_OPENING:
+            return {
+                type,
+                catalogId: 'inspectionOpening',
+            };
+        case ValveType.REFLUX_VALVE:
+            return {
+                type,
+                catalogId: 'refluxValve',
             };
     }
     assertUnreachable(type);
