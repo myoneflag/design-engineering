@@ -695,6 +695,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
              this.$watch(
                 () => this.document.uiState.pressureOrDrainage,
                 () => {
+                    this.select([], SelectMode.Replace);
                     this.considerCalculating();
                 }
             );

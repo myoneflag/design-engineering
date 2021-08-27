@@ -1,5 +1,6 @@
+import BaseBackedObject from "../lib/base-backed-object";
 import { Side } from "./side";
-
+const inactiveColor="rgba(150, 150, 150, 0.65)"
 export function drawPipeCap(ctx: CanvasRenderingContext2D, point: Point, side: Side, strokeStyle: string = "#000") {
         const base:number=50;
         const rectangles: Rectangle[] = [
@@ -52,4 +53,14 @@ export function drawRectangles(ctx: CanvasRenderingContext2D, rectangles: Rectan
     ctx.rect(rectangle.point.left, rectangle.point.top, rectangle.width, rectangle.height);    
   })
   ctx.stroke();
+}
+
+
+export function prepareStroke(entity:BaseBackedObject,ctx: CanvasRenderingContext2D){
+    if(!entity.isActive())    
+        ctx.strokeStyle = inactiveColor;
+}
+export function prepareFill(entity:BaseBackedObject,ctx: CanvasRenderingContext2D){
+    if(!entity.isActive())    
+        ctx.fillStyle = inactiveColor;
 }
