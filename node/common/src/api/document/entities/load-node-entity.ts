@@ -2,7 +2,7 @@ import {FieldType, PropertyField} from "./property-field";
 import {EntityType} from "./types";
 import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../drawing";
 import {Units} from "../../../lib/measurements";
-import {isGas} from "../../config";
+import {isGas, isLUStandard, SupportedPsdStandards} from "../../config";
 import {Catalog} from "../../catalog/types";
 import { I18N } from "../../locale/values";
 import { SupportedLocales } from "../../locale";
@@ -105,7 +105,10 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     case null:
                     case NodeVariant.FIXTURE:
                         fields.unshift(nameField);
-
+                        const psdStrategy = drawing
+                        ? drawing.metadata.calculationParams.psdMethod
+                        : SupportedPsdStandards.as35002018LoadingUnits;
+                    
                         fields.push(
                             {
                                 property: "node.loadingUnits",
@@ -114,7 +117,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 isCalculated: false,
                                 type: FieldType.Number,
                                 params: { min: 0, max: null },
-                                multiFieldId: "loadingUnits"
+                                multiFieldId: "loadingUnits",
+                                hideFromPropertyWindow:  !isLUStandard(psdStrategy)
                             },
                             {
                                 property: "node.designFlowRateLS",
@@ -125,6 +129,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 params: { min: 0, max: null },
                                 multiFieldId: "designFlowRateLS",
                                 units: Units.LitersPerSecond,
+                                hideFromPropertyWindow:  isLUStandard(psdStrategy)
                             },
                             {
                                 property: "node.asnzFixtureUnits",
