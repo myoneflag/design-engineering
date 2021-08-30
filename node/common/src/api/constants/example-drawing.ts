@@ -1,3 +1,4 @@
+import {OPERATION_NAMES, OperationTransformConcrete} from "../document/operation-transforms";
 import {DrawingState} from "../document/drawing";
 
 export const EXAMPLE_DRAWING_VERSION = 22;
@@ -2257,7 +2258,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "selected": null
                 }
             ],
-            "fixtures": [],
+            "fixtures": []
         },
         "priceTable": {}
     },
@@ -8296,7 +8297,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "parentUid": "883c8bcd-a994-4c3e-82ec-748f683e2cba",
                     "type": "PLANT",
                     "uid": "f5b251aa-6416-400b-b166-46c1bd99edc6",
-                    "name": "Grease Interceptor Trap",
+                    "name": "Grease Arrestor",
                     "rotation": 0,
                     "plant": {
                         "type": "DRAINAGE_PIT",
