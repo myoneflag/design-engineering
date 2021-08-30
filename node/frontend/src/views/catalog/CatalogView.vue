@@ -169,7 +169,7 @@
             </template>
         </template>
         
-        <GreaseArrestorCatalog v-if="displayCatalog('greaseArrestor')" @save="save"></GreaseArrestorCatalog>
+        <GreaseInterceptorTrapCatalog v-if="displayCatalog('greaseInterceptorTrap')" @save="save"></GreaseInterceptorTrapCatalog>
     </b-container>
 </template>
 <script lang="ts">
@@ -187,12 +187,12 @@ import { convertMeasurementSystem, Units } from "../../../../common/src/lib/meas
 import { SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 import { HotWaterPlantGrundfosSettingsName } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { SupportedLocales } from "../../../../common/src/api/locale";
-import GreaseArrestorCatalog from "./GreaseArrestorCatalog.vue";
+import GreaseInterceptorTrapCatalog from "./GreaseInterceptorTrapCatalog.vue";
 
 @Component({
     components: { 
         MainNavBar,
-        GreaseArrestorCatalog,
+        GreaseInterceptorTrapCatalog,
     },
     props: {
         schema: Object
@@ -274,7 +274,7 @@ export default class CatalogView extends Vue {
     }
 
     get onlyOneTable() {
-        if (this.paths[1]?.text === 'greaseArrestor') return true;
+        if (this.paths[1]?.text === 'greaseInterceptorTrap') return true;
 
         const schema = this.getSchema();
         const data = this.currCatalog;
@@ -292,7 +292,7 @@ export default class CatalogView extends Vue {
     }
 
     get manufacturer(): string {
-        if (this.paths[1]?.text === 'greaseArrestor') return "";
+        if (this.paths[1]?.text === 'greaseInterceptorTrap') return "";
 
         if (this.paths[1] && this.paths[1].text in ['prv', 'hotWaterPlant']) {
             return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
@@ -308,7 +308,7 @@ export default class CatalogView extends Vue {
     }
 
     get inCatalogScreen() {
-        return !(this.paths[1]?.text !== 'greaseArrestor');
+        return !(this.paths[1]?.text !== 'greaseInterceptorTrap');
     }
 
     display(units: Units | undefined, prop: string) {
@@ -608,9 +608,9 @@ export default class CatalogView extends Vue {
         const index = this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key);
         
         if (!this.selMtlMftr(catalog).length || index < 0) {
-            this.document.drawing.metadata.catalog[catalog].push({uid: key, manufacturer, selected: selectedOption});
+            this.document.drawing.metadata.catalog[catalog]!.push({uid: key, manufacturer, selected: selectedOption});
         } else {
-            this.document.drawing.metadata.catalog[catalog].splice(index, 1, {uid: key, manufacturer, selected: selectedOption});
+            this.document.drawing.metadata.catalog[catalog]!.splice(index, 1, {uid: key, manufacturer, selected: selectedOption});
         }
 
         this.save();
@@ -636,7 +636,7 @@ export default class CatalogView extends Vue {
 
     displayCatalog(catalog: string) {
         return (!this.paths[1] || this.paths[1].text === catalog) 
-            && (catalog === 'greaseArrestor' && this.document.locale === SupportedLocales.AU);
+            && (catalog === 'greaseInterceptorTrap' && this.document.locale === SupportedLocales.AU);
     }
 }
 </script>

@@ -32,7 +32,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             iAmDrainage = iAmPressure = true;
             break;
         case PlantType.DRAINAGE_PIT:
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             iAmDrainage = true;
             break;
         default:
@@ -98,14 +98,14 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             );
         }
 
-        if (value.plant.type === PlantType.DRAINAGE_GREASE_ARRESTOR) {
+        if (value.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
             results.push(
                 {
                     property: "size",
                     title: "Size",
                     short: "",
                     units: Units.None,
-                    category: FieldCategory.GreaseArrestor,
+                    category: FieldCategory.GreaseInterceptorTrap,
                     layouts: ['drainage'],
                 },
                 {
@@ -113,7 +113,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                     title: "Model",
                     short: "",
                     units: Units.None,
-                    category: FieldCategory.GreaseArrestor,
+                    category: FieldCategory.GreaseInterceptorTrap,
                     layouts: ['drainage'],
                 },
             );

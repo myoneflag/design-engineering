@@ -24,6 +24,7 @@ export default interface PlantEntity extends CenteredEntity {
 
     widthMM: number;
     heightMM: number;
+    lengthMM?: number;
 
     inletUid: string;
     outletUid: string;
@@ -48,7 +49,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                     {name: 'Pump', key: PlantType.PUMP},
                     {name: 'Custom', key: PlantType.CUSTOM},
                     {name: 'Drainage Pit', key: PlantType.DRAINAGE_PIT},
-                    {name: 'Grease Arrestor', key: PlantType.DRAINAGE_GREASE_ARRESTOR},
+                    {name: 'Grease Interceptor Trap', key: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP},
                 ],
             },
             readonly: true,
@@ -241,8 +242,8 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                 },
             )
             break;
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
-            const manufacturer = drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            const manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
 
             res.splice(2, 0, {
                 property: 'plant.location',
@@ -251,7 +252,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                 isCalculated: false,
                 type: FieldType.Choice,
                 params: {
-                    choices: auCatalog.greaseArrestor!.location.map(i => ({name: i.name, key: i.uid})),
+                    choices: auCatalog.greaseInterceptorTrap!.location.map(i => ({name: i.name, key: i.uid})),
                 },
                 multiFieldId: 'plant.location',
             },
@@ -270,21 +271,46 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                 multiFieldId: 'plant.position',
             },
             {
-                property: 'plant.size',
-                title: 'Grease Arrestor Size',
+                property: 'plant.capacity',
+                title: 'Grease Interceptor Trap Capacity',
                 hasDefault: false,
                 isCalculated: false,
                 type: FieldType.Choice,
                 params: {
-                    choices: Object.entries(auCatalog.greaseArrestor!.size[manufacturer]?.[entity.plant.location]?.[entity.plant.position] || [])
-                        .map(([key, val]) => ({
-                            name: val.size,
-                            key: Number(key),
+                    choices: Object.keys(auCatalog.greaseInterceptorTrap!.size[manufacturer]?.[entity.plant.location]?.[entity.plant.position] || [])
+                        .map(key => ({
+                            name: key,
+                            key
                         }))
                 },
-                multiFieldId: 'plant.size',
+                multiFieldId: 'plant.capacity',
                 slot: true,
-            })
+            });
+
+            res.push(
+                {
+                    property: "widthMM",
+                    title: "Width",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "widthMM",
+                    units: Units.Millimeters,
+                    readonly: isReadonly(catalog, drawing, entity),
+                },
+                {
+                    property: "lengthMM",
+                    title: "Length",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "lengthMM",
+                    units: Units.Millimeters,
+                    readonly: isReadonly(catalog, drawing, entity),
+                }
+            );
             break;
         default:
             assertUnreachable(entity.plant);
@@ -350,30 +376,32 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
         );
     }
 
-    res.push(
-        {
-            property: "widthMM",
-            title: "Width",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "widthMM",
-            units: Units.Millimeters,
-            readonly: isReadonly(catalog, drawing, entity),
-        },
-        {
-            property: "heightMM",
-            title: "Height",
-            hasDefault: false,
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "heightMM",
-            units: Units.Millimeters,
-            readonly: isReadonly(catalog, drawing, entity),
-        }
-    );
+    if (entity.plant.type !== PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+        res.push(
+            {
+                property: "widthMM",
+                title: "Width",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "widthMM",
+                units: Units.Millimeters,
+                readonly: isReadonly(catalog, drawing, entity),
+            },
+            {
+                property: "heightMM",
+                title: "Height",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "heightMM",
+                units: Units.Millimeters,
+                readonly: isReadonly(catalog, drawing, entity),
+            }
+        );
+    }
 
     return res;
 }
@@ -428,7 +456,7 @@ export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
         case PlantType.CUSTOM:
         case PlantType.PUMP:
         case PlantType.DRAINAGE_PIT:
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             break;
         default:
             assertUnreachable(result.plant);
@@ -446,8 +474,8 @@ function isReadonly(catalog: Catalog, drawing: DrawingState, entity: PlantEntity
         case PlantType.PUMP:
         case PlantType.DRAINAGE_PIT:
             break;
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
-            const manufacturer = drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            const manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
             isReadonly = manufacturer !== 'generic';
             break;
         default:

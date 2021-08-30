@@ -663,18 +663,18 @@ export default class CalculationEngine implements CalculationContext {
             } else if (o.entity.type === EntityType.GAS_APPLIANCE) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.demandMJH = o.entity.flowRateMJH;
-            } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_ARRESTOR) {
+            } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
-                const manufacturer = this.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
-                const manufacturerName = manufacturer !== 'generic' && this.catalog.greaseArrestor!.manufacturer.find(i => i.uid === manufacturer)!.name || '';
+                const manufacturer = this.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+                const manufacturerName = manufacturer !== 'generic' && this.catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name || '';
                 const location = o.entity.plant.location;
                 const position = o.entity.plant.position;
-                const selectedSize = this.catalog.greaseArrestor!.size[manufacturer][location][position][o.entity.plant.size];
-                const size = selectedSize?.size;
-                const sizeCode = selectedSize?.result[1] || '';
+                const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][o.entity.plant.capacity];
+                const capacity = o.entity.plant.capacity;
+                const product = size?.product || '';
                 
-                c.size = `${selectedSize.lengthMM}mm x ${selectedSize.widthMM}mm`;
-                c.model = `${manufacturerName} ${sizeCode && (sizeCode+'-')}${size}`.trim();
+                c.size = `${size.lengthMM}mm (L) x ${size.widthMM}mm (W) x ${size.heightMM}mm (H)`;
+                c.model = `${manufacturerName} ${product && (product+'-')}${capacity}`.trim();
             } 
         });
     }
@@ -1566,7 +1566,7 @@ export default class CalculationEngine implements CalculationContext {
                         case PlantType.CUSTOM:
                         case PlantType.PUMP:
                         case PlantType.DRAINAGE_PIT:
-                        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+                        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                             break;
                         default:
                             assertUnreachable(parentEntity.plant);

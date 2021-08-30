@@ -3,7 +3,7 @@
         <b-col cols="12">
             <h4 style="text-align: left">
                 <router-link :to="navigateLink()">
-                    Grease Arrestor
+                    Grease Interceptor Trap
                 </router-link>
                 <span v-if="!$route.params.prop">
                     <b-button
@@ -63,6 +63,7 @@
                     </b-form-group>
                     <b-form-group label="Location" v-slot="{ ariaDescribedby }">
                         <b-form-radio-group
+                            stacked
                             buttons
                             name="location"
                             button-variant="outline-primary"
@@ -106,19 +107,19 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import { DocumentState } from '../../store/document/types';
-import { GreaseArrestor } from '../../../../common/src/api/catalog/types';
+import { GreaseInterceptorTrap } from '../../../../common/src/api/catalog/types';
 import { DrawingState } from '../../../../common/src/api/document/drawing';
 import { Watch } from 'vue-property-decorator';
 
 @Component
-export default class GreaseArrestorCatalog extends Vue {
+export default class GreaseInterceptorTrapCatalog extends Vue {
     fields = [
-        { key: 'size', label: 'Size' },
+        { key: 'capacity', label: 'Capacity(L)' },
         { key: 'lengthMM', label: 'Length(mm)' },
         { key: 'widthMM', label: 'Width(mm)' },
-        { key: 'depthMM', label: 'Depth(mm)' },
-        { key: 'result', label: 'Result' },
-        { key: 'result2', label: '' },
+        { key: 'heightMM', label: 'Height(mm)' },
+        { key: 'product', label: 'Product' },
+        { key: 'code', label: 'Code' },
     ];
 
     form = {
@@ -128,12 +129,12 @@ export default class GreaseArrestorCatalog extends Vue {
 
     mounted() {
         this.form.manufacturer = this.selectedManufacturer;
-        this.form.location = this.$route.params.prop !== 'greaseArrestor' 
-            && this.$route.params.prop?.replace('greaseArrestor.','') 
+        this.form.location = this.$route.params.prop !== 'greaseInterceptorTrap' 
+            && this.$route.params.prop?.replace('greaseInterceptorTrap.','') 
             || 'nsw';
 
         if (this.selectedManufacturer === 'generic') {
-            this.fields.splice(5, 1);
+            this.fields.splice(4, 1);
         }
     }
     
@@ -145,12 +146,12 @@ export default class GreaseArrestorCatalog extends Vue {
         return this.document.drawing.metadata;
     }
     
-    get catalog(): GreaseArrestor {
-        return this.$store.getters["catalog/default"].greaseArrestor;
+    get catalog(): GreaseInterceptorTrap {
+        return this.$store.getters["catalog/default"].greaseInterceptorTrap;
     }
 
     get selectedManufacturer(): string {
-        return this.document.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
+        return this.document.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
     }
     
     get locationItems(): Array<{ [key: string]: string; _key: string }> {
@@ -170,22 +171,23 @@ export default class GreaseArrestorCatalog extends Vue {
     @Watch('selectedManufacturer')
     resolveTableFields(val: string) {
         if (this.selectedManufacturer === 'generic') {
-            this.fields.splice(5, 1);
+            this.fields.splice(4, 1);
         } else {
-            this.fields.splice(5, 0, { key: 'result2', label: '' });
+            this.fields.splice(4, 0, { key: 'product', label: 'Product' });
         }
     }
 
     resolveItem(position: 'belowGround' | 'aboveGround') {
         return this.form.location 
-            ? Object.values(this.catalog.size[this.selectedManufacturer][this.form.location][position])
-                .map(value => {
+            ? Object.entries(this.catalog.size[this.selectedManufacturer][this.form.location][position])
+                .sort((a, b) => a[1].capacity - b[1].capacity)
+                .map(([key, value]) => {
                     let item: {[key: string]: any} = {};
                     this.fields.forEach(field => {
-                        if (field.key === 'result') {
-                            item[field.key] = value[field.key][0];
-                        } else if (field.key === 'result2') {
-                            item[field.key] = value['result'][1];
+                        if (field.key === 'code') {
+                            item[field.key] = value['capacity'];
+                        } else if (field.key === 'capacity') {
+                             item[field.key] = key;
                         } else {
                             item[field.key] = value[field.key];
                         }
@@ -196,7 +198,7 @@ export default class GreaseArrestorCatalog extends Vue {
     }
 
     navigateLink(location = '') {
-        let prop = 'greaseArrestor';
+        let prop = 'greaseInterceptorTrap';
         if (location) prop += `.${location}`;
 
         return {
@@ -209,7 +211,7 @@ export default class GreaseArrestorCatalog extends Vue {
 
     handleSelectManufacturerClick(manufacturer: string) {
         this.form.manufacturer = manufacturer;
-        this.metadata.catalog.greaseArrestor.splice(0, 1, {uid: 'greaseArrestor', manufacturer, selected: null});
+        this.metadata.catalog.greaseInterceptorTrap!.splice(0, 1, {uid: 'greaseInterceptorTrap', manufacturer, selected: null});
         this.$emit('save');
     }
 

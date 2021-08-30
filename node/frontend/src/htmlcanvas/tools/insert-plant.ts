@@ -10,7 +10,6 @@ import {KeyCode} from "../../../src/htmlcanvas/utils";
 import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
 import {Coord} from "../../../../common/src/api/document/drawing";
 import {
-    DrainageGreaseArrestor,
     PlantConcrete,
     PlantType,
     PressureMethod
@@ -65,7 +64,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
                     name: title,
                     rotation: angle,
 
-                    plant: createPlant(type, outletSystemUid, returnUid, gasNodeUid),
+                    plant: createPlant(context, type, outletSystemUid, returnUid, gasNodeUid),
                 };
 
                 newEntity = resolveNewEntiy(context, newEntity);
@@ -199,7 +198,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
     );
 }
 
-function createPlant(type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
+function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
     switch (type) {
         case PlantType.RETURN_SYSTEM:
             return {
@@ -246,7 +245,9 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                     staticPressureKPA: 0,
                 },
             };
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
+            const capacity = selectedManufacturer === 'generic' ? '1000L' : '1000';
             return {
                 type,
                 pressureLoss: {
@@ -255,7 +256,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                 },
                 location: 'nsw',
                 position: 'belowGround',
-                size: 1000,
+                capacity,
             };
     }
     assertUnreachable(type);
@@ -263,7 +264,7 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
 
 function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEntity {
     const catalog = context.$store.getters['catalog/default'] as Catalog;
-    const selectedManufacturer = 'generic';
+    const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
 
     switch(entity.plant.type) {
         case PlantType.RETURN_SYSTEM:
@@ -272,11 +273,12 @@ function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEnti
         case PlantType.DRAINAGE_PIT:
         case PlantType.CUSTOM:
             break;
-        case PlantType.DRAINAGE_GREASE_ARRESTOR:
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             const plant = entity.plant;
-            const selectedSize = catalog.greaseArrestor!.size[selectedManufacturer][plant.location][plant.position][plant.size];
-            entity.heightMM = selectedSize.widthMM;
-            entity.widthMM = selectedSize.lengthMM;
+            const selectedSize = catalog.greaseInterceptorTrap!.size[selectedManufacturer][plant.location][plant.position][plant.capacity];
+            entity.heightMM = selectedSize.heightMM;
+            entity.widthMM = selectedSize.widthMM;
+            entity.lengthMM = selectedSize.lengthMM;
             break;
         default:
             assertUnreachable(entity.plant);

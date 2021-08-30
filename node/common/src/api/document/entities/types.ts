@@ -54,8 +54,8 @@ export function getEntityName(entity: DrawableEntityConcrete): string {
                     return "Plant";
                 case PlantType.DRAINAGE_PIT:
                     return "Drainage pit";
-                case PlantType.DRAINAGE_GREASE_ARRESTOR:
-                    return "Grease Arrestor";
+                case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+                    return "Grease Interceptor Trap";
                 default:
                     assertUnreachable(entity.plant);
             }
@@ -138,7 +138,7 @@ export function getReferences(entity: DrawableEntityConcrete): string[] {
                 case PlantType.CUSTOM:
                 case PlantType.PUMP:
                 case PlantType.DRAINAGE_PIT:
-                case PlantType.DRAINAGE_GREASE_ARRESTOR:
+                case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                     break;
                 default:
                     assertUnreachable(entity.plant);

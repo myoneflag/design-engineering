@@ -2258,13 +2258,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                 }
             ],
             "fixtures": [],
-            "greaseArrestor": [
-                {
-                    "manufacturer": "viking",
-                    "uid": "greaseArrestor",
-                    "selected": null,
-                }
-            ],
         },
         "priceTable": {}
     },
@@ -8303,7 +8296,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "parentUid": "883c8bcd-a994-4c3e-82ec-748f683e2cba",
                     "type": "PLANT",
                     "uid": "f5b251aa-6416-400b-b166-46c1bd99edc6",
-                    "name": "Grease Arrestor",
+                    "name": "Grease Interceptor Trap",
                     "rotation": 0,
                     "plant": {
                         "type": "DRAINAGE_PIT",

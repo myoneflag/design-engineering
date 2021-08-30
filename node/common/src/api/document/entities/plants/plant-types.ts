@@ -4,7 +4,7 @@ export enum PlantType {
     TANK = 'TANK',
     DRAINAGE_PIT = 'DRAINAGE_PIT',
     CUSTOM = 'CUSTOM',
-    DRAINAGE_GREASE_ARRESTOR = 'DRAINAGE_GREASE_ARRESTOR',
+    DRAINAGE_GREASE_INTERCEPTOR_TRAP = 'DRAINAGE_GREASE_INTERCEPTOR_TRAP',
 }
 
 export enum HotWaterPlantGrundfosSettingsName {
@@ -75,7 +75,7 @@ export interface DrainagePit extends Plant {
     pressureLoss: StaticPressure;
 }
 
-export enum GreaseArrestorLocation {
+export enum GreaseInterceptorTrapLocation {
     'nsw'   = 'NSW',
     'act'   = 'ACT',
     'vic'   = 'VIC',
@@ -86,17 +86,17 @@ export enum GreaseArrestorLocation {
     'nt'    = 'NT',
 }
 
-export enum GreaseArrestorPosition {
+export enum GreaseInterceptorTrapPosition {
     'aboveGround' = 'Above Ground',
     'belowGround' = 'Below Ground',
 }
 
-export interface DrainageGreaseArrestor extends Plant {
-    type: PlantType.DRAINAGE_GREASE_ARRESTOR;
+export interface DrainageGreaseInterceptorTrap extends Plant {
+    type: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP;
     pressureLoss: StaticPressure;
-    location: keyof typeof GreaseArrestorLocation;
-    position: keyof typeof GreaseArrestorPosition;
-    size: number;
+    location: keyof typeof GreaseInterceptorTrapLocation;
+    position: keyof typeof GreaseInterceptorTrapPosition;
+    capacity: string;
 }
 
 export interface CustomPlant extends Plant {
@@ -104,4 +104,4 @@ export interface CustomPlant extends Plant {
     pressureLoss: AnyPressure;
 }
 
-export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit | DrainageGreaseArrestor;
+export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit | DrainageGreaseInterceptorTrap;

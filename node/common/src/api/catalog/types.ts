@@ -42,27 +42,27 @@ export interface BackflowValveSpec {
     valvesBySize: { [key: string]: { [key: string]: BackflowValveSize } };
 }
 
-export type GreaseArrestorManufacturer = Manufacturer<'Generic' | 'Viking'>;
+export type GreaseInterceptorTrapManufacturer = Manufacturer<'Generic' | 'Viking'>;
 
-export enum GreaseArrestorLocationCategory {
+export enum GreaseInterceptorTrapLocationCategory {
     'belowGround' = 'Below Ground',
     'aboveGround' = 'Above Ground',
 }
 
-export interface GreaseArrestor {
-    manufacturer: GreaseArrestorManufacturer[];
+export interface GreaseInterceptorTrap {
+    manufacturer: GreaseInterceptorTrapManufacturer[];
     location: any[];
     size: {
         [key: string]: {
             [key: string]: {
-                [key in keyof typeof GreaseArrestorLocationCategory | string]: {
-                    [key: number]: {
+                [key in keyof typeof GreaseInterceptorTrapLocationCategory | string]: {
+                    [key: string]: {
                         [key: string]: any;
-                        size: string;
+                        capacity: number;
                         lengthMM: number;
                         widthMM: number;
-                        depthMM: number;
-                        result: string[];
+                        heightMM: number;
+                        product?: string;
                     }
                 }
             }
@@ -86,7 +86,7 @@ export interface Catalog {
     prv: PRVSpec;
     balancingValves: BalancingValveSpec;
     hotWaterPlant: HotWaterPlant;
-    greaseArrestor?: GreaseArrestor;
+    greaseInterceptorTrap?: GreaseInterceptorTrap;
 }
 
 export type DwellingDiversificationTable = {[key: number]: number};

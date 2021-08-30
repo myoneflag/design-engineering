@@ -14,7 +14,7 @@
             :on-change="onChange"
             :target="targetProperty"
         >
-            <template v-for="slot in ['plant.size']" v-slot:[slot]="{field}">
+            <template v-for="slot in ['plant.capacity']" v-slot:[slot]="{field}">
                 <div :key="slot">
                     <b-dropdown
                         :key="slot"
@@ -36,7 +36,7 @@
                     <span
                         class="d-inline-flex circle-border border border-primary rounded-circle text-primary"
                         style="margin: 4px 6px;padding: 4px;"
-                        v-b-modal.grease-arrestor-size-guide
+                        v-b-modal.grease-interceptor-trap-size-guide
                     >
                         <v-icon name="info" style="width:12px;height:12px;"></v-icon>
                     </span>
@@ -51,8 +51,8 @@
             </b-col>
         </b-row>
 
-        <b-modal id="grease-arrestor-size-guide" centered title="Size Guide" hide-footer>
-            <img src="@/assets/Grease_Arrestor_Size_Guide.png">
+        <b-modal id="grease-interceptor-trap-size-guide" centered title="Size Guide" hide-footer>
+            <img src="@/assets/Grease_Interceptor_Trap_Size_Guide.png">
         </b-modal>
     </b-container>
 </template>
@@ -121,14 +121,14 @@ export default class PlantProperties extends Vue {
 
     @Watch('reactiveData.plant.location')
     @Watch('reactiveData.plant.position')
-    @Watch('reactiveData.plant.size')
-    handleGreaseArrestorSizeUpdate() {
-        const manufacturer = this.document.drawing.metadata.catalog.greaseArrestor[0]?.manufacturer || 'generic';
-        const selectedSize = this.defaultCatalog.greaseArrestor!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.size];
-        console.log(selectedSize);
+    @Watch('reactiveData.plant.capacity')
+    handleGreaseInterceptorTrapSizeUpdate() {
+        const manufacturer = this.document.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+        const selectedSize = this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.capacity];
+
         if (!!selectedSize) {
-            setPropertyByString(this.reactiveData, 'heightMM', selectedSize.widthMM);
-            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.lengthMM);
+            setPropertyByString(this.reactiveData, 'lengthMM', selectedSize.lengthMM);
+            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.widthMM);
             this.onCommit();
         }
     }
@@ -159,7 +159,7 @@ export default class PlantProperties extends Vue {
         text-align: right;
     }
 }
-#grease-arrestor-size-guide .modal-dialog {
+#grease-interceptor-trap-size-guide .modal-dialog {
     max-width: max-content;
 }
 </style>
