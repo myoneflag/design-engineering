@@ -579,7 +579,14 @@ export default class HydraulicsInsertPanel extends Vue {
         return this.$store.getters["customEntity/nodes"];
     }
 
-    selectedSystemId: number = 0;
+    set selectedSystemId(value:number){
+        
+        this.$store.dispatch('document/setActiveFlowSystem',value);
+    }
+    get selectedSystemId():number {
+        
+        return this.$store.getters["document/activeFlowSystem"];
+    }
 
     addRemoveFixturesClick() {
         this.$router.push({ name: "settings/fixtures" });

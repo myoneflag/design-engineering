@@ -86,6 +86,7 @@ export interface FilterKey {
  */
 export interface DocumentState {
     isPreview: boolean | undefined;
+    activeflowSystemId:number | 0;
     // This is the drawing that we last received or last sent to the server.
     committedDrawing: DrawingState;
     diffFilter: DiffFilter;
@@ -114,6 +115,7 @@ export interface DocumentState {
     documentId: number;
     shareToken: string;
     isLoading: boolean;
+
 }
 
 export interface DiffFilter {
@@ -184,7 +186,8 @@ export const initialDocumentState: DocumentState = {
     shareToken: '',
     isLoading: false,
     locale: SupportedLocales.AU,
-    isPreview:false
+    isPreview:false,
+    activeflowSystemId:0
 };
 
 export interface EntityParam {

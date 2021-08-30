@@ -127,6 +127,10 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
 
     for (const suid of Object.keys(entity.roughIns)) {
         if (!isDrainage(suid)) {
+           const psdStrategy = drawing
+            ? drawing.metadata.calculationParams.psdMethod
+            : SupportedPsdStandards.as35002018LoadingUnits;
+        
             const system = drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
             res.push(
                 {
@@ -159,6 +163,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
                     params: { min: 0, max: null },
                     multiFieldId: suid + "-designFlowRateLS",
                     units: Units.LitersPerSecond,
+                    hideFromPropertyWindow:  isLUStandard(psdStrategy)
                 },
 
                 {
@@ -180,7 +185,8 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: suid + "-loadingUnits"
+                    multiFieldId: suid + "-loadingUnits",
+                    hideFromPropertyWindow:  !isLUStandard(psdStrategy)
                 },
                 {
                     property: "roughIns." + suid + ".minPressureKPA",

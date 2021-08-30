@@ -1,12 +1,13 @@
 {
   "name": "h2x-frontend",
-  "version": "1.7.3",
+  "version": "1.7.5",
   "description": "H2X frontend",
   "repository": "gitlab:info892/H2X",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve --port 3001",
+    "serve:docker": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --port 8011",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",

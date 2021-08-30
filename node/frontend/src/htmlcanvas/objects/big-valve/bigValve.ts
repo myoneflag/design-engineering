@@ -46,7 +46,7 @@ import { Color, Coord, coordDist2, SelectedMaterialManufacturer } from "../../..
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
 import { SnappableObject } from "../../lib/object-traits/snappable-object";
 import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
-
+import { prepareFill, prepareStroke } from "../../../../src/htmlcanvas/helpers/draw-helper";
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
 @CalculatedObject
@@ -99,12 +99,14 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.strokeStyle = "#000";
         ctx.lineCap = "round";
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fillStyle ="rgba(255, 255, 255, 0.8)";
+        prepareFill(this,ctx);
         ctx.fillRect(l, t, r - l, bm);
         ctx.strokeStyle = "#000";
 
         if (selected || overrideColorList.length) {
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+                    prepareFill(this,ctx);
             ctx.fillRect(boxl, boxt, boxw, boxh);
         }
 
@@ -118,8 +120,13 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         ctx.moveTo(l, bm);
         ctx.lineTo(r * 0.8, b * 0.8);
-
+        prepareStroke(this,ctx);
         ctx.stroke();
+        
+    }
+  
+    isActive(): boolean {
+       return this.pressureDrainageActive();
     }
 
     drawTemperingValve(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs) {
@@ -131,11 +138,13 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const t = 0;
 
         ctx.lineWidth = this.entity.valveLengthMM * 0.1;
-        ctx.strokeStyle = "#222222";
+        ctx.strokeStyle ="#222222";
         ctx.lineCap = "square";
 
         if (selected || overrideColorList.length) {
             ctx.fillStyle = rgb2style(getHighlightColor(selected, overrideColorList), 0.4);
+            
+            prepareFill(this,ctx);
             ctx.fillRect(l * 1.2, 0 - b * 0.1, (r - l) * 1.2, b * 1.2);
         }
 
@@ -144,6 +153,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         ctx.lineTo(r, t);
         ctx.moveTo(0, t);
         ctx.lineTo(0, b);
+        prepareStroke(this,ctx);
         ctx.stroke();
     }
 
@@ -167,7 +177,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         ctx.rotate(Math.PI / 2);
         ctx.translate(VALVE_HEIGHT_MM, 0);
-        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], highlight);
+        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], highlight,this);
         ctx.translate(-VALVE_HEIGHT_MM, 0);
         ctx.rotate(-Math.PI / 2);
     }
@@ -218,8 +228,16 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     refreshObjectInternal(obj: BigValveEntity): void {
         //
     }
+    pressureDrainageActive(): boolean {
+        
+        return this.document.uiState.pressureOrDrainage==="pressure"
+        
+    }
 
     inBounds(objectCoord: Coord) {
+         if (!this.isActive()) {
+            return false;
+        }
         if (Math.abs(objectCoord.x) <= this.entity.pipeDistanceMM) {
             if (objectCoord.y > -this.entity.pipeDistanceMM * 0.3) {
                 if (objectCoord.y < this.entity.valveLengthMM * 1.2) {

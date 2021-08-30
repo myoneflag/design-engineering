@@ -1,9 +1,9 @@
 from h2x-dev-backend:latest
 
-expose 80
-env PORT 80
+expose 8013
+env PORT 8013
 
 # DEVELOPMENT
 run npm install -g nodemon ts-node
 env MODE development
-cmd [ "npm", "run", "dev-worker" ]
+cmd npm install && npm run dev-worker

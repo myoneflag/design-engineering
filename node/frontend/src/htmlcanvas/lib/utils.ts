@@ -45,6 +45,8 @@ import { makeFlowSourceFields } from "../../../../common/src/api/document/entiti
 import { color2rgb, lighten, rgb2style } from "../../lib/utils";
 import {makeGasApplianceFields} from "../../../../common/src/api/document/entities/gas-appliance";
 import {determineConnectableSystemUid} from "../../store/document/entities/lib";
+import { prepareFill, prepareStroke } from "../helpers/draw-helper";
+import BaseBackedObject from "./base-backed-object";
 
 export function getInsertCoordsAt(context: CanvasContext, wc: Coord): [string | null, Coord] {
     const floor = context.backgroundLayer.getBackgroundAt(wc);
@@ -277,19 +279,23 @@ export const VALVE_LINE_WIDTH_MM = 10;
 
 export const VALVE_SIZE_MM = 98;
 
-export function drawRpzdDouble(context: DrawingContext, colors: [string, string], highlightColor?: Color) {
+export function drawRpzdDouble(context: DrawingContext, colors: [string, string], highlightColor?: Color,entity?:BaseBackedObject) {
     const s = context.vp.currToSurfaceScale(context.ctx);
     const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.surfaceToWorldLength(1));
     const ctx = context.ctx;
     ctx.lineWidth = baseWidth;
 
     ctx.fillStyle = "#ffffff";
-
+    if(entity)
+      prepareFill(entity,ctx);
     ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
 
 
     if (highlightColor) {
         ctx.fillStyle = rgb2style(color2rgb(highlightColor), 0.3);
+        if(entity)
+             prepareFill(entity,ctx);
+  
         ctx.fillRect(-VALVE_HEIGHT_MM * 1.5, -VALVE_HEIGHT_MM * 2.5, VALVE_HEIGHT_MM * 3, VALVE_HEIGHT_MM * 5);
     }
 
@@ -299,6 +305,9 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
 
     ctx.beginPath();
     ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
+    if(entity)
+        prepareStroke(entity,ctx);
+
     ctx.stroke();
 
     let i = 0;
@@ -310,6 +319,9 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
         ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + off);
         ctx.lineTo(VALVE_HEIGHT_MM, 0 + off);
         ctx.closePath();
+        if(entity)
+           prepareFill(entity,ctx);
+  
         ctx.fill();
     }
 }
