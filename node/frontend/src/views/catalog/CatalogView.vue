@@ -274,6 +274,7 @@ export default class CatalogView extends Vue {
     }
 
     get onlyOneTable() {
+        /* Simple, just to avoid error because this catalog is separated into a new component */
         if (this.paths[1]?.text === 'greaseInterceptorTrap') return true;
 
         const schema = this.getSchema();
@@ -292,6 +293,7 @@ export default class CatalogView extends Vue {
     }
 
     get manufacturer(): string {
+        /* Simple, just to avoid error because this catalog is separated into a new component */
         if (this.paths[1]?.text === 'greaseInterceptorTrap') return "";
 
         if (this.paths[1] && this.paths[1].text in ['prv', 'hotWaterPlant']) {
