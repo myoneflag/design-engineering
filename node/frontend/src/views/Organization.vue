@@ -17,7 +17,7 @@
                     <template v-if="org">
                         <b-form>
                             <b-form-group :label-cols="2" label="ID">
-                                <b-form-input v-model="org.id" disabled="true"></b-form-input>
+                                <b-form-input v-model="org.id" disabled></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Full Name">
@@ -25,9 +25,13 @@
                             </b-form-group>
                         </b-form>
                         <b-button variant="success" @click="save">Save</b-button>
+                        &nbsp;
+                        <b-button variant="success" :to="{ path: '/users/create', query: { orgId: org.id } }"><v-icon name="plus"></v-icon>
+                            Create User
+                        </b-button>
                     </template>
                     <b-alert v-else variant="success" show>Loading...</b-alert>
-                </b-col>
+                </b-col>                
             </b-row>
         </b-container>
     </div>
