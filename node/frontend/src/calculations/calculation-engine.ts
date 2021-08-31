@@ -670,11 +670,13 @@ export default class CalculationEngine implements CalculationContext {
                 const location = o.entity.plant.location;
                 const position = o.entity.plant.position;
                 const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][o.entity.plant.capacity];
-                const capacity = o.entity.plant.capacity;
+                const capacity = manufacturer === 'generic' 
+                    ? o.entity.plant.capacity
+                    : '';
                 const product = size?.product || '';
                 
                 c.size = `${size.lengthMM}mm (L) x ${size.widthMM}mm (W) x ${size.heightMM}mm (H)`;
-                c.model = `${manufacturerName} ${product && (product+'-')}${capacity}`.trim();
+                c.model = `${manufacturerName.toLocaleUpperCase()} ${product}${capacity}`.trim();
             } 
         });
     }

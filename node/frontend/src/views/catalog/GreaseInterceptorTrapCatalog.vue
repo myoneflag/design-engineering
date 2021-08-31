@@ -135,6 +135,8 @@ export default class GreaseInterceptorTrapCatalog extends Vue {
 
         if (this.selectedManufacturer === 'generic') {
             this.fields.splice(4, 1);
+        } else {
+            this.fields.splice(5, 1);
         }
     }
     
@@ -171,9 +173,11 @@ export default class GreaseInterceptorTrapCatalog extends Vue {
     @Watch('selectedManufacturer')
     resolveTableFields(val: string) {
         if (this.selectedManufacturer === 'generic') {
+            this.fields.splice(5, 0, { key: 'code', label: 'Code' });
             this.fields.splice(4, 1);
         } else {
             this.fields.splice(4, 0, { key: 'product', label: 'Product' });
+            this.fields.splice(5, 1);
         }
     }
 
