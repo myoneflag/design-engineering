@@ -185,7 +185,7 @@
                                                 ><tr>
                                                     <td>Modified</td>
                                                     <td class="pl-2">
-                                                       {{ doc.lastModifiedBy.username | truncate }} {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
+                                                       {{ doc.lastModifiedBy ? doc.lastModifiedBy.username : "" | truncate }} {{ new Date(doc.lastModifiedOn).toLocaleDateString(locale) }}
                                                     </td>
                                                 </tr></template
                                             >
