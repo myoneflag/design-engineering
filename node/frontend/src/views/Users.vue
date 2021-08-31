@@ -80,7 +80,6 @@ import { AccessLevel, User } from "../../../common/src/models/User";
 import { getUsers, activeUsers } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import BarChart from "../../src/components/chartjs/Bar.vue";
-import { cloneSimple } from "../../../common/src/lib/utils";
 import { format as DateFnsFormat, subMonths as DateFnsSubMonths } from 'date-fns';
 
 interface DateProps {
