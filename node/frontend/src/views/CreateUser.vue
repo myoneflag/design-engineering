@@ -16,10 +16,6 @@
                 <b-col>
                     <template v-if="user">
                         <b-form>
-                            <b-form-group :label-cols="2" label="Username">
-                                <b-form-input v-model="user.username"></b-form-input>
-                            </b-form-group>
-
                             <b-form-group :label-cols="2" label="First Name">
                                 <b-form-input v-model="user.firstname"></b-form-input>
                             </b-form-group>
@@ -28,10 +24,12 @@
                                 <b-form-input v-model="user.lastname"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Email">
-                                <b-form-input type="email" v-model="user.email"></b-form-input>
+                            <b-form-group :label-cols="2" label="Username">
+                                <b-form-input v-model="editedOrSuggestedUserName"></b-form-input>
                             </b-form-group>
 
+                            <b-form-group :label-cols="2" label="Email">
+                                <b-form-input type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Organization ID">
@@ -75,6 +73,7 @@ import MainNavBar from "../components/MainNavBar.vue";
     components: { MainNavBar }
 })
 export default class CreateUser extends Vue {
+
     user = {
         accessLevel: AccessLevel.USER,
         firstname: "",
@@ -94,7 +93,21 @@ export default class CreateUser extends Vue {
 
     organization: string = "";
 
+    userNameFrom(name: string): string {
+        return name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase()
+    }
+
+    get editedOrSuggestedUserName(): string {
+        return this.user.username || 
+            (this.user.firstname && this.user.lastname) ? this.userNameFrom(this.user.firstname + this.user.lastname) : ""
+    }
+
+    set editedOrSuggestedUserName(value: string) {
+        this.user.username = value
+    }
+
     create(andNew: boolean) {
+        this.user.username = this.editedOrSuggestedUserName
         createUser({
             username: this.user.username,
             firstname: this.user.firstname,
