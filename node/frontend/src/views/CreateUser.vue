@@ -53,7 +53,9 @@
                                 </b-button>
                             </b-button-group>
                         </b-form>
-                        <b-button variant="success" style="margin-top:50px" @click="create">Create</b-button>
+                        <b-button variant="success" style="margin-top:50px" @click="create(false)">Create</b-button>
+                        &nbsp;
+                        <b-button variant="success" style="margin-top:50px" @click="create(true)">Create and New</b-button>
                     </template>
                     <b-alert v-else variant="success" show>Loading...</b-alert>
                 </b-col>
@@ -92,7 +94,7 @@ export default class CreateUser extends Vue {
 
     organization: string = "";
 
-    create() {
+    create(andNew: boolean) {
         createUser({
             username: this.user.username,
             firstname: this.user.firstname,
@@ -104,7 +106,11 @@ export default class CreateUser extends Vue {
             subscribed: this.user.subscribed,
         }).then((res) => {
             if (res.success) {
-                this.$router.push("/users");
+                if (andNew) {
+                    window.location.reload()
+                }
+                else                
+                    this.$router.push("/users");
             } else {
                 this.$bvToast.toast(res.message, {
                     title: "Error creating user",
