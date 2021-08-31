@@ -106,7 +106,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         res.push(
             {
                 type: FieldType.Testing,
-                title:`no-title`,
+                title:``,
                 hasDefault:false,
                 isCalculated:false,
                 multiFieldId:``,
