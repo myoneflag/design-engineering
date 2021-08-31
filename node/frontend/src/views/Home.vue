@@ -247,6 +247,9 @@
                                                 <div class="w-100 px-1">
                                                     <vue-tags-input
                                                         v-model="tag"
+                                                        :max-tags="maxTagsLength"
+                                                        @max-tags-reached="toastValidationError"
+                                                        @adding-duplicate="toastValidationError"
                                                         :tags="tags"
                                                         :autocomplete-items="selectedTagsAutoComplete"
                                                         :delete-on-backspace="true"
@@ -393,6 +396,7 @@ export default class Home extends Vue {
     editTag: any = null;
     tag: string = "";
     positionX:number=0;
+    maxTagsLength=10;
     positionY:number=0;
     tagsArray: string[]=[];
     validation:any= [{
@@ -401,7 +405,7 @@ export default class Home extends Vue {
       rule: (newTag:any) => !this.isTagValid(newTag) ,
     }]
     isTagValid(newTag:any){
-        return (this.filterArray(this.tagsArray,newTag.text).length==0 && this.tagsArray.length < 10) || this.tag.trim()===""
+        return (this.filterArray(this.tagsArray,newTag.text).length==0 && this.tagsArray.length < this.maxTagsLength) || this.tag.trim()===""
         
     }
     mounted(): void {
@@ -509,16 +513,22 @@ export default class Home extends Vue {
             );
         })
     }
-    saveTags(doc:Document){
-        this.tag= this.tag.trim();
+    toastValidationError(){
+       
         if(!this.isTagValid({text:this.tag}))
         {
-            this.$bvToast.toast(this.tagsArray.length>=10?`Maximum number of tags exceeded`:`The tag ${this.tag} is invalid or repeated`, {
+            this.$bvToast.toast(this.tagsArray.length>=this.maxTagsLength?`Maximum number of tags exceeded`:`The tag ${this.tag} is invalid or repeated`, {
                     variant: "danger",
                     title: "Invalid tag"
             });
-            return ;
+            return false;
         }
+        return true;
+    }
+    saveTags(doc:Document){
+         this.tag= this.tag.trim();
+        if(!this.toastValidationError())
+            return;
         if(this.tag && this.tag !='')
             this.tagsArray.push(this.tag)
         

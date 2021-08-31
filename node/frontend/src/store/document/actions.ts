@@ -21,6 +21,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
     setPreviewMode({commit},value){
         commit("setPreviewMode", value);
     },  
+    setActiveFlowSystem({commit},value){
+        commit("setActiveFlowSystem", value);
+    },  
     addEntity({ commit, state }, entity) {
         commit("addEntity", entity);
     },

@@ -46,7 +46,7 @@ import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFie
 import uuid from "uuid";
 import FlowSystemPicker from "../../../src/components/editor/FlowSystemPicker.vue";
 import * as _ from "lodash";
-import { initialDrainageProperties, initialDrawing, NetworkType } from "../../../../common/src/api/document/drawing";
+import { FlowSystemParameters, initialDrainageProperties, initialDrawing, NetworkType } from "../../../../common/src/api/document/drawing";
 import { Choice, cloneSimple } from "../../../../common/src/lib/utils";
 import {
     assertUnreachable,
@@ -67,7 +67,9 @@ import {
 } from "../../../../common/src/api/document/entities/pipe-entity";
 import { evaluatePolynomial } from "../../../../common/src/lib/polynomials";
 import { THERMAL_CONDUCTIVITY } from "../../../../common/src/api/constants/air-properties";
-
+import { GlobalStore } from "../../htmlcanvas/lib/global-store";
+import {globalStore} from "../../store/document/mutations";
+import Pipe from "../../htmlcanvas/objects/pipe";
 @Component({
     components: { SettingsFieldBuilder, FlowSystemPicker },
     beforeRouteLeave(to, from, next) {
@@ -512,13 +514,34 @@ export default class FlowSystems extends Vue {
     }
 
     deleteSystem() {
-        if (window.confirm("Are you sure you want to delete " + this.selectedSystem.name + "?")) {
-            this.document.drawing.metadata.flowSystems.splice(this.selectedSystemId, 1);
-            this.selectedSystemId = 1;
-            this.$store.dispatch("document/commit");
-        }
-    }
+        
+        const flowSystem=this.document.drawing.metadata.flowSystems.find((item:FlowSystemParameters)=>{return item.name===this.selectedSystem.name});
 
+        const GlobalStoreObjects = Array.from(this.globalStore.values());
+        const foundedObj=GlobalStoreObjects.find((item:any) => {
+            return item && item.entity && item.entity.systemUid && flowSystem && flowSystem.uid &&item.entity.systemUid==flowSystem.uid
+        });
+        if(foundedObj)
+        {
+            this.$bvToast.toast(`Please remove all pipework and associated fittings from the project before deleting the flow system`,{
+                        title: `Flow system is in use`,
+                        variant: "danger"
+                    }
+)
+        }
+        else{
+            if (window.confirm("Are you sure you want to delete " + this.selectedSystem.name + "?")) {
+                this.document.drawing.metadata.flowSystems.splice(this.selectedSystemId, 1);
+                this.selectedSystemId = 1;
+                this.$store.dispatch("document/commit");
+            }
+        }
+        
+        
+    }
+    get globalStore(): GlobalStore {
+            return globalStore;
+    }
     get selectedSystem() {
         return this.document.drawing.metadata.flowSystems[this.selectedSystemId];
     }
