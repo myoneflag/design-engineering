@@ -32,10 +32,6 @@
                                 <b-form-input type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Subscribe">
-                                <b-form-checkbox class="text-left" v-model="user.subscribed"
-                                    >Subscribe to "Contact Us" messages?</b-form-checkbox
-                                >
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Organization ID">
