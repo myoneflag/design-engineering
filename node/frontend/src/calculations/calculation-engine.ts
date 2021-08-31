@@ -285,7 +285,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([], obj.entity);
+                    fields = makeFlowSourceFields([], obj.entity,undefined);
                     break;
                 case EntityType.LOAD_NODE:
                     const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);

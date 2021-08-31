@@ -27,7 +27,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     maxPressureKPA: number | null;
 }
 
-export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity,locale:SupportedLocales): PropertyField[] {
+export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity,locale:SupportedLocales | undefined): PropertyField[] {
 
     const res: PropertyField[] = [
         {
@@ -101,6 +101,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
     }
     if(entity.systemUid!=StandardFlowSystemUids.Gas 
         && !isDrainage(entity.systemUid)
+        && locale
         && locale==SupportedLocales.AU) {
         res.push(
             {
