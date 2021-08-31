@@ -101,6 +101,7 @@ export interface TitleField extends PropertyFieldBase {
 }
 export interface TestingField extends PropertyFieldBase {
     type: FieldType.Testing;
+    params: null;
 }
 
 export type PropertyField =

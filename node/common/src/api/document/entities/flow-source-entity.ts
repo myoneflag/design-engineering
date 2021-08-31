@@ -106,11 +106,12 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         res.push(
             {
                 type: FieldType.Testing,
-                title:``,
+                title:`no-title`,
                 hasDefault:false,
                 isCalculated:false,
                 multiFieldId:``,
-                property:``
+                property:``,
+                params:null
             });
     }
 
