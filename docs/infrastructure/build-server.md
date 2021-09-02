@@ -89,7 +89,15 @@ sudo chgrp gitlab-runner /home/gitlab-runner/.aws/*
 sudo chown gitlab-runner /home/gitlab-runner/docker.hub.password
 ```
 
-4. Use the profile name in `.gitlab-ci.yaml` jobs
+4. Set up cleanup jobs
+```
+sudo crontab -e
+# add lines 
+@weekly docker rmi -f $(docker images -a -q)
+@weekly docker system prune -f
+```
+
+5. Use the profile name in `.gitlab-ci.yaml` jobs
 Use `sudo -E` to pass all env vars to script execution.
 ```
 variables:
