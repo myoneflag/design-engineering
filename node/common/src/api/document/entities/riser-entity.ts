@@ -34,10 +34,6 @@ export default interface RiserEntity extends ConnectableEntity {
 }
 
 export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: DrawingState, defaultEntity?: RiserEntity): PropertyField[] {
-    const levels = (Object.values(drawing.levels) as Level[])
-        .sort((a, b) => -(a.floorHeightM - b.floorHeightM))
-        .slice()
-        .reverse();
     const result = fillRiserDefaults(drawing, entity);
     const materials = Object.keys(catalog.pipes).map((mat) => {
         const c: Choice = {
@@ -142,7 +138,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 multiFieldId: "bottomHeightM",
                 units: Units.Meters,
                 slot: true,
-                description: `Height = ${(entity.bottomHeightM || defaultEntity?.bottomHeightM || 0) + levels[0].floorHeightM}m`,
+                description: `Height = ${(entity.bottomHeightM || defaultEntity?.bottomHeightM)}m`,
             },
 
             {
@@ -221,6 +217,10 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
 
 export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
     const result = cloneSimple(value);
+    const sortedLevels = Object.values(drawing.levels)
+        .slice()
+        .sort((a, b) => -(a.floorHeightM - b.floorHeightM))
+        .reverse();
 
     // get system
     const system = drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
@@ -241,10 +241,7 @@ export function fillRiserDefaults(drawing: DrawingState, value: RiserEntity) {
             result.temperatureC = system.temperature;
         }
         if (result.bottomHeightM == null) {
-            result.bottomHeightM = 0;
-            Object.values(drawing.levels).forEach((v) => {
-                result.bottomHeightM = Math.min(result.bottomHeightM!, v.floorHeightM);
-            });
+            result.bottomHeightM = sortedLevels[0].floorHeightM;
         }
 
         if (result.topHeightM == null) {

@@ -257,19 +257,12 @@ export default class RiserProperties extends Vue {
 
     getHeightBySelectedFloor(field: PropertyField) {
         const value = this.displayWithCorrectUnits(field) || 0;
-
-        let floorHeightM = this.selectedLevel[field.property].floorHeightM;
-        if (field.property === 'bottomHeightM') floorHeightM -= this.levels[0].floorHeightM;
-
-        return +(value - floorHeightM).toFixed(12);
+        return value - this.selectedLevel[field.property].floorHeightM;
     }
 
     setRealHeight(field: PropertyField, value: string) {
-        let floorHeightM = this.selectedLevel[field.property].floorHeightM;
-        if (field.property === 'bottomHeightM') floorHeightM -= this.levels[0].floorHeightM;
-
-        const converted = +(Number.parseFloat(value) + floorHeightM).toFixed(12);
-
+        const floorHeightM = this.selectedLevel[field.property].floorHeightM;
+        const converted = +(value) + floorHeightM;
         this.setRenderedDataNumeric(field, converted);
     }
 }
