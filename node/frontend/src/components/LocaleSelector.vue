@@ -73,7 +73,7 @@ import Vue from 'vue';
 import Component from "vue-class-component";
 import {User} from "../../../common/src/models/User";
 import { LOCALE_NAMES, SupportedLocales } from "../../../common/src/api/locale";
-    import { I18N } from "@../../../common/src/api/locale/values";
+import { I18N } from "../../../common/src/api/locale/values";
 
 @Component
 export default class LocaleSelector extends Vue {

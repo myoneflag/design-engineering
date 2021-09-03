@@ -14,158 +14,162 @@
                 </b-breadcrumb>
             </b-col>
         </b-row>
-        <template v-for="[prop, val] in Object.entries(getSchema())">
-            <template v-if="val && currCatalog.hasOwnProperty(prop)">
-                <template v-if="val.table">
-                    <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
-                        <b-col cols="12">
-                            <h4 style="text-align: left">
-                                <router-link :to="navigateLink(prop)">
-                                    {{ val.name }}
-                                </router-link>
-                                <span>
-                                    <b-button
-                                        v-b-toggle="'collapse' + prop"
-                                        coll
-                                        class="float-right"
-                                        size="sm"
-                                        variant="primary"
+        <template v-if="!inCatalogScreen">
+            <template v-for="[prop, val] in Object.entries(getSchema())">
+                <template v-if="val && currCatalog.hasOwnProperty(prop)">
+                    <template v-if="val.table">
+                        <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
+                            <b-col cols="12">
+                                <h4 style="text-align: left">
+                                    <router-link :to="navigateLink(prop)">
+                                        {{ val.name }}
+                                    </router-link>
+                                    <span>
+                                        <b-button
+                                            v-b-toggle="'collapse' + prop"
+                                            coll
+                                            class="float-right"
+                                            size="sm"
+                                            variant="primary"
+                                        >
+                                            Show / Hide
+                                        </b-button>
+                                    </span>
+                                </h4>
+                            </b-col>
+                            <b-col cols="12">
+                                <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
+                                    <b-form-group 
+                                        v-if="paths.length <= 2 && prop === 'prv' || prop === 'hotWaterPlant'" 
+                                        :label-cols="3" 
+                                        label="Manufacturer"
+                                        class="manufacturer-field mt-4"
                                     >
-                                        Show / Hide
-                                    </b-button>
-                                </span>
-                            </h4>
-                        </b-col>
-                        <b-col cols="12">
-                            <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
-                                <b-form-group 
-                                    v-if="paths.length <= 2 && prop === 'prv' || prop === 'hotWaterPlant'" 
-                                    :label-cols="3" 
-                                    label="Manufacturer"
-                                    class="manufacturer-field mt-4"
-                                >
-                                    <b-button 
-                                        v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
-                                        size="sm" 
-                                        :class="'manufacturer-item-btn'"
-                                        :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                        @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
+                                        <b-button 
+                                            v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
+                                            size="sm" 
+                                            :class="'manufacturer-item-btn'"
+                                            :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                            @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
+                                        >
+                                            {{ manufacturer.name }}
+                                        </b-button> 
+                                    </b-form-group>
+                                    <b-table
+                                        v-if="val.table.link"
+                                        striped
+                                        responsive
+                                        selectable
+                                        :items="getTable(prop).items"
+                                        :fields="getTable(prop).fields"
+                                        style="margin-top:25px"
+                                        select-mode="single"
+                                        @row-selected="(d) => onRowClick(prop, d)"
                                     >
-                                        {{ manufacturer.name }}
-                                    </b-button> 
-                                </b-form-group>
-                                <b-table
-                                    v-if="val.table.link"
-                                    striped
-                                    responsive
-                                    selectable
-                                    :items="getTable(prop).items"
-                                    :fields="getTable(prop).fields"
-                                    style="margin-top:25px"
-                                    select-mode="single"
-                                    @row-selected="(d) => onRowClick(prop, d)"
-                                >
-                                    <template v-slot:head()="data">
-                                        <span class="text-nowrap">{{ data.label }}</span>
-                                    </template>
-                                    <template v-slot:cell(manufacturer)="data">
-                                        <template v-for="manufacturer in data.item.Manufacturer">
-                                            <b-dropdown 
-                                                v-if="!!(manufacturer.option)"
-                                                :key="manufacturer.name"
-                                                right
-                                                block
-                                                size="sm"
-                                                :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                                :text="manufacturer.name"
-                                                class="manufacturer-item-btn"
-                                            >
-                                                <b-dropdown-item-button v-for="option in manufacturer.option" :key="option"
-                                                    :value="option"
-                                                    :active="isSelectedOption(data.item._key, manufacturer.uid, option)"
-                                                    @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid, e.target.value)"
-                                                >{{ manufacturer.name }} {{ option }}</b-dropdown-item-button>
-                                            </b-dropdown>
-                                            <b-button
-                                                v-else
-                                                :key="manufacturer.name"
-                                                :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                                size="sm" 
-                                                :class="'manufacturer-item-btn'"
-                                                @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid)"
-                                            >
-                                                {{ manufacturer.name }}
-                                            </b-button>
+                                        <template v-slot:head()="data">
+                                            <span class="text-nowrap">{{ data.label }}</span>
                                         </template>
-                                    </template>
-                                </b-table>
-                                <b-table
-                                    small
-                                    v-else
-                                    striped
-                                    responsive
-                                    :items="getTable(prop).items"
-                                    :fields="getTable(prop).fields"
-                                    style="margin-top:25px"
-                                ></b-table>
-                            </b-collapse>
-                        </b-col>
-                    </b-row>
-                </template>
-                <template v-else-if="prop === 'balancingValves'">
-                    <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
-                        <b-col cols="12">
-                            <h4 style="text-align: left">
-                                <router-link :to="navigateLink(prop)">
-                                    {{ val.name }}
-                                </router-link>
-                                <span>
-                                    <b-button
-                                        v-b-toggle="'collapse' + prop"
-                                        coll
-                                        class="float-right"
-                                        size="sm"
-                                        variant="primary"
+                                        <template v-slot:cell(manufacturer)="data">
+                                            <template v-for="manufacturer in data.item.Manufacturer">
+                                                <b-dropdown 
+                                                    v-if="!!(manufacturer.option)"
+                                                    :key="manufacturer.name"
+                                                    right
+                                                    block
+                                                    size="sm"
+                                                    :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                                    :text="manufacturer.name"
+                                                    class="manufacturer-item-btn"
+                                                >
+                                                    <b-dropdown-item-button v-for="option in manufacturer.option" :key="option"
+                                                        :value="option"
+                                                        :active="isSelectedOption(data.item._key, manufacturer.uid, option)"
+                                                        @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid, e.target.value)"
+                                                    >{{ manufacturer.name }} {{ option }}</b-dropdown-item-button>
+                                                </b-dropdown>
+                                                <b-button
+                                                    v-else
+                                                    :key="manufacturer.name"
+                                                    :variant="isSelectedManufacturer(prop, data.item._key, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                                    size="sm" 
+                                                    :class="'manufacturer-item-btn'"
+                                                    @click="(e) => handleManufacturerClick(prop, data.item._key, manufacturer.uid)"
+                                                >
+                                                    {{ manufacturer.name }}
+                                                </b-button>
+                                            </template>
+                                        </template>
+                                    </b-table>
+                                    <b-table
+                                        small
+                                        v-else
+                                        striped
+                                        responsive
+                                        :items="getTable(prop).items"
+                                        :fields="getTable(prop).fields"
+                                        style="margin-top:25px"
+                                    ></b-table>
+                                </b-collapse>
+                            </b-col>
+                        </b-row>
+                    </template>
+                    <template v-else-if="prop === 'balancingValves'">
+                        <b-row :key="prop" style="margin-top: 25px; margin-bottom: 25px;">
+                            <b-col cols="12">
+                                <h4 style="text-align: left">
+                                    <router-link :to="navigateLink(prop)">
+                                        {{ val.name }}
+                                    </router-link>
+                                    <span>
+                                        <b-button
+                                            v-b-toggle="'collapse' + prop"
+                                            coll
+                                            class="float-right"
+                                            size="sm"
+                                            variant="primary"
+                                        >
+                                            Show / Hide
+                                        </b-button>
+                                    </span>
+                                </h4>
+                            </b-col>
+                            <b-col cols="12">
+                                <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
+                                    <b-form-group 
+                                        v-if="paths.length <= 2" 
+                                        :label-cols="3" 
+                                        label="Manufacturer"
+                                        class="manufacturer-field mt-4"
                                     >
-                                        Show / Hide
-                                    </b-button>
-                                </span>
-                            </h4>
-                        </b-col>
-                        <b-col cols="12">
-                            <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
-                                <b-form-group 
-                                    v-if="paths.length <= 2" 
-                                    :label-cols="3" 
-                                    label="Manufacturer"
-                                    class="manufacturer-field mt-4"
-                                >
-                                    <b-button 
-                                        v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
-                                        size="sm" 
-                                        :class="'manufacturer-item-btn'"
-                                        :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
-                                        @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
-                                    >
-                                        {{ manufacturer.name }}
-                                    </b-button> 
-                                </b-form-group>
-                            </b-collapse>
-                        </b-col>
-                    </b-row>
-                </template>
-                <template v-else-if="val.displayField">
-                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
-                        <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop][val.displayField])"></b-form-input>
-                    </b-form-group>
-                </template>
-                <template v-else>
-                    <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
-                        <b-form-input :disabled="true" :value="display(val.units, prop)"></b-form-input>
-                    </b-form-group>
+                                        <b-button 
+                                            v-for="manufacturer in catalog[prop].manufacturer" :key="manufacturer.name"
+                                            size="sm" 
+                                            :class="'manufacturer-item-btn'"
+                                            :variant="isSelectedManufacturer(prop, prop, manufacturer.uid) && 'primary' || 'outline-primary'" 
+                                            @click="(e) => handleManufacturerClick(prop, prop, manufacturer.uid)"
+                                        >
+                                            {{ manufacturer.name }}
+                                        </b-button> 
+                                    </b-form-group>
+                                </b-collapse>
+                            </b-col>
+                        </b-row>
+                    </template>
+                    <template v-else-if="val.displayField">
+                        <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                            <b-form-input :disabled="true" :value="display(val.units, currCatalog[prop][val.displayField])"></b-form-input>
+                        </b-form-group>
+                    </template>
+                    <template v-else>
+                        <b-form-group :key="prop" :label-cols="3" :label="val.name + displayUnitsString(val.units)" :disabled="true">
+                            <b-form-input :disabled="true" :value="display(val.units, prop)"></b-form-input>
+                        </b-form-group>
+                    </template>
                 </template>
             </template>
         </template>
+        
+        <GreaseInterceptorTrapCatalog v-if="displayCatalog('greaseInterceptorTrap')" @save="save"></GreaseInterceptorTrapCatalog>
     </b-container>
 </template>
 <script lang="ts">
@@ -183,8 +187,13 @@ import { convertMeasurementSystem, Units } from "../../../../common/src/lib/meas
 import { SelectedMaterialManufacturer } from "../../../../common/src/api/document/drawing";
 import { HotWaterPlantGrundfosSettingsName } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { SupportedLocales } from "../../../../common/src/api/locale";
+import GreaseInterceptorTrapCatalog from "./GreaseInterceptorTrapCatalog.vue";
+
 @Component({
-    components: { MainNavBar },
+    components: { 
+        MainNavBar,
+        GreaseInterceptorTrapCatalog,
+    },
     props: {
         schema: Object
     }
@@ -265,6 +274,9 @@ export default class CatalogView extends Vue {
     }
 
     get onlyOneTable() {
+        /* Simple, just to avoid error because this catalog is separated into a new component */
+        if (this.paths[1]?.text === 'greaseInterceptorTrap') return true;
+
         const schema = this.getSchema();
         const data = this.currCatalog;
         let numTables = 0;
@@ -281,9 +293,10 @@ export default class CatalogView extends Vue {
     }
 
     get manufacturer(): string {
-        if (this.paths[1] && this.paths[1].text === 'prv') {
-            return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
-        } else if (this.paths[1] && this.paths[1].text === 'hotWaterPlant') {
+        /* Simple, just to avoid error because this catalog is separated into a new component */
+        if (this.paths[1]?.text === 'greaseInterceptorTrap') return "";
+
+        if (this.paths[1] && this.paths[1].text in ['prv', 'hotWaterPlant']) {
             return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
         } else if (this.paths.length <= 2) {
             return '';
@@ -294,6 +307,10 @@ export default class CatalogView extends Vue {
         const selMtlMftr = this.selMtlMftr(selectedCatalog);
 
         return selMtlMftr?.find((mtl: SelectedMaterialManufacturer) => mtl.uid === materialObj.uid)?.manufacturer || 'generic';
+    }
+
+    get inCatalogScreen() {
+        return !(this.paths[1]?.text !== 'greaseInterceptorTrap');
     }
 
     display(units: Units | undefined, prop: string) {
@@ -593,9 +610,9 @@ export default class CatalogView extends Vue {
         const index = this.selMtlMftr(catalog).findIndex((obj: SelectedMaterialManufacturer) => obj.uid === key);
         
         if (!this.selMtlMftr(catalog).length || index < 0) {
-            this.document.drawing.metadata.catalog[catalog].push({uid: key, manufacturer, selected: selectedOption});
+            this.document.drawing.metadata.catalog[catalog]!.push({uid: key, manufacturer, selected: selectedOption});
         } else {
-            this.document.drawing.metadata.catalog[catalog].splice(index, 1, {uid: key, manufacturer, selected: selectedOption});
+            this.document.drawing.metadata.catalog[catalog]!.splice(index, 1, {uid: key, manufacturer, selected: selectedOption});
         }
 
         this.save();
@@ -617,6 +634,11 @@ export default class CatalogView extends Vue {
         } else {
             return item.text;
         }
+    }
+
+    displayCatalog(catalog: string) {
+        return (!this.paths[1] || this.paths[1].text === catalog) 
+            && (catalog === 'greaseInterceptorTrap' && this.document.locale === SupportedLocales.AU);
     }
 }
 </script>

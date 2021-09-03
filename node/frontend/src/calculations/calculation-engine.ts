@@ -292,7 +292,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeLoadNodesFields(this.doc.drawing, obj.entity, this.catalog, this.doc.locale, systemUid || null);
                     break;
                 case EntityType.PLANT:
-                    fields = makePlantEntityFields(obj.entity, []);
+                    fields = makePlantEntityFields(this.catalog, this.drawing, obj.entity, []);
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -663,7 +663,21 @@ export default class CalculationEngine implements CalculationContext {
             } else if (o.entity.type === EntityType.GAS_APPLIANCE) {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.demandMJH = o.entity.flowRateMJH;
-            }
+            } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+                const c = this.globalStore.getOrCreateCalculation(o.entity);
+                const manufacturer = this.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+                const manufacturerName = manufacturer !== 'generic' && this.catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name || '';
+                const location = o.entity.plant.location;
+                const position = o.entity.plant.position;
+                const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][o.entity.plant.capacity];
+                const capacity = manufacturer === 'generic' 
+                    ? o.entity.plant.capacity
+                    : '';
+                const product = size?.product || '';
+                
+                c.size = `${size.lengthMM}mm (L) x ${size.widthMM}mm (W) x ${size.heightMM}mm (H)`;
+                c.model = `${manufacturerName.toLocaleUpperCase()} ${product}${capacity}`.trim();
+            } 
         });
     }
 
@@ -1554,6 +1568,7 @@ export default class CalculationEngine implements CalculationContext {
                         case PlantType.CUSTOM:
                         case PlantType.PUMP:
                         case PlantType.DRAINAGE_PIT:
+                        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                             break;
                         default:
                             assertUnreachable(parentEntity.plant);
