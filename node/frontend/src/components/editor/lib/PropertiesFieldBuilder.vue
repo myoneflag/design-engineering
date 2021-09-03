@@ -163,7 +163,14 @@
                                 {{ choice.name }}
                             </b-dropdown-item>
                         </b-dropdown>
-
+                        <div class="row row htc-row border border-dark text-center rounded-lg py-2 text-dark bg-light" @click="openTestingSite" v-else-if="field.type==='testing'">
+                            <div class="d-flex p-0 mx-auto"  >
+                                    <p class=" htctext">Request a <br/><b>Flow & Pressure Test </b><br/> (5 day lead time)</p>
+                            </div>
+                            <div class="mx-auto">
+                                <small class="px-2 ">Service only available in QLD and VIC</small>
+                            </div>
+                        </div>
                         <PopoutColourPicker
                             v-else-if="field.type === 'color'"
                             size="sm"
@@ -234,6 +241,8 @@ import {
     convertMeasurementToMetric,
     Units
 } from "../../../../../common/src/lib/measurements";
+import { isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import { SupportedLocales } from "../../../../../common/src/api/locale";
 
 @Component({
     props: {
@@ -242,7 +251,7 @@ import {
         defaultData: Object,
         onChange: Function,
         onCommit: Function,
-        target: String
+        target: String,
     },
     components: {
         BooleanPicker,
@@ -271,7 +280,10 @@ export default class PropertiesFieldBuilder extends Vue {
     get readonly() {
         return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
     }
-
+    openTestingSite(){
+        window.open(`https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E`)
+    }
+  
     displayWithCorrectUnits(field: PropertyField): number | null {
         let result;
         if (field.units) {
