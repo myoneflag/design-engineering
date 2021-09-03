@@ -163,8 +163,8 @@
                                 {{ choice.name }}
                             </b-dropdown-item>
                         </b-dropdown>
-                        <div class="row row htc-row border border-dark text-center rounded-lg py-2 text-dark bg-light"  v-else-if="field.type==='testing'">
-                            <div class="d-flex p-0 mx-auto" @click="openTestingSite" >
+                        <div class="row row htc-row border border-dark text-center rounded-lg py-2 text-dark bg-light" @click="openTestingSite" v-else-if="field.type==='testing'">
+                            <div class="d-flex p-0 mx-auto"  >
                                     <p class=" htctext">Request a <br/><b>Flow & Pressure Test </b><br/> (5 day lead time)</p>
                             </div>
                             <div class="mx-auto">
