@@ -628,7 +628,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 
                 let manufacturerName = '';
                 if (manufacturer !== 'generic') {
-                    manufacturerName = catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name;
+                    manufacturerName = catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name + ' PANELTIM';
                 }
 
                 name = `${manufacturerName} ${plant.capacity} ${this.entity.name}`
