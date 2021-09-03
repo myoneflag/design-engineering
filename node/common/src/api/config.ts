@@ -163,7 +163,7 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
         name: "Barrie's Book Loading Units",
         key: SupportedPsdStandards.barriesBookLoadingUnits
     },
-    { name: "CIBSE Guide G", key: SupportedPsdStandards.cibseGuideG },
+    { name: "CIBSE/BS6700/IoP", key: SupportedPsdStandards.cibseGuideG },
     { name: "BS 806", key: SupportedPsdStandards.bs806 },
 
     {

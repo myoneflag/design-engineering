@@ -24,6 +24,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -115,6 +118,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "1",
                 },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "4",
                     "cold-water": "2",
                     "warm-water": "2",
                 },
@@ -218,6 +224,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "4",
                 },
                 cibseGuideG: {
+                    "low": "4",
+                    "medium": "8",
+                    "high": "16",
                     "cold-water": "10",
                     "warm-water": "10",
                 },
@@ -296,6 +305,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "5",
+                    "medium": "5",
+                    "high": "5",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -361,6 +373,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -452,6 +467,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "8",
                 },
                 cibseGuideG: {
+                    "low": "16",
+                    "medium": "16",
+                    "high": "16",
                     "cold-water": "22",
                     "warm-water": "22",
                 },
@@ -529,6 +547,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -594,6 +615,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "2",
+                    "high": "2",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -656,6 +680,9 @@ export const auCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "1",
+                    "high": "1",
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -713,6 +740,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "5",
+                    "medium": "5",
+                    "high": "5",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -787,6 +817,9 @@ export const auCatalog: Catalog = {
                     "cold-water": "5",
                 },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "3",
                     "cold-water": "5",
                 },
                 ipc2018Flushometer: {
@@ -842,6 +875,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -933,6 +969,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -1024,6 +1063,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -1115,6 +1157,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -1206,6 +1251,9 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "3",
+                    "high": "6",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -1298,6 +1346,9 @@ export const auCatalog: Catalog = {
                     "cold-water": "3",
                 },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "1",
+                    "high": "1",
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -1353,6 +1404,9 @@ export const auCatalog: Catalog = {
                     "hot-water": "2",
                 },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "2",
+                    "high": "2",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -1415,6 +1469,9 @@ export const auCatalog: Catalog = {
                     "cold-water": "1",
                 },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "5",
                     "cold-water": "2",
                 },
                 ipc2018Flushometer: {
@@ -4660,9 +4717,12 @@ export const auCatalog: Catalog = {
         },
         cibseGuideG: {
             type: PSDStandardType.LU_LOOKUP_TABLE,
-            name: "BS 6700",
+            name: "CIBSE/BS6700/IoP",
             table: {
                 0: "0.00", // added manually to force interpolation
+                1: "0.09",
+                3: "0.15",
+                5: "0.2",
                 10: "0.3",
                 15: "0.38",
                 20: "0.44",

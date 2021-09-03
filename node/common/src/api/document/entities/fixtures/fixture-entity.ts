@@ -263,13 +263,22 @@ export function fillFixtureFields(
                 target.designFlowRateLS = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name].qLS[manufacturer][selectedOption][systemUid]);
             }
 
+
             if (isLUStandard(psdStrategy)) {
                 if (target.loadingUnits === null) {
-                    target.loadingUnits = parseCatalogNumberOrMin(
-                        defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]
-                    );
+                    const cibseGuideGLULevel = drawing?.metadata.calculationParams.cibseGuideGLULevel;
+                    
+                    if (psdStrategy === SupportedPsdStandards.cibseGuideG && cibseGuideGLULevel) {
+                        target.loadingUnits = parseCatalogNumberOrMin(
+                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][cibseGuideGLULevel]
+                        );
+                    } else {
+                        target.loadingUnits = parseCatalogNumberOrMin(
+                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]
+                        );
+                    }
                 }
-            }
+            } 
 
             if (continuousFlowLS) {
                 if (target.continuousFlowLS == null) {

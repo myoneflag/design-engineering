@@ -1,5 +1,3 @@
-import {SupportedDrainageMethods} from "../../../../common/src/api/config";
-import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
         ref="fields"
@@ -30,8 +28,9 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
         SupportedPsdStandards
     } from "../../../../common/src/api/config";
     import {Units} from "../../../../common/src/lib/measurements";
-    import CatalogState from "../../store/catalog/types";
     import {Catalog} from "../../../../common/src/api/catalog/types";
+    import { Watch } from "vue-property-decorator";
+    import { setPropertyByString } from "../../lib/utils";
 
     @Component({
     components: { SettingsFieldBuilder },
@@ -56,6 +55,20 @@ export default class Calculations extends Vue {
                 ...getDwellingMethods(this.catalog)
             ]
         ]);
+
+        if (this.calculationParams.psdMethod === SupportedPsdStandards.cibseGuideG) {
+            result.push([
+                'cibseGuideGLULevel',
+                '',
+                'choice',
+                [
+                    {name: 'Select loading unit level', key: null, disabled: true},
+                    {name: 'Low', key: 'low'},
+                    {name: 'Medium', key: 'medium'},
+                    {name: 'High', key: 'high'},
+                ]
+            ]);
+        }
 
         if (this.calculationParams.dwellingMethod !== null) {
             result.push([
@@ -170,6 +183,10 @@ export default class Calculations extends Vue {
     }
 
     save() {
+        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG && this.reactiveData.cibseGuideGLULevel) {
+            setPropertyByString(this.reactiveData, 'cibseGuideGLULevel', null);
+        }
+
         this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
             this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });
