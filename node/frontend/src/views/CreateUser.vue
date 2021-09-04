@@ -25,7 +25,7 @@
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Username">
-                                <b-form-input v-model="editedOrSuggestedUserName"></b-form-input>
+                                <b-form-input type="search" autocomplete="off" v-model="editedOrSuggestedUserName"></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Email">
@@ -33,7 +33,7 @@
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Password">
-                                <b-form-input type="password" v-model="user.password"></b-form-input>
+                                <b-form-input type="search" autocomplete="off" v-model="user.password"></b-form-input>
                             </b-form-group>
 
                             <b-form-group :label-cols="2" label="Organization ID">
