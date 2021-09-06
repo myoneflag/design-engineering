@@ -264,7 +264,6 @@ function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: s
 
 function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEntity {
     const catalog = context.$store.getters['catalog/default'] as Catalog;
-    const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
 
     switch(entity.plant.type) {
         case PlantType.RETURN_SYSTEM:
@@ -275,6 +274,7 @@ function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEnti
             break;
         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             const plant = entity.plant;
+            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
             const selectedSize = catalog.greaseInterceptorTrap!.size[selectedManufacturer][plant.location][plant.position][plant.capacity];
             entity.heightMM = selectedSize.heightMM;
             entity.widthMM = selectedSize.widthMM;
