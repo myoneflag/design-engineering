@@ -246,7 +246,7 @@ function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: s
                 },
             };
         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
+            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap?.[0].manufacturer || 'generic';
             const capacity = selectedManufacturer === 'generic' ? '1000L' : '1000';
             return {
                 type,
@@ -264,7 +264,7 @@ function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: s
 
 function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEntity {
     const catalog = context.$store.getters['catalog/default'] as Catalog;
-    const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
+    const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap?.[0].manufacturer || 'generic';
 
     switch(entity.plant.type) {
         case PlantType.RETURN_SYSTEM:
