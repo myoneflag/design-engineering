@@ -13,7 +13,36 @@
             :on-commit="onCommit"
             :on-change="onChange"
             :target="targetProperty"
-        />
+        >
+            <template v-for="slot in ['plant.capacity']" v-slot:[slot]="{field}">
+                <div :key="slot">
+                    <b-dropdown
+                        :key="slot"
+                        class="float-left"
+                        size="sm"
+                        id="dropdown-1"
+                        :text="choiceName(getPropertyByString(reactiveData, field.property), field.params.choices)"
+                        variant="outline-secondary"
+                    >
+                        <b-dropdown-item
+                            v-for="(choice, index) in field.params.choices"
+                            @click="setPropertyByString(reactiveData, field.property, choice.key)"
+                            :key="index"
+                            size="sm"
+                        >
+                            {{ choice.name }}
+                        </b-dropdown-item>
+                    </b-dropdown>
+                    <span
+                        class="d-inline-flex circle-border border border-primary rounded-circle text-primary"
+                        style="margin: 4px 6px;padding: 4px;"
+                        v-b-modal.grease-interceptor-trap-size-guide
+                    >
+                        <v-icon name="info" style="width:12px;height:12px;"></v-icon>
+                    </span>
+                </div>
+            </template>
+        </PropertiesFieldBuilder>
         <b-row>
             <b-col>
                 <b-button size="sm" variant="danger" @click="onDelete">
@@ -21,6 +50,10 @@
                 </b-button>
             </b-col>
         </b-row>
+
+        <b-modal id="grease-interceptor-trap-size-guide" centered title="Size Guide" hide-footer>
+            <img src="@/assets/Grease_Interceptor_Trap_Size_Guide.png">
+        </b-modal>
     </b-container>
 </template>
 
@@ -32,6 +65,9 @@ import { DocumentState } from "../../../../src/store/document/types";
 import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import {getEntityName} from "../../../../../common/src/api/document/entities/types";
+import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
+import { Choice } from "../../../../../common/src/lib/utils";
+import { Watch } from "vue-property-decorator";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -44,8 +80,11 @@ import {getEntityName} from "../../../../../common/src/api/document/entities/typ
     }
 })
 export default class PlantProperties extends Vue {
+    getPropertyByString = getPropertyByString;
+    setPropertyByString = setPropertyByString;
+    
     get fields() {
-        return makePlantEntityFields(this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
+        return makePlantEntityFields(this.defaultCatalog, this.document.drawing, this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
     }
 
     get name() {
@@ -70,6 +109,28 @@ export default class PlantProperties extends Vue {
 
     async onCommit() {
         await this.$store.dispatch("document/validateAndCommit");
+    }
+
+    choiceName(key: string, choices: Choice[]): string {
+        const result = choices.find((c) => c.key === key);
+        if (result) {
+            return result.name;
+        }
+        return key + " (not found...)";
+    }
+
+    @Watch('reactiveData.plant.location')
+    @Watch('reactiveData.plant.position')
+    @Watch('reactiveData.plant.capacity')
+    handleGreaseInterceptorTrapSizeUpdate() {
+        const manufacturer = this.document.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+        const selectedSize = this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.capacity];
+
+        if (!!selectedSize) {
+            setPropertyByString(this.reactiveData, 'lengthMM', selectedSize.lengthMM);
+            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.widthMM);
+            this.onCommit();
+        }
     }
 }
 </script>
@@ -97,5 +158,8 @@ export default class PlantProperties extends Vue {
         margin-left: -50%;
         text-align: right;
     }
+}
+#grease-interceptor-trap-size-guide .modal-dialog {
+    max-width: max-content;
 }
 </style>

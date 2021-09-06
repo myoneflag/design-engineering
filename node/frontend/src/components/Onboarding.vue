@@ -1,6 +1,7 @@
 <template>
     <b-modal 
         id="onboarding" 
+        centered
         hide-footer 
         hide-header 
         no-close-on-backdrop
@@ -356,10 +357,8 @@ export default class Onboarding extends Vue {
 }
 </script>
 
-<style lang="less">
-.modal-dialog {
-    margin-top: 300px;
-}
+<style scoped lang="less">
+
 .onboarding {
     z-index: 9999 !important;
     background-color: #ffffff !important;

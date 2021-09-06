@@ -84,6 +84,7 @@ export default class SnappingInsertTool extends PointTool {
             let found = false;
 
             for (const ouid of uids) {
+                
                 const o = context.globalStore.get(ouid)!;
 
                 if (o?.snappable) {

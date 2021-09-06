@@ -24,7 +24,7 @@ export interface VideoLabels {
 })
 export default class YoutubeVideo extends Vue {
     player: any;
-    playedTime: Number;
+    playedTime: number;
 }
 
 </script>

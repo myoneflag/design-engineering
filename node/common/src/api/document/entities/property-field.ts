@@ -12,7 +12,8 @@ export enum FieldType {
     Rotation = "rotation",
     Boolean = "boolean",
     TwoPointScale = "two-point-scale",
-    Title = "title"
+    Title = "title",
+    Testing="testing"
 }
 
 export interface NumberParams extends FieldParams {
@@ -98,6 +99,10 @@ export interface TitleField extends PropertyFieldBase {
     isCalculated: false;
     params: null;
 }
+export interface TestingField extends PropertyFieldBase {
+    type: FieldType.Testing;
+    params: null;
+}
 
 export type PropertyField =
     | NumberField
@@ -108,4 +113,5 @@ export type PropertyField =
     | RotationField
     | TextField
     | BooleanField
-    | TitleField;
+    | TitleField
+    | TestingField;

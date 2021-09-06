@@ -394,9 +394,10 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             return makeFlowSourceFields(
                 document.drawing.metadata.flowSystems,
                 entity,
+                undefined
             ).filter((p) => p.multiFieldId);
         case EntityType.PLANT:
-            return makePlantEntityFields(entity, document.drawing.metadata.flowSystems);
+            return makePlantEntityFields(catalog, document.drawing, entity, document.drawing.metadata.flowSystems);
     }
     assertUnreachable(entity);
 }

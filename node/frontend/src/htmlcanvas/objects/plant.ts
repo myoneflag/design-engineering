@@ -15,7 +15,7 @@ import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/center
 import { getHighlightColor, getPlantPressureLossKPA } from "../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../src/calculations/types";
 import { FlowNode } from "../../../src/calculations/calculation-engine";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import {
     Calculated,
     CalculatedObject,
@@ -38,6 +38,7 @@ import { rgb2style } from "../../lib/utils";
 import Pipe from "./pipe";
 import { drawPipeCap, drawRectangles } from "../helpers/draw-helper";
 import { Side } from "../helpers/side";
+import { DrainageGreaseInterceptorTrap } from './../../../../common/src/api/document/entities/plants/plant-types';
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -62,10 +63,18 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 ctx.globalAlpha = 0.5;
             }
 
-            const l = -this.entity.widthMM / 2;
-            const r = this.entity.widthMM / 2;
-            const b = this.entity.heightMM / 2;
-            const t = -this.entity.heightMM / 2;
+            let entitywidthMM = this.entity.widthMM;
+            let entityHeightMM = this.entity.heightMM;
+
+            if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+                entityHeightMM = this.entity.widthMM;
+                entitywidthMM = this.entity.lengthMM!;
+            }
+
+            const l = -entitywidthMM / 2;
+            const r = entitywidthMM / 2;
+            const b = entityHeightMM / 2;
+            const t = -entityHeightMM / 2;
 
             const boxl = l * 1.2;
             const boxw = (r - l) * 1.2;
@@ -156,7 +165,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
 
-            const ts = Math.min(this.entity.widthMM, this.entity.heightMM) * 0.7;
+            const ts = Math.min(entitywidthMM, entityHeightMM) * 0.7;
             ctx.beginPath();
             ctx.moveTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), -ts / 2);
             ctx.lineTo((+ts / 2) * (this.entity.rightToLeft ? -1 : 1), 0);
@@ -169,12 +178,14 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 ctx.fillRect(boxl, boxt, boxw, boxh);
             }
 
-            const fontSize = Math.round(this.toWorldLength(this.entity.widthMM) / this.entity.name.length);
+            const name = this.resolveDisplayName(context, this.entity);
+
+            const fontSize = Math.round(this.toWorldLength(entitywidthMM) / name.length);
             ctx.font = fontSize + "px " + DEFAULT_FONT_NAME;
-            const measure = ctx.measureText(this.entity.name.toUpperCase());
+            const measure = ctx.measureText(name.toUpperCase());
 
             ctx.fillStyle = "#000000";
-            ctx.fillText(this.entity.name.toUpperCase(), -measure.width / 2, +fontSize / 3);
+            ctx.fillText(name.toUpperCase(), -measure.width / 2, +fontSize / 3);
 
             ctx.globalAlpha = lastAlpha;
         });
@@ -202,6 +213,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 iAmDrainage = iAmPressure = true;
                 break;
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                 iAmDrainage = true;
                 break;
             default:
@@ -241,6 +253,14 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const height = data.length * FIELD_HEIGHT;
         const wc = this.toWorldCoord();
 
+        let entitywidthMM = this.entity.widthMM;
+        let entityHeightMM = this.entity.heightMM;
+
+        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = this.entity.widthMM;
+            entitywidthMM = this.entity.lengthMM!;
+        }
+
         const res = [
             0,
             Math.PI / 4,
@@ -251,11 +271,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             (-Math.PI * 3) / 4,
             Math.PI
         ].map((delta) => {
-            return [height, Math.max(this.entity.widthMM, this.entity.heightMM)].map((offset) => TM.transform(
+            return [height, Math.max(entitywidthMM, entityHeightMM)].map((offset) => TM.transform(
                 TM.identity(),
                 TM.translate(wc.x, wc.y),
                 TM.rotate(angle + Math.PI + delta),
-                TM.translate(0, -Math.max(this.entity.widthMM, this.entity.heightMM) + offset),
+                TM.translate(0, -Math.max(entitywidthMM, entityHeightMM) + offset),
                 TM.scale(scale),
                 TM.translate(0, -height / 2),
                 TM.rotate(-angle - Math.PI - delta)
@@ -272,9 +292,18 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         if (!this.isActive()) {
             return false;
         }
-        if (Math.abs(objectCoord.x) <= this.entity.widthMM / 2) {
-            if (objectCoord.y >= -this.entity.heightMM * 0.5) {
-                if (objectCoord.y <= this.entity.heightMM * 0.5) {
+
+        let entitywidthMM = this.entity.widthMM;
+        let entityHeightMM = this.entity.heightMM;
+
+        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = this.entity.widthMM;
+            entitywidthMM = this.entity.lengthMM!;
+        }
+
+        if (Math.abs(objectCoord.x) <= entitywidthMM / 2) {
+            if (objectCoord.y >= -entityHeightMM * 0.5) {
+                if (objectCoord.y <= entityHeightMM * 0.5) {
                     return true;
                 }
             }
@@ -297,11 +326,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 result.push(this.entity.plant.gasNodeUid);
                 break;
             case PlantType.TANK:
-                break;
             case PlantType.CUSTOM:
-                break;
             case PlantType.PUMP:
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                 break;
             default:
                 assertUnreachable(this.entity.plant);
@@ -355,12 +383,10 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
                 break;
             case PlantType.TANK:
-                break;
             case PlantType.CUSTOM:
-                break;
             case PlantType.PUMP:
-                break;
             case PlantType.DRAINAGE_PIT:
+            case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                 break;
             default:
                 assertUnreachable(e.plant);
@@ -449,21 +475,29 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const retlet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.returnUid) : undefined;
         const gaslet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.gasNodeUid) : undefined;
 
+        let entitywidthMM = this.entity.widthMM;
+        let entityHeightMM = this.entity.heightMM;
+
+        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = this.entity.widthMM;
+            entitywidthMM = this.entity.lengthMM!;
+        }
+
         if (retlet instanceof SystemNode) {
             if (retlet.entity.systemUid !== this.entity.outletSystemUid) {
                 retlet.entity.systemUid = this.entity.outletSystemUid;
             }
 
             if (
-                Math.abs(retlet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(retlet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
             ) {
-                retlet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                retlet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
             }
 
             if (
-                Math.abs(retlet.entity.center.y - (this.entity.heightMM / 4)) > EPS
+                Math.abs(retlet.entity.center.y - (entityHeightMM / 4)) > EPS
             ) {
-                retlet.entity.center.y = (this.entity.heightMM / 4);
+                retlet.entity.center.y = (entityHeightMM / 4);
             }
         }
 
@@ -473,9 +507,9 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
 
             if (
-                Math.abs(outlet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(outlet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
             ) {
-                outlet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                outlet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
             }
         }
 
@@ -485,24 +519,24 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
 
             if (
-                Math.abs(inlet.entity.center.x - (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(inlet.entity.center.x - (-entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
             ) {
-                inlet.entity.center.x = (-this.entity.widthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                inlet.entity.center.x = (-entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
             }
         }
 
         if (gaslet instanceof SystemNode) {
 
             if (
-                Math.abs(gaslet.entity.center.x - (this.entity.widthMM / 2) * (this.entity.rightToLeft ? 1 : -1)) > EPS
+                Math.abs(gaslet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? 1 : -1)) > EPS
             ) {
-                gaslet.entity.center.x = (this.entity.widthMM / 2) * (this.entity.rightToLeft ? 1 : -1);
+                gaslet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? 1 : -1);
             }
 
             if (
-                Math.abs(gaslet.entity.center.y - (this.entity.heightMM / 4)) > EPS
+                Math.abs(gaslet.entity.center.y - (entityHeightMM / 4)) > EPS
             ) {
-                gaslet.entity.center.y = (this.entity.heightMM / 4);
+                gaslet.entity.center.y = (entityHeightMM / 4);
             }
         }
     }
@@ -566,7 +600,43 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                         path: 'Equipment.Drainage Pit',
                     }],
                 };
+            case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+                return {
+                    cost: context.priceTable.Equipment["Grease Interceptor Trap"],
+                    breakdown: [{
+                        qty: 1,
+                        path: 'Equipment.Grease Interceptor Trap',
+                    }],
+                };
         }
         assertUnreachable(this.entity.plant);
+    }
+
+    resolveDisplayName(context: DrawingContext, entity: PlantEntity): string {
+        let name = this.entity.name;
+        switch(entity.plant.type) {
+            case PlantType.RETURN_SYSTEM:
+            case PlantType.PUMP:
+            case PlantType.TANK:
+            case PlantType.DRAINAGE_PIT:
+            case PlantType.CUSTOM:
+                break;
+            case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+                const catalog = context.catalog;
+                const plant = this.entity.plant as DrainageGreaseInterceptorTrap;
+                const manufacturer = context.doc.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+                
+                let manufacturerName = '';
+                if (manufacturer !== 'generic') {
+                    manufacturerName = catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name + ' PANELTIM';
+                }
+
+                name = `${manufacturerName} ${plant.capacity} ${this.entity.name}`
+                break;
+            default:
+                assertUnreachable(entity.plant);
+        }
+
+        return name;
     }
 }

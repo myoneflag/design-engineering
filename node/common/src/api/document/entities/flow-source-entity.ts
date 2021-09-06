@@ -4,6 +4,7 @@ import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } f
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
 import {isDrainage, StandardFlowSystemUids} from "../../config";
+import { SupportedLocales } from "../../locale";
 
 export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
@@ -26,7 +27,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     maxPressureKPA: number | null;
 }
 
-export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity): PropertyField[] {
+export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity,locale:SupportedLocales | undefined): PropertyField[] {
 
     const res: PropertyField[] = [
         {
@@ -59,7 +60,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
         res.push(
             {
                 property: "minPressureKPA",
-                title: "Min. Pressure",
+                title: "Residual Pressure",
                 hasDefault: false,
                 isCalculated: false,
                 requiresInput: true,
@@ -72,7 +73,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
 
             {
                 property: "maxPressureKPA",
-                title: "Max. Pressure",
+                title: "Static Pressure",
                 hasDefault: false,
                 isCalculated: false,
                 requiresInput: true,
@@ -98,6 +99,25 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                 units: Units.Meters
             });
     }
+    if(entity.systemUid!=StandardFlowSystemUids.Gas 
+        && !isDrainage(entity.systemUid)
+        && locale
+        && locale==SupportedLocales.AU) {
+        res.push(
+            {
+                type: FieldType.Testing,
+                title:``,
+                hasDefault:false,
+                isCalculated:false,
+                multiFieldId:``,
+                property:``,
+                params:null
+            });
+    }
+
+
+
+
 
     res.push(
         {

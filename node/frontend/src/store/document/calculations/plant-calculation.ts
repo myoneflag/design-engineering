@@ -15,6 +15,9 @@ export default interface PlantCalculation extends Calculation {
 
     gasFlowRateMJH: number | null;
     gasPressureKPA: number | null;
+
+    size: string | null;
+    model: string | null;
 }
 
 export function makePlantCalculationFields(value: PlantEntity, doc: DocumentState): CalculationField[] {
@@ -29,6 +32,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             iAmDrainage = iAmPressure = true;
             break;
         case PlantType.DRAINAGE_PIT:
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             iAmDrainage = true;
             break;
         default:
@@ -94,6 +98,26 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             );
         }
 
+        if (value.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            results.push(
+                {
+                    property: "size",
+                    title: "Size",
+                    short: "",
+                    units: Units.None,
+                    category: FieldCategory.GreaseInterceptorTrap,
+                    layouts: ['drainage'],
+                },
+                {
+                    property: "model",
+                    title: "Model",
+                    short: "",
+                    units: Units.None,
+                    category: FieldCategory.GreaseInterceptorTrap,
+                    layouts: ['drainage'],
+                },
+            );
+        }
 
         return results;
     } else {
@@ -118,5 +142,7 @@ export function emptyPlantCalculation(): PlantCalculation {
         manufacturer: '',
         warning: null,
         warningLayout: null,
+        size: null,
+        model: null,
     };
 }

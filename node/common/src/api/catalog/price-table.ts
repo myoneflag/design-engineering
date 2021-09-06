@@ -101,6 +101,7 @@ export interface EquipmentTable {
     'Inspection Opening': number;
     'Floor Waste': number;
     'Drainage Pit': number;
+    'Grease Interceptor Trap': number;
 }
 
 export function getEquipmentTitle(name: keyof EquipmentTable, locale: SupportedLocales): string {
@@ -129,6 +130,8 @@ export function getEquipmentTitle(name: keyof EquipmentTable, locale: SupportedL
             return 'Inspection Openings';
         case "Drainage Pit":
             return 'Drainage Pit';
+        case "Grease Interceptor Trap":
+            return 'Grease Interceptor Trap';
     }
     assertUnreachable(name);
 }
@@ -159,6 +162,8 @@ export function getEquipmentDescription(name: keyof EquipmentTable, locale: Supp
             return 'Inspection Opening';
         case "Drainage Pit":
             return 'Allowance for drainage pit, engineer to define size and specification';
+        case "Grease Interceptor Trap":
+            return 'Allowance for grease interceptor trap, engineer to define size and specification';
     }
     assertUnreachable(name);
 }
