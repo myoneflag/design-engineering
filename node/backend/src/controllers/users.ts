@@ -88,6 +88,7 @@ export class UserController {
             access: accessLevel,
             temporaryUser: false,
             organization: associate,
+            verifyEmail: !sendPasswordEmail
         });
 
         if (sendPasswordEmail) {
@@ -145,7 +146,8 @@ export class UserController {
             subscribed: false,
             password,
             access: AccessLevel.USER,
-            organization: org
+            organization: org,
+            verifyEmail: true
         });
         
         const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);

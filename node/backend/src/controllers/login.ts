@@ -33,7 +33,8 @@ export async function registerUser(data: {
     password: string
     access: AccessLevel
     temporaryUser?: boolean
-    organization?: Organization
+    organization?: Organization, 
+    verifyEmail: boolean
 }): Promise<User> {
     const onboarding: Onboarding = Onboarding.create();
     const login: User = User.create();
@@ -41,8 +42,13 @@ export async function registerUser(data: {
     login.name = data.firstname;
     login.lastname = data.lastname;
     login.email = data.email;
-    login.email_verification_token = await bcrypt.hash(data.email, 10);
-    login.email_verification_dt = new Date();
+    if (data.verifyEmail) {
+        login.email_verification_token = await bcrypt.hash(data.email, 10);
+        login.email_verification_dt = new Date();    
+    } else {
+        login.email_verification_token = null;
+        login.email_verification_dt = null;
+    }
     login.subscribed = data.subscribed;
     login.passwordHash = await bcrypt.hash(data.password, 10);
     login.accessLevel = data.access;
