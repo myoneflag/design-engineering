@@ -29,16 +29,6 @@
                                     <b-form-input :required="false" type="email" v-model="user.email"></b-form-input>
                                 </b-form-group>
 
-                                <b-form-group
-                                    :label-cols="3"
-                                    label="Subscribe"
-                                    v-if="profile && profile.accessLevel <= AccessLevel.ADMIN"
-                                >
-                                    <b-form-checkbox v-model="user.subscribed">
-                                        Subscribe to "Contact Us" messages?
-                                    </b-form-checkbox>
-                                </b-form-group>
-
                                 <b-form-group :label-cols="2" label="Organization ID">
                                     <b-form-input
                                         v-model="organization"

@@ -49,6 +49,14 @@
                         </b-alert>
                     </b-col>
                 </b-row>
+                <b-row style="margin-top: 30px; margin-bottom: 30px;" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
+                    <b-col>
+                        <b-button size="lg" variant="success" to="/users/create"
+                            ><v-icon name="plus"></v-icon>
+                            Create User
+                        </b-button>
+                    </b-col>
+                </b-row>
                 <b-row>
                     <b-col>
                         <b-table
@@ -58,14 +66,6 @@
                             @row-clicked="userRowClicked"
                             selectable
                         ></b-table>
-                    </b-col>
-                </b-row>
-                <b-row style="margin-top: 30px; margin-bottom: 30px;" v-if="profile && profile.accessLevel <= AccessLevel.ADMIN">
-                    <b-col>
-                        <b-button size="lg" variant="success" to="/users/create"
-                            ><v-icon name="plus"></v-icon>
-                            Create User
-                        </b-button>
                     </b-col>
                 </b-row>
             </b-container>
@@ -80,7 +80,6 @@ import { AccessLevel, User } from "../../../common/src/models/User";
 import { getUsers, activeUsers } from "../api/users";
 import MainNavBar from "../../src/components/MainNavBar.vue";
 import BarChart from "../../src/components/chartjs/Bar.vue";
-import { cloneSimple } from "../../../common/src/lib/utils";
 import { format as DateFnsFormat, subMonths as DateFnsSubMonths } from 'date-fns';
 
 interface DateProps {
