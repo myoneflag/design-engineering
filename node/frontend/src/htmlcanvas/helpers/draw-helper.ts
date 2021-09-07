@@ -12,7 +12,7 @@ export function drawPipeCap(ctx: CanvasRenderingContext2D, point: Point, side: S
                         ? { top: point.top + base / 2, left: point.left - base / 2 }
                         : point,
                 width: side === Side.TOP || side === Side.BOTTOM ? base : base / 10,
-                height: side === Side.TOP || side === Side.BOTTOM ? base / 10 : base,
+                height: side === Side.TOP || side === Side.BOTTOM ? base / 10: base+5,
                 strokeStyle
             },
             {

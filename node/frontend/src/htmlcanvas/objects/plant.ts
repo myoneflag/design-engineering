@@ -292,7 +292,6 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         if (!this.isActive()) {
             return false;
         }
-
         let entitywidthMM = this.entity.widthMM;
         let entityHeightMM = this.entity.heightMM;
 
@@ -300,14 +299,14 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             entityHeightMM = this.entity.widthMM;
             entitywidthMM = this.entity.lengthMM!;
         }
+        const capDistance = 100;
 
-        if (Math.abs(objectCoord.x) <= entitywidthMM / 2) {
-            if (objectCoord.y >= -entityHeightMM * 0.5) {
-                if (objectCoord.y <= entityHeightMM * 0.5) {
-                    return true;
-                }
-            }
-        }
+        const l = -entitywidthMM / 2 -capDistance;
+        const r = entitywidthMM / 2 + capDistance;
+        const b = entityHeightMM / 2 + capDistance;
+        const t = -entityHeightMM/ 2 - capDistance;
+        if(objectCoord.x >= l && objectCoord.y >= t &&  objectCoord.x <= r  && objectCoord.y <= b )
+            return true;
         return false;
     }
 
@@ -353,6 +352,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
+        
         switch (interaction.type) {
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
