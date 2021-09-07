@@ -16,13 +16,14 @@ import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 import random from '../helpers/random';
 import uuid from "uuid";
 
+const EMAIL_REGEX = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
+
 export class UserController {
 
     @ApiHandleError()
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const {username, firstname, lastname, accessLevel, organization, password, email, subscribed} = req.body;
-        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
 
         if (!firstname || !lastname || !username || !email ) {
             return res.status(400).send({
@@ -34,7 +35,7 @@ export class UserController {
                 success: false,
                 message: "User with that ID already exists",
             });
-        } else if (!(emailRegEx.test(email))) {
+        } else if (!(EMAIL_REGEX.test(email))) {
             return res.status(400).send({
                 success: false,
                 message: "Invalid email address",
@@ -104,7 +105,6 @@ export class UserController {
     @ApiHandleError()
     public async signUp(req: Request, res: Response) {
         const {firstname, lastname, username, password, confirmPassword, email}: Create = req.body;
-        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
         
         if (!firstname || !lastname || !username || !email || !password ) {
             return res.status(400).send({
@@ -121,7 +121,7 @@ export class UserController {
                 success: false,
                 message: "Password and Confirm Password does not match",
             });
-        } else if (!(emailRegEx.test(email))) {
+        } else if (!(EMAIL_REGEX.test(email))) {
             return res.status(400).send({
                 success: false,
                 message: "Invalid email address",
