@@ -431,7 +431,12 @@ async function resetUserPassword (user: User, req, email: PasswordResetEmailType
 }
 
 function getHostname(req: Request) {
-    return req.protocol + '://' + req.get('host');
+    let hostname = req.get('host')
+    // local development non-https hostnames on non-standard ports, that are not included in the hostname header should be considered
+    if (req.protocol != 'https' && req.socket.localPort && !hostname.endsWith(':' + req.socket.localPort) && ![80,443].includes(req.socket.localPort)) {
+        hostname = hostname + ':' + req.socket.localPort
+    }
+    return req.protocol + '://' + hostname;
 }
 
 
