@@ -150,7 +150,7 @@ export class UserController {
             verifyEmail: true
         });
         
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
+        const url = getHostname(req) + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         await NodeMailerTransporter.sendMail(H2xNewMemberEmail({
@@ -294,7 +294,7 @@ export class UserController {
         user.email_verification_token = await bcrypt.hash(data.email, 10);
         await user.save();
 
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
+        const url = getHostname(req) + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         return res.send({
@@ -421,13 +421,17 @@ export class UserController {
     }
 }
 
-const resetUserPassword = async (user: User, req, email: PasswordResetEmailType) => {
+async function resetUserPassword (user: User, req, email: PasswordResetEmailType) {
     user.password_reset_dt = new Date();
     user.password_reset_token = await bcrypt.hash(user.email, 10);
     await user.save();
 
-    const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.password_reset_token);
+    const url = getHostname(req) + '/password-reset?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.password_reset_token);
     await NodeMailerTransporter.sendMail(email({ name: user.name, to: user.email, url }));
+}
+
+function getHostname(req: Request) {
+    return req.protocol + '://' + req.get('host');
 }
 
 
@@ -447,3 +451,4 @@ router.post('/password-reset', controller.passwordReset.bind(controller));
 router.post('/confirm-email', controller.confirmEmail.bind(controller));
 
 export const usersRouter = router;
+
