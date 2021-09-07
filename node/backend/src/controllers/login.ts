@@ -1,4 +1,3 @@
-
 import * as bcrypt from "bcrypt";
 import uuid from "uuid";
 import { getRepository } from 'typeorm';
@@ -16,9 +15,7 @@ import { Operation } from '../../../common/src/models/Operation';
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 import random from '../helpers/random';
-import { cloneSimple } from '../../../common/src/lib/utils';
-import {DrawingState, initialDrawing} from '../../../common/src/api/document/drawing';
-import { CURRENT_VERSION } from '../../../common/src/api/config';
+import {initialDrawing} from '../../../common/src/api/document/drawing';
 import { OPERATION_NAMES } from '../../../common/src/api/document/operation-transforms';
 import {EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION} from "../../../common/src/api/constants/example-drawing";
 import {DocumentUpgrader} from "../services/DocumentUpgrader";
