@@ -44,10 +44,11 @@ export async function registerUser(data: {
     login.email = data.email;
     if (data.verifyEmail) {
         login.email_verification_token = await bcrypt.hash(data.email, 10);
-        login.email_verification_dt = new Date();    
+        login.email_verification_dt = new Date();
     } else {
         login.email_verification_token = null;
         login.email_verification_dt = null;
+        login.email_verified_at = new Date();
     }
     login.subscribed = data.subscribed;
     login.passwordHash = await bcrypt.hash(data.password, 10);
