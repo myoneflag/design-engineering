@@ -11,9 +11,10 @@ import { AccessType, withOrganization, withUser } from "../helpers/withResources
 import { registerUser } from "./login";
 import { Organization } from "../../../common/src/models/Organization";
 import VerifyEmail from '../email/VerifyEmail';
-import ForgotPassword from '../email/ForgotPassword';
+import { PasswordResetEmail, ForgotPassword, SetNewPassword } from '../email/ForgotPassword';
 import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 import random from '../helpers/random';
+import uuid from "uuid";
 
 export class UserController {
 
@@ -23,7 +24,7 @@ export class UserController {
         const {username, firstname, lastname, accessLevel, organization, password, email, subscribed} = req.body;
         const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
 
-        if (!firstname || !lastname || !username || !email || !password ) {
+        if (!firstname || !lastname || !username || !email ) {
             return res.status(400).send({
                 success: false,
                 message: "All fields are required",
@@ -39,7 +40,14 @@ export class UserController {
                 message: "Invalid email address",
             });
         }
-        
+
+        let newPassword = password;
+        let sendPasswordEmail = false;
+        if (!newPassword) {
+            newPassword = uuid.v4().toString();
+            sendPasswordEmail = true;
+        }        
+
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
             res.status(400).send({
@@ -76,11 +84,15 @@ export class UserController {
             lastname,
             email,
             subscribed,
-            password,
+            password: newPassword,
             access: accessLevel,
             temporaryUser: false,
             organization: associate,
         });
+
+        if (sendPasswordEmail) {
+            await resetUserPassword(user, req, SetNewPassword);
+        }
 
         res.status(200).send({
             success: true,
@@ -136,7 +148,7 @@ export class UserController {
             organization: org
         });
         
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         await NodeMailerTransporter.sendMail(H2xNewMemberEmail({
@@ -280,7 +292,7 @@ export class UserController {
         user.email_verification_token = await bcrypt.hash(data.email, 10);
         await user.save();
 
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         return res.send({
@@ -306,12 +318,7 @@ export class UserController {
             });
         }
 
-        user.password_reset_dt = new Date();
-        user.password_reset_token = await bcrypt.hash(user.email, 10);
-        await user.save();
-
-        const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + user.email + '&token=' + user.password_reset_token;
-        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.name, to: user.email, url}));
+        await resetUserPassword(user, req, ForgotPassword);
 
         return res.send({
             success: true,
@@ -411,6 +418,16 @@ export class UserController {
         });
     }
 }
+
+const resetUserPassword = async (user: User, req, email: PasswordResetEmail) => {
+    user.password_reset_dt = new Date();
+    user.password_reset_token = await bcrypt.hash(user.email, 10);
+    await user.save();
+
+    const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.password_reset_token);
+    await NodeMailerTransporter.sendMail(email({ name: user.name, to: user.email, url }));
+}
+
 
 const router = Router();
 const controller = new UserController();
