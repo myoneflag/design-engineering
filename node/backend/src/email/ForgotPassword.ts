@@ -1,6 +1,6 @@
-type PasswordResetEmail = (props: ForgotPasswordEmailProps) => {}
+type PasswordResetEmailType = (props: PasswordResetEmailParams) => {}
 
-const ForgotPassword: PasswordResetEmail = (props: ForgotPasswordEmailProps) => {
+const ForgotPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailParams) => {
     return {
         from: process.env.EMAIL_ADDRESS,
         to: props.to,
@@ -35,7 +35,7 @@ const ForgotPassword: PasswordResetEmail = (props: ForgotPasswordEmailProps) => 
     }
 }
 
-const SetNewPassword: PasswordResetEmail = (props: ForgotPasswordEmailProps) => {
+const SetNewPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailParams) => {
     return {
         from: process.env.EMAIL_ADDRESS,
         to: props.to,
@@ -71,9 +71,9 @@ const SetNewPassword: PasswordResetEmail = (props: ForgotPasswordEmailProps) => 
     }
 }
 
-export { PasswordResetEmail, ForgotPassword, SetNewPassword }
+export { PasswordResetEmailType, ForgotPasswordEmail, SetNewPasswordEmail }
 
-export interface ForgotPasswordEmailProps {
+export interface PasswordResetEmailParams {
     to: string
     name: string
     url: string

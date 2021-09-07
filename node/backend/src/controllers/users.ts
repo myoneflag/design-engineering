@@ -11,7 +11,7 @@ import { AccessType, withOrganization, withUser } from "../helpers/withResources
 import { registerUser } from "./login";
 import { Organization } from "../../../common/src/models/Organization";
 import VerifyEmail from '../email/VerifyEmail';
-import { PasswordResetEmail, ForgotPassword, SetNewPassword } from '../email/ForgotPassword';
+import { PasswordResetEmailType, ForgotPasswordEmail, SetNewPasswordEmail } from '../email/ForgotPassword';
 import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 import random from '../helpers/random';
 import uuid from "uuid";
@@ -91,7 +91,7 @@ export class UserController {
         });
 
         if (sendPasswordEmail) {
-            await resetUserPassword(user, req, SetNewPassword);
+            await resetUserPassword(user, req, SetNewPasswordEmail);
         }
 
         res.status(200).send({
@@ -318,7 +318,7 @@ export class UserController {
             });
         }
 
-        await resetUserPassword(user, req, ForgotPassword);
+        await resetUserPassword(user, req, ForgotPasswordEmail);
 
         return res.send({
             success: true,
@@ -419,7 +419,7 @@ export class UserController {
     }
 }
 
-const resetUserPassword = async (user: User, req, email: PasswordResetEmail) => {
+const resetUserPassword = async (user: User, req, email: PasswordResetEmailType) => {
     user.password_reset_dt = new Date();
     user.password_reset_token = await bcrypt.hash(user.email, 10);
     await user.save();
