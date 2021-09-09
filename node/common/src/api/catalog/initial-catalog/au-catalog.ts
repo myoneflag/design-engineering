@@ -4717,7 +4717,7 @@ export const auCatalog: Catalog = {
         },
         cibseGuideG: {
             type: PSDStandardType.LU_LOOKUP_TABLE,
-            name: "CIBSE/BS6700/IoP",
+            name: "CIPHE",
             table: {
                 0: "0.00", // added manually to force interpolation
                 1: "0.09",

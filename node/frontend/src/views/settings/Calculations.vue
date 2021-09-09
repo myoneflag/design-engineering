@@ -58,11 +58,11 @@ export default class Calculations extends Vue {
 
         if (this.calculationParams.psdMethod === SupportedPsdStandards.cibseGuideG) {
             result.push([
-                'cibseGuideGLULevel',
-                '',
+                'loadingUnitVariant',
+                'Loading Unit Variant',
                 'choice',
                 [
-                    {name: 'Select loading unit level', key: null, disabled: true},
+                    {name: 'Default', key: null},
                     {name: 'Low', key: 'low'},
                     {name: 'Medium', key: 'medium'},
                     {name: 'High', key: 'high'},
@@ -183,8 +183,8 @@ export default class Calculations extends Vue {
     }
 
     save() {
-        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG && this.reactiveData.cibseGuideGLULevel) {
-            setPropertyByString(this.reactiveData, 'cibseGuideGLULevel', null);
+        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG && this.reactiveData.loadingUnitVariant) {
+            setPropertyByString(this.reactiveData, 'loadingUnitVariant', null);
         }
 
         this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {

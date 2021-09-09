@@ -159,6 +159,7 @@
                                 @click="setRenderedData(field, choice.key, true)"
                                 :key="index"
                                 size="sm"
+                                :disabled="choice.disabled"
                             >
                                 {{ choice.name }}
                             </b-dropdown-item>
