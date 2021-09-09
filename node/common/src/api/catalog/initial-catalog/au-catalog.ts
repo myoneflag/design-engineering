@@ -23,6 +23,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "2",
                     "medium": "5",
@@ -116,6 +120,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                     "warm-water": "1",
+                },
+                bs8558: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
                 },
                 cibseGuideG: {
                     "low": "1",
@@ -223,6 +231,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "4",
                     "warm-water": "4",
                 },
+                bs8558: {
+                    "cold-water": "10",
+                    "warm-water": "10",
+                },
                 cibseGuideG: {
                     "low": "4",
                     "medium": "8",
@@ -304,6 +316,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "5",
+                    "warm-water": "5",
+                },
                 cibseGuideG: {
                     "low": "5",
                     "medium": "5",
@@ -371,6 +387,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "warm-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -466,6 +486,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "8",
                     "warm-water": "8",
                 },
+                bs8558: {
+                    "cold-water": "22",
+                    "warm-water": "22",
+                },
                 cibseGuideG: {
                     "low": "16",
                     "medium": "16",
@@ -546,6 +570,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "2",
                     "medium": "5",
@@ -614,6 +642,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "2",
                     "medium": "2",
@@ -679,6 +711,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                 },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
                 cibseGuideG: {
                     "low": "1",
                     "medium": "1",
@@ -738,6 +774,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "hot-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "5",
+                    "warm-water": "5",
                 },
                 cibseGuideG: {
                     "low": "5",
@@ -816,6 +856,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "5",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "1",
                     "medium": "2",
@@ -873,6 +917,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "warm-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "33",
+                    "warm-water": "33",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -968,6 +1016,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "2",
                     "medium": "5",
@@ -1061,6 +1113,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "warm-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1156,6 +1212,10 @@ export const auCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
                     "low": "2",
                     "medium": "5",
@@ -1249,6 +1309,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "warm-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1345,6 +1409,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "3",
                 },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
                 cibseGuideG: {
                     "low": "1",
                     "medium": "1",
@@ -1402,6 +1470,10 @@ export const auCatalog: Catalog = {
                 bs806: {
                     "cold-water": "2",
                     "hot-water": "2",
+                },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1467,6 +1539,10 @@ export const auCatalog: Catalog = {
                 },
                 bs806: {
                     "cold-water": "1",
+                },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "low": "1",
@@ -4713,6 +4789,39 @@ export const auCatalog: Catalog = {
                 3000: "27.3180566",
                 4000: "33.122355",
                 5000: "37.4124886",
+            }
+        },
+        bs8558: {
+            type: PSDStandardType.LU_LOOKUP_TABLE,
+            name: "BS 8558",
+            table: {
+                0: "0.00",
+                1: "0.09",
+                3: "0.15",
+                5: "0.2",
+                10: "0.3",
+                15: "0.38",
+                20: "0.44",
+                30: "0.56",
+                40: "0.67",
+                50: "0.77",
+                80: "1.06",
+                100: "1.25",
+                150: "1.68",
+                200: "2.11",
+                250: "2.44",
+                300: "2.8",
+                400: "3.55",
+                500: "4.1",
+                700: "5.25",
+                1000: "6.76",
+                2000: "11.3",
+                3000: "15.1",
+                4000: "18.5",
+                5000: "22.5",
+                6000: "25.2",
+                7000: "28",
+                7750: "30",
             }
         },
         cibseGuideG: {
