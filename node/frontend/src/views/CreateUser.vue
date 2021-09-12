@@ -32,7 +32,7 @@
                                 <b-form-input type="email" v-model="user.email"></b-form-input>
                             </b-form-group>
 
-                            <b-form-group :label-cols="2" label="Password">
+                            <b-form-group :label-cols="2" label="Password" disabled>
                                 <b-form-input type="search" autocomplete="off" v-model="user.password"></b-form-input>
                             </b-form-group>
 

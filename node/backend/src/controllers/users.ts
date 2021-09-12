@@ -11,9 +11,12 @@ import { AccessType, withOrganization, withUser } from "../helpers/withResources
 import { registerUser } from "./login";
 import { Organization } from "../../../common/src/models/Organization";
 import VerifyEmail from '../email/VerifyEmail';
-import ForgotPassword from '../email/ForgotPassword';
+import { PasswordResetEmailType, ForgotPasswordEmail, SetNewPasswordEmail } from '../email/ForgotPassword';
 import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 import random from '../helpers/random';
+import uuid from "uuid";
+
+const EMAIL_REGEX = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
 
 export class UserController {
 
@@ -21,9 +24,8 @@ export class UserController {
     @AuthRequired(AccessLevel.ADMIN)
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const {username, firstname, lastname, accessLevel, organization, password, email, subscribed} = req.body;
-        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
 
-        if (!firstname || !lastname || !username || !email || !password ) {
+        if (!firstname || !lastname || !username || !email ) {
             return res.status(400).send({
                 success: false,
                 message: "All fields are required",
@@ -33,13 +35,20 @@ export class UserController {
                 success: false,
                 message: "User with that ID already exists",
             });
-        } else if (!(emailRegEx.test(email))) {
+        } else if (!(EMAIL_REGEX.test(email))) {
             return res.status(400).send({
                 success: false,
                 message: "Invalid email address",
             });
         }
-        
+
+        let newPassword = password;
+        let sendPasswordEmail = false;
+        if (!newPassword) {
+            newPassword = uuid.v4().toString();
+            sendPasswordEmail = true;
+        }        
+
         const thisUser = await session.user;
         if (accessLevel <= thisUser.accessLevel && thisUser.accessLevel !== AccessLevel.SUPERUSER) {
             res.status(400).send({
@@ -76,11 +85,16 @@ export class UserController {
             lastname,
             email,
             subscribed,
-            password,
+            password: newPassword,
             access: accessLevel,
             temporaryUser: false,
             organization: associate,
+            verifyEmail: !sendPasswordEmail
         });
+
+        if (sendPasswordEmail) {
+            await resetUserPassword(user, req, SetNewPasswordEmail);
+        }
 
         res.status(200).send({
             success: true,
@@ -91,7 +105,6 @@ export class UserController {
     @ApiHandleError()
     public async signUp(req: Request, res: Response) {
         const {firstname, lastname, username, password, confirmPassword, email}: Create = req.body;
-        const emailRegEx = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
         
         if (!firstname || !lastname || !username || !email || !password ) {
             return res.status(400).send({
@@ -108,7 +121,7 @@ export class UserController {
                 success: false,
                 message: "Password and Confirm Password does not match",
             });
-        } else if (!(emailRegEx.test(email))) {
+        } else if (!(EMAIL_REGEX.test(email))) {
             return res.status(400).send({
                 success: false,
                 message: "Invalid email address",
@@ -133,10 +146,11 @@ export class UserController {
             subscribed: false,
             password,
             access: AccessLevel.USER,
-            organization: org
+            organization: org,
+            verifyEmail: true
         });
         
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        const url = getHostname(req) + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         await NodeMailerTransporter.sendMail(H2xNewMemberEmail({
@@ -280,7 +294,7 @@ export class UserController {
         user.email_verification_token = await bcrypt.hash(data.email, 10);
         await user.save();
 
-        const url = req.protocol + '://' + req.get('host') + '/confirm-email?email=' + user.email + '&token=' + user.email_verification_token;
+        const url = getHostname(req) + '/confirm-email?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.email_verification_token);
         await NodeMailerTransporter.sendMail(VerifyEmail({name: user.name, to: user.email, url}));
 
         return res.send({
@@ -306,12 +320,7 @@ export class UserController {
             });
         }
 
-        user.password_reset_dt = new Date();
-        user.password_reset_token = await bcrypt.hash(user.email, 10);
-        await user.save();
-
-        const url = req.protocol + '://' + req.get('host') + '/password-reset?email=' + user.email + '&token=' + user.password_reset_token;
-        await NodeMailerTransporter.sendMail(ForgotPassword({name: user.name, to: user.email, url}));
+        await resetUserPassword(user, req, ForgotPasswordEmail);
 
         return res.send({
             success: true,
@@ -412,6 +421,25 @@ export class UserController {
     }
 }
 
+async function resetUserPassword (user: User, req, email: PasswordResetEmailType) {
+    user.password_reset_dt = new Date();
+    user.password_reset_token = await bcrypt.hash(user.email, 10);
+    await user.save();
+
+    const url = getHostname(req) + '/password-reset?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.password_reset_token);
+    await NodeMailerTransporter.sendMail(email({ name: user.name, to: user.email, url }));
+}
+
+function getHostname(req: Request) {
+    let hostname = req.get('host')
+    // local development non-https hostnames on non-standard ports, that are not included in the hostname header should be considered
+    if (req.protocol != 'https' && req.socket.localPort && !hostname.endsWith(':' + req.socket.localPort) && ![80,443].includes(req.socket.localPort)) {
+        hostname = hostname + ':' + req.socket.localPort
+    }
+    return req.protocol + '://' + hostname;
+}
+
+
 const router = Router();
 const controller = new UserController();
 
@@ -428,3 +456,4 @@ router.post('/password-reset', controller.passwordReset.bind(controller));
 router.post('/confirm-email', controller.confirmEmail.bind(controller));
 
 export const usersRouter = router;
+
