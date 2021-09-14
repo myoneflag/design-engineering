@@ -1,5 +1,3 @@
-import {SupportedDrainageMethods} from "../../../../common/src/api/config";
-import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
         ref="fields"
