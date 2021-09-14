@@ -226,7 +226,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     getConnectedPipe(connectionUid: string, flowSystem: FlowSystemParameters): any {
         for (const itemUid of this.globalStore.getConnections(connectionUid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item.entityBacked &&
+            if ( item && item.entityBacked &&
                  item.entityBacked.type === EntityType.PIPE &&
                  (item as Pipe).entity.systemUid === flowSystem.uid) {
                     return item;
