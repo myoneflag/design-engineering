@@ -224,19 +224,16 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             (this.document.uiState.pressureOrDrainage === 'pressure' && iAmPressure);
     }
     getConnectedPipe(connectionUid: string, flowSystem: FlowSystemParameters): any {
-        // connectionUid can be :
-        // this.entity.inletUid;
-        // this.entity.outletUid; ,....
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.find((item) => {
-            return (
-                item.entityBacked.type == EntityType.PIPE &&
-                (item as Pipe).entity.endpointUid.indexOf(connectionUid) != -1 &&
-                (item as Pipe).entity.systemUid == flowSystem.uid
-            );
-        });
+        for (const itemUid of this.globalStore.getConnections(connectionUid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item.entityBacked &&
+                 item.entityBacked.type === EntityType.PIPE &&
+                 (item as Pipe).entity.systemUid === flowSystem.uid) {
+                    return item;
+                }
+        }
     }
-    validateConnectionPoints(): Boolean {
+    validateConnectionPoints(): boolean {
         const inletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.inletSystemUid);
         const outletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.outletSystemUid);
 
