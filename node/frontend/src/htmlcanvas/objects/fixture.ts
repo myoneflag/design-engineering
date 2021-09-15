@@ -224,11 +224,12 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         }
     }
     validateConnectionPoints(): boolean {
-        for (const roughIn of Object.values(this.entity.roughIns) ) {
-            const FS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === roughIn.uid);
+        for (const systemUidIter of Object.keys(this.entity.roughIns)) {
+
+            const FS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
             if (!FS) { continue; }
             if (FS &&
-                !this.getConnectedPipe(roughIn.uid, roughIn.allowAllSystems ? null : FS.uid)
+                !this.getConnectedPipe(this.entity.roughIns[systemUidIter].uid, this.entity.roughIns[systemUidIter].allowAllSystems ? null : FS.uid)
                 && this.isFlowSystemActive(FS)) {
                 return false;
             }
