@@ -467,35 +467,37 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     getConnectedFixtures(abbreviation:string): Fixture[] {
-      let fixtures:Fixture[]=[]
-      fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
-      let connectedNodes=this.getConnectedNodes();
-      connectedNodes.map((node:SystemNode)=>{
-        let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
-            fixtures.push.apply(fixtures,fittingPipes) ;
-        })  
-      return fixtures;
+        let fixtures:Fixture[]=[]
+        fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
+        let connectedNodes=this.getConnectedNodes();
+        connectedNodes.map( (node:SystemNode) =>{
+            let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
+                fixtures.push.apply(fixtures,fittingPipes) ;
+            })  
+        return fixtures;
     }
 
-    getConnectedFlowSource(): FlowSource {    
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        let flowSource:FlowSource= GlobalStoreObjects.find((flowSource) => {
-            return  flowSource.entityBacked.type == EntityType.FLOW_SOURCE 
-            // && (flowSource as FlowSource).entity.systemUid==this.entity.systemUid
-            && this.entity.endpointUid.indexOf(flowSource.entity.uid) != -1 
-            && (flowSource as Fixture).uid.indexOf("calculation")===-1
-          }) as FlowSource
-          
-          return flowSource;
+    getConnectedFlowSource(): FlowSource | undefined {
+        for ( const itemUid of this.globalStore.getConnections(this.entity.uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked && 
+                item.entityBacked.type == EntityType.FLOW_SOURCE &&
+                (item as FlowSource).entity.systemUid==this.entity.systemUid ) {
+                    return item as FlowSource
+                }
+        }
     }
-    getConnectedFixturesByUid(uid:string,systemUid:string,abbreviation:string):Fixture[]{
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.filter((fix) => {
-            return  fix.entityBacked.type == EntityType.FIXTURE 
-            && (fix as Fixture).entity.abbreviation==abbreviation
-            && uid.indexOf((fix as Fixture).entity.roughIns[systemUid].uid )!=-1
-            && (fix as Fixture).uid.indexOf("calculation")===-1
-      }) as Fixture[]
+    getConnectedFixturesByUid( uid: string, systemUid: string, abbreviation: string): Fixture[] {
+        const fixtures: Fixture[] = []
+        for (const itemUid in this.globalStore.getConnections(uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked && 
+                item.entityBacked.type == EntityType.FIXTURE && 
+                uid === (item as Fixture).entity.roughIns[systemUid].uid ) {
+                    fixtures.push(item as Fixture)
+                }
+        }
+        return fixtures;
     }
 
     projectEndpoint(
