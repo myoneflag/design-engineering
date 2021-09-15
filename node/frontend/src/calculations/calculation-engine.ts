@@ -619,6 +619,7 @@ export default class CalculationEngine implements CalculationContext {
     buildNetworkObjects() {
         this.drawableObjectUids = Array.from(this.globalStore.keys());
         // We assume we have a fresh globalstore with no pollutants.
+        // DO NOT refactor this into a traversal of the this.globalStore.values()
         Array.from(this.globalStore.values()).forEach((o) => {
             const es = o.getCalculationEntities(this);
             es.forEach((e) => {
