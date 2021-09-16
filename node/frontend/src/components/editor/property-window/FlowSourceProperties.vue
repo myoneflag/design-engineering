@@ -13,13 +13,14 @@
             :on-change="onChange"
             :target="targetProperty"
         />
-        <b-row>
+        <b-row >
             <b-col>
                 <b-button size="sm" variant="danger" @click="onDelete">
                     Delete
                 </b-button>
             </b-col>
         </b-row>
+         
     </b-container>
 </template>
 
@@ -27,13 +28,14 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import { fillRiserDefaults, makeRiserFields } from "../../../../../common/src/api/document/entities/riser-entity";
 import { DocumentState } from "../../../../src/store/document/types";
 import {
     fillFlowSourceDefaults,
     makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
 import {getEntityName} from "../../../../../common/src/api/document/entities/types";
+import { isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import { SupportedLocales } from "../../../../../common/src/api/locale";
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -47,16 +49,22 @@ import {getEntityName} from "../../../../../common/src/api/document/entities/typ
 })
 export default class FlowSourceProperties extends Vue {
     get fields() {
-        return makeFlowSourceFields(
+        return  makeFlowSourceFields(
             this.document.drawing.metadata.flowSystems,
             this.$props.selectedEntity,
+            this.document.locale
         );
     }
 
     get name() {
         return getEntityName(this.$props.selectedEntity);
     }
-
+    get StandardFlowSystemUids(){
+        return StandardFlowSystemUids;
+    }
+    get SupportedLocales(){
+        return SupportedLocales;
+    }
     get reactiveData() {
         return this.$props.selectedEntity;
     }
@@ -98,5 +106,25 @@ export default class FlowSourceProperties extends Vue {
         margin-left: -50%;
         text-align: right;
     }
+}
+.htc{    
+    padding:0px;
+    width: 100px;
+    margin: 2px;
+    background-color: white;
+    padding-top: 10px;
+}
+.htctext{
+    padding:0px;
+    font-size: small;
+    margin:3px auto;
+    
+}
+.htc-row{
+    cursor:pointer;
+    background-color:lightgray;
+    margin-left:0;
+    margin-right:0;
+
 }
 </style>

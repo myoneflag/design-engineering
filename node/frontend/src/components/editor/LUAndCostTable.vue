@@ -70,7 +70,7 @@
     import {NetworkType} from "../../../../common/src/api/document/drawing";
     import {ALL_DRAINAGE_SYSTEM_UIDS, StandardFlowSystemUids} from "../../../../common/src/api/config";
     import {convertMeasurementSystem, Units} from "../../../../common/src/lib/measurements";
-    import { I18N } from "@../../../common/src/api/locale/values";
+    import { I18N } from "../../../../common/src/api/locale/values";
 
     @Component({
         props: {

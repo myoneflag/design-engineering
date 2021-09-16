@@ -31,7 +31,8 @@ async function ensureInitialUser() {
             password: "pleasechange",
             access:  AccessLevel.SUPERUSER,
             email: CONFIG.INIT_SUPERUSER_EMAIL,
-            organization: org
+            organization: org,
+            verifyEmail: false
         });
     }
 

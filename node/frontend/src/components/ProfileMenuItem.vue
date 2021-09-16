@@ -10,18 +10,23 @@
         <b-dropdown-item @click="changePassword">Change Password</b-dropdown-item>
         <b-dropdown-item :to="'/tutorials'">Tutorials</b-dropdown-item>
         <b-dropdown-item @click="renderFeedback">Feedback</b-dropdown-item>
+        <FeedbackModal v-model="showFeedbackModal"/>
         <template v-if="profile.accessLevel <= AccessLevel.MANAGER">
             <b-dropdown-divider></b-dropdown-divider>
             <!--Admin Panel controls-->
-            <b-dropdown-item v-if="profile.accessLevel <= AccessLevel.ADMIN" to="/organizations">
-                Organizations
-            </b-dropdown-item>
+            <b-badge style="font-size: 12px; margin-left: 10px">MANAGER</b-badge>
             <b-dropdown-item to="/users">Users</b-dropdown-item>
         </template>
-
-        <FeedbackModal v-model="showFeedbackModal"/>
-        <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
+        <template v-if="profile.accessLevel <= AccessLevel.ADMIN">
             <b-dropdown-divider></b-dropdown-divider>
+            <b-badge style="font-size: 12px; margin-left: 10px">H2X ADMIN</b-badge>            
+            <b-dropdown-item to="/organizations">
+                All Organizations
+            </b-dropdown-item>
+        </template>
+        <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
+            <b-dropdown-divider></b-dropdown-divider>            
+            <b-badge style="font-size: 12px; margin-left: 10px">H2X SUPERUSER</b-badge>
             <b-dropdown-item to="/contacts">Feedback Messages</b-dropdown-item>
             <b-dropdown-item to="/errors">Auto Error Reports</b-dropdown-item>
             <b-dropdown-item to="/changeLogs">Change Logs</b-dropdown-item>

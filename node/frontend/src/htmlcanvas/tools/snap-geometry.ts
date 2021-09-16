@@ -33,7 +33,9 @@ export interface SnapSurfaceResult {
 export function getSnapSurfaces(context: CanvasContext, snapTargets: string[], pipeSnapTargets: string[], originUid?: string): SnapSurfaceResult {
     const result: SnapSurface[] = [];
     const obviousPoints: Flatten.Point[] = [];
-
+    if (!context) {
+        return {surfaces: result, obviousPoints};
+    }
     const pipeVectors: Array<{vector: Flatten.Vector, references: Array<Flatten.Line | Flatten.Point>}> = [];
 
     for (const puid of pipeSnapTargets) {
@@ -62,8 +64,7 @@ export function getSnapSurfaces(context: CanvasContext, snapTargets: string[], p
     }
 
     for (const suid of effectiveSnapTargets) {
-        if(!context)
-            continue;
+      
         const o = context.globalStore.get(suid);
         if (!o) {
             continue;
@@ -193,7 +194,8 @@ export function snapPoint(context: CanvasContext, snapTargets: string[], pipeSna
         references: null,
         candidates,
     };
-
+    if(!context)
+        return resultWithoutObviousReferences(obviousPoints, closestResult);
     for (const a of surfaces) {
         for (const b of surfaces) {
             const it = a.surface.intersect(b.surface);

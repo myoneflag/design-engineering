@@ -276,7 +276,8 @@ export interface Catalog {
     balancingValves: SelectedMaterialManufacturer[];
     hotWaterPlant: SelectedMaterialManufacturer[];
     fixtures: SelectedMaterialManufacturer[];
-    [key: string]: SelectedMaterialManufacturer[];
+    greaseInterceptorTrap?: SelectedMaterialManufacturer[];
+    [key: string]: SelectedMaterialManufacturer[] | undefined;
 }
 
 export interface SelectedMaterialManufacturer {
@@ -535,6 +536,11 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
     const result = cloneSimple(initialAustralianDrawing);
     switch (locale) {
         case SupportedLocales.AU:
+            result.metadata.catalog.greaseInterceptorTrap = [{
+                uid: 'greaseInterceptorTrap',
+                manufacturer: 'viking',
+                selected: null,
+            }];
             break;
         case SupportedLocales.UK:
             result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;

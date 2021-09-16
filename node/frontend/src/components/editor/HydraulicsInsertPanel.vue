@@ -253,6 +253,14 @@
                         v-b-tooltip.hover
                         title="Pit"
                 ></b-button>
+                <b-button
+                    v-if="systemLayout === 'drainage' && document.locale === 'en-au'"
+                    variant="outline-dark"
+                    class="insertBtn greaseInterceptorTrap btn-sm"
+                    @click="toggleGreaseInterceptorTrap"
+                    v-b-tooltip.hover
+                    title="Grease Interceptor Trap"
+                ></b-button>
             </b-button-group>
         </b-col>
 
@@ -763,6 +771,16 @@ export default class HydraulicsInsertPanel extends Vue {
         });
     }
 
+    toggleGreaseInterceptorTrap() {
+        this.$emit('insert', {
+            entityName: this.entityNames.PLANT,
+            inletSystemUid: this.selectedSystem.uid,
+            outletSystemUid: this.selectedSystem.uid,
+            plantType: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP,
+            title: 'GIT',
+        });
+    }
+
     toggleSewerConnection() {
         this.$emit('insert', {
             entityName: this.entityNames.FLOW_SOURCE,
@@ -923,6 +941,12 @@ export default class HydraulicsInsertPanel extends Vue {
 
 .insertBtn.pit {
     background-image: url("../../../src/assets/object-icons/valves/pit.png");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.insertBtn.greaseInterceptorTrap {
+    background-image: url("../../../src/assets/object-icons/valves/grease-interceptor-trap.png");
     background-size: 25px;
     background-repeat: no-repeat;
     background-position: center;

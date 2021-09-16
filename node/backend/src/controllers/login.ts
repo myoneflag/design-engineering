@@ -1,4 +1,3 @@
-
 import * as bcrypt from "bcrypt";
 import uuid from "uuid";
 import { getRepository } from 'typeorm';
@@ -16,9 +15,7 @@ import { Operation } from '../../../common/src/models/Operation';
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
 import random from '../helpers/random';
-import { cloneSimple } from '../../../common/src/lib/utils';
-import {DrawingState, initialDrawing} from '../../../common/src/api/document/drawing';
-import { CURRENT_VERSION } from '../../../common/src/api/config';
+import {initialDrawing} from '../../../common/src/api/document/drawing';
 import { OPERATION_NAMES } from '../../../common/src/api/document/operation-transforms';
 import {EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION} from "../../../common/src/api/constants/example-drawing";
 import {DocumentUpgrader} from "../services/DocumentUpgrader";
@@ -33,7 +30,8 @@ export async function registerUser(data: {
     password: string
     access: AccessLevel
     temporaryUser?: boolean
-    organization?: Organization
+    organization?: Organization, 
+    verifyEmail: boolean
 }): Promise<User> {
     const onboarding: Onboarding = Onboarding.create();
     const login: User = User.create();
@@ -41,8 +39,14 @@ export async function registerUser(data: {
     login.name = data.firstname;
     login.lastname = data.lastname;
     login.email = data.email;
-    login.email_verification_token = await bcrypt.hash(data.email, 10);
-    login.email_verification_dt = new Date();
+    if (data.verifyEmail) {
+        login.email_verification_token = await bcrypt.hash(data.email, 10);
+        login.email_verification_dt = new Date();
+    } else {
+        login.email_verification_token = null;
+        login.email_verification_dt = null;
+        login.email_verified_at = new Date();
+    }
     login.subscribed = data.subscribed;
     login.passwordHash = await bcrypt.hash(data.password, 10);
     login.accessLevel = data.access;

@@ -16,6 +16,7 @@ import {
 } from "../../../../common/src/api/document/entities/plants/plant-types";
 import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
 import SnappingInsertTool from "./snapping-insert-tool";
+import { Catalog } from "../../../../common/src/api/catalog/types";
 
 export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {
     const plantUid = uuid();
@@ -63,8 +64,10 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
                     name: title,
                     rotation: angle,
 
-                    plant: createPlant(type, outletSystemUid, returnUid, gasNodeUid),
+                    plant: createPlant(context, type, outletSystemUid, returnUid, gasNodeUid),
                 };
+
+                newEntity = resolveNewEntiy(context, newEntity);
 
                 context.$store.dispatch("document/addEntity", newEntity);
 
@@ -195,7 +198,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
     );
 }
 
-function createPlant(type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
+function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
     switch (type) {
         case PlantType.RETURN_SYSTEM:
             return {
@@ -242,6 +245,45 @@ function createPlant(type: PlantType, outletSystemUid: string, returnUid: string
                     staticPressureKPA: 0,
                 },
             };
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
+            const capacity = selectedManufacturer === 'generic' ? '1000L' : '1000';
+            return {
+                type,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.STATIC_PRESSURE,
+                    staticPressureKPA: 0,
+                },
+                location: 'nsw',
+                position: 'belowGround',
+                capacity,
+            };
     }
     assertUnreachable(type);
+}
+
+function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEntity {
+    const catalog = context.$store.getters['catalog/default'] as Catalog;
+
+    switch(entity.plant.type) {
+        case PlantType.RETURN_SYSTEM:
+        case PlantType.PUMP:
+        case PlantType.TANK:
+        case PlantType.DRAINAGE_PIT:
+        case PlantType.CUSTOM:
+            break;
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            const plant = entity.plant;
+            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
+            const selectedSize = catalog.greaseInterceptorTrap!.size[selectedManufacturer][plant.location][plant.position][plant.capacity];
+            entity.heightMM = selectedSize.heightMM;
+            entity.widthMM = selectedSize.widthMM;
+            entity.lengthMM = selectedSize.lengthMM;
+            break;
+        default:
+            assertUnreachable(entity.plant);
+            break;
+    }
+
+    return entity;
 }
