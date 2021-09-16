@@ -226,7 +226,6 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
             type: FieldType.Choice,
             params: {
                 choices: [
-                    { name: "Default", key: '' },
                     { name: "Low", key: 'low' },
                     { name: "Medium", key: 'medium' },
                     { name: "High", key: 'high' }
@@ -268,7 +267,7 @@ export function fillFixtureFields(
     const continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
 
     if (result.loadingUnitVariant === null) {
-        result.loadingUnitVariant = drawing?.metadata.calculationParams.loadingUnitVariant || '';
+        result.loadingUnitVariant = drawing?.metadata.calculationParams.loadingUnitVariant || 'low';
     }
 
     for (const systemUid of Object.keys(result.roughIns)) {
@@ -290,12 +289,10 @@ export function fillFixtureFields(
             }
 
             if (isLUStandard(psdStrategy)) {
-                if (target.loadingUnits === null) {
-                    const loadingUnitVariant = result.loadingUnitVariant;
-                    
-                    if (psdStrategy === SupportedPsdStandards.cibseGuideG && loadingUnitVariant) {
+                if (target.loadingUnits === null) {                    
+                    if (psdStrategy === SupportedPsdStandards.cibseGuideG) {
                         target.loadingUnits = parseCatalogNumberOrMin(
-                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][loadingUnitVariant]
+                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][result.loadingUnitVariant!]
                         );
                     } else {
                         target.loadingUnits = parseCatalogNumberOrMin(

@@ -168,6 +168,7 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
     },
     { name: "CIPHE", key: SupportedPsdStandards.cibseGuideG },
     { name: "BS 806", key: SupportedPsdStandards.bs806 },
+    { name: "BS 8558", key: SupportedPsdStandards.bs8558 },
 
     {
         name: "DIN 1988-300 - Residential",

@@ -2177,7 +2177,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
         ],
         "calculationParams": {
             "psdMethod": "as35002018LoadingUnits",
-            "loadingUnitVariant": null,
+            "loadingUnitVariant": 'low',
             "dwellingMethod": null,
             "drainageMethod": "AS2018FixtureUnits",
             "en12056FrequencyFactor": "CongestedUse",

@@ -29,7 +29,6 @@
     } from "../../../../common/src/api/config";
     import {Units} from "../../../../common/src/lib/measurements";
     import {Catalog} from "../../../../common/src/api/catalog/types";
-    import { Watch } from "vue-property-decorator";
     import { setPropertyByString } from "../../lib/utils";
 
     @Component({
@@ -62,7 +61,6 @@ export default class Calculations extends Vue {
                 'Loading Unit Variant',
                 'choice',
                 [
-                    {name: 'Default', key: null},
                     {name: 'Low', key: 'low'},
                     {name: 'Medium', key: 'medium'},
                     {name: 'High', key: 'high'},
@@ -183,8 +181,8 @@ export default class Calculations extends Vue {
     }
 
     save() {
-        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG && this.reactiveData.loadingUnitVariant) {
-            setPropertyByString(this.reactiveData, 'loadingUnitVariant', null);
+        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG) {
+            setPropertyByString(this.reactiveData, 'loadingUnitVariant', 'low');
         }
 
         this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
