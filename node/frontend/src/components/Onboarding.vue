@@ -357,14 +357,16 @@ export default class Onboarding extends Vue {
 }
 </script>
 
-<style scoped lang="less">
-
+<style lang="less">
 .onboarding {
     z-index: 9999 !important;
     background-color: #ffffff !important;
     color: #343a40 !important;
     position: relative !important;
 }
+</style>
+
+<style scoped lang="less">
 #step-indicator {
     flex: 1;
     white-space: nowrap;
