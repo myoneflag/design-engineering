@@ -1,5 +1,3 @@
-import {SupportedDrainageMethods} from "../../../../common/src/api/config";
-import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
         ref="fields"
@@ -30,7 +28,6 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
         SupportedPsdStandards
     } from "../../../../common/src/api/config";
     import {Units} from "../../../../common/src/lib/measurements";
-    import CatalogState from "../../store/catalog/types";
     import {Catalog} from "../../../../common/src/api/catalog/types";
 
     @Component({
@@ -68,6 +65,7 @@ export default class Calculations extends Vue {
 
         result.push(
             ["pipeSizingMethod", "Pipe Sizing Method", "choice", PIPE_SIZING_METHODS],
+            ["combineLUs", "Combine Hot/Warm and Cold Water Units Together?", "yesno"],
             ["componentPressureLossMethod", "Pressure Loss Method", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
         );
 

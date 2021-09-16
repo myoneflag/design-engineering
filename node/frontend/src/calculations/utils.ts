@@ -356,7 +356,7 @@ export function mergePsdProfile(profile: PsdProfile, other: PsdProfile) {
     }
 }
 
-export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
+export function countPsdProfile(profile: PsdProfile, combineLUs: boolean): FinalPsdCountEntry {
     const byCorrelated = new Map<string, PsdCountEntry>();
 
     let highestLU = 0;
@@ -368,7 +368,7 @@ export function countPsdProfile(profile: PsdProfile): FinalPsdCountEntry {
 
             const max: PsdCountEntry = {
                 dwellings: Math.max(a.dwellings, b.dwellings),
-                units: Math.max(a.units, b.units),
+                units: combineLUs ? (a.units + b.units) : Math.max(a.units, b.units),
                 continuousFlowLS: Math.max(a.continuousFlowLS, b.continuousFlowLS),
                 gasMJH: Math.max(a.gasMJH, b.gasMJH),
                 drainageUnits: Math.max(a.drainageUnits, b.drainageUnits),

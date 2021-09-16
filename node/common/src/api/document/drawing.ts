@@ -258,6 +258,7 @@ export interface CalculationParameters {
     roomTemperatureC: number;
     windSpeedForHeatLossMS: number;
     gravitationalAcceleration: number;
+    combineLUs: boolean;
 }
 
 export interface Rectangle {
@@ -879,7 +880,8 @@ export const initialAustralianDrawing: DrawingState = {
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
             windSpeedForHeatLossMS: 0,
-            gravitationalAcceleration: 9.80665
+            gravitationalAcceleration: 9.80665,
+            combineLUs: false,
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
         catalog: {
