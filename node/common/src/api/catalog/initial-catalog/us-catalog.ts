@@ -4836,7 +4836,10 @@ export const usCatalog: Catalog = {
         }
     },
     en12056FrequencyFactor: {
-        [EN12056FrequencyFactor.CongestedUse]: 1.0
+        [EN12056FrequencyFactor.IntermittentUse]: 0.5,
+        [EN12056FrequencyFactor.FrequentUse]: 0.7,
+        [EN12056FrequencyFactor.CongestedUse]: 1.0,
+        [EN12056FrequencyFactor.SpecialUse]: 1.2,
     },
     gasDiversification: {
         1: 1,
