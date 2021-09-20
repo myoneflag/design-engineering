@@ -110,5 +110,9 @@
     {
         "ParameterKey": "H2XEmailAddress",
         "ParameterValue":"${H2XEmailAddress}"
+    }, 
+    {
+        "ParameterKey": "WebHookZapierCreateHubspotContact", 
+        "ParameterValue": "${WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT}"
     }
 ]
