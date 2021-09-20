@@ -1,6 +1,6 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
-import { isDrainage, isLUStandard, SupportedPsdStandards} from "../../../config";
+import { isDrainage, isLUStandard, SupportedPsdStandards, SupportedDrainageMethods} from "../../../config";
 import { Catalog } from "../../../catalog/types";
 import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
@@ -257,6 +257,12 @@ export function fillFixtureFields(
     arr.forEach((field) => {
         if (result[field] === null) {
             result[field] = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name][field]);
+            
+            if (field === 'enDischargeUnits') {
+                if (!!drawing && drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+                    result[field] = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name]['enDrainageSystem'][drawing.metadata.calculationParams.drainageSystem]);
+                }
+            }            
         }
     });
 

@@ -2180,6 +2180,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "loadingUnitVariant": 'low',
             "dwellingMethod": null,
             "drainageMethod": "AS2018FixtureUnits",
+            "drainageSystem": "drainageSystem1",
             "en12056FrequencyFactor": "CongestedUse",
             "ringMainCalculationMethod": "ISOLATION_CASES",
             "pipeSizingMethod": "velocity",

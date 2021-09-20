@@ -159,7 +159,13 @@ export interface FixtureSpec {
 
     warmTempC: string | null;
 
-    manufacturer: FixtureManufacturer[]
+    manufacturer: FixtureManufacturer[],
+    enDrainageSystem: {
+        drainageSystem1: number,
+        drainageSystem2: number,
+        drainageSystem3: number,
+        drainageSystem4: number,
+    }
 }
 
 export type FixtureManufacturer = Manufacturer<keyof FixturesTable>;

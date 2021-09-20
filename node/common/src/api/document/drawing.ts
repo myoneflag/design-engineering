@@ -253,6 +253,7 @@ export interface CalculationParameters {
     loadingUnitVariant: string;
     dwellingMethod: SupportedDwellingStandards | null;
     drainageMethod: SupportedDrainageMethods;
+    drainageSystem: 'drainageSystem1' | 'drainageSystem2' | 'drainageSystem3' | 'drainageSystem4',
     en12056FrequencyFactor: EN12056FrequencyFactor;
     ringMainCalculationMethod: RingMainCalculationMethod;
     pipeSizingMethod: string;
@@ -918,6 +919,7 @@ export const initialAustralianDrawing: DrawingState = {
             loadingUnitVariant: 'low',
             dwellingMethod: null,
             drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
+            drainageSystem: "drainageSystem1",
             en12056FrequencyFactor: EN12056FrequencyFactor.CongestedUse,
             ringMainCalculationMethod: RingMainCalculationMethod.ISOLATION_CASES,
             pipeSizingMethod: PIPE_SIZING_METHODS[0].key as string,
