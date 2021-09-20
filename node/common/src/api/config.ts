@@ -14,6 +14,7 @@ export enum SupportedPsdStandards {
     upc2018FlushTanks = 'upc2018FlushTanks',
     upc2018Flushometer = 'upc2018Flushometer',
     bs806 = 'bs806',
+    bs8558 = 'bs8558',
 
     din1988300Residential = "din1988300Residential",
     din1988300Hospital = "din1988300Hospital",
@@ -93,6 +94,7 @@ export function isGermanStandard(psd: SupportedPsdStandards): psd is SupportedEq
         case SupportedPsdStandards.as35002018LoadingUnits:
         case SupportedPsdStandards.barriesBookLoadingUnits:
         case SupportedPsdStandards.bs806:
+        case SupportedPsdStandards.bs8558:
         case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.ipc2018FlushTanks:
@@ -118,6 +120,7 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
         case SupportedPsdStandards.barriesBookLoadingUnits:
         case SupportedPsdStandards.bs806:
         case SupportedPsdStandards.cibseGuideG:
+        case SupportedPsdStandards.bs8558:
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.ipc2018FlushTanks:
         case SupportedPsdStandards.upc2018Flushometer:
@@ -163,8 +166,9 @@ export const DISPLAY_PSD_METHODS: Choice[] = [
         name: "Barrie's Book Loading Units",
         key: SupportedPsdStandards.barriesBookLoadingUnits
     },
-    { name: "CIBSE Guide G", key: SupportedPsdStandards.cibseGuideG },
+    { name: "CIPHE", key: SupportedPsdStandards.cibseGuideG },
     { name: "BS 806", key: SupportedPsdStandards.bs806 },
+    { name: "BS 8558", key: SupportedPsdStandards.bs8558 },
 
     {
         name: "DIN 1988-300 - Residential",

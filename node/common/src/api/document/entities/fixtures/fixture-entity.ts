@@ -41,6 +41,7 @@ export default interface FixtureEntity extends DrawableEntity {
 
 
     probabilityOfUsagePCT: number | null;
+    loadingUnitVariant: string | null;
 }
 
 export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: SupportedLocales): PropertyField[] {
@@ -125,11 +126,13 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
         }
     ];
 
+    const psdStrategy = drawing
+        ? drawing.metadata.calculationParams.psdMethod
+        : SupportedPsdStandards.as35002018LoadingUnits;
+
     for (const suid of Object.keys(entity.roughIns)) {
         if (!isDrainage(suid)) {
-           const psdStrategy = drawing
-            ? drawing.metadata.calculationParams.psdMethod
-            : SupportedPsdStandards.as35002018LoadingUnits;
+           
         
             const system = drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
             res.push(
@@ -214,6 +217,24 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
         }
     }
 
+    if (psdStrategy === SupportedPsdStandards.cibseGuideG) {
+        res.splice(0, 0,  {
+            property: "loadingUnitVariant",
+            title: "Loading Unit Variant",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Choice,
+            params: {
+                choices: [
+                    { name: "Low", key: 'low' },
+                    { name: "Medium", key: 'medium' },
+                    { name: "High", key: 'high' }
+                ]
+            },
+            multiFieldId: null,
+        })
+    }
+
     return res;
 }
 
@@ -245,6 +266,10 @@ export function fillFixtureFields(
 
     const continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
 
+    if (result.loadingUnitVariant === null) {
+        result.loadingUnitVariant = drawing?.metadata.calculationParams.loadingUnitVariant || 'low';
+    }
+
     for (const systemUid of Object.keys(result.roughIns)) {
         if (!isDrainage(systemUid)) {
             const target = result.roughIns[systemUid];
@@ -264,12 +289,18 @@ export function fillFixtureFields(
             }
 
             if (isLUStandard(psdStrategy)) {
-                if (target.loadingUnits === null) {
-                    target.loadingUnits = parseCatalogNumberOrMin(
-                        defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]
-                    );
+                if (target.loadingUnits === null) {                    
+                    if (psdStrategy === SupportedPsdStandards.cibseGuideG) {
+                        target.loadingUnits = parseCatalogNumberOrMin(
+                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][result.loadingUnitVariant!]
+                        );
+                    } else {
+                        target.loadingUnits = parseCatalogNumberOrMin(
+                            defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][systemUid]
+                        );
+                    }
                 }
-            }
+            } 
 
             if (continuousFlowLS) {
                 if (target.continuousFlowLS == null) {

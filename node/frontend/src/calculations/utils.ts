@@ -461,6 +461,7 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: Support
         case SupportedPsdStandards.ipc2018Flushometer:
         case SupportedPsdStandards.cibseGuideG:
         case SupportedPsdStandards.bs806:
+        case SupportedPsdStandards.bs8558:
             switch (locale) {
                 case SupportedLocales.UK:
                 case SupportedLocales.AU:

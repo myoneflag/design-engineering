@@ -138,6 +138,7 @@ export interface FixtureSpec {
         [SupportedPsdStandards.ipc2018Flushometer]: LoadingUnit,
         [SupportedPsdStandards.upc2018FlushTanks]: LoadingUnit,
         [SupportedPsdStandards.upc2018Flushometer]: LoadingUnit,
+        [SupportedPsdStandards.bs8558]: LoadingUnit,
     };
     qLS: FlowRateSpec;
     continuousFlowLS?: ContinuousFlowRateSpec;

@@ -246,6 +246,7 @@ export interface FlowSystemParameters extends WithID {
 
 export interface CalculationParameters {
     psdMethod: SupportedPsdStandards;
+    loadingUnitVariant: string;
     dwellingMethod: SupportedDwellingStandards | null;
     drainageMethod: SupportedDrainageMethods;
     en12056FrequencyFactor: EN12056FrequencyFactor;
@@ -868,6 +869,7 @@ export const initialAustralianDrawing: DrawingState = {
         ],
         calculationParams: {
             psdMethod: SupportedPsdStandards.as35002018LoadingUnits,
+            loadingUnitVariant: 'low',
             dwellingMethod: null,
             drainageMethod: SupportedDrainageMethods.AS2018FixtureUnits,
             en12056FrequencyFactor: EN12056FrequencyFactor.CongestedUse,
