@@ -79,6 +79,7 @@ export default class Calculations extends Vue {
 
         result.push(
             ["pipeSizingMethod", "Pipe Sizing Method", "choice", PIPE_SIZING_METHODS],
+            ["combineLUs", "Combine Hot/Warm and Cold Water Units Together?", "yesno"],
             ["componentPressureLossMethod", "Pressure Loss Method", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
         );
 

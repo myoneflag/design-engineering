@@ -2188,7 +2188,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "ceilingPipeHeightM": 3,
             "roomTemperatureC": 20,
             "windSpeedForHeatLossMS": 0,
-            "gravitationalAcceleration": 9.80665
+            "gravitationalAcceleration": 9.80665,
+            "combineLUs": false,
         },
         "availableFixtures": [
             "basin",

@@ -259,6 +259,7 @@ export interface CalculationParameters {
     roomTemperatureC: number;
     windSpeedForHeatLossMS: number;
     gravitationalAcceleration: number;
+    combineLUs: boolean;
 }
 
 export interface Rectangle {
@@ -543,8 +544,12 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             }];
             break;
         case SupportedLocales.UK:
-            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.bs806;
-            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.EN1205622000DischargeUnits
+            result.metadata.calculationParams = {
+                ...result.metadata.calculationParams,
+                psdMethod: SupportedPsdStandards.bs806,
+                drainageMethod: SupportedDrainageMethods.EN1205622000DischargeUnits,
+                combineLUs: true,
+            }
             // 0 index is cold water.
             result.metadata.flowSystems[0].temperature = 10;
             result.metadata.units.currency = {
@@ -572,8 +577,12 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 }
             };
 
-            result.metadata.calculationParams.psdMethod = SupportedPsdStandards.upc2018FlushTanks;
-            result.metadata.calculationParams.drainageMethod = SupportedDrainageMethods.UPC2018DrainageFixtureUnits;
+            result.metadata.calculationParams = {
+                ...result.metadata.calculationParams,
+                psdMethod: SupportedPsdStandards.upc2018FlushTanks,
+                drainageMethod: SupportedDrainageMethods.UPC2018DrainageFixtureUnits,
+                combineLUs: true,
+            }
 
             // hot water is 140 F
             result.metadata.flowSystems[1].temperature = 60;
@@ -881,7 +890,8 @@ export const initialAustralianDrawing: DrawingState = {
             ceilingPipeHeightM: 3.0,
             roomTemperatureC: 20,
             windSpeedForHeatLossMS: 0,
-            gravitationalAcceleration: 9.80665
+            gravitationalAcceleration: 9.80665,
+            combineLUs: false,
         },
         availableFixtures: ["basin", "bath", "shower", "kitchenSink", "wc", "washingMachine", "laundryTrough"],
         catalog: {
