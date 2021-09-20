@@ -1,6 +1,7 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import { Catalog, State } from "../types";
 import { EN12056FrequencyFactor } from "../../config";
+import {  ft2M, psi2KPA } from "../../../lib/measurements";
 
 export const usCatalog: Catalog = {
     fixtures: {
@@ -52,10 +53,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Ablution Trough",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -150,10 +151,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Lavatory Sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -260,10 +261,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Bath",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: {
@@ -345,10 +346,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Bedpan Sanitiser",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -417,10 +418,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Beverage Bay",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -515,10 +516,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Birthing Pool",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: {
@@ -599,10 +600,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Cleaners sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -671,10 +672,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Dishwasher",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(1.5).toString(),
             probabilityOfUsagePCT: "0.5",
             qLS: {
                 generic: {
@@ -735,10 +736,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Drinking Fountain",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(2.5).toString(),
             probabilityOfUsagePCT: "0.5",
             qLS: {
                 generic: {
@@ -804,10 +805,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Flushing Rim Sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -880,10 +881,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Hose Bibb",
-            outletAboveFloorM: "0.5",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "0",
             qLS: {
                 generic:{ default: { "cold-water": "0.3" } }
@@ -947,10 +948,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Kitchen Sink (Warm)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -1045,10 +1046,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Kitchen Sink (Hot)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -1143,11 +1144,11 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Laundry Sink (Warm)",
-            outletAboveFloorM: "1",
-            probabilityOfUsagePCT: "2",
+            outletAboveFloorM: ft2M(3).toString(),
+            probabilityOfUsagePCT: "2", 
             qLS: {
                 generic: {
                    default: {
@@ -1238,13 +1239,13 @@ export const usCatalog: Catalog = {
                 upc2018FlushTanks: {
                     "cold-water": "1.5",
                     "hot-water": "1.5",
-                },
+                }, 
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Laundry Sink (Hot)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -1339,10 +1340,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Shower",
-            outletAboveFloorM: "1.5",
+            outletAboveFloorM: ft2M(6.5).toString(),
             probabilityOfUsagePCT: "4.5",
             qLS: {
                 generic: {
@@ -1433,8 +1434,8 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Urinal",
             outletAboveFloorM: null,
             probabilityOfUsagePCT: "4.5",
@@ -1500,10 +1501,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Clothes Washer",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "5.5",
             qLS: {
                 generic: {
@@ -1564,10 +1565,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "WC",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(1.2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: { default: { "cold-water": "0.1" } }

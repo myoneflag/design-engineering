@@ -5,6 +5,7 @@ import {
     EN12056FrequencyFactor,
     InsulationJackets,
     InsulationMaterials,
+    isDrainage,
     PIPE_SIZING_METHODS,
     RingMainCalculationMethod,
     StandardFlowSystemUids,
@@ -20,6 +21,9 @@ import { SupportedLocales } from "../locale";
 import { CurrencySymbol } from "../locale/values";
 import {
     EnergyMeasurementSystem,
+    f2C,
+    ft2M,
+    in2MM,
     MeasurementSystem,
     PressureMeasurementSystem,
     VelocityMeasurementSystem,
@@ -96,7 +100,7 @@ export interface UnitsParameters {
     energyMeasurementSystem: EnergyMeasurementSystem;
     currency: {
         symbol: CurrencySymbol;
-        multiplierPct: 100;
+        multiplierPct: 100 | 75;
     };
 }
 
@@ -573,7 +577,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 volumeMeasurementSystem: VolumeMeasurementSystem.US,
                 currency: {
                     symbol: CurrencySymbol.DOLLARS,
-                    multiplierPct: 100,
+                    multiplierPct: 75,
                 }
             };
 
@@ -584,31 +588,64 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 combineLUs: true,
             }
 
-            // hot water is 140 F
-            result.metadata.flowSystems[1].temperature = 60;
-            result.metadata.flowSystems[1].insulationThicknessMM = 25.4;
+            const coldWater = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.ColdWater)!;
+            coldWater.temperature = f2C(70);
+            coldWater.networks.CONNECTIONS.velocityMS =
+                coldWater.networks.RISERS.velocityMS =
+                coldWater.networks.RETICULATIONS.velocityMS = ft2M(8);
 
-            // warm water
-            result.metadata.flowSystems[2].temperature = 48.888888888;
+            const hotWater = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.HotWater)!;
+            hotWater.temperature = f2C(140);
+            hotWater.insulationThicknessMM = in2MM(1);
+            hotWater.insulationMaterial=InsulationMaterials.mineralWool;
+            hotWater.returnMaxVelocityMS=ft2M(3);
+            hotWater.networks.RISERS.velocityMS =
+                hotWater.networks.RETICULATIONS.velocityMS =
+                hotWater.networks.CONNECTIONS.velocityMS = ft2M(5);
 
-            // cold water
-            result.metadata.flowSystems[0].temperature = 21.11111111;
+            const warmWater = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.WarmWater)!;
+            warmWater.temperature = f2C(120);
+            warmWater.networks.RISERS.velocityMS =
+                warmWater.networks.RETICULATIONS.velocityMS =
+                warmWater.networks.CONNECTIONS.velocityMS = ft2M(5);
 
-            // warm and hot velocity
-            result.metadata.flowSystems[1].networks.RISERS.velocityMS =
-                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS =
-                    result.metadata.flowSystems[2].networks.RISERS.velocityMS =
-                        result.metadata.flowSystems[2].networks.RETICULATIONS.velocityMS = 1.524;
+            const gas = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.Gas)!;
+            gas.networks.RISERS.velocityMS =
+                gas.networks.RETICULATIONS.velocityMS =
+                gas.networks.CONNECTIONS.velocityMS = ft2M(60);
+
+            const fireHydrant = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.FireHydrant)!;
+            fireHydrant.networks.RISERS.velocityMS =
+                fireHydrant.networks.RETICULATIONS.velocityMS =
+                fireHydrant.networks.CONNECTIONS.velocityMS = ft2M(10);
+            fireHydrant.temperature = f2C(70)
+
+            const fireHoseReel = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.FireHoseReel)!;
+            fireHoseReel.networks.RISERS.velocityMS =
+                fireHoseReel.networks.RETICULATIONS.velocityMS =
+                fireHoseReel.networks.CONNECTIONS.velocityMS = ft2M(8);
+            fireHoseReel.temperature = f2C(70)
+
+            const sewageAll = result.metadata.flowSystems.filter((item) => isDrainage(item.uid));
+            for (const sewage of sewageAll) {
+                sewage.temperature = f2C(70)
+            }
+
+            result.metadata.catalog.hotWaterPlant=[ { manufacturer: "generic", uid: "hotWaterPlant", selected: null,}]
+            result.metadata.catalog.mixingValves=[
+                { manufacturer: "caleffi", uid: "temperingValve", selected: null,},
+                { manufacturer: "caleffi", uid: "tmv", selected: null,}
+            ]
+
+            result.metadata.calculationParams.ceilingPipeHeightM = ft2M(9);
 
 
-            // cold water velocity
-            result.metadata.flowSystems[0].networks.RISERS.velocityMS =
-                result.metadata.flowSystems[1].networks.RETICULATIONS.velocityMS = 2.4384;
-
-            // all connections are the same.
-            result.metadata.flowSystems[0].networks.CONNECTIONS.velocityMS =
-                result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS =
-                    result.metadata.flowSystems[1].networks.CONNECTIONS.velocityMS = 2.7432;
+            for(const flowSystem of result.metadata.flowSystems){
+                // tslint:disable-next-line:forin
+                for ( const j in flowSystem.drainageProperties.maxUnventedLengthM ) {
+                    flowSystem.drainageProperties.maxUnventedLengthM[j] = ft2M(30);
+                }
+            }
 
             // default pipes manufacturers
             result.metadata.catalog.pipes[0].manufacturer = "atsmB88Cu"

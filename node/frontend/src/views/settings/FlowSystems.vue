@@ -224,7 +224,7 @@ export default class FlowSystems extends Vue {
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
                         {
-                            name: "Size (mm)",
+                            name: "Size",
                             key: "sizeMM",
                             units: Units.Millimeters,
                             type: "select",
@@ -247,7 +247,7 @@ export default class FlowSystems extends Vue {
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
                         {
-                            name: "Size (mm)",
+                            name: "Size",
                             key: "sizeMM",
                             units: Units.Millimeters,
                             type: "select",
@@ -275,7 +275,7 @@ export default class FlowSystems extends Vue {
                         { name: "Min Units", key: "minUnits", units: Units.None },
                         { name: "Max Units", key: "maxUnits", units: Units.None },
                         {
-                            name: "Size (mm)",
+                            name: "Size",
                             key: "sizeMM",
                             units: Units.Millimeters,
                             type: "select",
@@ -353,7 +353,7 @@ export default class FlowSystems extends Vue {
 
     get pipeSizes() {
         const pipeSizes: { [key: string]: Array<{ key: number, name: string }> } = {};
-
+        
         Object.entries(this.catalog.pipes).map(([key, pipeProp]) => {
             const manufacturer = this.document.drawing.metadata.catalog.pipes.find(pipe => pipe.uid === pipeProp.uid)?.manufacturer || 'generic';
             pipeSizes[key] = Object.keys(pipeProp.pipesBySize[manufacturer])
@@ -384,13 +384,11 @@ export default class FlowSystems extends Vue {
                 Units.PipeDiameterMM,
                 size.key,
             );
-            
             return { 
                 value: size.key, 
                 text: newMeasurement[1] + "" + newMeasurement[0],
             };
         };
-
         return {
             [this.connectionsMaterial]: this.pipeSizes[this.connectionsMaterial]
                 .map(selectOptionMapping),
