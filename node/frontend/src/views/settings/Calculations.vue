@@ -105,9 +105,25 @@ export default class Calculations extends Vue {
             ["drainageMethod", "Drainage Method", "choice", DRAINAGE_METHOD_CHOICES],
         );
 
-        if (this.document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+        if (this.reactiveData.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
             result.push(
-                ["en12056FrequencyFactor", "EN 12056-2:2000 Frequency factor", "choice", getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)],
+                [   
+                    "en12056FrequencyFactor",
+                    "EN 12056-2:2000 Frequency factor",
+                    "choice", 
+                    getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)
+                ],
+                [
+                    "drainageSystem", 
+                    "EN 12056-2:2000 System Method", 
+                    "choice",
+                    [
+                        { name: 'System 1', key: 'drainageSystem1', },
+                        { name: 'System 2', key: 'drainageSystem2', },
+                        { name: 'System 3', key: 'drainageSystem3', },
+                        { name: 'System 4', key: 'drainageSystem4', }
+                    ]
+                ],
             );
         }
 
@@ -182,6 +198,9 @@ export default class Calculations extends Vue {
     }
 
     save() {
+        if (this.reactiveData.drainageMethod !== SupportedDrainageMethods.EN1205622000DischargeUnits) {
+            setPropertyByString(this.reactiveData, 'drainageSystem', "drainageSystem1");
+        }
         if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG) {
             setPropertyByString(this.reactiveData, 'loadingUnitVariant', 'low');
         }

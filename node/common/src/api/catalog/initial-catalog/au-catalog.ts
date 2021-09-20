@@ -9,6 +9,12 @@ export const auCatalog: Catalog = {
             abbreviation: "AT",
             asnzFixtureUnits: "3",
             enDischargeUnits: "1",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -107,6 +113,12 @@ export const auCatalog: Catalog = {
             abbreviation: "B",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -217,6 +229,12 @@ export const auCatalog: Catalog = {
             abbreviation: "BT",
             asnzFixtureUnits: "4",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -302,6 +320,12 @@ export const auCatalog: Catalog = {
             abbreviation: "BPST",
             asnzFixtureUnits: "6",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -374,6 +398,12 @@ export const auCatalog: Catalog = {
             abbreviation: "BB",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -472,6 +502,12 @@ export const auCatalog: Catalog = {
             abbreviation: "BP",
             asnzFixtureUnits: "8",
             enDischargeUnits: "4",
+            enDrainageSystem: {
+                drainageSystem1: 1.3,
+                drainageSystem2: 1.3,
+                drainageSystem3: 1.3,
+                drainageSystem4: 1.3,
+            },
             upcFixtureUnits: "8",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -556,6 +592,12 @@ export const auCatalog: Catalog = {
             abbreviation: "CS",
             asnzFixtureUnits: "1",
             enDischargeUnits: "1",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -628,6 +670,12 @@ export const auCatalog: Catalog = {
             abbreviation: "D",
             asnzFixtureUnits: "3",
             enDischargeUnits: "1.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 0.2,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -701,6 +749,12 @@ export const auCatalog: Catalog = {
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
             upcFixtureUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1"
@@ -761,6 +815,12 @@ export const auCatalog: Catalog = {
             abbreviation: "FRS",
             asnzFixtureUnits: "6",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -845,6 +905,12 @@ export const auCatalog: Catalog = {
             abbreviation: "H",
             asnzFixtureUnits: "0",
             enDischargeUnits: "0.0",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "0",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -904,6 +970,12 @@ export const auCatalog: Catalog = {
             abbreviation: "KS",
             asnzFixtureUnits: "3",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1002,6 +1074,12 @@ export const auCatalog: Catalog = {
             abbreviation: "KS",
             asnzFixtureUnits: "3",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1100,6 +1178,12 @@ export const auCatalog: Catalog = {
             abbreviation: "T",
             asnzFixtureUnits: "5",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1198,6 +1282,12 @@ export const auCatalog: Catalog = {
             abbreviation: "T",
             asnzFixtureUnits: "5",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1296,6 +1386,12 @@ export const auCatalog: Catalog = {
             abbreviation: "SHR",
             asnzFixtureUnits: "2",
             enDischargeUnits: "0.6",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.5,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1398,6 +1494,12 @@ export const auCatalog: Catalog = {
             abbreviation: "U",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1457,6 +1559,12 @@ export const auCatalog: Catalog = {
             abbreviation: "WM",
             asnzFixtureUnits: "5",
             enDischargeUnits: "1.5",
+            enDrainageSystem: {
+                drainageSystem1: 1.5,
+                drainageSystem2: 1.2,
+                drainageSystem3: 1.2,
+                drainageSystem4: 1,
+            },
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1529,6 +1637,12 @@ export const auCatalog: Catalog = {
             abbreviation: "WC",
             asnzFixtureUnits: "4",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 2,
+                drainageSystem2: 1.8,
+                drainageSystem3: 1.5,
+                drainageSystem4: 2,
+            },
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {

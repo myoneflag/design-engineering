@@ -84,6 +84,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                     outletAboveFloorM: { order: 13, name: "Outlet Above Floor", units: Units.Meters },
                     warmTempC: { order: 14, name: "Warm Temperature", units: Units.Celsius },
                     priceTableName: null,
+                    enDrainageSystem: null,
                 }
             }
         },
