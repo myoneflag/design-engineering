@@ -489,7 +489,8 @@ export default class Home extends Vue {
     }
 
     applyTabFilter(doc:Document){
-        return  (this.projectFilter === ProjectTabFilters.MY_PROJECTS && doc.createdBy.username === this.profile.username) || 
+        return  this.profile && 
+                (this.projectFilter === ProjectTabFilters.MY_PROJECTS && doc.createdBy.username === this.profile.username) || 
 
                 (this.projectFilter === ProjectTabFilters.ORGANIZATION_PROJECTS &&
                 this.profile!.organization!.id ==doc!.organization!.id) || 
@@ -500,6 +501,7 @@ export default class Home extends Vue {
     applySearchCondition(doc:Document) {
         return  (this.containsText(doc.metadata.title,this.searchCondition) ||
                 this.containsText(doc.tags,this.searchCondition) ||
+                doc.id.toString() === this.searchCondition ||
                 this.searchCondition === "")
     }
 
