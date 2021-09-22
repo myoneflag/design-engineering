@@ -229,7 +229,6 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         for (const systemUidIter of Object.keys(this.entity.roughIns)) {
             const flowSystem = this.document.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
             const roughIn = this.entity.roughIns[systemUidIter];
-            console.log({system: flowSystem?.uid })
             if (flowSystem &&
                 !this.getConnectedPipe(roughIn.uid, roughIn.allowAllSystems ? null : flowSystem.uid)
                 && this.isFlowSystemActive(flowSystem)) {

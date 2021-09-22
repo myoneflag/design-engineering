@@ -394,16 +394,12 @@ function countAllFixtures(sourcePipe:Pipe,abbreviation:string):number{
     }).length
 }
 function countConnectedWCs(sourcePipe:Pipe,maxUnventedWCs:number):number{
-    console.log({pipe:sourcePipe.entity.uid})
     if(sourcePipe.connectedWCs)
         return sourcePipe.connectedWCs;
     countedFixtures=[];
     calculatedPipes=[];
     if(!sourcePipe.getConnectedFlowSource())
         return 0;
-    console.log({flowSource:sourcePipe.getConnectedFlowSource()})
-
-    console.log(`counting ${sourcePipe.entity.uid}...`)
     findConnectedWCs(sourcePipe,maxUnventedWCs);
     sourcePipe.connectedWCs= countedFixtures.filter((value, index, self)=>{ return self.indexOf(value) === index}).length
     return sourcePipe.connectedWCs;
