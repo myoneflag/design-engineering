@@ -1,5 +1,4 @@
 import { APIResult } from "../../../common/src/api/document/types";
-import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
 import { Organization } from "../../../common/src/models/Organization";
 

@@ -159,12 +159,12 @@ export class RingMainCalculator {
         }
 
         // now divide equally among us.
-        const psdCountTotal = countPsdProfile(totalPsd);
+        const psdCountTotal = countPsdProfile(totalPsd, this.engine.combineLUs);
         const totalFRLS = lookupFlowRate(psdCountTotal, this.engine.doc, this.engine.catalog, systemUid, false)!;
 
         const sinkFlowsLS = new Map<string, number>();
         for (const [suid, profile] of sinks) {
-            const pcount = countPsdProfile(profile);
+            const pcount = countPsdProfile(profile, this.engine.combineLUs);
             if (totalFRLS.fromDwellings) {
                 sinkFlowsLS.set(suid.connectable, (totalFRLS.flowRateLS * pcount.dwellings) / psdCountTotal.dwellings);
             } else {
@@ -343,7 +343,7 @@ export class RingMainCalculator {
                     mergePsdProfile(psd, sinksByConnectable.get(ring[ix].to.connectable)!);
                 }
 
-                const psdCount = countPsdProfile(psd);
+                const psdCount = countPsdProfile(psd, this.engine.combineLUs);
                 const fr = lookupFlowRate(psdCount, this.engine.doc, this.engine.catalog, systemUid)!;
                 leftToRight.addFlow(ring[ix].value.uid, ring[ix].from.connectable, fr.flowRateLS);
                 aggregatePsd.set(ring[ix].value.uid, psdCount);
@@ -360,7 +360,7 @@ export class RingMainCalculator {
                     mergePsdProfile(psd, sinksByConnectable.get(ring[ix].from.connectable)!);
                 }
 
-                const psdCount = countPsdProfile(psd);
+                const psdCount = countPsdProfile(psd, this.engine.combineLUs);
                 const fr = lookupFlowRate(psdCount, this.engine.doc, this.engine.catalog, systemUid)!;
                 rightToLeft.addFlow(ring[ix].value.uid, ring[ix].to.connectable, fr.flowRateLS);
                 if (aggregatePsd.has(ring[ix].value.uid)) {

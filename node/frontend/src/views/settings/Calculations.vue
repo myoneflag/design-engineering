@@ -1,5 +1,3 @@
-import {SupportedDrainageMethods} from "../../../../common/src/api/config";
-import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandards} from "../../config";
 <template>
     <SettingsFieldBuilder
         ref="fields"
@@ -30,8 +28,8 @@ import {SupportedPsdStandards} from "../../config"; import {SupportedPsdStandard
         SupportedPsdStandards
     } from "../../../../common/src/api/config";
     import {Units} from "../../../../common/src/lib/measurements";
-    import CatalogState from "../../store/catalog/types";
     import {Catalog} from "../../../../common/src/api/catalog/types";
+    import { setPropertyByString } from "../../lib/utils";
 
     @Component({
     components: { SettingsFieldBuilder },
@@ -57,6 +55,19 @@ export default class Calculations extends Vue {
             ]
         ]);
 
+        if (this.calculationParams.psdMethod === SupportedPsdStandards.cibseGuideG) {
+            result.push([
+                'loadingUnitVariant',
+                'Loading Unit Variant',
+                'choice',
+                [
+                    {name: 'Low', key: 'low'},
+                    {name: 'Medium', key: 'medium'},
+                    {name: 'High', key: 'high'},
+                ]
+            ]);
+        }
+
         if (this.calculationParams.dwellingMethod !== null) {
             result.push([
                 "psdMethod",
@@ -68,6 +79,7 @@ export default class Calculations extends Vue {
 
         result.push(
             ["pipeSizingMethod", "Pipe Sizing Method", "choice", PIPE_SIZING_METHODS],
+            ["combineLUs", "Combine Hot/Warm and Cold Water Units Together?", "yesno"],
             ["componentPressureLossMethod", "Pressure Loss Method", "choice", COMPONENT_PRESSURE_LOSS_METHODS]
         );
 
@@ -93,9 +105,25 @@ export default class Calculations extends Vue {
             ["drainageMethod", "Drainage Method", "choice", DRAINAGE_METHOD_CHOICES],
         );
 
-        if (this.document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+        if (this.reactiveData.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
             result.push(
-                ["en12056FrequencyFactor", "EN 12056-2:2000 Frequency factor", "choice", getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)],
+                [   
+                    "en12056FrequencyFactor",
+                    "EN 12056-2:2000 Frequency factor",
+                    "choice", 
+                    getEN_12506_FREQUENCY_FACTOR_CHOICES(this.catalog)
+                ],
+                [
+                    "drainageSystem", 
+                    "EN 12056-2:2000 System Method", 
+                    "choice",
+                    [
+                        { name: 'System 1', key: 'drainageSystem1', },
+                        { name: 'System 2', key: 'drainageSystem2', },
+                        { name: 'System 3', key: 'drainageSystem3', },
+                        { name: 'System 4', key: 'drainageSystem4', }
+                    ]
+                ],
             );
         }
 
@@ -170,6 +198,13 @@ export default class Calculations extends Vue {
     }
 
     save() {
+        if (this.reactiveData.drainageMethod !== SupportedDrainageMethods.EN1205622000DischargeUnits) {
+            setPropertyByString(this.reactiveData, 'drainageSystem', "drainageSystem1");
+        }
+        if (this.reactiveData.psdMethod !== SupportedPsdStandards.cibseGuideG) {
+            setPropertyByString(this.reactiveData, 'loadingUnitVariant', 'low');
+        }
+
         this.$store.dispatch("document/commit", {skipUndo: true}).then(() => {
             this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });
         });

@@ -124,6 +124,10 @@
       "H2XEmailAddress": {
         "Description": "Email Address to send emails from",
         "Type": "String"
+      }, 
+      "WebHookZapierCreateHubspotContact": {
+        "Description": "Environment variable", 
+        "Type": "String"
       }
     },
     "Conditions" : {
@@ -395,6 +399,11 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "EMAIL_ADDRESS",
                 "Value": { "Ref": "H2XEmailAddress" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT",
+                "Value": { "Ref": "WebHookZapierCreateHubspotContact" }
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.4.4 running Docker"

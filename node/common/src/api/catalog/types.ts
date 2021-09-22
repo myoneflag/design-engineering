@@ -138,6 +138,7 @@ export interface FixtureSpec {
         [SupportedPsdStandards.ipc2018Flushometer]: LoadingUnit,
         [SupportedPsdStandards.upc2018FlushTanks]: LoadingUnit,
         [SupportedPsdStandards.upc2018Flushometer]: LoadingUnit,
+        [SupportedPsdStandards.bs8558]: LoadingUnit,
     };
     qLS: FlowRateSpec;
     continuousFlowLS?: ContinuousFlowRateSpec;
@@ -158,7 +159,13 @@ export interface FixtureSpec {
 
     warmTempC: string | null;
 
-    manufacturer: FixtureManufacturer[]
+    manufacturer: FixtureManufacturer[],
+    enDrainageSystem: {
+        drainageSystem1: number,
+        drainageSystem2: number,
+        drainageSystem3: number,
+        drainageSystem4: number,
+    }
 }
 
 export type FixtureManufacturer = Manufacturer<keyof FixturesTable>;

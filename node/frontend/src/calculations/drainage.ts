@@ -11,7 +11,7 @@ import {parseCatalogNumberExact, upperBoundTable} from "../../../common/src/lib/
 import UnionFind from "./union-find";
 import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {Edge} from "./graph";
-import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
+import PipeCalculation, {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
 import Fixture from "src/htmlcanvas/objects/fixture";
 
@@ -23,6 +23,10 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
 
     if (!system) {
         return;
+    }
+
+    if (psdUnits !== null && context.doc.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+        psdUnits.drainageUnits = resolveEN1205622000DrainageUnits(context, calc)
     }
 
     switch (entity.network) {
@@ -1029,4 +1033,10 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
             sizeDrainagePipe(pipe, context, highestLU);
         }
     }
+}
+
+function resolveEN1205622000DrainageUnits(context: CalculationContext, pipeCalc: PipeCalculation) {
+    const frequencyFactor = context.catalog.en12056FrequencyFactor[context.doc.drawing.metadata.calculationParams.en12056FrequencyFactor];
+
+    return frequencyFactor * Math.sqrt(pipeCalc.psdUnits!.drainageUnits);
 }

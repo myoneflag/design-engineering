@@ -105,6 +105,7 @@ services:
       - EMAIL_ADDRESS=test@h2xtesting.com
       - DB_HOSTNAME=db
       - MQ_URL=ws://mq:61614
+      - WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT=https://hooks.zapier.com/hooks/catch/10073114/b69cx4e
     volumes:
       # anonymous volumes to prevent container folders being overwritten by host folders
       - /usr/src/app/node_modules

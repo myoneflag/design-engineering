@@ -1,5 +1,19 @@
 # Database development
 
+## Creating database migrations
+
+When updating database schema, one approach is to perform the changes locally, generate a migration from the changes and commmit the migration file.
+
+1. Install pgAdmin or another database UI management tool
+2. Create schema changes
+3. Run migration generation command
+```
+cd node/backend
+npm run migration:generate --name=TheNameOfYourMigration
+```
+4. Inspect the generated file in `node/backend/src/migrations` and remove any extraneous unintended changes.  
+   Make sure the `down` command contains the opposite of the action.
+
 ## Useful queries
 
 ### General statistics queries

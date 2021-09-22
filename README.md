@@ -4,6 +4,7 @@
 First, check out the [documentation](./docs/README.md).
 
 - [H2X WEB APP](#h2x-web-app)
+  - [Documentation](#documentation)
   - [Project structure](#project-structure)
     - [`node`](#node)
     - [`docker`](#docker)
@@ -17,6 +18,8 @@ First, check out the [documentation](./docs/README.md).
   - [Start the app](#start-the-app)
   - [Configure local dev to use AWS resources](#configure-local-dev-to-use-aws-resources)
   - [AWS Development](#aws-development)
+    - [Develop AWS Cloudformation stack](#develop-aws-cloudformation-stack)
+    - [Develop local server features using AWS](#develop-local-server-features-using-aws)
     - [Production build](#production-build)
 - [Deployment scripts](#deployment-scripts)
 
@@ -153,22 +156,65 @@ For that, a local configuration and a small AWS deployment needs to be performed
 
 ## AWS Development
 
-This refers to deveopment on the cloudformation stack for AWS resources being deployed.
-
-Issue AK, SK for your IAM user. Create local AWS profile using:
+1. Go to AWS IAM (or ask an admin), and create an AWS Access Key and Secret Key.
+2. Create a local AWS profile that uses the AK, SK created
 ```
-aws configure --profile awsprofile
+aws configure --profile awsprofilename
+```
+e.g. 
+```
+aws configure --profile calin-h2x-testing
+```
+
+### Develop AWS Cloudformation stack
+This refers to deveopment on the cloudformation stack and scripts for AWS resources being deployed.
+
+3. Specify the name of the profile as the `AWS_PROFILE` env var before any commands you run
+```
+export AWS_PROFILE=awsprofilename
 ```
 
 Main files: `template.json` and `parameters.json` in `cloudformation` folder.
-Envvironment specific configs for deployment - `config` folder.
+Environment specific configs for deployment - `config` folder.
 
 Validate changes:
 ```
 cd cloudformation
 export env=test
-export profile=awsprofile
+export AWS_PROFILE=awsprofilename
 npm run validate
+```
+
+### Develop local server features using AWS
+
+Using the AWS profile defined above, specify it as an environment variable before starting up the server environment so that the H2X backend uses the AWS credentials in the profile.
+
+1. `dev` and `minimal` docker development
+```
+export AWS_PROFILE=awsprofilename
+cd docker
+npm run dev
+npm run dev:minimal
+```
+
+2. `local` development
+Define `node/backend/.env` file containing the following parameters:
+```
+AWS_PROFILE=awsprofilename
+# for email
+SES_EMAIL_REGION=us-west-1
+EMAIL_ADDRESS=test@h2xtesting.com
+# for background uploads
+PDF_BUCKET=h2x-s3-pdf-local
+PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
+# for Zapier
+WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT=https://hooks.zapier.com/hooks/catch/10073114/b69cx4e
+```
+
+Then run
+```
+cd node/backend
+npm run dev
 ```
 
 ### Production build

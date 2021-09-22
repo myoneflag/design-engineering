@@ -1,6 +1,7 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import { Catalog, State } from "../types";
 import { EN12056FrequencyFactor } from "../../config";
+import {  ft2M, psi2KPA } from "../../../lib/measurements";
 
 export const usCatalog: Catalog = {
     fixtures: {
@@ -9,6 +10,12 @@ export const usCatalog: Catalog = {
             abbreviation: "AT",
             asnzFixtureUnits: "3",
             enDischargeUnits: "1",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -23,7 +30,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -45,10 +59,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Ablution Trough",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -100,6 +114,12 @@ export const usCatalog: Catalog = {
             abbreviation: "LS",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "1",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -114,7 +134,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "1",
                     "warm-water": "1",
                 },
+                bs8558: {
+                    "cold-water": "1.5",
+                    "warm-water": "1.5",
+                },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "4",
                     "cold-water": "2",
                     "warm-water": "2",
                 },
@@ -136,10 +163,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Lavatory Sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -203,6 +230,12 @@ export const usCatalog: Catalog = {
             abbreviation: "BT",
             asnzFixtureUnits: "4",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -217,7 +250,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "4",
                     "warm-water": "4",
                 },
+                bs8558: {
+                    "cold-water": "10",
+                    "warm-water": "10",
+                },
                 cibseGuideG: {
+                    "low": "4",
+                    "medium": "8",
+                    "high": "16",
                     "cold-water": "10",
                     "warm-water": "10",
                 },
@@ -239,10 +279,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Bath",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: {
@@ -281,6 +321,12 @@ export const usCatalog: Catalog = {
             abbreviation: "BPST",
             asnzFixtureUnits: "6",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -295,7 +341,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "5",
+                    "warm-water": "5",
+                },
                 cibseGuideG: {
+                    "low": "5",
+                    "medium": "5",
+                    "high": "5",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -317,10 +370,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Bedpan Sanitiser",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -346,6 +399,12 @@ export const usCatalog: Catalog = {
             abbreviation: "BB",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -360,7 +419,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -382,10 +448,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Beverage Bay",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -437,6 +503,12 @@ export const usCatalog: Catalog = {
             abbreviation: "BP",
             asnzFixtureUnits: "8",
             enDischargeUnits: "4",
+            enDrainageSystem: {
+                drainageSystem1: 1.3,
+                drainageSystem2: 1.3,
+                drainageSystem3: 1.3,
+                drainageSystem4: 1.3,
+            },
             upcFixtureUnits: "8",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -451,7 +523,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "8",
                     "warm-water": "8",
                 },
+                bs8558: {
+                    "cold-water": "22",
+                    "warm-water": "22",
+                },
                 cibseGuideG: {
+                    "low": "16",
+                    "medium": "16",
+                    "high": "16",
                     "cold-water": "22",
                     "warm-water": "22",
                 },
@@ -473,10 +552,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Birthing Pool",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: {
@@ -514,6 +593,12 @@ export const usCatalog: Catalog = {
             abbreviation: "CS",
             asnzFixtureUnits: "1",
             enDischargeUnits: "1",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -528,7 +613,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -550,10 +642,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Cleaners sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -579,6 +671,12 @@ export const usCatalog: Catalog = {
             abbreviation: "D",
             asnzFixtureUnits: "3",
             enDischargeUnits: "1.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 0.2,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -593,7 +691,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "2",
+                    "high": "2",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -615,10 +720,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Dishwasher",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(1.5).toString(),
             probabilityOfUsagePCT: "0.5",
             qLS: {
                 generic: {
@@ -645,6 +750,12 @@ export const usCatalog: Catalog = {
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
             upcFixtureUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             loadingUnits: {
                 as35002018LoadingUnits: {
                     "cold-water": "1"
@@ -655,7 +766,14 @@ export const usCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                 },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "1",
+                    "high": "1",
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -672,10 +790,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Drinking Fountain",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(2.5).toString(),
             probabilityOfUsagePCT: "0.5",
             qLS: {
                 generic: {
@@ -698,6 +816,12 @@ export const usCatalog: Catalog = {
             abbreviation: "FRS",
             asnzFixtureUnits: "6",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "6",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -712,7 +836,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "5",
+                    "warm-water": "5",
+                },
                 cibseGuideG: {
+                    "low": "5",
+                    "medium": "5",
+                    "high": "5",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -734,10 +865,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Flushing Rim Sink",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -775,6 +906,12 @@ export const usCatalog: Catalog = {
             abbreviation: "H",
             asnzFixtureUnits: "0",
             enDischargeUnits: "0.0",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "0",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -786,7 +923,14 @@ export const usCatalog: Catalog = {
                 bs806: {
                     "cold-water": "5",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "3",
                     "cold-water": "5",
                 },
                 ipc2018Flushometer: {
@@ -803,10 +947,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Hose Bibb",
-            outletAboveFloorM: "0.5",
+            outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "0",
             qLS: {
                 generic:{ default: { "cold-water": "0.3" } }
@@ -827,6 +971,12 @@ export const usCatalog: Catalog = {
             abbreviation: "KS",
             asnzFixtureUnits: "3",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -841,7 +991,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "33",
+                    "warm-water": "33",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -863,10 +1020,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Kitchen Sink (Warm)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -918,6 +1075,12 @@ export const usCatalog: Catalog = {
             abbreviation: "KS",
             asnzFixtureUnits: "3",
             enDischargeUnits: "0.8",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -932,7 +1095,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -954,10 +1124,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Kitchen Sink (Hot)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -1009,6 +1179,12 @@ export const usCatalog: Catalog = {
             abbreviation: "S",
             asnzFixtureUnits: "5",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1023,7 +1199,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -1045,11 +1228,11 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Laundry Sink (Warm)",
-            outletAboveFloorM: "1",
-            probabilityOfUsagePCT: "2",
+            outletAboveFloorM: ft2M(3).toString(),
+            probabilityOfUsagePCT: "2", 
             qLS: {
                 generic: {
                    default: {
@@ -1100,6 +1283,12 @@ export const usCatalog: Catalog = {
             abbreviation: "S",
             asnzFixtureUnits: "5",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.6,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1114,7 +1303,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "5",
+                    "high": "10",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -1133,13 +1329,13 @@ export const usCatalog: Catalog = {
                 upc2018FlushTanks: {
                     "cold-water": "1.5",
                     "hot-water": "1.5",
-                },
+                }, 
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Laundry Sink (Hot)",
-            outletAboveFloorM: "1",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
@@ -1191,6 +1387,12 @@ export const usCatalog: Catalog = {
             abbreviation: "SHR",
             asnzFixtureUnits: "2",
             enDischargeUnits: "0.6",
+            enDrainageSystem: {
+                drainageSystem1: 0.8,
+                drainageSystem2: 0.5,
+                drainageSystem3: 1.3,
+                drainageSystem4: 0.5,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1205,7 +1407,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "warm-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "3",
+                    "high": "6",
                     "cold-water": "3",
                     "warm-water": "3",
                 },
@@ -1227,10 +1436,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "warm-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Shower",
-            outletAboveFloorM: "1.5",
+            outletAboveFloorM: ft2M(6.5).toString(),
             probabilityOfUsagePCT: "4.5",
             qLS: {
                 generic: {
@@ -1286,6 +1495,12 @@ export const usCatalog: Catalog = {
             abbreviation: "U",
             asnzFixtureUnits: "1",
             enDischargeUnits: "0.5",
+            enDrainageSystem: {
+                drainageSystem1: 0.5,
+                drainageSystem2: 0.3,
+                drainageSystem3: 0.3,
+                drainageSystem4: 0.3,
+            },
             upcFixtureUnits: "2",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1297,7 +1512,14 @@ export const usCatalog: Catalog = {
                 bs806: {
                     "cold-water": "3",
                 },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "1",
+                    "high": "1",
                     "cold-water": "1",
                 },
                 ipc2018Flushometer: {
@@ -1314,8 +1536,8 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Urinal",
             outletAboveFloorM: null,
             probabilityOfUsagePCT: "4.5",
@@ -1338,6 +1560,12 @@ export const usCatalog: Catalog = {
             abbreviation: "CW",
             asnzFixtureUnits: "5",
             enDischargeUnits: "2",
+            enDrainageSystem: {
+                drainageSystem1: 1.5,
+                drainageSystem2: 1.2,
+                drainageSystem3: 1.2,
+                drainageSystem4: 1,
+            },
             upcFixtureUnits: "3",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1352,7 +1580,14 @@ export const usCatalog: Catalog = {
                     "cold-water": "2",
                     "hot-water": "2",
                 },
+                bs8558: {
+                    "cold-water": "3",
+                    "warm-water": "3",
+                },
                 cibseGuideG: {
+                    "low": "2",
+                    "medium": "2",
+                    "high": "2",
                     "cold-water": "3",
                     "hot-water": "3",
                 },
@@ -1374,10 +1609,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "Clothes Washer",
-            outletAboveFloorM: "0.8",
+            outletAboveFloorM: ft2M(3).toString(),
             probabilityOfUsagePCT: "5.5",
             qLS: {
                 generic: {
@@ -1403,6 +1638,12 @@ export const usCatalog: Catalog = {
             abbreviation: "WC",
             asnzFixtureUnits: "4",
             enDischargeUnits: "1.8",
+            enDrainageSystem: {
+                drainageSystem1: 2,
+                drainageSystem2: 1.8,
+                drainageSystem3: 1.5,
+                drainageSystem4: 2,
+            },
             upcFixtureUnits: "4",
             loadingUnits: {
                 as35002018LoadingUnits: {
@@ -1414,7 +1655,14 @@ export const usCatalog: Catalog = {
                 bs806: {
                     "cold-water": "1",
                 },
+                bs8558: {
+                    "cold-water": "2",
+                    "warm-water": "2",
+                },
                 cibseGuideG: {
+                    "low": "1",
+                    "medium": "2",
+                    "high": "5",
                     "cold-water": "2",
                 },
                 ipc2018Flushometer: {
@@ -1431,10 +1679,10 @@ export const usCatalog: Catalog = {
                 },
             },
             roughIns: ["sewer-drainage", "cold-water"],
-            maxInletPressureKPA: "551.5805832",
-            minInletPressureKPA: "103.42135935",
+            maxInletPressureKPA: psi2KPA(80).toString(),
+            minInletPressureKPA: psi2KPA(15).toString(),
             name: "WC",
-            outletAboveFloorM: "0.75",
+            outletAboveFloorM: ft2M(1.2).toString(),
             probabilityOfUsagePCT: "1",
             qLS: {
                 generic: { default: { "cold-water": "0.1" } }
@@ -4386,9 +4634,42 @@ export const usCatalog: Catalog = {
                 5000: "37.4124886",
             }
         },
+        bs8558: {
+            type: PSDStandardType.LU_LOOKUP_TABLE,
+            name: "BS 8558",
+            table: {
+                0: "0.00",
+                1: "0.09",
+                3: "0.15",
+                5: "0.2",
+                10: "0.3",
+                15: "0.38",
+                20: "0.44",
+                30: "0.56",
+                40: "0.67",
+                50: "0.77",
+                80: "1.06",
+                100: "1.25",
+                150: "1.68",
+                200: "2.11",
+                250: "2.44",
+                300: "2.8",
+                400: "3.55",
+                500: "4.1",
+                700: "5.25",
+                1000: "6.76",
+                2000: "11.3",
+                3000: "15.1",
+                4000: "18.5",
+                5000: "22.5",
+                6000: "25.2",
+                7000: "28",
+                7750: "30",
+            }
+        },
         cibseGuideG: {
             type: PSDStandardType.LU_LOOKUP_TABLE,
-            name: "BS 6700",
+            name: "CIPHE",
             table: {
                 0: "0.00", // added manually to force interpolation
                 10: "0.3",
@@ -4669,7 +4950,10 @@ export const usCatalog: Catalog = {
         }
     },
     en12056FrequencyFactor: {
-        [EN12056FrequencyFactor.CongestedUse]: 1.0
+        [EN12056FrequencyFactor.IntermittentUse]: 0.5,
+        [EN12056FrequencyFactor.FrequentUse]: 0.7,
+        [EN12056FrequencyFactor.CongestedUse]: 1.0,
+        [EN12056FrequencyFactor.SpecialUse]: 1.2,
     },
     gasDiversification: {
         1: 1,

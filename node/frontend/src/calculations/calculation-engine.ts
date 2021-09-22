@@ -179,6 +179,7 @@ export default class CalculationEngine implements CalculationContext {
     childBridges = new Map<string, Array<Edge<FlowNode, FlowEdge>>>();
 
     priceTable: PriceTable;
+    combineLUs: boolean;
 
     networkObjects(): BaseBackedObject[] {
         return this.networkObjectUids.map((u) => this.globalStore.get(u)!);
@@ -233,6 +234,7 @@ export default class CalculationEngine implements CalculationContext {
         this.drawing = this.doc.drawing;
         this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
         this.nodes = nodes;
+        this.combineLUs = doc.drawing.metadata.calculationParams.combineLUs;
 
         const success = this.preValidate();
 
@@ -2299,7 +2301,7 @@ export default class CalculationEngine implements CalculationContext {
                 NoFlowAvailableReason.NO_SOURCE
             );
         } else {
-            const exclusivePsdU = countPsdProfile(exclusiveProfile);
+            const exclusivePsdU = countPsdProfile(exclusiveProfile, this.combineLUs);
 
             const wet = this.firstWet.get(stringify(flowEdge))!;
             const dryUids = endpointUids.filter((ep) => ep !== wet.connectable);
@@ -2313,7 +2315,7 @@ export default class CalculationEngine implements CalculationContext {
                 [],
                 [stringify(flowEdge)]
             );
-            const residualPsdU = countPsdProfile(residualPsdProfile);
+            const residualPsdU = countPsdProfile(residualPsdProfile, this.combineLUs);
 
             if (!isZeroWaterPsdCounts(exclusivePsdU)) {
                 const cmp = compareWaterPsdCounts(residualPsdU, exclusivePsdU);

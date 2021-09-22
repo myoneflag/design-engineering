@@ -18,7 +18,9 @@ import Component from "vue-class-component";
         item: String,
         startWith: String,
         classList: String,
-        selectedTags: []
+        selectedTags: { 
+            type: Array
+        }
     }
 })
 export default class ButtonTag extends Vue {

@@ -17,5 +17,7 @@ export default {
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
   MQ_PASSWORD: process.env.MQ_PASSWORD || 'admin',
 
-  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'test@h2xtesting.com'
+  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'test@h2xtesting.com', 
+
+  WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT: process.env.WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT
 };

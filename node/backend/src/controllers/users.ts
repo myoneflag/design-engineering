@@ -14,8 +14,8 @@ import VerifyEmail from '../email/VerifyEmail';
 import { PasswordResetEmailType, ForgotPasswordEmail, SetNewPasswordEmail } from '../email/ForgotPassword';
 import H2xNewMemberEmail from '../email/H2xNewMemberEmail';
 import random from '../helpers/random';
+import Zapier from "../services/Zapier";
 import uuid from "uuid";
-
 const EMAIL_REGEX = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+[^<>()\.,;:\s@\"]{2,})$/;
 
 export class UserController {
@@ -92,6 +92,8 @@ export class UserController {
             verifyEmail: !sendPasswordEmail
         });
 
+        await Zapier.callCreateHubSpotContact({ firstName: user.name, lastName: user.lastname, email: user.email})
+
         if (sendPasswordEmail) {
             await resetUserPassword(user, req, SetNewPasswordEmail);
         }
@@ -158,7 +160,9 @@ export class UserController {
             lastname: user.lastname,
             username: user.username,
             email: user.email,
-        }));    
+        }));
+
+        await Zapier.callCreateHubSpotContact({ firstName: user.name, lastName: user.lastname, email: user.email})
         
         return res.status(200).send({
             success: true,
