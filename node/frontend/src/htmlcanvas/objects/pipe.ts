@@ -413,11 +413,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
         };
     }
-    getConnectedPipes(exclude:string): Pipe[] {
-        let pipes:Pipe[]=[]
-        let connectedPipes=this.getConnectedPipesByUid(this.entity.uid.substr(0,36),this.entity.systemUid);
-        pipes.push.apply(pipes,connectedPipes.filter((item:Pipe)=>{return exclude.indexOf(item.entity.uid)===-1})) ;
-        let fittings= this.getConnectedFittings();
+    getConnectedPipes(exclude: string): Pipe[] {
+        const pipes: Pipe[] = [];
+        const connectedPipes = this.getConnectedPipesByUid(this.entity.uid, this.entity.systemUid);
+        pipes.push.apply(pipes, connectedPipes.filter( (item: Pipe ) => { return exclude.indexOf(item.entity.uid)===-1 }));
+        let fittings = this.getConnectedFittingsByUid(this.entity.uid, this.entity.systemUid);
         fittings.map((fit:Fitting)=>{
              let fittingPipes= this.getConnectedPipesByUid(fit.entity.uid.substr(0,36),this.entity.systemUid)
                 pipes.push.apply(pipes,
@@ -426,68 +426,78 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         })       
         return pipes;
     }
-    getConnectedPipesByUid(uid:string,systemUid:string){
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.filter((item) => {
-            return (
-                ((item.entityBacked.type == EntityType.PIPE ) &&
-                    (item as Pipe).entity.endpointUid.indexOf(uid) != -1  &&
-                    ((item as Pipe).entity.systemUid == systemUid))
-            )
-        }).map(item=>{return (item as Pipe)});
+
+    getConnectedPipesByUid( uid: string, systemUid: string ) {
+        const pipes: Pipe[] = [];
+        for (const itemUid of this.globalStore.getConnections(uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked &&
+                item.entityBacked.type === EntityType.PIPE &&
+                (item as Pipe).entity.systemUid === systemUid ) {
+                    pipes.push(item as Pipe);
+                }
+        }
+        return pipes;
     }
-    getConnectedFittings(): Fitting[] {
-      
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.filter((item) => {
-            return (
-                ((item.entityBacked.type == EntityType.FITTING ) &&
-                    this.entity.endpointUid.indexOf((item as Fitting).entity.uid )!=-1 &&
-                    ((item as Fitting).entity.systemUid == this.entity.systemUid))
-            )
-        }).map(item=>{return (item as Fitting)});
+
+    getConnectedFittingsByUid( uid: string, systemUid: string ) {
+        const fittings: Fitting[] = [];
+        for (const itemUid of this.globalStore.getConnections(uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked && 
+                item.entityBacked.type === EntityType.FITTING &&
+                 (item as Pipe).entity.systemUid === systemUid ) {
+                    fittings.push(item as Fitting);
+                }
+        }
+        return fittings;
     }
-    getConnectedNodes(): SystemNode[] {
-      
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.filter((item) => {
-            return (
-                ((item.entityBacked.type == EntityType.SYSTEM_NODE ) &&
-                    this.entity.endpointUid.indexOf((item as SystemNode).entity.uid )!=-1 &&
-                    ((item as SystemNode).entity.systemUid == this.entity.systemUid))
-            )
-        }).map(item=>{return (item as SystemNode)});
+
+    getConnectedNodes(): SystemNode[] {  
+        const nodes: SystemNode[] = [];
+        for ( const itemUid in this.globalStore.getConnections(this.entity.uid)) {
+            const item = this.globalStore.get(itemUid)
+            if ( item && item.entityBacked &&
+                item.entityBacked.type == EntityType.SYSTEM_NODE &&
+                ((item as SystemNode).entity.systemUid == this.entity.systemUid) ) {
+                    nodes.push(item as SystemNode)
+                }
+        }
+        return nodes;
     }
+
     getConnectedFixtures(abbreviation:string): Fixture[] {
-      let fixtures:Fixture[]=[]
-      fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
-      let connectedNodes=this.getConnectedNodes();
-      connectedNodes.map((node:SystemNode)=>{
-        let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
-            fixtures.push.apply(fixtures,fittingPipes) ;
-        })  
-      return fixtures;
+        let fixtures:Fixture[]=[]
+        fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
+        let connectedNodes=this.getConnectedNodes();
+        connectedNodes.map( (node:SystemNode) =>{
+            let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
+                fixtures.push.apply(fixtures,fittingPipes) ;
+            })  
+        return fixtures;
     }
-    getConnectedFlowSource(): FlowSource {
-        
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        let flowSource:FlowSource= GlobalStoreObjects.find((flowSource) => {
-            return  flowSource.entityBacked.type == EntityType.FLOW_SOURCE 
-            // && (flowSource as FlowSource).entity.systemUid==this.entity.systemUid
-            && this.entity.endpointUid.indexOf(flowSource.entity.uid) != -1 
-            && (flowSource as Fixture).uid.indexOf("calculation")===-1
-          }) as FlowSource
-          
-          return flowSource;
+
+    getConnectedFlowSource(): FlowSource | undefined {
+        for ( const itemUid of this.globalStore.getConnections(this.entity.uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked && 
+                item.entityBacked.type == EntityType.FLOW_SOURCE &&
+                (item as FlowSource).entity.systemUid==this.entity.systemUid ) {
+                    return item as FlowSource
+                }
+        }
     }
-    getConnectedFixturesByUid(uid:string,systemUid:string,abbreviation:string):Fixture[]{
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return GlobalStoreObjects.filter((fix) => {
-            return  fix.entityBacked.type == EntityType.FIXTURE 
-            && (fix as Fixture).entity.abbreviation==abbreviation
-            && uid.indexOf((fix as Fixture).entity.roughIns[systemUid].uid )!=-1
-            && (fix as Fixture).uid.indexOf("calculation")===-1
-      }) as Fixture[]
+    getConnectedFixturesByUid( uid: string, systemUid: string, abbreviation: string): Fixture[] {
+        const fixtures: Fixture[] = []
+        for (const itemUid in this.globalStore.getConnections(uid)) {
+            const item = this.globalStore.get(itemUid);
+            if ( item && item.entityBacked && 
+                item.entityBacked.type == EntityType.FIXTURE && 
+                uid === (item as Fixture).entity.roughIns[systemUid].uid ) {
+                    fixtures.push(item as Fixture)
+                }
+        }
+        return fixtures;
     }
 
     projectEndpoint(

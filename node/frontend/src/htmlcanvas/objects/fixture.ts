@@ -163,9 +163,11 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         for (const systemUidIter of Object.keys(this.entity.roughIns)) {
             const FS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
-    
-            if (!FS) continue;
-                 const connectedPipe = this.getConnectedPipe(this.entity.roughIns[systemUidIter], FS);
+
+            if (!FS) { continue; }
+
+            const roughIn = this.entity.roughIns[systemUidIter];
+            const connectedPipe = this.getConnectedPipe(roughIn.uid, roughIn.allowAllSystems ? null : FS.uid);
             if (FS && !connectedPipe) {
                 let startPoint = { top: 0, left: 0 };
                 if (this.entity.roughInsInOrder.length > 2) {
@@ -187,13 +189,14 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
                             ? { top: y0, left: x4 }
                             : { top: 0, left: 0 };
                 }
-                if (this.isFlowSystemActive(FS))
+                if (this.isFlowSystemActive(FS)) {
                     drawPipeCap(
                         ctx,
                         startPoint,
                         Side.TOP,
-                        this.entity.roughIns[systemUidIter].allowAllSystems ? "gray" : FS.color.hex
+                        roughIn.allowAllSystems ? "gray" : FS.color.hex
                     );
+                }
             }
         }
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM * 1.2 }, () => {
@@ -212,36 +215,32 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         });
     }
 
-    getConnectedPipe(connection:RoughInRecord, flowSystem: FlowSystemParameters): Pipe {
-        // connectionUid can be :
-        // this.entity.inletUid;
-        // this.entity.outletUid; ,....
-        const GlobalStoreObjects = Array.from(this.globalStore.values());
-        return (GlobalStoreObjects.find((item) => {
-            return (
-                (item.entityBacked.type == EntityType.PIPE &&
-                    (item as Pipe).entity.endpointUid.indexOf(connection.uid) != -1 &&
-                    ((item as Pipe).entity.systemUid == flowSystem.uid || connection.allowAllSystems))
-            );
-        }) as Pipe);
+    getConnectedPipe(connectionUid: string, flowSystemUid: string | null): Pipe | undefined {
+        for (const itemId of this.globalStore.getConnections(connectionUid) ) {
+            const item = this.globalStore.get(itemId);
+            if ( item && item.entityBacked &&
+                item.entityBacked.type === EntityType.PIPE &&
+                ( !flowSystemUid || ((item as Pipe).entity.systemUid === flowSystemUid)) ) {
+                    return item as Pipe;
+                }
+        }
     }
-    validateConnectionPoints(): Boolean {
-        
+    validateConnectionPoints(): boolean {
         for (const systemUidIter of Object.keys(this.entity.roughIns)) {
-            const FS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
-            if(!FS)
-                continue;
-            if (FS && !this.getConnectedPipe(this.entity.roughIns[systemUidIter], FS) && this.isFlowSystemActive(FS)) {
-          
+            const flowSystem = this.document.drawing.metadata.flowSystems.find((s) => s.uid === systemUidIter);
+            const roughIn = this.entity.roughIns[systemUidIter];
+            if (flowSystem &&
+                !this.getConnectedPipe(roughIn.uid, roughIn.allowAllSystems ? null : flowSystem.uid)
+                && this.isFlowSystemActive(flowSystem)) {
                 return false;
             }
-                
         }
         return true;
     }
-    isFlowSystemActive(FS:FlowSystemParameters):Boolean {
+
+    isFlowSystemActive( FS: FlowSystemParameters): boolean {
         return (this.document.uiState.pressureOrDrainage === "drainage" && isDrainage(FS.uid)) ||
-               (this.document.uiState.pressureOrDrainage === "pressure" && !isDrainage(FS.uid))
+               (this.document.uiState.pressureOrDrainage === "pressure" && !isDrainage(FS.uid) );
     }
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.

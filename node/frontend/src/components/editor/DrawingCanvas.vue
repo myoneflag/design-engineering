@@ -1705,6 +1705,9 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 throw new Error("Shound't be running 2 simulaneous draws");
             }
             try {
+
+                console.time("drawFull")
+
                 const shouldContinue = (() => {
                     const res = this.fullRenderQueue.length < 2; // || this.numSkipped > 4;
                     if (res === false) {
@@ -1792,6 +1795,8 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                     await this.blitBuffer();
                     this.numSkipped = 0;
                 }
+
+                console.timeEnd("drawFull")
             } catch (e) {
                 if (e instanceof InterruptedError) {
                     // that's fine, just exit, because a newer frame wants to render.
