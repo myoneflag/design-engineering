@@ -1,22 +1,14 @@
 # Developing and debugging the PDF Renderer Lambda
 
+Some functionality when uploading PDF files for floor plans are handled on production by a Lambda function triggered by the S3 upload of the background PDF file.
+ This document describes how to invoke the lambda function locally for development and troubleshooting.
+
 ## Commands
 
 ### Deployment
 
-`cd node/pdf-renderer`
-
-Build
-```
-sam build
-```
-
-Deploy to an environment
-```
-sam deploy --config-env ENVIRONMENT --profile AWS_PROFILE
-```
-
-List of currently configured environments in `samconfig.toml`
+For information about how to deploy a new land a function for a new environment or configure an existing lambda function for a new environment see:
+[Install PDF Renderer Lambda](../infrastructure/install-pdf-renderer-lambda.md)
 
 ### Local development
 

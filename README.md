@@ -5,6 +5,7 @@ First, check out the [documentation](./docs/README.md).
 
 - [H2X WEB APP](#h2x-web-app)
   - [Documentation](#documentation)
+  - [Clone source](#clone-source)
   - [Project structure](#project-structure)
     - [`node`](#node)
     - [`docker`](#docker)
@@ -16,12 +17,23 @@ First, check out the [documentation](./docs/README.md).
     - [Run minimal docker dev environment: `minimal`](#run-minimal-docker-dev-environment-minimal)
   - [Local development on host: `local`](#local-development-on-host-local)
   - [Start the app](#start-the-app)
-  - [Configure local dev to use AWS resources](#configure-local-dev-to-use-aws-resources)
   - [AWS Development](#aws-development)
     - [Develop AWS Cloudformation stack](#develop-aws-cloudformation-stack)
     - [Develop local server features using AWS](#develop-local-server-features-using-aws)
+  - [Configure `local`, `dev` or `minimal` environment to use AWS resources](#configure-local-dev-or-minimal-environment-to-use-aws-resources)
     - [Production build](#production-build)
 - [Deployment scripts](#deployment-scripts)
+
+## Clone source
+
+1. Request access to GitLab to H2X Admin
+2. Set up SSH Keys and clone the repository
+   
+```
+git clone git@gitlab.com:info892/H2X.git
+cd H2X
+git submodule update --init
+```
 
 ## Project structure
 
@@ -113,6 +125,19 @@ This will not start `worker` and related services like `sqs`, `sqsd`.
 
 This development mode will run the main parts of the app, `frontend`, `backend` and `worker` on the local machine, and will start docker containers only for DB, MQ and a Nginx proxy.
 
+**Install dependencies**
+On MacOS:
+```
+brew update
+brew install imagemagick
+brew install ghostscript
+```
+
+On Windows:
+```
+TBD
+```
+
 **Start docker services**
 1. ```
    cd docker
@@ -147,12 +172,6 @@ All commands to be execute on the host machine.
 
 ## Start the app
 Open your browser to http://localhost:8010. Log in with username "admin", and password ... *heh!* Ask your coleagues.
-
-## Configure local dev to use AWS resources
-
-The local dev app uses S3 to store background files and images.
-For that, a local configuration and a small AWS deployment needs to be performed.
-**Details TBD.**
 
 ## AWS Development
 
@@ -216,6 +235,20 @@ Then run
 cd node/backend
 npm run dev
 ```
+
+## Configure `local`, `dev` or `minimal` environment to use AWS resources
+
+The local dev app uses S3 to store background files and images.
+For that, a local configuration and a small AWS deployment needs to be performed.
+
+1. Log into AWS Test account
+2. Go to CloudFormation > Create Stack
+3. Select Upload Template and select the `cloudformation/template-local.json` file
+4. Use values:
+   * Stack name: `h2x-stack-local-YOURNAME`
+   * Environment name: `local-YOURNAME`
+  
+
 
 ### Production build
 
