@@ -1,7 +1,7 @@
 # Developing and debugging the PDF Renderer Lambda
 
 Some functionality when uploading PDF files for floor plans are handled on production by a Lambda function triggered by the S3 upload of the background PDF file.
- This document describes how to invoke the lambda function locally for development and troubleshooting.
+This document describes how to invoke the lambda function locally for development and troubleshooting.
 
 ## Commands
 
