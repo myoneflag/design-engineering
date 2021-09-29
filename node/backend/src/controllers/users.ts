@@ -425,13 +425,13 @@ export class UserController {
     }
 }
 
-async function resetUserPassword (user: User, req, email: PasswordResetEmailType) {
+async function resetUserPassword(user: User, req, email: PasswordResetEmailType) {
     user.password_reset_dt = new Date();
     user.password_reset_token = await bcrypt.hash(user.email, 10);
     await user.save();
 
     const url = getHostname(req) + '/password-reset?email=' + encodeURIComponent(user.email) + '&token=' + encodeURIComponent(user.password_reset_token);
-    await NodeMailerTransporter.sendMail(email({ name: user.name, to: user.email, url }));
+    await NodeMailerTransporter.sendMail(email({ name: user.name, to: user.email, url, username: user.username }));
 }
 
 function getHostname(req: Request) {
