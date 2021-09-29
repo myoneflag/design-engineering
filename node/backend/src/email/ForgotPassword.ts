@@ -13,10 +13,8 @@ const ForgotPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailPa
             <body>
                 Hi <b>${props.name}</b>,
                 <br><br>
-                It looks like you forgot your password. You can reset it by following this <a target="_blank" href="${props.url}">link</a>
-                <br>
+                It looks like you forgot your password. You can reset it by following this <a target="_blank" href="${props.url}">link</a><br>
                 Your username is: <b>${props.username}</b><br>
-                <br>
                 If the link above does not work, copy this link below:
                 <br>
                 ${props.url}
@@ -51,15 +49,16 @@ const SetNewPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailPa
             <body>
                 Hi <b>${props.name}</b>,
                 <br><br>
-                You have been added as a user to H2X.<br>
+                You have been added as a user to H2X.<br><br>
                 Your new username is: <b>${props.username}</b><br>
                 Please follow this link to set the password for your account: <a target="_blank" href="${props.url}">link</a>
-                <br><br>
+                <br>
                 If the link above does not work, copy this link below:
                 <br>
                 ${props.url}
                 <br><br>
-                Please refer to our <b>User Manual</b> that can be found <a href="https://drive.google.com/file/d/17ZJrOSo4v3BHJQMKiiWU5VhZGJhwKWnU/view">here</a> and if you have any questions, please reach out to <a href="mailto:jordan@h2xengineering.com">jordan@h2xengineering.com</a> by replying to this email and I will be more than happy to help you.
+                You can access the software at <a target="_blank" href="https://app.h2xengineering.com/">https://app.h2xengineering.com/</a> and make sure to use Google Chrome as it's the recommended browser for this application.<br>
+                Please refer to our <b>User Manual</b> that can be found <a target="_blank" href="https://drive.google.com/file/d/17ZJrOSo4v3BHJQMKiiWU5VhZGJhwKWnU/view">here</a> and if you have any questions, please reach out to <a href="mailto:jordan@h2xengineering.com">jordan@h2xengineering.com</a> by replying to this email and I will be more than happy to help you.<br>
                 Enjoy!
                 <br><br>
                 Jordan Mills<br>
