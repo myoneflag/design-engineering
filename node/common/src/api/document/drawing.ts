@@ -542,11 +542,14 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
     const result = cloneSimple(initialAustralianDrawing);
     switch (locale) {
         case SupportedLocales.AU:
-            result.metadata.catalog.greaseInterceptorTrap = [{
-                uid: 'greaseInterceptorTrap',
-                manufacturer: 'viking',
-                selected: null,
-            }];
+            result.metadata.catalog = {
+                ...result.metadata.catalog,
+                greaseInterceptorTrap: [{
+                    uid: 'greaseInterceptorTrap',
+                    manufacturer: 'viking',
+                    selected: null,
+                }],
+            }
             break;
         case SupportedLocales.UK:
             result.metadata.calculationParams = {
