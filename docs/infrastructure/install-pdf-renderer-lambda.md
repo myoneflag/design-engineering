@@ -1,8 +1,12 @@
 # Installing the PDF Rendering lambda on AWS
 
-TBD more details
+Some functionality when uploading PDF files for floor plans are handled on production by a Lambda function triggered by the S3 upload of the background PDF file.
+This document describes how to Deploy a new PDF render or configure an existing one for an environment.
 
-## Deploy
+> Installing a new Lambda is required only when creating a new environment that needs it's own PDF renderer - in case code changes that affect the render code must be done.
+> For new environments or local developer configuration we can use the PDF render of the test environment. `pdf-renderer-test` stack in CloudFormation.
+
+## Deploy new Lambda PDF renderer
 
 ```
 cd node/pdf-renderer
@@ -24,7 +28,7 @@ Deploy to a new environment
 sam deploy --guided --profile AWS_PROFILE
 ```
 
-## Configure
+## Configure new installation
 
 1. Add `AmazonS3FullAccess` to Lambda role
 2. Add S3 trigger for all object creation suffix `pdf`
@@ -34,4 +38,9 @@ sam deploy --guided --profile AWS_PROFILE
 2 arn:aws:lambda:us-west-1:891449579858:layer:image-magick:1
 ```
 4. Add env variable for target bucket
+
+## Configure existing PDF renderer for a new bucket
+
+For all local dev environments for developers, use the `pdf-renderer-local` CloudFormation stack containing the `pdf-renderer-local` Lambda.
+
 

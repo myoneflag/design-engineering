@@ -1,5 +1,5 @@
-import {OPERATION_NAMES, OperationTransformConcrete} from "../document/operation-transforms";
-import {DrawingState} from "../document/drawing";
+import { SupportedLocales } from './../locale/index';
+import { DrawingState, initialDrawing } from "../document/drawing";
 
 export const EXAMPLE_DRAWING_VERSION = 22;
 
@@ -25,7 +25,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "energyMeasurementSystem": "METRIC",
             "currency": {
                 "multiplierPct": 100,
-                "symbol": "$",
+                "symbol": "$"
             }
         },
         "flowSystems": [
@@ -2177,7 +2177,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
         ],
         "calculationParams": {
             "psdMethod": "as35002018LoadingUnits",
-            "loadingUnitVariant": 'low',
+            "loadingUnitVariant": "low",
             "dwellingMethod": null,
             "drainageMethod": "AS2018FixtureUnits",
             "drainageSystem": "drainageSystem1",
@@ -2190,7 +2190,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "roomTemperatureC": 20,
             "windSpeedForHeatLossMS": 0,
             "gravitationalAcceleration": 9.80665,
-            "combineLUs": false,
+            "combineLUs": false
         },
         "availableFixtures": [
             "basin",
@@ -2203,66 +2203,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "kitchenSinkHot",
             "hoseTap"
         ],
-        "catalog": {
-            "pipes": [
-                {
-                    "manufacturer": "kemblaCu",
-                    "uid": "copperTypeB",
-                    "selected": null
-                },
-                {
-                    "manufacturer": "rehauPex",
-                    "uid": "pexSdr74",
-                    "selected": null
-                },
-                {
-                    "manufacturer": "kemblaS/s",
-                    "uid": "stainlessSteel",
-                    "selected": null
-                }
-            ],
-            "backflowValves": [
-                {
-                    "manufacturer": "apolloRpzd",
-                    "uid": "RPZD",
-                    "selected": null
-                }
-            ],
-            "mixingValves": [
-                {
-                    "manufacturer": "caleffi",
-                    "uid": "temperingValve",
-                    "selected": null
-                },
-                {
-                    "manufacturer": "enware",
-                    "uid": "tmv",
-                    "selected": null
-                }
-            ],
-            "prv": [
-                {
-                    "manufacturer": "caleffi",
-                    "uid": "prv",
-                    "selected": null
-                }
-            ],
-            "balancingValves": [
-                {
-                    "manufacturer": "cimberio",
-                    "uid": "balancingValves",
-                    "selected": null
-                }
-            ],
-            "hotWaterPlant": [
-                {
-                    "manufacturer": "grundfos",
-                    "uid": "hotWaterPlant",
-                    "selected": null
-                }
-            ],
-            "fixtures": []
-        },
+        "catalog": initialDrawing(SupportedLocales.AU).metadata.catalog,
         "priceTable": {}
     },
     "levels": {
