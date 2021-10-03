@@ -41,7 +41,7 @@ export default interface FixtureEntity extends DrawableEntity {
 
 
     probabilityOfUsagePCT: number | null;
-    loadingUnitVariant: string | null;
+    loadingUnitVariant?: string | null;
 }
 
 export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: SupportedLocales): PropertyField[] {
@@ -272,7 +272,7 @@ export function fillFixtureFields(
 
     const continuousFlowLS = defaultCatalog.fixtures[result.name].continuousFlowLS;
 
-    if (result.loadingUnitVariant === null) {
+    if (result.loadingUnitVariant === undefined || result.loadingUnitVariant === null) {
         result.loadingUnitVariant = drawing?.metadata.calculationParams.loadingUnitVariant || 'low';
     }
 
