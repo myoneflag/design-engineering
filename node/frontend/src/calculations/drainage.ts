@@ -67,6 +67,8 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
 
 
                 if (calc.realNominalPipeDiameterMM === null) {
+                    calc.warning = 'Update Flow System Settings';
+                    calc.warningLayout = 'drainage';
                     calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
                 }
             }
@@ -270,7 +272,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                 unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
                 break;
             case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDischargeUnits)!;
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDrainageSystem[context.doc.drawing.metadata.calculationParams.drainageSystem])!;
                 break;
             case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
                 unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
@@ -506,7 +508,7 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
             unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
             break;
         case SupportedDrainageMethods.EN1205622000DischargeUnits:
-            unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDischargeUnits)!;
+            unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDrainageSystem[context.doc.drawing.metadata.calculationParams.drainageSystem])!;
             break;
         case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
             unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
