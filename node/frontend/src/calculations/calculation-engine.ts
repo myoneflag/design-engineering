@@ -1618,7 +1618,7 @@ export default class CalculationEngine implements CalculationContext {
                                 fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].asnzFixtureUnits)!;
                                 break;
                             case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].enDischargeUnits)!;
+                                fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].enDrainageSystem[this.doc.drawing.metadata.calculationParams.drainageSystem])!;
                                 break;
                             case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
                                 fixtureUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].upcFixtureUnits)!;

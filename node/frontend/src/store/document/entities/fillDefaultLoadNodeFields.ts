@@ -124,7 +124,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
 
                 asnzFixtureUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].asnzFixtureUnits) || 0;
                 upcFixtureUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].upcFixtureUnits) || 0;
-                enDischargeUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].enDischargeUnits) || 0;
+                enDischargeUnits += parseCatalogNumberExact(catalog.fixtures[node.fixtures[i]].enDrainageSystem[doc.drawing.metadata.calculationParams.drainageSystem]) || 0;
             }
         }
 
