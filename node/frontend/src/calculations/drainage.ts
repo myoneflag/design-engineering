@@ -327,14 +327,23 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                         ) {
                             const accountedFor = pCalc.ventTooFarDist;
                             let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
+                            let visitedUnventedRun: Set<string> = new Set();
                             while (curr) {
                                 const currPipe = context.globalStore.get(curr.value.uid);
-                                if (currPipe?.entity.type === EntityType.PIPE) {
+                                if (currPipe?.entity.type === EntityType.PIPE) {    
                                     const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
+                                    if (visitedUnventedRun.has(curr.value.uid)) {
+                                        currPCalc.warning = "Loop in pipesystem detected";
+                                        currPCalc.warningLayout = 'drainage';
+                                        console.warn("Loop in pipesystem detected for id: " + curr.value.uid)
+                                        break;
+                                    }
+                                    visitedUnventedRun.add(curr.value.uid)
+
                                     const [units, maxConverted] =
                                         convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM!);
                                     const [_, unventedConverted] =
-                                        convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM!);
+                                        convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, unventedLength!);
                                     currPCalc.ventTooFarDist = true;
                                     currPCalc.warning = 'Max unvented length of ' +
                                         (maxConverted as number).toFixed(2) + units +
