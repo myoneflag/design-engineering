@@ -17,11 +17,12 @@ First, check out the [documentation](./docs/README.md).
     - [Run full docker dev environment: `dev`](#run-full-docker-dev-environment-dev)
     - [Run minimal docker dev environment: `minimal`](#run-minimal-docker-dev-environment-minimal)
   - [Local development on host `local`](#local-development-on-host-local)
-  - [Start the app](#start-the-app)
   - [AWS credentials](#aws-credentials)
     - [Configure local environment with AWS](#configure-local-environment-with-aws)
+  - [Start the app](#start-the-app)
+  - [Advanced](#advanced)
     - [Develop AWS Cloudformation stack (advanced)](#develop-aws-cloudformation-stack-advanced)
-  - [Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced)](#configure-local-dev-or-minimal-environment-to-use-separate-aws-resources-advanced)
+    - [Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced)](#configure-local-dev-or-minimal-environment-to-use-separate-aws-resources-advanced)
     - [Production build (advanced)](#production-build-advanced)
 - [Deployment scripts (advanced)](#deployment-scripts-advanced)
 
@@ -178,7 +179,7 @@ All commands to be executed on the host machine.
    npm install
    npm run dev
    ```
-4. Run worker *(optional, in a new terminal)*
+4. Run worker *(OPTIONAL, in a new terminal)*
    ```bash
    cd node/backend
    npm run dev-worker
@@ -189,17 +190,6 @@ All commands to be executed on the host machine.
    npm install
    npm run serve
    ```
-
-## Start the app
-
-* Open your browser to http://localhost:8010. Log in with username "admin", and password "pleasechange".
-* You will be shown a Example project - make a chane see if it works (top right Saving... label).
-* Follow [this tutorial](https://www.youtube.com/playlist?list=PLIdFxhDHcGgwHcBSDr5L_9K3FKGlyzO1S) to learn to use the app.
-* Create a new project, upload some PDF floorplans, add some elements and connect some pipes.  
-  [PDF example files](https://drive.google.com/drive/folders/1DQc6Fs7Q1N_YwdhoGaYmkkVVEXxSj0ZK?usp=sharing).   
-* Then, log out and create a new user.  
-  Sign up with an email like `test+anything@h2xtesting.com`. This is our wildcard test email.  
-* Ask you colleagues for the `test@h2xtesting.com` login credentials for future testing.
 
 ## AWS credentials
 
@@ -257,6 +247,19 @@ cd node/backend
 npm run dev
 ```
 
+## Start the app
+
+* Open your browser to http://localhost:8010. Log in with username "admin", and password "pleasechange".
+* You will be shown a Example project - make a chane see if it works (top right Saving... label).
+* Follow [this tutorial](https://www.youtube.com/playlist?list=PLIdFxhDHcGgwHcBSDr5L_9K3FKGlyzO1S) to learn to use the app.
+* Create a new project, upload some PDF floorplans, add some elements and connect some pipes.  
+  [PDF example files](https://drive.google.com/drive/folders/1DQc6Fs7Q1N_YwdhoGaYmkkVVEXxSj0ZK?usp=sharing).   
+* Then, log out and create a new user.  
+  Sign up with an email like `test+anything@h2xtesting.com`. This is our wildcard test email.  
+* Ask you colleagues for the `test@h2xtesting.com` login credentials for future testing.
+
+## Advanced
+
 ### Develop AWS Cloudformation stack (advanced)
 
 This refers to deveopment on the cloudformation stack and scripts for AWS resources being deployed.
@@ -277,7 +280,7 @@ export AWS_PROFILE=awsprofilename
 npm run validate
 ```
 
-## Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced) 
+### Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced) 
 
 The local dev app uses S3 to store background files and images.
 For that, a local configuration and a small AWS deployment needs to be performed.
