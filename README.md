@@ -11,18 +11,19 @@ First, check out the [documentation](./docs/README.md).
     - [`docker`](#docker)
     - [`cloudformation`](#cloudformation)
   - [Local development](#local-development)
+    - [Install Docker](#install-docker)
     - [Overview](#overview)
-  - [Docker modes](#docker-modes)
+  - [Docker modes `dev` and `minimal`](#docker-modes-dev-and-minimal)
     - [Run full docker dev environment: `dev`](#run-full-docker-dev-environment-dev)
     - [Run minimal docker dev environment: `minimal`](#run-minimal-docker-dev-environment-minimal)
-  - [Local development on host: `local`](#local-development-on-host-local)
+  - [Local development on host `local`](#local-development-on-host-local)
   - [Start the app](#start-the-app)
-  - [AWS Development](#aws-development)
-    - [Develop AWS Cloudformation stack](#develop-aws-cloudformation-stack)
-    - [Develop local server features using AWS](#develop-local-server-features-using-aws)
-  - [Configure `local`, `dev` or `minimal` environment to use AWS resources](#configure-local-dev-or-minimal-environment-to-use-aws-resources)
-    - [Production build](#production-build)
-- [Deployment scripts](#deployment-scripts)
+  - [AWS credentials](#aws-credentials)
+    - [Configure local environment with AWS](#configure-local-environment-with-aws)
+    - [Develop AWS Cloudformation stack (advanced)](#develop-aws-cloudformation-stack-advanced)
+  - [Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced)](#configure-local-dev-or-minimal-environment-to-use-separate-aws-resources-advanced)
+    - [Production build (advanced)](#production-build-advanced)
+- [Deployment scripts (advanced)](#deployment-scripts-advanced)
 
 ## Clone source
 
@@ -53,8 +54,11 @@ Also, is updates an existing environment with new Docker images that have been p
 
 ## Local development
 
+### Install Docker
+Install Docker Desktop for your host operating system.
+
 ### Overview
-We can run local development in 3 modes: dev [docker], minimal [docker] and local [on host].  
+We can run local development in 3 modes: `dev` (in docker), `minimal` (in docker) and `local` (on host).  
 
 | Mode | Service  | Runs on |
 | ---- | -------- | ------- |
@@ -83,7 +87,7 @@ We can run local development in 3 modes: dev [docker], minimal [docker] and loca
 |       | mq       | docker   |
 |       | nginx    | docker   |
 
-## Docker modes
+## Docker modes `dev` and `minimal`
 
 Build base image: 
 ```
@@ -98,6 +102,7 @@ Notes:
 ### Run full docker dev environment: `dev`
 
 ```
+cd docker
 npm run dev
 ```
 
@@ -116,17 +121,18 @@ This runs NginX that exposes all 3 webservers (configured default for port *80*)
 ### Run minimal docker dev environment: `minimal`
 
 ```
+cd docker
 npm run dev:minimal
 ```
 
 This will not start `worker` and related services like `sqs`, `sqsd`.
 
-## Local development on host: `local`
+## Local development on host `local`
 
 This development mode will run the main parts of the app, `frontend`, `backend` and `worker` on the local machine, and will start docker containers only for DB, MQ and a Nginx proxy.
 
 **Install dependencies**
-On MacOS:
+On MacOS (using Homebrew): 
 ```
 brew update
 brew install imagemagick
@@ -138,6 +144,12 @@ On Windows:
 TBD
 ```
 
+On Linux/Ubuntu:
+```
+apt-get update
+apt-get install imagemagick ghostscript
+```
+
 **Start docker services**
 1. ```
    cd docker
@@ -146,69 +158,76 @@ TBD
    ```
 
 **Start local servers**  
-All commands to be execute on the host machine.
+All commands to be executed on the host machine.
 
 1. Ensure you use node 12  
    ```node --version```  
    If not, use `nvm` to install or switch to node 12.
-2. cd h2x
-3. ```
+2. Install TS
+   ```
    npm install -g typescript vue-cli
    ```
-4. ```
+2. Install common
+   ```bash
+   cd node
+   npm install
+   ```bash
+3. Run backend
+   ```bash
    cd node/backend
    npm install
    npm run dev
    ```
-5. *(optional, in a new terminal)*
-   ```
+4. Run worker *(optional, in a new terminal)*
+   ```bash
+   cd node/backend
    npm run dev-worker
    ```
-6. ```
-   cd ../frontend
+5. Run frontend
+   ```bash
+   cd node/frontend
    npm install
    npm run serve
    ```
 
 ## Start the app
-Open your browser to http://localhost:8010. Log in with username "admin", and password ... *heh!* Ask your coleagues.
 
-## AWS Development
+* Open your browser to http://localhost:8010. Log in with username "admin", and password "pleasechange".
+* You will be shown a Example project - make a chane see if it works (top right Saving... label).
+* Follow [this tutorial](https://www.youtube.com/playlist?list=PLIdFxhDHcGgwHcBSDr5L_9K3FKGlyzO1S) to learn to use the app.
+* Create a new project, upload some PDF floorplans, add some elements and connect some pipes.  
+  [PDF example files](https://drive.google.com/drive/folders/1DQc6Fs7Q1N_YwdhoGaYmkkVVEXxSj0ZK?usp=sharing).   
+* Then, log out and create a new user.  
+  Sign up with an email like `test+anything@h2xtesting.com`. This is our wildcard test email.  
+* Ask you colleagues for the `test@h2xtesting.com` login credentials for future testing.
 
-1. Go to AWS IAM (or ask an admin), and create an AWS Access Key and Secret Key.
-2. Create a local AWS profile that uses the AK, SK created
-```
-aws configure --profile awsprofilename
-```
-e.g. 
-```
-aws configure --profile calin-h2x-testing
-```
+## AWS credentials
 
-### Develop AWS Cloudformation stack
-This refers to deveopment on the cloudformation stack and scripts for AWS resources being deployed.
-
-3. Specify the name of the profile as the `AWS_PROFILE` env var before any commands you run
+1. Install the `aws-cli`
 ```
-export AWS_PROFILE=awsprofilename
+brew install awscli
 ```
 
-Main files: `template.json` and `parameters.json` in `cloudformation` folder.
-Environment specific configs for deployment - `config` folder.
-
-Validate changes:
+1. You will be provided with an AWS Access Key and Secret Key for your local environment.
+2. Create a local AWS profile that uses the AK, SK
 ```
-cd cloudformation
-export env=test
-export AWS_PROFILE=awsprofilename
-npm run validate
+aws configure --profile YOURNAME-h2x-testing
 ```
+* AK, SK: provided
+* default-region: `us-west-1`
 
-### Develop local server features using AWS
+For H2X admin:
+1. Create a new IAM user in the H2X Testing account. 
+e.g.    
+2. Assign the new user to the `DeveloperLocal` group - this allows acces to S3 (pdf upload) and SES (email sending).  
+3. Get the AK and SK generated for user.  
+4. Send securely to the new user.
+
+### Configure local environment with AWS
 
 Using the AWS profile defined above, specify it as an environment variable before starting up the server environment so that the H2X backend uses the AWS credentials in the profile.
 
-1. `dev` and `minimal` docker development
+1. For `dev` and `minimal` docker development
 ```
 export AWS_PROFILE=awsprofilename
 cd docker
@@ -216,10 +235,12 @@ npm run dev
 npm run dev:minimal
 ```
 
-2. `local` development
+2. For `local` development
 Define `node/backend/.env` file containing the following parameters:
-```
-AWS_PROFILE=awsprofilename
+And adjust the value of the AWS_PROFILE to one created above.
+
+```bash
+AWS_PROFILE=YOURNAME
 # for email
 SES_EMAIL_REGION=us-west-1
 EMAIL_ADDRESS=test@h2xtesting.com
@@ -236,7 +257,27 @@ cd node/backend
 npm run dev
 ```
 
-## Configure `local`, `dev` or `minimal` environment to use AWS resources
+### Develop AWS Cloudformation stack (advanced)
+
+This refers to deveopment on the cloudformation stack and scripts for AWS resources being deployed.
+
+Specify the name of the profile as the `AWS_PROFILE` env var before any commands you run
+```
+export AWS_PROFILE=awsprofilename
+```
+
+Main files: `template.json` and `parameters.json` in `cloudformation` folder.
+Environment specific configs for deployment - `config` folder.
+
+Validate changes:
+```
+cd cloudformation
+export env=test
+export AWS_PROFILE=awsprofilename
+npm run validate
+```
+
+## Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced) 
 
 The local dev app uses S3 to store background files and images.
 For that, a local configuration and a small AWS deployment needs to be performed.
@@ -247,10 +288,9 @@ For that, a local configuration and a small AWS deployment needs to be performed
 4. Use values:
    * Stack name: `h2x-stack-local-YOURNAME`
    * Environment name: `local-YOURNAME`
-  
 
 
-### Production build
+### Production build (advanced) 
 
 This is a breakdown of the process. For a single line deployment, see below under `Deploy`.
 
@@ -281,7 +321,7 @@ This will:
 * pushes them to ECR
 * creates descriptor files for the Cloudformation ElasticBeanstalk update.
 
-# Deployment scripts
+# Deployment scripts (advanced) 
 Executing a full docker build, and aws update with that build:
 
 ```
