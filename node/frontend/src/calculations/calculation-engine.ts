@@ -2329,9 +2329,10 @@ export default class CalculationEngine implements CalculationContext {
                         pcalc.noFlowAvailableReason = NoFlowAvailableReason.UNUSUAL_CONFIGURATION;
                     }
                 } else {
-                    if (cmp < 0) {
-                        throw new Error("Invalid PSD situation");
-                    }
+                    // TODO comment out temporarily https://h2xengineering.atlassian.net/browse/DEV-443
+                    // if (cmp < 0) {
+                    //     throw new Error("Invalid PSD situation");
+                    // }
                     // we have successfully calculated the pipe's loading units.
                     this.configureEntityForPSD(object.entity, exclusivePsdU, flowEdge, wet, exclusiveProfile, null);
                 }
