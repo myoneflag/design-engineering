@@ -20,6 +20,9 @@ First, check out the [documentation](./docs/README.md).
   - [AWS credentials](#aws-credentials)
     - [Configure local environment with AWS](#configure-local-environment-with-aws)
   - [Start the app](#start-the-app)
+  - [VSCode configuration](#vscode-configuration)
+    - [Useful plugins](#useful-plugins)
+  - [Documentation](#documentation-1)
   - [Advanced](#advanced)
     - [Develop AWS Cloudformation stack (advanced)](#develop-aws-cloudformation-stack-advanced)
     - [Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced)](#configure-local-dev-or-minimal-environment-to-use-separate-aws-resources-advanced)
@@ -249,6 +252,9 @@ npm run dev
 
 ## Start the app
 
+> The vue serve command will show the app URL as http://localhost:8011/  
+> Frontend needs to be accessed from http://localhost:8010/
+
 * Open your browser to http://localhost:8010. Log in with username "admin", and password "pleasechange".
 * You will be shown a Example project - make a chane see if it works (top right Saving... label).
 * Follow [this tutorial](https://www.youtube.com/playlist?list=PLIdFxhDHcGgwHcBSDr5L_9K3FKGlyzO1S) to learn to use the app.
@@ -257,6 +263,16 @@ npm run dev
 * Then, log out and create a new user.  
   Sign up with an email like `test+anything@h2xtesting.com`. This is our wildcard test email.  
 * Ask you colleagues for the `test@h2xtesting.com` login credentials for future testing.
+
+## VSCode configuration
+
+### Useful plugins
+Go to VSCode > Extension and install all Recommended extensions.
+More details TBD.
+
+## Documentation
+
+Checkout our more docs in the [docs/README.md](docs/README.md) table of contents.
 
 ## Advanced
 

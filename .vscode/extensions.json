@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "vsls-contrib.codetour",
+        "waderyan.gitblame",
+        "gruntfuggly.todo-tree",
+        "dbaeumer.vscode-eslint"
+    ]
+}
