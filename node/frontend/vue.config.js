@@ -4,13 +4,8 @@ module.exports = {
     productionSourceMap: true,
     configureWebpack: {
         devServer: {
-            port: 80,
-            // https://github.com/vuejs-templates/webpack/issues/378
-            watchOptions: {
-              poll: true,
-            },
-          },
-        devtool: 'source-map',
+            port: 80
+        },
         plugins: [
             new webpack.DefinePlugin({
                 'process.env': {
