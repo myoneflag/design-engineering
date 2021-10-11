@@ -2,23 +2,26 @@
     <div>
         <b-row>
             <b-col>
-                <b-form-group label="Debug Info">
-                    <b-button @click="showDocument = !showDocument">{{showDocument ? "Hide" : "Show"}}</b-button> <br/>
-                    <b-button v-if="showDocument" variant="primary" @click="paste">Paste from clipboard</b-button> &nbsp;
-                    <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
-                    <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
-                    <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
-                </b-form-group>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col>
-                <b-button variant="success" @click="download">Download</b-button> &nbsp;
-                <b-button variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;
-                <b-button variant="danger" @click="generateAnError">Generate an error</b-button>
+                <b-button variant="warning" @click="upload">Upload</b-button> &nbsp;                
+                <b-button variant="success" @click="download">Download</b-button> &nbsp;                
             </b-col>
         </b-row>
         <br/>
+        <b-row>
+            <b-col>
+                <b-form-group label="Advanced Debug">
+                    <b-button @click="showDocument = !showDocument">{{showDocument ? "Hide" : "Show"}}</b-button>
+                    <br/>
+                    <b-button v-if="showDocument" variant="warning" @click="paste">Paste from clipboard</b-button> &nbsp;
+                    <b-button v-if="showDocument" variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;                    
+                    <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
+                    <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
+                    <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
+                    <br/>
+                    <b-button v-if="showDocument" variant="danger" @click="generateAnError">Generate an error</b-button>                    
+                </b-form-group>
+            </b-col>
+        </b-row>
         <b-row>
             <b-col>
                 <b-btn-group>
@@ -70,12 +73,31 @@ export default class Debug extends Vue {
         const blob = new Blob([this.drawingJson], { type: "text/plain" });
         const e = document.createEvent("MouseEvents"),
             a = document.createElement("a");
-        a.download = `debug_${this.document.drawing.metadata.generalInfo.title}.json`;
+        a.download = `debug_${this.document.documentId}_${this.document.drawing.metadata.generalInfo.title}.json`;
         a.href = window.URL.createObjectURL(blob);
         a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
         e.initEvent("click", true, false);
         a.dispatchEvent(e);
     }
+
+    async upload() {
+        const e = document.createEvent("MouseEvents"),
+            i = document.createElement("input");
+        i.type = "file";
+        e.initEvent("click", true, false);
+        //@ts-ignore        
+        i.onchange = async function(ev) {
+            //@ts-ignore
+            const debugText = await i.files[0].text()
+            const newDoc = JSON.parse(debugText) as DrawingState;
+            //@ts-ignore
+            Object.assign(this.document.drawing, newDoc);
+            //@ts-ignore
+            await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
+        }.bind(this);
+        i.dispatchEvent(e);
+    }
+
 
     async copy() {
         await navigator.clipboard.writeText(this.drawingJson)
@@ -89,7 +111,6 @@ export default class Debug extends Vue {
         const newDoc = JSON.parse(this.drawingJson) as DrawingState;
         Object.assign(this.document.drawing, newDoc);
         await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
-        //window.location.reload();
     }
     generateAnError(){
         throw new Error('this is sample error');  
