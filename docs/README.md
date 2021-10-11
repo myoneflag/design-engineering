@@ -6,6 +6,7 @@
 * [Deployments](docs/development/deployments.md)
 * [Document JSON debug](development/document_debug_json.md)
 * [PDF Renderer Lambda](development/pdf_renderer_lambda.md)
+* [Revit Development AWS Instance](development/revit-development-aws-instance.md)
 
 ## Infrastructure
 
