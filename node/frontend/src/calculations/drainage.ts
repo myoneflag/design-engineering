@@ -324,8 +324,8 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
                         distTo.set(edge.to.connectable, unventedLength);
 
-                        if ((maxUnventedLengthM != null && unventedLength > maxUnventedLengthM)
-                            || pCalc.ventTooFarDist
+                        if (maxUnventedLengthM != null && (unventedLength > maxUnventedLengthM
+                            || pCalc.ventTooFarDist )
                         ) {
                             const accountedFor = pCalc.ventTooFarDist;
                             let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
