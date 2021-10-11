@@ -11,6 +11,7 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import { BaseBackedConnectable } from "../BackedConnectable";
 import { GlobalStore } from "../global-store";
 import { Coord } from "../../../../../common/src/api/document/drawing";
+import { EPS } from "../../../../../common/src/lib/utils";
 
 
 export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
@@ -39,6 +40,8 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
         };
     } = {};
 
+    console.log("Revit Export");
+
     for (const [luid, lprops] of Object.entries(document.drawing.levels)) {
         const entities = Array.from(globalStore.entitiesInLevel.get(luid) || new Set<string>()).map(
             (uid) => globalStore.get(uid)!.entity
@@ -58,11 +61,16 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                 const pipeEndPoint = pipeEnd.toWorldCoord({ x: 0, y: 0 });
 
                 // skip pipes of 0 length
-                if (pipeStartPoint.x === pipeEndPoint.x && pipeStartPoint.y === pipeEndPoint.y) {
-                    console.log("skip 0 length pipes")
+                if ((pipeStartPoint.x - pipeEndPoint.x < EPS) && (pipeStartPoint.y - pipeEndPoint.y) < EPS) {
+                    console.log(`Skipped 0 length pipe l=${lprops.abbreviation} uid=${entity.uid}`)
                     return;                        
                 }
-                    
+
+                // skip pipes of null size
+                if (!calc.realNominalPipeDiameterMM) {
+                    console.log(`Skipped null size pipe l=${lprops.abbreviation} uid=${entity.uid}`)
+                    return;                        
+                }                
 
                 let data: Array<any> = [];
                 if (
@@ -122,6 +130,13 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                         sizeMMArray.push(calc.realNominalPipeDiameterMM || 0);
                     }
                 });
+                const minPipeSizeMM = Math.min(...sizeMMArray)
+                // skip fittings of size 0
+                if (!minPipeSizeMM) {
+                    console.log(`Skipped null size fitting l=${lprops.abbreviation} uid=${entity.uid}`)
+                    return;                        
+                }                
+
                 const system = document.drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid);
         
                 const center = o.toWorldCoord({ x: 0, y: 0 });
@@ -155,7 +170,7 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                                     fittingName: o.friendlyTypeName,
                                     pipeSystem: system!.name,
                                     // pipeMaterial: null,
-                                    pipeSizeMM: Math.min(...sizeMMArray),
+                                    pipeSizeMM: minPipeSizeMM,
                                     // pipeStart: null,
                                     // pipeEnd: null,
                                     // valveType: null,
@@ -186,6 +201,8 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                     }
                 });
 
+                const minPipeSizeMM = Math.min(...sizeMMArray)
+
                 const filled = fillDirectedValveFields(document.drawing, globalStore, entity);
                 const system = document.drawing.metadata.flowSystems.find(
                     (s) => s.uid === filled.systemUidOption
@@ -204,6 +221,11 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                     const valveEntity = entity as DirectedValveEntity
                     const calc = globalStore.getOrCreateCalculation(valveEntity);
                     valveSizeMM = calc.sizeMM;
+                }
+
+                if (!valveSizeMM && !minPipeSizeMM) {
+                    console.log(`Skipped 0 size valve l=${lprops.abbreviation} uid=${entity.uid}`)
+                    return;
                 }
 
                 if (system) {
@@ -241,7 +263,7 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                                         networkType: "RETICULATIONS",
                                         valveType: filled.valve.catalogId,
                                         valveSystem: [system.name],
-                                        valveSizeMM: valveSizeMM || Math.min(...sizeMMArray),
+                                        valveSizeMM: valveSizeMM || minPipeSizeMM,
                                         center: center,
                                         z: lprops.floorHeightM + Math.min(...zArray)
                                     }
