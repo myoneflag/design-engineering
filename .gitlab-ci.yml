@@ -45,8 +45,40 @@ deploy_test:
     url: https://app-test.h2xtesting.com
   only:
     - test
-    - /^test-.*$/
 
+deploy_feature:
+  stage: deploy
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    url: https://$CI_COMMIT_REF_SLUG.h2xtesting.com    
+    on_stop: stop_feature
+    auto_stop_in: 2 weeks
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
+  script:
+    - export env=${CI_COMMIT_REF_SLUG/feature-/}
+    - echo "Deploy env $env for $CI_COMMIT_BRANCH feature"
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  only:
+    - /^feature-.*$/
+
+stop_feature:
+  stage: deploy
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-test-profile  
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - export env=${CI_COMMIT_REF_SLUG/feature-/}
+    - echo "Delete env $env for feature $CI_COMMIT_BRANCH"
+    - sudo -E ./cloudformation/delete.sh
+  only:
+    - /^feature-.*$/
+
+      
 deploy_stage:
   stage: deploy
   variables:  
