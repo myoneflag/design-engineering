@@ -66,6 +66,9 @@ deploy_feature:
 
 stop_feature:
   stage: deploy
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-test-profile  
+    env: $CI_ENVIRONMENT_SLUG
   environment:
     name: $CI_ENVIRONMENT_SLUG
     action: stop
@@ -75,6 +78,9 @@ stop_feature:
     - sudo -E npm run delete
   rules:
     - when: manual
+  only:
+    - /^feature-.*$/
+
       
 deploy_stage:
   stage: deploy
