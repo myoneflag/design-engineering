@@ -39,6 +39,7 @@ import {PlantType} from "../../../common/src/api/document/entities/plants/plant-
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 import { SupportedLocales } from "../../../common/src/api/locale";
+import { VolumeMeasurementSystem } from './../../../common/src/lib/measurements';
 
 export interface PsdCountEntry {
     units: number;
@@ -48,6 +49,8 @@ export interface PsdCountEntry {
 
     // drainage
     drainageUnits: number;
+    mainDrainageUnits?: number;
+    highestDrainageUnits?: number;
 }
 
 export interface FinalPsdCountEntry extends PsdCountEntry {
@@ -228,13 +231,37 @@ export function countPsdUnits(
     return result;
 }
 
-export function addPsdCounts(a: PsdCountEntry, b: PsdCountEntry): PsdCountEntry {
+export function addPsdCounts(
+    a: PsdCountEntry, 
+    b: PsdCountEntry,
+    document: DocumentState,
+    catalog: Catalog,
+): PsdCountEntry {
+    let drainageUnits = a.drainageUnits + b.drainageUnits;
+    let mainDrainageUnits;
+    let highestDrainageUnits;
+
+    if (document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+        const aDrainageUnits = a.mainDrainageUnits || a.drainageUnits;
+        const bDrainageUnits = b.mainDrainageUnits || b.drainageUnits;
+        mainDrainageUnits = aDrainageUnits + bDrainageUnits;
+        highestDrainageUnits = Math.max(
+            (a.highestDrainageUnits || a.drainageUnits), (b.highestDrainageUnits || b.drainageUnits)
+        );
+        const calculatedDrainageUnits = resolveEN1205622000DrainageUnits(document, catalog, mainDrainageUnits);
+        drainageUnits = (aDrainageUnits > 0 && calculatedDrainageUnits > highestDrainageUnits) 
+        ? calculatedDrainageUnits
+        : highestDrainageUnits;
+    }
+    
     return {
         units: a.units + b.units,
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings,
         gasMJH: a.gasMJH + b.gasMJH,
-        drainageUnits: a.drainageUnits + b.drainageUnits,
+        drainageUnits: drainageUnits,
+        mainDrainageUnits: mainDrainageUnits,
+        highestDrainageUnits: highestDrainageUnits,
     };
 }
 
@@ -356,7 +383,12 @@ export function mergePsdProfile(profile: PsdProfile, other: PsdProfile) {
     }
 }
 
-export function countPsdProfile(profile: PsdProfile, combineLUs: boolean): FinalPsdCountEntry {
+export function countPsdProfile(
+    profile: PsdProfile,
+    combineLUs: boolean,
+    document: DocumentState,
+    catalog: Catalog,
+): FinalPsdCountEntry {
     const byCorrelated = new Map<string, PsdCountEntry>();
 
     let highestLU = 0;
@@ -382,7 +414,7 @@ export function countPsdProfile(profile: PsdProfile, combineLUs: boolean): Final
 
     let total = zeroPsdCounts();
     byCorrelated.forEach((contextual) => {
-        total = addPsdCounts(total, contextual);
+        total = addPsdCounts(total, contextual, document, catalog);
         highestLU = Math.max(highestLU, contextual.units);
     });
     return {
@@ -391,6 +423,8 @@ export function countPsdProfile(profile: PsdProfile, combineLUs: boolean): Final
         continuousFlowLS: total.continuousFlowLS,
         gasMJH: total.gasMJH,
         drainageUnits: total.drainageUnits,
+        mainDrainageUnits: total.mainDrainageUnits,
+        highestDrainageUnits: total.highestDrainageUnits,
         highestLU,
     };
 }
@@ -483,17 +517,21 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: Support
     assertUnreachable(psdMethod);
 }
 
-export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods):  { name: string; abbreviation: string } {
-    switch (drainageMethod) {
-        case SupportedDrainageMethods.AS2018FixtureUnits:
-        case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
-            return { name: 'Fixture Units', abbreviation: 'FU' };
+export function getDrainageUnitName(measurement: VolumeMeasurementSystem): { name: string; abbreviation: string } {
+    let abbreviation = 'l/sec'
+                    
+    switch (measurement) {
+        case VolumeMeasurementSystem.METRIC:
             break;
-        case SupportedDrainageMethods.EN1205622000DischargeUnits:
-            return { name: 'Discharge Units', abbreviation: 'DU' };
+        case VolumeMeasurementSystem.IMPERIAL:
+        case VolumeMeasurementSystem.US:
+            abbreviation = 'gpm'
             break;
+        default:
+            assertUnreachable(measurement);
     }
-    assertUnreachable(drainageMethod);
+
+    return { name: 'Flow Rate', abbreviation };
 }
 
 export interface FlowRateResult {
@@ -670,4 +708,10 @@ export function addCosts(a: Cost | null, b: Cost | null): Cost {
 export function roundNumber(value: number, decimalPlaces: number) {
     const factor = Math.pow(10, decimalPlaces)
     return Math.round((value + Number.EPSILON) * factor) / factor
+}
+
+export function resolveEN1205622000DrainageUnits(document: DocumentState, catalog: Catalog, drainageUnits: number) {
+    const frequencyFactor = catalog.en12056FrequencyFactor[document.drawing.metadata.calculationParams.en12056FrequencyFactor];
+
+    return (frequencyFactor * Math.sqrt(drainageUnits));
 }
