@@ -54,10 +54,10 @@ deploy_feature:
     on_stop: stop_feature
     auto_stop_in: 2 weeks
   variables:
-    AWS_PROFILE: h2x-gitlab-runner-test-profile  
-    env: $CI_COMMIT_REF_SLUG
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
   script:
-    - echo "Deploy $CI_COMMIT_BRANCH feature"
+    - export env=${CI_COMMIT_REF_SLUG/feature-/}
+    - echo "Deploy env $env for $CI_COMMIT_BRANCH feature"
     - sudo -E ./cloudformation/deploy.sh
   after_script:
     - sudo -E ./cloudformation/clean.sh
@@ -68,12 +68,12 @@ stop_feature:
   stage: deploy
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile  
-    env: $CI_COMMIT_REF_SLUG
   environment:
     name: $CI_COMMIT_REF_SLUG
     action: stop
   script:
-    - echo "Delete env $CI_COMMIT_BRANCH feature"
+    - export env=${CI_COMMIT_REF_SLUG/feature-/}
+    - echo "Delete env $env for feature $CI_COMMIT_BRANCH"
     - sudo -E ./cloudformation/delete.sh
   only:
     - /^feature-.*$/
