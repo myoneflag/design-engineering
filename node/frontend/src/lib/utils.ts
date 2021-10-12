@@ -8,7 +8,9 @@ import { getFields } from "../calculations/utils";
 import { getEntityName } from "../../../common/src/api/document/entities/types";
 import Vue from 'vue';
 import { Color } from "../../../common/src/api/document/drawing";
-import {assertUnreachable} from "../../../common/src/api/config";
+import { assertUnreachable } from "../../../common/src/api/config";
+import * as _ from "lodash";
+import { WarningType } from "./types";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -40,7 +42,7 @@ export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     }
 };
 
-export function color2rgb(color: Color): {r: number, g: number, b: number} {
+export function color2rgb(color: Color): { r: number, g: number, b: number } {
     const num = parseInt(color.hex.substr(1), 16);
     return {
         r: (num >> 16) & 0xff,
@@ -49,12 +51,12 @@ export function color2rgb(color: Color): {r: number, g: number, b: number} {
     };
 }
 
-export function rgb2color(rgb: {r: number, g: number, b: number}): Color {
+export function rgb2color(rgb: { r: number, g: number, b: number }): Color {
     let str = ((rgb.r << 16) | (rgb.g << 8) | (rgb.b << 0)).toString(16);
-    return {hex: '#' + str};
+    return { hex: '#' + str };
 }
 
-export function rgb2style(rgb: {r: number, g: number, b: number}, a?: number): string {
+export function rgb2style(rgb: { r: number, g: number, b: number }, a?: number): string {
     if (a === undefined || a === 1) {
         const str = ((rgb.r << 16) | (rgb.g << 8) | (rgb.b << 0)).toString(16);
         return '#' + str;
@@ -218,4 +220,51 @@ export function getNextPipeSize(currentSize: number, pipeSizes: number[]): numbe
     }
 
     return newPipeSize;
+}
+
+/* Get tree data of Warnings */
+export function getTreeDataOfWarnings(
+    warnings: WarningType[],
+    showHiddenWarnings: boolean,
+    hiddenIds: Array<string>
+): any {
+    let treeData = [];
+    let warningsByLevel = _.groupBy(
+        warnings.filter((e) => showHiddenWarnings || !hiddenIds.includes(e.id)), "level"
+    );
+    for (const level in warningsByLevel) {
+        let levelData = {
+            name: level,
+            count: warningsByLevel[level].length,
+            visible: true,
+            data: [],
+        };
+        let levelDataByType = _.groupBy(warningsByLevel[level], "type");
+        for (const type in levelDataByType) {
+            let typeData = levelDataByType[type].map((e) => ({
+                ...e,
+                label: e.warning,
+                _rowVariant: hiddenIds.includes(e.id) ? 'hidden' : '',
+            }));
+            if (typeData.length > 1) {
+                const hidden = !_.difference(typeData.map((e) => e.id), hiddenIds).length;
+                (levelData.data as any).push({
+                    label: type,
+                    description: "",
+                    hidden,
+                    children: typeData,
+                    _rowVariant: hidden ? 'hidden' : '',
+                });
+            } else {
+                (levelData.data as any).push({
+                    ...typeData[0],
+                    label: type, // typeData[0].warning
+                    children: [],
+                    _rowVariant: hiddenIds.includes(typeData[0].id) ? 'hidden' : '',
+                });
+            }
+        };
+        treeData.push(levelData);
+    }
+    return treeData;
 }

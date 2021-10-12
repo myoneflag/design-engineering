@@ -3,7 +3,7 @@
         <b-row>
             <b-col>
                 <b-button-group
-                        style="margin-left: -380px"
+                        style="margin-left: -480px"
                 >
 
                     <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)" >
@@ -30,7 +30,17 @@
                     <b-button
                             variant="outline-dark"
                             class="calculationBtn"
-                            @click="filterShown = !filterShown"
+                            @click="handleClickWarning"
+                            :pressed="warningShown"
+                    >
+                        Warnings
+                        <v-icon name="caret-down" scale="1" />
+                    </b-button>
+
+                    <b-button
+                            variant="outline-dark"
+                            class="calculationBtn"
+                            @click="handleClickFilter"
                             :pressed="filterShown"
                     >
                         Filters
@@ -62,6 +72,7 @@
                 </div>
             </b-col>
         </b-row>
+        <warnings v-if="warningShown" />
         <b-modal id="bv-modal-example" hide-footer>
             <template v-slot:modal-title>
                 Get link
@@ -102,9 +113,12 @@ import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
+import Warnings from "./Warnings.vue";
 
 @Component({
-    components: {},
+    components: {
+        Warnings
+    },
     props: {
         objects: Array,
         onChange: Function,
@@ -113,6 +127,7 @@ import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
 })
 export default class CalculationsSidebar extends Vue {
     filterShown = true;
+    warningShown = false;
     shareLink: string = window.location.origin + "/";
     generate: { isLoading: boolean } = {
         isLoading: false
@@ -148,6 +163,16 @@ export default class CalculationsSidebar extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+    
+    /* toggle Warnings and Filters */
+    handleClickWarning() {
+        this.warningShown = !this.warningShown
+        this.filterShown = false
+    }
+    handleClickFilter() {
+        this.filterShown = !this.filterShown
+        this.warningShown = false
     }
 
     stageNewFilters() {
@@ -277,7 +302,7 @@ export default class CalculationsSidebar extends Vue {
     right: 20px;
     min-height: 100px;
     top: 80px;
-    width: 300px;
+    width: 400px;
 }
 
 .filterPanel {
