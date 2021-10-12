@@ -2,7 +2,8 @@ set -e
 
 cd cloudformation
 npm install
-if [![ $(npm run stack-exists) == *false ]]; then
+npm run stack-exists
+if [ $? -eq 0 ]; then
     npm run delete
 fi
 cd ..
