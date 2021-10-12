@@ -69,14 +69,12 @@ stop_feature:
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile  
     env: $CI_COMMIT_REF_SLUG
-    
   environment:
     name: $CI_COMMIT_REF_SLUG
     action: stop
   script:
     - echo "Delete env $CI_COMMIT_BRANCH feature"
-    - cd cloudformation
-    - sudo -E npm run delete
+    - sudo -E ./cloudformation/delete.sh
   only:
     - /^feature-.*$/
 
