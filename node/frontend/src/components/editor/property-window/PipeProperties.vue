@@ -32,6 +32,9 @@ import PipeEntity, {
     fillPipeDefaultFields,
     makePipeFields
 } from "../../../../../common/src/api/document/entities/pipe-entity";
+import { globalStore } from "../../../store/document/mutations";
+import { getFloorHeight } from "../../../htmlcanvas/lib/utils";
+
 
 @Component({
     components: { PropertiesFieldBuilder },
@@ -48,7 +51,8 @@ export default class PipeProperties extends Vue {
         return makePipeFields(
             this.$props.selectedEntity,
             this.$store.getters["catalog/default"],
-            this.document.drawing
+            this.document.drawing,
+            getFloorHeight(globalStore, this.document, this.$props.selectedEntity),
         );
     }
 
