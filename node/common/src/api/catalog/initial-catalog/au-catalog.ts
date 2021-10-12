@@ -1637,7 +1637,7 @@ export const auCatalog: Catalog = {
             enDrainageSystem: {
                 drainageSystem1: 2,
                 drainageSystem2: 1.8,
-                drainageSystem3: 1.5,
+                drainageSystem3: 1.2,
                 drainageSystem4: 2,
             },
             upcFixtureUnits: "4",
