@@ -25,10 +25,6 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
         return;
     }
 
-    if (psdUnits !== null && context.doc.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
-        psdUnits.drainageUnits = resolveEN1205622000DrainageUnits(context, calc)
-    }
-
     switch (entity.network) {
         case NetworkType.RISERS:
 
@@ -299,23 +295,36 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                         return true;
                     }
                     const prevUnvented = unventedLUs.get(edge.value.uid) || zeroPsdCounts();
-                    unventedLUs.set(edge.value.uid, addPsdCounts(prevUnvented, {
-                        continuousFlowLS: 0, dwellings: 0, gasMJH: 0, units: 0,
-                        drainageUnits: ep.drainageUnits || 0,
-                    }));
+                    unventedLUs.set(edge.value.uid, addPsdCounts(
+                        prevUnvented,
+                        {
+                            continuousFlowLS: 0, 
+                            dwellings: 0, 
+                            gasMJH: 0, 
+                            units: 0,
+                            drainageUnits: ep.drainageUnits || 0,
+                        },
+                        context.doc,
+                        context.catalog,
+                    ));
 
                     // the whole point of this algo - assign this flow to the vent root
                     // that reaches this pipe.
                     if (pCalc.ventRoot) {
                         const curr = result.get(pCalc.ventRoot) || zeroPsdCounts();
 
-                        result.set(pCalc.ventRoot, addPsdCounts(curr, {
-                            continuousFlowLS: 0,
-                            dwellings: 0,
-                            gasMJH: 0,
-                            units: 0,
-                            drainageUnits: ep.drainageUnits || 0,
-                        }));
+                        result.set(pCalc.ventRoot, addPsdCounts(
+                            curr, 
+                            {
+                                continuousFlowLS: 0,
+                                dwellings: 0,
+                                gasMJH: 0,
+                                units: 0,
+                                drainageUnits: ep.drainageUnits || 0,
+                            },
+                            context.doc,
+                            context.catalog,
+                        ));
                         return true;
                     } else {
                         // Check that the pipe will not exceed max unvented length or FU/DU
@@ -499,7 +508,7 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
                         const connectedPCalc = context.globalStore.getOrCreateCalculation(connectedPipe.entity);
                         const additionalUnits = connectedPCalc?.psdUnits;
                         if (additionalUnits) {
-                            const sumUnits = addPsdCounts(units, additionalUnits);
+                            const sumUnits = addPsdCounts(units, additionalUnits, context.doc, context.catalog);
                             unitsOfGroup.set(groupId, sumUnits);
                         }
                     }
@@ -790,7 +799,7 @@ export function sizeVents(context: CalculationEngine, roots: Map<string, PsdCoun
 
                 // Propagate to upstream
                 const existingUpstreamFlow = flowOfNode.get(edge.from.connectable) || zeroPsdCounts();
-                flowOfNode.set(edge.from.connectable, addPsdCounts(downstreamFlow, existingUpstreamFlow));
+                flowOfNode.set(edge.from.connectable, addPsdCounts(downstreamFlow, existingUpstreamFlow, context.doc, context.catalog));
 
                 // Size the pipe. That's what we're here for, right?
                 const pipe = context.globalStore.get(edge.value.uid);
@@ -909,14 +918,14 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                         if (isRoot) {
                             lenghtAtNextVent.set(upstreamUid, Math.max(upstreamNextLengthTally, filled.lengthM!));
                             if (calc.psdUnits) {
-                                flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, calc.psdUnits));
+                                flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, calc.psdUnits, context.doc, context.catalog));
                                 // Record this root.
                                 result.set(edge.to.connectable, subPsdCounts(calc.psdUnits, downstreamNextFlowTally));;
                             } else {
                                 missingCalculations = true;
                             }
                         } else {
-                            flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, downstreamNextFlowTally));
+                            flowAtNextVent.set(upstreamUid, addPsdCounts(upstreamNextFlowTally, downstreamNextFlowTally, context.doc, context.catalog));
                         }
                     }
                 );
@@ -1040,10 +1049,4 @@ export function processFixedStack(context: CalculationEngine, member: PipeEntity
             sizeDrainagePipe(pipe, context, highestLU);
         }
     }
-}
-
-function resolveEN1205622000DrainageUnits(context: CalculationContext, pipeCalc: PipeCalculation) {
-    const frequencyFactor = context.catalog.en12056FrequencyFactor[context.doc.drawing.metadata.calculationParams.en12056FrequencyFactor];
-
-    return frequencyFactor * Math.sqrt(pipeCalc.psdUnits!.drainageUnits);
 }

@@ -7,10 +7,11 @@ import { ShareDocument } from '../../../common/src/models/ShareDocument';
 import { Document } from '../../../common/src/models/Document';
 import { SupportedLocales } from "../../../common/src/api/locale";
 import { usCatalog } from "../../../common/src/api/catalog/initial-catalog/us-catalog";
+import { ukCatalog } from "../../../common/src/api/catalog/initial-catalog/uk-catalog";
 
 const catalogsByLocale = {
     [SupportedLocales.AU]: auCatalog,
-    [SupportedLocales.UK]: auCatalog,
+    [SupportedLocales.UK]: ukCatalog,
     [SupportedLocales.US]: usCatalog
 };
 

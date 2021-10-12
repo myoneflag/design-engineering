@@ -3,12 +3,12 @@
 
 # Checklist
 
-[ ] Is it merged in `test` and deployed on `app-test` ?  
-[ ] Have you reviewed all comments and feedback in the MR ?  
-[ ] Have you reviewed all comments and feedback on the Jira ticket ?  
-[ ] Have you updated the Jira ticket with the latest screenshots / videos ?  
-[ ] Have you updated the Jira ticket with a confirmation that it's done and can be tested ?  
-[ ] Have you updated the Jira ticket with **testing recomendations**(1) ?
+- [ ] Is it merged in `test` and deployed on `app-test` ?  
+- [ ] Have you reviewed all comments and feedback in the MR ?  
+- [ ] Have you reviewed all comments and feedback on the Jira ticket ?  
+- [ ] Have you updated the Jira ticket with the latest screenshots / videos ?  
+- [ ] Have you updated the Jira ticket with a confirmation that it's done and can be tested ?  
+- [ ] Have you updated the Jira ticket with **testing recomendations**(1) ?
 
 
 > Note:  

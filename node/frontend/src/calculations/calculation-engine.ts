@@ -2301,7 +2301,7 @@ export default class CalculationEngine implements CalculationContext {
                 NoFlowAvailableReason.NO_SOURCE
             );
         } else {
-            const exclusivePsdU = countPsdProfile(exclusiveProfile, this.combineLUs);
+            const exclusivePsdU = countPsdProfile(exclusiveProfile, this.combineLUs, this.doc, this.catalog);
 
             const wet = this.firstWet.get(stringify(flowEdge))!;
             const dryUids = endpointUids.filter((ep) => ep !== wet.connectable);
@@ -2315,7 +2315,7 @@ export default class CalculationEngine implements CalculationContext {
                 [],
                 [stringify(flowEdge)]
             );
-            const residualPsdU = countPsdProfile(residualPsdProfile, this.combineLUs);
+            const residualPsdU = countPsdProfile(residualPsdProfile, this.combineLUs, this.doc, this.catalog);
 
             if (!isZeroWaterPsdCounts(exclusivePsdU)) {
                 const cmp = compareWaterPsdCounts(residualPsdU, exclusivePsdU);
@@ -2625,7 +2625,7 @@ export default class CalculationEngine implements CalculationContext {
                         let total = zeroPsdCounts();
                         let highestLU = 0;
                         units.forEach((contextual) => {
-                            total = addPsdCounts(total, contextual);
+                            total = addPsdCounts(total, contextual, this.doc, this.catalog);
                             highestLU = Math.max(highestLU, contextual.units);
                         });
 
