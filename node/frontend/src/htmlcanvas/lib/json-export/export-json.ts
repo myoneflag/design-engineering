@@ -61,15 +61,15 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                 const pipeEndPoint = pipeEnd.toWorldCoord({ x: 0, y: 0 });
 
                 // skip pipes of 0 length
-                if ((pipeStartPoint.x - pipeEndPoint.x < EPS) && (pipeStartPoint.y - pipeEndPoint.y) < EPS) {
+                if (Math.abs(pipeStartPoint.x - pipeEndPoint.x) < EPS && Math.abs(pipeStartPoint.y - pipeEndPoint.y) < EPS) {
                     console.log(`Skipped 0 length pipe l=${lprops.abbreviation} uid=${entity.uid}`)
-                    return;                        
+                    return;
                 }
 
                 // skip pipes of null size
                 if (!calc.realNominalPipeDiameterMM) {
                     console.log(`Skipped null size pipe l=${lprops.abbreviation} uid=${entity.uid}`)
-                    return;                        
+                    return;
                 }                
 
                 let data: Array<any> = [];
