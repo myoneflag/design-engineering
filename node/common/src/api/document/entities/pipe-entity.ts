@@ -3,7 +3,7 @@ import {EntityType} from "./types";
 import {Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer} from "../drawing";
 import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
 import {Catalog} from "../../catalog/types";
-import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
+import {convertMeasurementSystem, convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
 import {isDrainage, StandardFlowSystemUids} from "../../config";
 
 export default interface PipeEntity extends DrawableEntity {
@@ -32,7 +32,12 @@ export interface MutablePipe {
     endpointUid: readonly [string, string];
 }
 
-export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: DrawingState): PropertyField[] {
+export function makePipeFields(
+    entity: PipeEntity,
+    catalog: Catalog,
+    drawing: DrawingState,
+    floorHeight: number = 0,
+): PropertyField[] {
     const result = fillPipeDefaultFields(drawing, 0, entity);
     const materials = Object.keys(catalog.pipes).map((mat) => {
         const c: Choice = {
@@ -150,6 +155,8 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             );
         }
     }
+    
+    const height = convertMeasurementSystem(drawing.metadata.units, Units.Meters, floorHeight + entity.heightAboveFloorM);
 
     fields.push(
         {
@@ -175,7 +182,7 @@ export function makePipeFields(entity: PipeEntity, catalog: Catalog, drawing: Dr
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",
             units: Units.Meters,
-            description: `Height = ${+(drawing.levels.ground.floorHeightM + entity.heightAboveFloorM).toFixed(12)}m`,
+            description: `Height = ${height[1]}${height[0]}`
         },
     );
     return fields;
