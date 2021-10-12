@@ -45,8 +45,37 @@ deploy_test:
     url: https://app-test.h2xtesting.com
   only:
     - test
-    - /^test-.*$/
 
+deploy_feature:
+  stage: deploy
+  environment:
+    name: $CI_ENVIRONMENT_SLUG
+    url: https://$CI_ENVIRONMENT_SLUG.h2xtesting.com    
+    on_stop: stop_feature
+    auto_stop_in: 2 weeks
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-test-profile  
+    env: $CI_ENVIRONMENT_SLUG
+  script:
+    - echo "Deploy $CI_COMMIT_BRANCH feature to $env"
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  only:
+    - /^feature-.*$/
+
+stop_feature:
+  stage: deploy
+  environment:
+    name: $CI_ENVIRONMENT_SLUG
+    action: stop
+  script:
+    - echo "Delete env $CI_COMMIT_BRANCH feature to $env"
+    - cd cloudformation
+    - sudo -E npm run delete
+  rules:
+    - when: manual
+      
 deploy_stage:
   stage: deploy
   variables:  
