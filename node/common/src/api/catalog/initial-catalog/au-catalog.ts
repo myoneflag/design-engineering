@@ -380,7 +380,7 @@ export const auCatalog: Catalog = {
                         "cold-water": "0.12",
                         "hot-water": "0.12"
                     }
-                },                
+                },
             },
             uid: "bedpanSanitiser",
             warmTempC: null,
@@ -454,23 +454,23 @@ export const auCatalog: Catalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
-                   default: {
+                    default: {
                         "cold-water": "0.1",
                         "warm-water": "0.1"
-                   }
-                },  
+                    }
+                },
                 enware: {
                     "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     }
-                },  
+                },
                 galvin: {
                     "5*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     }
-                },  
+                },
             },
             uid: "beverageBay",
             warmTempC: "42",
@@ -562,13 +562,13 @@ export const auCatalog: Catalog = {
                         "cold-water": "1",
                         "warm-water": "1"
                     }
-                },  
+                },
                 galvin: {
                     default: {
                         "cold-water": "1.25",
                         "warm-water": "1.25"
                     }
-                },  
+                },
             },
             uid: "birthingPool",
             warmTempC: "38",
@@ -950,7 +950,7 @@ export const auCatalog: Catalog = {
             outletAboveFloorM: "0.5",
             probabilityOfUsagePCT: "0",
             qLS: {
-                generic:{ default: { "cold-water": "0.3" } }
+                generic: { default: { "cold-water": "0.3" } }
             },
             uid: "hoseTap",
             warmTempC: null,
@@ -1232,10 +1232,10 @@ export const auCatalog: Catalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
-                   default: {
+                    default: {
                         "cold-water": "0.12",
                         "warm-water": "0.12"
-                   }
+                    }
                 },
                 enware: {
                     "5*": {
@@ -2115,7 +2115,7 @@ export const auCatalog: Catalog = {
                     abbreviation: 'Ke Kelit CU',
                     priceTableName: "Copper",
                     uid: 'keKelitCu',
-                },                            
+                },
             ],
             abbreviation: "CU",
             pipesBySize: {
@@ -3504,7 +3504,7 @@ export const auCatalog: Catalog = {
                 }
             },
             uid: "cpvc"
-        },        
+        },
         stainlessSteelSewer: {
             name: "Stainless Steel (Sewer)",
             abbreviation: "S/S",
@@ -5061,6 +5061,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 3: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -5095,6 +5100,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 4: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -5128,6 +5138,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 5: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -5160,6 +5175,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 8: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -5189,6 +5209,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 15: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -5215,6 +5240,11 @@ export const auCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
             }
         }
@@ -5681,14 +5711,14 @@ export const auCatalog: Catalog = {
     },
     balancingValves: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve'},
-            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve'}
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve' },
+            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve' }
         ],
     },
     hotWaterPlant: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant"},
-            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant"}
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant" },
+            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant" }
         ],
         grundfosPressureDrop: {
             "20-60-1": {

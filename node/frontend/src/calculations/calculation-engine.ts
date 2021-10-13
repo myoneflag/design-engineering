@@ -17,8 +17,8 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import {CalculationContext, PressurePushMode} from "../../src/calculations/types";
-import Graph, {Edge} from "../../src/calculations/graph";
+import { CalculationContext, PressurePushMode } from "../../src/calculations/types";
+import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
 import Pipe from "../../src/htmlcanvas/objects/pipe";
@@ -29,14 +29,14 @@ import {
     getReynoldsNumber,
     head2kpa
 } from "../../src/calculations/pressure-drops";
-import {PropertyField, ChoiceField, FieldType} from "../../../common/src/api/document/entities/property-field";
-import {MainEventBus} from "../../src/store/main-event-bus";
-import {getObjectFrictionHeadLoss} from "../../src/calculations/entity-pressure-drops";
-import {DrawableEntityConcrete, isConnectableEntity} from "../../../common/src/api/document/entities/concrete-entity";
+import { PropertyField, ChoiceField, FieldType } from "../../../common/src/api/document/entities/property-field";
+import { MainEventBus } from "../../src/store/main-event-bus";
+import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
+import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 // tslint:disable-next-line:max-line-length
-import DirectedValveEntity, {makeDirectedValveFields} from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
+import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
     addCosts,
     addPsdCounts,
@@ -57,16 +57,16 @@ import {
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
 import SystemNodeCalculation from "../../src/store/document/calculations/system-node-calculation";
-import {isCalculated} from "../store/document/calculations";
+import { isCalculated } from "../store/document/calculations";
 import DrawableObjectFactory from "../htmlcanvas/lib/drawable-object-factory";
-import {Calculated} from "../htmlcanvas/lib/object-traits/calculated-object";
+import { Calculated } from "../htmlcanvas/lib/object-traits/calculated-object";
 import stringify from "json-stable-stringify";
-import {makeLoadNodesFields, NodeType} from "../../../common/src/api/document/entities/load-node-entity";
-import {GlobalStore} from "../htmlcanvas/lib/global-store";
-import {ObjectStore} from "../htmlcanvas/lib/object-store";
-import {makeFlowSourceFields} from "../../../common/src/api/document/entities/flow-source-entity";
+import { makeLoadNodesFields, NodeType } from "../../../common/src/api/document/entities/load-node-entity";
+import { GlobalStore } from "../htmlcanvas/lib/global-store";
+import { ObjectStore } from "../htmlcanvas/lib/object-store";
+import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
-import {fillPlantDefaults, makePlantEntityFields} from "../../../common/src/api/document/entities/plants/plant-entity";
+import { fillPlantDefaults, makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
 import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
@@ -76,8 +76,8 @@ import {
     SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
-import {Catalog, PipeSpec} from "../../../common/src/api/catalog/types";
-import {DrawingState} from "../../../common/src/api/document/drawing";
+import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
+import { DrawingState } from "../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -87,11 +87,11 @@ import {
     parseCatalogNumberOrMin,
     upperBoundTable
 } from "../../../common/src/lib/utils";
-import {determineConnectableSystemUid} from "../store/document/entities/lib";
-import {getPropertyByString} from "../lib/utils";
-import {flowSystemsFlowTogether, getPlantPressureLossKPA} from "../htmlcanvas/lib/utils";
-import {RingMainCalculator} from "./ring-main-calculator";
-import {Configuration, NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
+import { determineConnectableSystemUid } from "../store/document/entities/lib";
+import { getPropertyByString } from "../lib/utils";
+import { flowSystemsFlowTogether, getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
+import { RingMainCalculator } from "./ring-main-calculator";
+import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import {
     identifyReturns,
     MINIMUM_BALANCING_VALVE_PRESSURE_DROP_KPA,
@@ -102,13 +102,13 @@ import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import SystemNode from "../htmlcanvas/objects/big-valve/system-node";
 import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
-import {fillDefaultLoadNodeFields} from "../store/document/entities/fillDefaultLoadNodeFields";
-import {PriceTable} from "../../../common/src/api/catalog/price-table";
-import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
-import {calculateGas} from "./gas";
-import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
-import {NodeProps} from '../../../common/src/models/CustomEntity';
-import {processDrainage, sizeDrainagePipe} from "./drainage";
+import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
+import { PriceTable } from "../../../common/src/api/catalog/price-table";
+import { makeGasApplianceFields } from "../../../common/src/api/document/entities/gas-appliance";
+import { calculateGas } from "./gas";
+import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
+import { NodeProps } from '../../../common/src/models/CustomEntity';
+import { processDrainage, sizeDrainagePipe } from "./drainage";
 import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../common/src/lib/measurements";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
@@ -205,23 +205,23 @@ export default class CalculationEngine implements CalculationContext {
         if (this.globalStore.dependedBy.size) {
             throw new Error(
                 "couldn't clear cache, dependedBy still " +
-                    JSON.stringify(this.globalStore.dependedBy, (key, value) => {
-                        if (value instanceof Map) {
-                            return [...value];
-                        }
-                        return value;
-                    })
+                JSON.stringify(this.globalStore.dependedBy, (key, value) => {
+                    if (value instanceof Map) {
+                        return [...value];
+                    }
+                    return value;
+                })
             );
         }
         if (this.globalStore.dependsOn.size) {
             throw new Error(
                 "couldn't clear cache, dependsOn still " +
-                    JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
-                        if (value instanceof Map) {
-                            return [...value];
-                        }
-                        return value;
-                    })
+                JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
+                    if (value instanceof Map) {
+                        return [...value];
+                    }
+                    return value;
+                })
             );
         }
         this.globalStore.forEach((o) => {
@@ -287,7 +287,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([], obj.entity,undefined);
+                    fields = makeFlowSourceFields([], obj.entity, undefined);
                     break;
                 case EntityType.LOAD_NODE:
                     const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
@@ -320,8 +320,8 @@ export default class CalculationEngine implements CalculationContext {
                     } else if (field.type == FieldType.Choice) {
                         const val = getPropertyByString(obj.entity, field.property);
                         const choices = (field as ChoiceField).params.choices;
-                        if ( val && val !== "" && 
-                             choices && choices.length > 0 && !choices.find( c => c.key == val) ) {
+                        if (val && val !== "" &&
+                            choices && choices.length > 0 && !choices.find(c => c.key == val)) {
                             selectObject = {
                                 uid: obj.uid,
                                 property: field.property,
@@ -603,7 +603,7 @@ export default class CalculationEngine implements CalculationContext {
                 for (const e of childEntities) {
                     const thisCost = this.globalStore.get(e.uid)!.costBreakdown(this);
                     if (thisCost !== null) {
-                        calc.cost = addCosts(calc.cost, {value: thisCost.cost, exact: true});
+                        calc.cost = addCosts(calc.cost, { value: thisCost.cost, exact: true });
                         if (calc.costBreakdown === null) {
                             calc.costBreakdown = [];
                         }
@@ -673,14 +673,14 @@ export default class CalculationEngine implements CalculationContext {
                 const location = o.entity.plant.location;
                 const position = o.entity.plant.position;
                 const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][o.entity.plant.capacity];
-                const capacity = manufacturer === 'generic' 
+                const capacity = manufacturer === 'generic'
                     ? o.entity.plant.capacity
                     : '';
                 const product = size?.product || '';
-                
+
                 c.size = `${size.lengthMM}mm (L) x ${size.widthMM}mm (W) x ${size.heightMM}mm (H)`;
                 c.model = `${manufacturerName.toLocaleUpperCase()} ${product}${capacity}`.trim();
-            } 
+            }
         });
     }
 
@@ -972,11 +972,11 @@ export default class CalculationEngine implements CalculationContext {
                                 finalPressureKPA,
                                 pressurePushMode,
                             );
-                            let pressure = ( hl === null ) ? -Infinity : head2kpa(
-                                    hl,
-                                    getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                    this.ga
-                                );
+                            let pressure = (hl === null) ? -Infinity : head2kpa(
+                                hl,
+                                getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                this.ga
+                            );
                             return pressure
                         } else {
                             throw new Error("misconfigured flow graph");
@@ -1052,11 +1052,11 @@ export default class CalculationEngine implements CalculationContext {
                                 finalPressureKPA,
                                 pressurePushMode,
                             );
-                            let pressure = ( hl === null ) ? -Infinity : head2kpa(
-                                    hl,
-                                    getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
-                                    this.ga
-                                );
+                            let pressure = (hl === null) ? -Infinity : head2kpa(
+                                hl,
+                                getFluidDensityOfSystem(systemUid, this.doc, this.catalog)!,
+                                this.ga
+                            );
                             return pressure
                         } else {
                             return 1000000;
@@ -1597,7 +1597,7 @@ export default class CalculationEngine implements CalculationContext {
         } else if (node.entity.type === EntityType.LOAD_NODE) {
             const correlationGroup = node.entity.linkedToUid || node.entity.uid;
             const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, node.entity, this.catalog, this.nodes);
-            
+
             const selectedMaterialManufacturer = this.doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === filled.uid);
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
             const selectedOption = selectedMaterialManufacturer?.selected || 'default';
@@ -1803,7 +1803,7 @@ export default class CalculationEngine implements CalculationContext {
             }
             case EntityType.BIG_VALVE: {
                 const calculation = this.globalStore.getOrCreateCalculation(entity);
-               
+
 
                 const systemUid =
                     flowEdge.type === EdgeType.BIG_VALVE_COLD_COLD
@@ -2043,7 +2043,7 @@ export default class CalculationEngine implements CalculationContext {
         if (!table) {
             throw new Error("Material doesn't exist anymore " + JSON.stringify(pipeFilled));
         }
-        
+
         const manufacturer = this.doc.drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === pipeFilled.material)?.manufacturer || 'generic';
         const a = upperBoundTable(table.pipesBySize[manufacturer], Infinity, (p) => {
             const v = parseCatalogNumberExact(p.diameterInternalMM);
@@ -2383,14 +2383,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.ColdWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.ColdWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                             }
                         }
                         /* fall through */
@@ -2411,14 +2411,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl === null
                                         ? null
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.WarmWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.WarmWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                             }
                             break;
                         }
@@ -2439,14 +2439,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.ColdWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.ColdWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                             }
 
                             const frh = calculation.hotPeakFlowRate;
@@ -2466,14 +2466,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl === null
                                         ? hl
                                         : head2kpa(
-                                              hl,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.HotWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.HotWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                             }
                             break;
                         }
@@ -2498,14 +2498,14 @@ export default class CalculationEngine implements CalculationContext {
                             hl === null
                                 ? null
                                 : head2kpa(
-                                      hl,
-                                      getFluidDensityOfSystem(
-                                          StandardFlowSystemUids.ColdWater,
-                                          this.doc,
-                                          this.catalog
-                                      )!,
-                                      this.ga
-                                  );
+                                    hl,
+                                    getFluidDensityOfSystem(
+                                        StandardFlowSystemUids.ColdWater,
+                                        this.doc,
+                                        this.catalog
+                                    )!,
+                                    this.ga
+                                );
                     }
                     break;
                 }
@@ -2557,14 +2557,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl1 === null
                                         ? null
                                         : head2kpa(
-                                              hl1,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.ColdWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl1,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.ColdWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                                 const hl2 = getObjectFrictionHeadLoss(
                                     this,
                                     o,
@@ -2579,14 +2579,14 @@ export default class CalculationEngine implements CalculationContext {
                                     hl2 === null
                                         ? null
                                         : head2kpa(
-                                              hl2,
-                                              getFluidDensityOfSystem(
-                                                  StandardFlowSystemUids.ColdWater,
-                                                  this.doc,
-                                                  this.catalog
-                                              )!,
-                                              this.ga
-                                          );
+                                            hl2,
+                                            getFluidDensityOfSystem(
+                                                StandardFlowSystemUids.ColdWater,
+                                                this.doc,
+                                                this.catalog
+                                            )!,
+                                            this.ga
+                                        );
                                 if (dir1 === null || dir2 === null) {
                                     (calculation as any).pressureDropKPA = null;
                                 } else {
@@ -2665,7 +2665,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     createWarnings() {
-        
+
         for (const o of this.networkObjects()) {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -2678,7 +2678,7 @@ export default class CalculationEngine implements CalculationContext {
                     if (!thisIsDrainage) {
                         const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
                         const pipeSpec = (o as Pipe).getCatalogBySizePage(this);
-                        
+
                         if (pipeSpec) {
                             const maxWorking = parseCatalogNumberExact(pipeSpec.safeWorkingPressureKPA);
                             const ca = this.entityStaticPressureKPA.get(o.entity.endpointUid[0]);
@@ -2696,9 +2696,15 @@ export default class CalculationEngine implements CalculationContext {
                             }
                         }
                     }
-                    if (!calc || (o.entity.systemUid===StandardFlowSystemUids.Gas &&  calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
-                        calc.warning =`Pressure at upstream source/regulator needs to be higher than downstream regulator/appliance`
+
+                    if (!calc || (o.entity.systemUid === StandardFlowSystemUids.Gas && calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
+                        calc.warning = `Pressure at upstream source/regulator needs to be higher than downstream regulator/appliance`
                     }
+
+                    if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806 && calc.psdUnits?.units! > 5000) {
+                        calc.warning = 'Extrapolated';
+                    }
+
                     break;
                 }
                 case EntityType.FLOW_SOURCE:
@@ -2766,10 +2772,10 @@ export default class CalculationEngine implements CalculationContext {
                     }
                     if (!(o as Fixture).validateConnectionPoints()) {
                         calculation.warning = "Connect the fixture to a flow system";
-                        calculation.warningLayout =this.doc.uiState.pressureOrDrainage;
-                    }  
-                    if(calculation.warning && calculation.warning===" ")  calculation.warning=null;
-                  break;
+                        calculation.warningLayout = this.doc.uiState.pressureOrDrainage;
+                    }
+                    if (calculation.warning && calculation.warning === " ") calculation.warning = null;
+                    break;
                 }
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
@@ -2851,17 +2857,17 @@ export default class CalculationEngine implements CalculationContext {
                         calc.warning = 'Max pressure exceeded ('
                             + (pConverted as number).toFixed(2) + units + ' > '
                             + (mpConverted as number).toFixed(2) + units;
-                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA &&  filled.systemUidOption != "gas") {
+                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA && filled.systemUidOption != "gas") {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
 
                         const [units, converted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.minPressureKPA);
                         calc.warning =
-                                "Not enough " +
-                                system.name +
-                                " pressure. Required: " +
-                                (converted as number).toFixed(0) +
-                                units;
+                            "Not enough " +
+                            system.name +
+                            " pressure. Required: " +
+                            (converted as number).toFixed(0) +
+                            units;
                     }
                     break;
                 }
@@ -3071,22 +3077,22 @@ export default class CalculationEngine implements CalculationContext {
     sizeMixingValveForFlowRate(fr: number, manufacturer: string): number {
         switch (manufacturer) {
             case "galvin":
-                if (fr > 0.51 ) {
+                if (fr > 0.51) {
                     return 20;
                 }
-        
+
                 return 15;
             case "enware":
-                if (fr > 0.65 ) {
+                if (fr > 0.65) {
                     return 2500;
                 }
-        
+
                 return 1500;
             default:
-                if (fr >= 0.49 ) {
+                if (fr >= 0.49) {
                     return 25;
                 }
-        
+
                 return 15;
         }
     }
