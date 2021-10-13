@@ -589,6 +589,8 @@
 
         "DBInstance": {
           "Type": "AWS::RDS::DBInstance",
+          "DeletionPolicy": "Snapshot",
+          "UpdateReplacePolicy": "Snapshot",
           "Properties": {
             "DBSnapshotIdentifier": {
               "Fn::If" : [
@@ -720,6 +722,8 @@
         //S3 buckets
         "PdfBucket": {
           "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
             "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" },
@@ -732,6 +736,8 @@
         },
         "PdfRendersBucket": {
           "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
             "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" },
