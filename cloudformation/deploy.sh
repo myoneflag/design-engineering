@@ -10,8 +10,7 @@ cd ..
 
 cd cloudformation
 npm install
-exists=$(npm run stack-exists)
-if [ "$exists" == "false" ]; then
+if [[ "$(npm run stack-exists)" == *false ]]; then
     npm run create
 else
     npm run update
