@@ -50,18 +50,18 @@ deploy_feature:
   stage: deploy
   environment:
     name: $CI_COMMIT_REF_SLUG
-    url: https://$CI_COMMIT_REF_SLUG.h2xtesting.com
+    url: https://app-FEATURE.h2xtesting.com
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile
   script:
     - export env=${CI_COMMIT_REF_SLUG/feature-/}
-    - echo "Deploy env $env for $CI_COMMIT_BRANCH feature"
+    - echo "Deploy env $env for $CI_COMMIT_BRANCH"
     - sudo -E ./cloudformation/deploy.sh
   after_script:
     - sudo -E ./cloudformation/clean.sh
   only:
     - /^feature-.*$/
-      
+
 deploy_stage:
   stage: deploy
   variables:  
