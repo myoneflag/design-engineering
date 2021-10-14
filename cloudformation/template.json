@@ -589,6 +589,8 @@
 
         "DBInstance": {
           "Type": "AWS::RDS::DBInstance",
+          "DeletionPolicy": "Snapshot",
+          "UpdateReplacePolicy": "Snapshot",
           "Properties": {
             "DBSnapshotIdentifier": {
               "Fn::If" : [
@@ -599,12 +601,13 @@
             },
             "AllocatedStorage": "100",
             "AllowMajorVersionUpgrade": false,
+            "AutoMinorVersionUpgrade": false,
             "DBInstanceIdentifier": { "Fn::Sub": "h2x-db-${EnvName}${DbVersion}" },
             "DBInstanceClass": { "Ref": "DbInstanceSize" },
             "DBSecurityGroups": [ {"Ref": "DBSecurityGroup"} ],
             "DeleteAutomatedBackups": false,
             "Engine": "postgres",
-            "EngineVersion": "11.10",
+            "EngineVersion": "11.12",
             "EnableIAMDatabaseAuthentication": true,
             "MultiAZ": "false",
             "PubliclyAccessible": "false",
@@ -720,6 +723,8 @@
         //S3 buckets
         "PdfBucket": {
           "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
             "BucketName": { "Fn::Sub": "h2x-s3-pdf-${EnvName}" },
@@ -732,6 +737,8 @@
         },
         "PdfRendersBucket": {
           "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
             "BucketName": { "Fn::Sub": "h2x-s3-pdfrenders-${EnvName}" },
