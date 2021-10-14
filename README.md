@@ -194,6 +194,11 @@ All commands to be executed on the host machine.
    npm run serve
    ```
 
+**Developer code changes**
+
+Both `frontend` and `backend` apps are started with hot reload enabled, for `local` or docker development.  
+For `frontend` in case Vue hot reload does not work, uncomment `whatchOptions` configuration in [node/frontend/vue.config.js]().
+
 ## AWS credentials
 
 1. Install the `aws-cli`
