@@ -1,7 +1,7 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import { Catalog, State } from "../types";
 import { EN12056FrequencyFactor } from "../../config";
-import {  ft2M, psi2KPA } from "../../../lib/measurements";
+import { ft2M, psi2KPA } from "../../../lib/measurements";
 
 export const usCatalog: Catalog = {
     fixtures: {
@@ -455,23 +455,23 @@ export const usCatalog: Catalog = {
             probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
-                   default: {
+                    default: {
                         "cold-water": "0.1",
                         "warm-water": "0.1"
-                   }
-                },  
+                    }
+                },
                 enware: {
                     "5*": {
                         "cold-water": "0.09",
                         "warm-water": "0.09"
                     }
-                },  
+                },
                 galvin: {
                     "5*": {
                         "cold-water": "0.11",
                         "warm-water": "0.11"
                     }
-                },  
+                },
             },
             uid: "beverageBay",
             warmTempC: "42",
@@ -563,7 +563,7 @@ export const usCatalog: Catalog = {
                         "cold-water": "1",
                         "warm-water": "1"
                     }
-                },  
+                },
                 galvin: {
                     default: {
                         "cold-water": "1.25",
@@ -951,7 +951,7 @@ export const usCatalog: Catalog = {
             outletAboveFloorM: ft2M(2).toString(),
             probabilityOfUsagePCT: "0",
             qLS: {
-                generic:{ default: { "cold-water": "0.3" } }
+                generic: { default: { "cold-water": "0.3" } }
             },
             uid: "hoseTap",
             warmTempC: null,
@@ -1230,13 +1230,13 @@ export const usCatalog: Catalog = {
             minInletPressureKPA: psi2KPA(15).toString(),
             name: "Laundry Sink (Warm)",
             outletAboveFloorM: ft2M(3).toString(),
-            probabilityOfUsagePCT: "2", 
+            probabilityOfUsagePCT: "2",
             qLS: {
                 generic: {
-                   default: {
+                    default: {
                         "cold-water": "0.12",
                         "warm-water": "0.12"
-                   }
+                    }
                 },
                 enware: {
                     "5*": {
@@ -1327,7 +1327,7 @@ export const usCatalog: Catalog = {
                 upc2018FlushTanks: {
                     "cold-water": "1.5",
                     "hot-water": "1.5",
-                }, 
+                },
             },
             roughIns: ["sewer-drainage", "hot-water", "cold-water"],
             maxInletPressureKPA: psi2KPA(80).toString(),
@@ -2110,7 +2110,7 @@ export const usCatalog: Catalog = {
                     abbreviation: 'B88 CU',
                     priceTableName: "Copper",
                     uid: 'atsmB88Cu',
-                }                                
+                }
             ],
             abbreviation: "CU",
             pipesBySize: {
@@ -2916,7 +2916,7 @@ export const usCatalog: Catalog = {
                         pipeUid: "pexSdr74",
                         safeWorkingPressureKPA: "1000"
                     }
-                }                
+                }
             },
             uid: "pexSdr74"
         },
@@ -2940,7 +2940,7 @@ export const usCatalog: Catalog = {
                     abbreviation: 'BS 1387 S/S',
                     priceTableName: "Stainless Steel",
                     uid: 'bs1387ss',
-                }                
+                }
             ],
             abbreviation: "S/S",
             pipesBySize: {
@@ -3165,7 +3165,7 @@ export const usCatalog: Catalog = {
                         pipeUid: "stainlessSteel",
                         safeWorkingPressureKPA: "4500"
                     }
-                }             
+                }
             },
             uid: "stainlessSteel"
         },
@@ -3233,7 +3233,7 @@ export const usCatalog: Catalog = {
                 }
             },
             uid: "cpvc"
-        },        
+        },
         stainlessSteelSewer: {
             name: "Stainless Steel (Sewer)",
             abbreviation: "S/S",
@@ -4787,6 +4787,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 3: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -4821,6 +4826,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 4: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -4854,6 +4864,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 5: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -4886,6 +4901,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 8: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -4915,6 +4935,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
                 15: {
                     0: "0.00", // added manually to force interpolation, though this is likely correct
@@ -4941,6 +4966,11 @@ export const usCatalog: Catalog = {
                     2000: "5.25",
                     3000: "6.75",
                     5000: "9",
+                    6000: "9.91",
+                    7000: "10.87",
+                    8000: "11.79",
+                    9000: "12.66",
+                    10000: "13.49",
                 },
             }
         }
@@ -5407,14 +5437,14 @@ export const usCatalog: Catalog = {
     },
     balancingValves: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve'},
-            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve'}
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Balancing Valve' },
+            { name: "Cimberio", abbreviation: "Cimberio", uid: "cimberio", priceTableName: 'Balancing Valve' }
         ],
     },
     hotWaterPlant: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant"},
-            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant"}
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant" },
+            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant" }
         ],
         grundfosPressureDrop: {
             "20-60-1": {
