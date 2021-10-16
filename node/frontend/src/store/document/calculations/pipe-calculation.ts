@@ -274,7 +274,7 @@ export function makePipeCalculationFields(
                     property: "psdUnits.drainageUnits",
                     title: drainageUnits.name,
                     short: drainageUnits.abbreviation,
-                    units: drainageUnits.units,
+                    units: Units.None,
                     category: FieldCategory.LoadingUnits,
                     systemUid: entity.systemUid,
                     defaultEnabled: true,

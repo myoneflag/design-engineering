@@ -97,7 +97,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 property: "heights." + lvlUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Below",
                 short: drainageUnit.abbreviation + " to below",
-                units: drainageUnit.units,
+                units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: layoutOptionDrainage,
