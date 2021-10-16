@@ -39,7 +39,7 @@ import {PlantType} from "../../../common/src/api/document/entities/plants/plant-
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 import { SupportedLocales } from "../../../common/src/api/locale";
-import { VolumeMeasurementSystem } from './../../../common/src/lib/measurements';
+import { Units, VolumeMeasurementSystem } from './../../../common/src/lib/measurements';
 
 export interface PsdCountEntry {
     units: number;
@@ -517,21 +517,29 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: Support
     assertUnreachable(psdMethod);
 }
 
-export function getDrainageUnitName(measurement: VolumeMeasurementSystem): { name: string; abbreviation: string } {
-    let abbreviation = 'l/sec'
-                    
-    switch (measurement) {
-        case VolumeMeasurementSystem.METRIC:
-            break;
-        case VolumeMeasurementSystem.IMPERIAL:
-        case VolumeMeasurementSystem.US:
-            abbreviation = 'gpm'
-            break;
-        default:
-            assertUnreachable(measurement);
+export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods, measurement: VolumeMeasurementSystem):  { name: string; abbreviation: string, units: Units } {
+            
+    let units = Units.None;
+    let abbreviation: string = 'FU';
+    let name: string = 'Fixture Units';
+    if (drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
+        name = 'Flow Rate';
+        switch (measurement) {
+            case VolumeMeasurementSystem.METRIC:
+                abbreviation = units = Units.LitersPerSecond;
+                break;
+            case VolumeMeasurementSystem.IMPERIAL:
+                abbreviation = units = Units.GallonsPerMinute;
+                break;
+            case VolumeMeasurementSystem.US:
+                abbreviation = units = Units.USGallonsPerMinute;
+                break;
+            default:
+                assertUnreachable(measurement);
+        }
     }
-
-    return { name: 'Flow Rate', abbreviation };
+    
+    return { name, abbreviation, units }
 }
 
 export interface FlowRateResult {

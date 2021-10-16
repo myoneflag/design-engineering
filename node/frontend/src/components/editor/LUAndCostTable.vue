@@ -156,7 +156,7 @@
             }
 
             let x = 80;
-            const drainageUnits = getDrainageUnitName(this.document.drawing.metadata.units.volumeMeasurementSystem);
+            const drainageUnits = getDrainageUnitName(this.document.drawing.metadata.calculationParams.drainageMethod, this.document.drawing.metadata.units.volumeMeasurementSystem);
             const res: any[] = [{"PSD": "Cold"}, {"PSD": "Hot"}, {"PSD": "Gas"}, {'PSD': drainageUnits.abbreviation}];
             for (const [units, fieldName] of [[focusedUnits, this.$props.focusName], [projectUnits, "Project"]]) {
                 let coldFR: number | null | undefined;
