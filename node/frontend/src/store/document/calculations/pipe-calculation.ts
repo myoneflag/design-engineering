@@ -77,7 +77,7 @@ export function makePipeCalculationFields(
     globalStore: GlobalStore,
 ): CalculationField[] {
     const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod, document.locale);
-    const drainageUnits = getDrainageUnitName(document.drawing.metadata.units.volumeMeasurementSystem);
+    const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod, document.drawing.metadata.units.volumeMeasurementSystem);
 
     const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
     const pipeIsDrainage = isDrainage(entity.systemUid);
@@ -274,7 +274,7 @@ export function makePipeCalculationFields(
                     property: "psdUnits.drainageUnits",
                     title: drainageUnits.name,
                     short: drainageUnits.abbreviation,
-                    units: Units.None,
+                    units: drainageUnits.units,
                     category: FieldCategory.LoadingUnits,
                     systemUid: entity.systemUid,
                     defaultEnabled: true,
