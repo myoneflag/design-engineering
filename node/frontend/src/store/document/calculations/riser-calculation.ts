@@ -37,7 +37,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     const result: CalculationField[] = [];
 
     const psdUnit = getPsdUnitName(drawing.metadata.calculationParams.psdMethod, doc.locale);
-    const drainageUnit = getDrainageUnitName(doc.drawing.metadata.units.volumeMeasurementSystem);
+    const drainageUnit = getDrainageUnitName(doc.drawing.metadata.calculationParams.drainageMethod, doc.drawing.metadata.units.volumeMeasurementSystem);
 
     const lvlUid = doc.uiState.levelUid;
     const sortedLevels = Object.values(doc.drawing.levels).sort((a, b) => a.floorHeightM - b.floorHeightM);
