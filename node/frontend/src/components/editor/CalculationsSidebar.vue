@@ -3,7 +3,7 @@
         <b-row>
             <b-col>
                 <b-button-group
-                        style="margin-left: -180px"
+                        style="margin-left: -200px"
                 >
 
                     <b-button

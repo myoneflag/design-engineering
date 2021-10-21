@@ -118,7 +118,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             />
              <Toolbar
                     v-if="
-                    (document.uiState.drawingMode === DrawingMode.Calculations && !showExport) ||
+                    (!showExport) ||
                     toolHandler && toolHandler.config.paperSnapshotTopBar
                     "
                     :showExport="showExport"
