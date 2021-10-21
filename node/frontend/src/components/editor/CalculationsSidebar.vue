@@ -9,16 +9,6 @@
                     <b-button
                             variant="outline-dark"
                             class="calculationBtn"
-                            @click="handleClickWarning"
-                            :pressed="warningShown"
-                    >
-                        Warnings
-                        <v-icon name="caret-down" scale="1" />
-                    </b-button>
-
-                    <b-button
-                            variant="outline-dark"
-                            class="calculationBtn"
                             @click="handleClickFilter"
                             :pressed="filterShown"
                     >
