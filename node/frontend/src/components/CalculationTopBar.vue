@@ -1,5 +1,5 @@
 <template>
-    <b-row style="position:fixed; left:300px; top:80px; max-width: 400px;">
+    <b-row style="position:fixed; left:350px; top:80px; max-width: 400px;">
         <b-col class="col-auto">
             <b-button-group>
                 <b-button variant="outline-dark" class="calculationBtn source btn-sm" @click="settings"

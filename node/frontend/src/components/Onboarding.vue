@@ -94,20 +94,25 @@ export default class Onboarding extends Vue {
             {
                 step: 4,
                 title: 'Results workspace',
-                text: 'This is where you view, share and export results',
+                text: 'This is where you view results',
             },
             {
                 step: 5,
+                title: 'Export workspace',
+                text: 'This is where you can share and export results',
+            },
+            {
+                step: 6,
                 title: 'Manage levels',
                 text: 'This is where you add and modify new levels',
             },
             {
-                step: 6,
+                step: 7,
                 title: 'Change the settings',
                 text: 'Add project information and change design parameters here',
             },
             {
-                step: 7,
+                step: 8,
                 title: 'Should we do our first project together?',
                 text: `Follow this <a href="https://www.youtube.com/playlist?list=PLIdFxhDHcGgwHcBSDr5L_9K3FKGlyzO1S" target="_blank">Youtube video</a> and <a href="https://drive.google.com/drive/folders/1DQc6Fs7Q1N_YwdhoGaYmkkVVEXxSj0ZK?usp=sharing" target="_blank">download these files</a>`,
             },
@@ -322,7 +327,7 @@ export default class Onboarding extends Vue {
                 this.$store.dispatch("onboarding/setOnboarding", {
                     ...this.onboarding, 
                     screen,
-                    totalSteps: 7, 
+                    totalSteps: 8, 
                     currentStep: 1,
                     show: true,
                 } as OnboardingState);

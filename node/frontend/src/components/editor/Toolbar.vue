@@ -1,7 +1,7 @@
 import { GridLineMode } from "../../store/document/types";
 <template>
     <div class="toolbar">
-        <div class="container">
+        <div>
             <b-row>
                 <b-col v-if="profile">
                     <b-button-group>
@@ -32,6 +32,7 @@ import { GridLineMode } from "../../store/document/types";
                             variant="outline-dark"
                             v-b-tooltip.hover="{ title: 'Copy' }"
                             class="toolBtn"
+                            :disabled="this.$props.showExport"
                             @click="onCopy"
                         >
                             <v-icon name="copy" scale="1.5" />
@@ -40,6 +41,7 @@ import { GridLineMode } from "../../store/document/types";
                             variant="outline-dark"
                             v-b-tooltip.hover="{ title: 'Paste' }"
                             class="toolBtn"
+                            :disabled="this.$props.showExport"
                             @click="onPaste"
                         >
                             <v-icon name="paste" scale="1.5" />
@@ -105,6 +107,7 @@ import { ToolConfig } from "../../../src/store/tools/types";
 import { DocumentState, GridLineMode } from "../../store/document/types";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { User } from "../../../../common/src/models/User";
+import { MainEventBus } from "../../store/main-event-bus";
 
 @Component({
     props: {
@@ -115,12 +118,17 @@ import { User } from "../../../../common/src/models/User";
         onUndo: Function,
         onRedo: Function,
         onCopy: Function,
-        onPaste: Function
+        onPaste: Function,
+        showExport: Boolean
     }
 })
 export default class Toolbar extends Vue {
     TOOLBAR_BUTTONS: ToolConfig[] = [DEFAULT_TOOL];
 
+    cancel() {
+        MainEventBus.$emit("set-tool-handler", null);
+    }
+    
     get GridLineMode() {
         return GridLineMode;
     }
@@ -161,10 +169,11 @@ export default class Toolbar extends Vue {
 <style lang="less">
 .toolbar {
     position: fixed;
-
-    left: 50%;
+    left: 44%;
+    -webkit-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
     bottom: 20px;
+    width: auto;
 }
 
 .toolBtn {

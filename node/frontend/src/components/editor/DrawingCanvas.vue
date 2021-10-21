@@ -17,7 +17,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         <CalculationsSidebar
                 v-if="
                 document.uiState.drawingMode === 2 &&
-                    initialized &&
+                    initialized && !showExport &&
                     (!toolHandler || toolHandler.config.calculationSideBar)
             "
                 :objects="visibleObjects"
@@ -30,9 +30,9 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             v-if="levelSelectorVisible && initialized" 
              @level-changed="floorLockStatus = false"
             :object-store="globalStore"
-            :class="{ onboarding: checkOnboardingClass(5) }"
+            :class="{ onboarding: checkOnboardingClass(6) }"
         ></LevelSelector>
-        <LUAndCostTable v-if="LUAndCostTableVisible && initialized"
+        <LUAndCostTable v-if="LUAndCostTableVisible && initialized && document.drawing"
                         :global-store="globalStore" :selected-entities="selectedEntities"
                         :projectLUs="projectLUs"
                         :focus-l-us="focusLUs"
@@ -63,7 +63,11 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 </div>
             </div>
 
-            <ModeButtons :mode.sync="document.uiState.drawingMode"  @floor-plan="floorLockStatus = false" v-if="shouldDisplayModeButtons"/>
+            <ModeButtons 
+                :mode.sync="document.uiState.drawingMode"  
+                :showExport.sync="showExport"
+                @floor-plan="floorLockStatus = false" 
+                v-if="shouldDisplayModeButtons"/>
 
             <HistoryView v-if="showHistoryBar"></HistoryView>
 
@@ -73,9 +77,19 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                   :floor-lock-status="floorLockStatus"
                 v-if="document.uiState.drawingMode === 0 && profile"
             />
+           
+            <ExportPanel 
+                v-if="showExport &&
+                    initialized &&
+                    (!toolHandler || toolHandler.config.calculationSideBar)
+                "
+                :objects="visibleObjects"
+                :on-change="scheduleDraw"
+                :canvas-context="this"
+            />
 
             <HydraulicsInsertPanel
-                    v-if="document.uiState.drawingMode === 1 && initialized && !document.uiState.viewOnly"
+                    v-if="document.uiState.drawingMode === DrawingMode.Hydraulics && initialized && !document.uiState.viewOnly"
                     :flow-systems="availableFlowSystems"
                     @insert="hydraulicsInsert"
                     :fixtures="effectiveCatalog.fixtures"
@@ -87,28 +101,27 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                     :is-drawing="toolHandler !== null"
             />
 
-            <PressureDrainageSelector v-if="document.uiState.drawingMode !== DrawingMode.FloorPlan">
+            <PressureDrainageSelector v-if="(document.uiState.drawingMode !== DrawingMode.FloorPlan && !showExport)
+              || toolHandler && toolHandler.config.paperSnapshotTopBar"
+             >
 
             </PressureDrainageSelector>
 
             <CalculationTopBar
                     v-if="
-                    document.uiState.drawingMode === 2 &&
+                    document.uiState.drawingMode === DrawingMode.Calculations && !showExport &&
                         initialized &&
                         (!toolHandler || toolHandler.config.calculationTopBar)
                 "
                     :is-calculating="isCalculating"
                     :on-re-calculate="considerCalculating"
             />
-
-            <PDFSnapshotTopBar
-                    v-if="toolHandler && toolHandler.config.paperSnapshotTopBar"
-                    :canvas-context="thisContext"
-                    :tool-handler="toolHandler"
-            >
-            </PDFSnapshotTopBar>
-
-            <Toolbar
+             <Toolbar
+                    v-if="
+                    (document.uiState.drawingMode === DrawingMode.Calculations && !showExport) ||
+                    toolHandler && toolHandler.config.paperSnapshotTopBar
+                    "
+                    :showExport="showExport"
                     :current-tool-config="currentTool"
                     :on-tool-click="changeTool"
                     :on-fit-to-view-click="fitToView"
@@ -117,8 +130,14 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                     :on-redo="onRedo"
                     :on-copy="copySelected"
                     :on-paste="paste"
-                    v-if="initialized"
             ></Toolbar>
+
+            <PDFSnapshotTopBar
+                    v-if="toolHandler && toolHandler.config.paperSnapshotTopBar"
+                    :canvas-context="thisContext"
+                    :tool-handler="toolHandler"
+            >
+            </PDFSnapshotTopBar>
 
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon>
@@ -171,6 +190,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     import insertBigValve from "../../htmlcanvas/tools/insert-big-valve";
     import insertFixture from "../../../src/htmlcanvas/tools/insert-fixture";
     import FloorPlanInsertPanel from "../../../src/components/editor/FloorPlanInsertPanel.vue";
+    import ExportPanel from "../../../src/components/editor/ExportPanel.vue";
     import InstructionPage from "../../../src/components/editor/InstructionPage.vue";
     import CalculationLayer from "../../../src/htmlcanvas/layers/calculation-layer";
     import {getVisibleBoundingBox, levelIncludesRiser} from "../../../src/htmlcanvas/lib/utils";
@@ -241,6 +261,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             CalculationsSidebar,
             InstructionPage,
             FloorPlanInsertPanel,
+            ExportPanel,
             LoadingScreen,
             HydraulicsInsertPanel,
             CalculationTopBar,
@@ -256,6 +277,12 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         }
     })
     export default class DrawingCanvas extends Vue {
+        data() { 
+            return {
+                DrawingMode: DrawingMode
+            }
+        }
+
         get globalStore(): GlobalStore {
             return globalStore;
         }
@@ -292,10 +319,6 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             return false;
         }
 
-        get DrawingMode() {
-            return DrawingMode;
-        }
-
         get shouldDisplayModeButtons() {
             return (
                 this.currentTool.modesVisible &&
@@ -305,6 +328,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         }
 
         get showHistoryBar() {
+            console.log(this.document.uiState.drawingMode, DrawingMode.History);
             return this.document.uiState.drawingMode === DrawingMode.History;
         }
 
@@ -432,6 +456,10 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 return false;
             }
 
+            if(this.showExport){
+                return false;
+            }
+
             if (this.hasDragged || this.isLayerDragging) {
                 return false;
             }
@@ -447,6 +475,9 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
                 return false;
             }
 
+            if(this.showExport){
+                return false;
+            }
 
             if (this.hasDragged || this.isLayerDragging) {
                 return false;
@@ -631,6 +662,8 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         selectBox: SelectBox | null = null;
         selectBoxMode: SelectMode | null = null;
         selectBoxStartSelected: string[] = [];
+
+        showExport = false;
 
         mouseClicked: boolean = false;
 

@@ -61,6 +61,7 @@ export interface ExportUiSettings {
     detail: number;
     coverSheet: boolean;
     floorPlans: boolean;
+    borderless?: boolean;
 }
 
 export enum GridLineMode {

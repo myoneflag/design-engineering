@@ -13,7 +13,7 @@ import SVGtoPDF from "svg-to-pdfkit";
 // @ts-ignore
 import { parse as svgParse, stringify as svgStringify } from "svgson";
 // @ts-ignore
-import { INFO_BAR_SIZE_MM, MARGIN_SIZE_MM } from "../../tools/pdf-snapshot-tool";
+import { BORDERLESS_INFO_BAR_SIZE_MM, INFO_BAR_SIZE_MM, MARGIN_SIZE_MM } from "../../tools/pdf-snapshot-tool";
 import { PAPER_SIZES, PaperSize } from "../../../../../common/src/api/paper-config";
 import { fetchDataUrl, parseScale } from "../../utils";
 import { getPropertyByString } from "../../../lib/utils";
@@ -661,12 +661,10 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
 
         levelUids.push(context.document.uiState.levelUid);
     }
-
     for (const luid of levelUids.reverse()) {
         const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
 
         doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
-
         const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
         SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
 
@@ -685,7 +683,9 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
         );
         doc.stroke();
 
-        await drawTitleBar(doc, context, paperSize, scaleName, luid);
+        if(INFO_BAR_SIZE_MM != BORDERLESS_INFO_BAR_SIZE_MM) {
+            await drawTitleBar(doc, context, paperSize, scaleName, luid);
+        }
 
         await drawScale(doc, context, paperSize, scaleName);
     }
