@@ -342,7 +342,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "5",
-                    "warm-water": "5",
+                    "hot-water": "5",
                 },
                 cibseGuideG: {
                     "low": "5",
@@ -614,7 +614,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
+                    "hot-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -692,7 +692,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
+                    "hot-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -767,7 +767,6 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "2",
-                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "low": "1",
@@ -837,7 +836,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "5",
-                    "warm-water": "5",
+                    "hot-water": "5",
                 },
                 cibseGuideG: {
                     "low": "5",
@@ -924,7 +923,6 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "1",
@@ -991,8 +989,8 @@ export const ukCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 bs8558: {
-                    "cold-water": "33",
-                    "warm-water": "33",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1096,7 +1094,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
+                    "hot-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1304,7 +1302,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
+                    "hot-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1513,7 +1511,6 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "2",
-                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "low": "1",
@@ -1581,7 +1578,7 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "3",
-                    "warm-water": "3",
+                    "hot-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",
@@ -1656,7 +1653,6 @@ export const ukCatalog: Catalog = {
                 },
                 bs8558: {
                     "cold-water": "2",
-                    "warm-water": "2",
                 },
                 cibseGuideG: {
                     "low": "1",
