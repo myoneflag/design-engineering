@@ -9,7 +9,7 @@
                     <b-button
                             variant="outline-dark"
                             class="calculationBtn"
-                            @click="handleClickFilter"
+                            @click="filterShown = !filterShown"
                             :pressed="filterShown"
                     >
                         Filters
@@ -41,7 +41,6 @@
                 </div>
             </b-col>
         </b-row>
-        <warnings v-if="warningShown" />
         <b-modal id="bv-modal-example" hide-footer>
             <template v-slot:modal-title>
                 Get link
@@ -82,12 +81,9 @@ import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
-import Warnings from "./Warnings.vue";
 
 @Component({
-    components: {
-        Warnings
-    },
+    components: {},
     props: {
         objects: Array,
         onChange: Function,
@@ -96,7 +92,6 @@ import Warnings from "./Warnings.vue";
 })
 export default class CalculationsSidebar extends Vue {
     filterShown = true;
-    warningShown = false;
     shareLink: string = window.location.origin + "/";
     generate: { isLoading: boolean } = {
         isLoading: false
@@ -132,16 +127,6 @@ export default class CalculationsSidebar extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
-    }
-    
-    /* toggle Warnings and Filters */
-    handleClickWarning() {
-        this.warningShown = !this.warningShown
-        this.filterShown = false
-    }
-    handleClickFilter() {
-        this.filterShown = !this.filterShown
-        this.warningShown = false
     }
 
     stageNewFilters() {
@@ -271,7 +256,7 @@ export default class CalculationsSidebar extends Vue {
     right: 20px;
     min-height: 100px;
     top: 80px;
-    width: 400px;
+    width: 300px;
 }
 
 .filterPanel {
