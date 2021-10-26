@@ -1,4 +1,3 @@
-import {EntityType} from "../../../../common/src/api/document/entities/types";
 <template>
     <drop @drop="onDrop">
         <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
@@ -139,6 +138,9 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             >
             </PDFSnapshotTopBar>
 
+            <FeedbackModal v-model="showFeedbackModal" feedbackType="help"/>
+            <b-button class="helpButton" variant="outline-info" @click="showFeedbackModal=true">Help <b-icon icon="question-circle"/></b-button>
+
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
                 <v-icon name="arrow-left" scale="2"></v-icon>
                 Please Choose a Level
@@ -250,6 +252,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     import PressureDrainageSelector from "./PressureDrainageSelector.vue";
     import { I18N } from "../../../../common/src/api/locale/values";
     import { SupportedLocales } from "../../../../common/src/api/locale";
+    import FeedbackModal from "../FeedbackModal.vue";
 
     @Component({
         components: {
@@ -271,6 +274,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
             ModeButtons,
             Onboarding,
             PressureDrainageSelector,
+            FeedbackModal
         },
         directives: {
             ClickOutside,
@@ -664,6 +668,7 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
         selectBoxStartSelected: string[] = [];
 
         showExport = false;
+        showFeedbackModal = false;
 
         mouseClicked: boolean = false;
 
@@ -2312,4 +2317,13 @@ import {EntityType} from "../../../../common/src/api/document/entities/types";
     #menu button:hover {
         background-color: lightgray;
     }
+
+    .helpButton {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        opacity: 1;
+        background-color: #f0f8ff;
+    }
+
 </style>

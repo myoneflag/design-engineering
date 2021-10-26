@@ -4,7 +4,6 @@ import Login from "./views/Login.vue";
 import store from "./store/store";
 import LoadProfile from "../src/views/LoadProfile.vue";
 import ChangePassword from "../src/views/ChangePassword.vue";
-import ContactUs from "./views/ContactUs.vue";
 import ChangeLogs from "./views/ChangeLogs.vue";
 import { getSession } from "../src/api/logins";
 import { AccessLevel, User as IUser } from "../../common/src/models/User";
@@ -14,7 +13,6 @@ import Organization from "./views/Organization.vue";
 import CreateOrganization from "./views/CreateOrganization.vue";
 import CreateUser from "./views/CreateUser.vue";
 import User from "./views/User.vue";
-import Contacts from "./views/Contacts.vue";
 import Errors from "./views/Errors.vue";
 import ViewError from "./views/Error.vue";
 import SignUp from "./views/SignUp.vue";
@@ -204,15 +202,6 @@ const router = new Router({
             }
         },
         {
-            path: "/contacts",
-            name: "contacts",
-            component: Contacts,
-            meta: {
-                auth: true,
-                minAccessLevel: AccessLevel.SUPERUSER
-            }
-        },
-        {
             path: "/errors",
             name: "errors",
             component: Errors,
@@ -253,11 +242,6 @@ const router = new Router({
                 auth: true,
                 needsEula: false
             }
-        },
-        {
-            path: "/contact",
-            name: "contact",
-            component: ContactUs
         },
         {
             path: "/eula",

@@ -1,8 +1,10 @@
+import Config from "../config/config";
+
 type PasswordResetEmailType = (props: PasswordResetEmailParams) => {}
 
 const ForgotPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailParams) => {
     return {
-        from: process.env.EMAIL_ADDRESS,
+        from: Config.DEFAULT_EMAIL_FROM,
         to: props.to,
         subject: 'H2X - Forgot your Password?',
         html: `<!doctype html>
@@ -34,7 +36,7 @@ const ForgotPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailPa
 
 const SetNewPasswordEmail: PasswordResetEmailType = (props: PasswordResetEmailParams) => {
     return {
-        from: process.env.EMAIL_ADDRESS,
+        from: Config.DEFAULT_EMAIL_FROM,
         to: props.to,
         replyTo: 'jordan@h2xengineering.com',
         subject: 'H2X - New Account',

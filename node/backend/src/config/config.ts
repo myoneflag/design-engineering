@@ -17,7 +17,12 @@ export default {
   MQ_USERNAME: process.env.MQ_USERNAME || 'admin',
   MQ_PASSWORD: process.env.MQ_PASSWORD || 'admin',
 
-  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'test@h2xtesting.com', 
+  INIT_SUPERUSER_EMAIL: process.env.INIT_SUPERUSER_EMAIL || 'test@h2xtesting.com',
 
-  WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT: process.env.WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT
+  WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT: process.env.WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT,
+
+  DEFAULT_EMAIL_FROM: process.env.EMAIL_ADDRESS || 'test@h2xtesting.com',
+  NEW_MEMBERS_EMAIL: process.env.NEW_MEMBERS_EMAIL || 'test+local.newmembers@h2xtesting.com',
+  FEEDBACK_EMAIL: process.env.FEEDBACK_EMAIL || 'test+local.feedback@h2xtesting.com',
+  BUGS_EMAIL: process.env.BUGS_EMAIL || 'test+local.bugs@h2xtesting.com',
 };
