@@ -99,25 +99,25 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                 units: Units.Meters
             });
     }
-    if(entity.systemUid!=StandardFlowSystemUids.Gas 
-        && !isDrainage(entity.systemUid)
-        && locale
-        && locale==SupportedLocales.AU) {
-        res.push(
+    if (entity.systemUid !== StandardFlowSystemUids.Gas &&
+        !isDrainage(entity.systemUid) &&
+        locale === SupportedLocales.AU) {
+        res.unshift(
             {
-                type: FieldType.Testing,
-                title:``,
-                hasDefault:false,
-                isCalculated:false,
-                multiFieldId:``,
-                property:``,
-                params:null
+                type: FieldType.Advert,
+                title: "HTC Group",
+                hasDefault: false,
+                isCalculated: false,
+                multiFieldId: "",
+                property: "",
+                params: {
+                    url: "https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E",
+                    titleHtml: "<p style=\"font-size: small; margin:3px auto;\">Request a <b>Flow & Pressure Test</b></p>",
+                    subtitleHtml: "",
+                    imagePath: "/img/adverts/htctestinglogo.png"
+                }
             });
     }
-
-
-
-
 
     res.push(
         {

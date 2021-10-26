@@ -107,24 +107,5 @@ export default class FlowSourceProperties extends Vue {
         text-align: right;
     }
 }
-.htc{    
-    padding:0px;
-    width: 100px;
-    margin: 2px;
-    background-color: white;
-    padding-top: 10px;
-}
-.htctext{
-    padding:0px;
-    font-size: small;
-    margin:3px auto;
-    
-}
-.htc-row{
-    cursor:pointer;
-    background-color:lightgray;
-    margin-left:0;
-    margin-right:0;
 
-}
 </style>

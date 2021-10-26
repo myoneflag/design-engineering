@@ -168,7 +168,7 @@ export default class MultiFieldBuilder extends Vue {
             case FieldType.Boolean:
             case FieldType.Choice:
                 
-            case FieldType.Testing:
+            case FieldType.Advert:
             case FieldType.FlowSystemChoice:
                 return "(mixed)";
             case FieldType.Color:
@@ -189,7 +189,7 @@ export default class MultiFieldBuilder extends Vue {
                 return value === "";
             case FieldType.Boolean:
             case FieldType.Choice:
-            case FieldType.Testing:
+            case FieldType.Advert:
             case FieldType.FlowSystemChoice:
                 return value === "(mixed)";
             case FieldType.Color:
