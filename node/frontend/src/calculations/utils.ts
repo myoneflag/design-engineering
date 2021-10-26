@@ -263,10 +263,8 @@ export function addPsdCounts(
         mixedHotCold = a.mixedHotCold || b.mixedHotCold;
         warmTemperature = a.warmTemperature || b.warmTemperature;
 
-        if (!!a.mixedHotCold && !b.mixedHotCold && b.units) {
+        if (!!a.mixedHotCold && !!b.mixedHotCold && b.units && warmTemperature) {
             units = a.units + +resolveDINUnits(document, b.units, warmTemperature!).toFixed(3);
-            mixedHotCold = undefined;
-            warmTemperature = undefined;
         }
     }
 

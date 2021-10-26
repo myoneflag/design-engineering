@@ -1530,6 +1530,7 @@ export default class CalculationEngine implements CalculationContext {
                                     correlationGroup: fixture.uid,
                                     drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                     gasMJH: 0,
+                                    mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
                                 });
                             } else {
                                 units.push({
@@ -1540,6 +1541,7 @@ export default class CalculationEngine implements CalculationContext {
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
                                     drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
+                                    mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
                                 });
                             }
                         }
