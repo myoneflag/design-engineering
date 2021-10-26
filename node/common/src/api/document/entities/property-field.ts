@@ -13,7 +13,7 @@ export enum FieldType {
     Boolean = "boolean",
     TwoPointScale = "two-point-scale",
     Title = "title",
-    Testing="testing"
+    Advert = "advert"
 }
 
 export interface NumberParams extends FieldParams {
@@ -99,9 +99,14 @@ export interface TitleField extends PropertyFieldBase {
     isCalculated: false;
     params: null;
 }
-export interface TestingField extends PropertyFieldBase {
-    type: FieldType.Testing;
-    params: null;
+export interface AdvertField extends PropertyFieldBase {
+    type: FieldType.Advert;
+    params: {
+        url: string,
+        titleHtml: string,
+        subtitleHtml: string,
+        imagePath: string,
+    };
 }
 
 export type PropertyField =
@@ -114,4 +119,4 @@ export type PropertyField =
     | TextField
     | BooleanField
     | TitleField
-    | TestingField;
+    | AdvertField;
