@@ -114,5 +114,17 @@
     {
         "ParameterKey": "WebHookZapierCreateHubspotContact", 
         "ParameterValue": "${WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT}"
+    },
+    {
+        "ParameterKey": "NewMembersEmail", 
+        "ParameterValue": "${NewMembersEmail}"
+    },
+    {
+        "ParameterKey": "BugsEmail", 
+        "ParameterValue": "${BugsEmail}"
+    },
+    {
+        "ParameterKey": "FeedbackEmail", 
+        "ParameterValue": "${FeedbackEmail}"
     }
 ]

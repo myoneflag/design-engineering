@@ -128,6 +128,18 @@
       "WebHookZapierCreateHubspotContact": {
         "Description": "Environment variable", 
         "Type": "String"
+      },
+      "NewMembersEmail": {
+        "Description": "Environment variable", 
+        "Type": "String"
+      },
+      "BugsEmail": {
+        "Description": "Environment variable", 
+        "Type": "String"
+      },
+      "FeedbackEmail": {
+        "Description": "Environment variable", 
+        "Type": "String"
       }
     },
     "Conditions" : {
@@ -404,7 +416,24 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT",
                 "Value": { "Ref": "WebHookZapierCreateHubspotContact" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "NEW_MEMBERS_EMAIL",
+                "Value": { "Ref": "NewMembersEmail" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "FEEDBACK_EMAIL",
+                "Value": { "Ref": "FeedbackEmail" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "BUGS_EMAIL",
+                "Value": { "Ref": "BugsEmail" }
               }
+
+
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.4.4 running Docker"
           }

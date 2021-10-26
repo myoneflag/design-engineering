@@ -102,7 +102,6 @@ services:
       - AWS_REGION=us-west-1
       - AWS_PROFILE=${AWS_PROFILE}
       - SES_EMAIL_REGION=us-west-1
-      - EMAIL_ADDRESS=test@h2xtesting.com
       - DB_HOSTNAME=db
       - MQ_URL=ws://mq:61614
       - WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT=https://hooks.zapier.com/hooks/catch/10073114/b69cx4e
