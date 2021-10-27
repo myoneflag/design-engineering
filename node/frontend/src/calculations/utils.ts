@@ -1,29 +1,29 @@
-import {EntityType} from "../../../common/src/api/document/entities/types";
-import {DocumentState} from "../../src/store/document/types";
-import {fillFixtureFields} from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import {DwellingStandardType, PSDStandardType} from "../../../common/src/api/catalog/psd-standard/types";
-import {CalculationField} from "../../src/store/document/calculations/calculation-field";
-import {makeRiserCalculationFields} from "../store/document/calculations/riser-calculation";
-import {makePipeCalculationFields} from "../../src/store/document/calculations/pipe-calculation";
-import {makeFittingCalculationFields} from "../../src/store/document/calculations/fitting-calculation";
-import {makeBigValveCalculationFields} from "../store/document/calculations/big-valve-calculation";
-import {makeFixtureCalculationFields} from "../../src/store/document/calculations/fixture-calculation";
-import {makeDirectedValveCalculationFields} from "../../src/store/document/calculations/directed-valve-calculation";
-import {DrawableEntityConcrete} from "../../../common/src/api/document/entities/concrete-entity";
-import {makeSystemNodeCalculationFields} from "../../src/store/document/calculations/system-node-calculation";
-import {makeLoadNodeCalculationFields} from "../store/document/calculations/load-node-calculation";
-import {NodeType} from "../../../common/src/api/document/entities/load-node-entity";
-import {makeFlowSourceCalculationFields} from "../store/document/calculations/flow-source-calculation";
-import {ObjectStore} from "../htmlcanvas/lib/object-store";
-import {makePlantCalculationFields} from "../store/document/calculations/plant-calculation";
+import { EntityType } from "../../../common/src/api/document/entities/types";
+import { DocumentState } from "../../src/store/document/types";
+import { fillFixtureFields } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { DwellingStandardType, PSDStandardType } from "../../../common/src/api/catalog/psd-standard/types";
+import { CalculationField } from "../../src/store/document/calculations/calculation-field";
+import { makeRiserCalculationFields } from "../store/document/calculations/riser-calculation";
+import { makePipeCalculationFields } from "../../src/store/document/calculations/pipe-calculation";
+import { makeFittingCalculationFields } from "../../src/store/document/calculations/fitting-calculation";
+import { makeBigValveCalculationFields } from "../store/document/calculations/big-valve-calculation";
+import { makeFixtureCalculationFields } from "../../src/store/document/calculations/fixture-calculation";
+import { makeDirectedValveCalculationFields } from "../../src/store/document/calculations/directed-valve-calculation";
+import { DrawableEntityConcrete } from "../../../common/src/api/document/entities/concrete-entity";
+import { makeSystemNodeCalculationFields } from "../../src/store/document/calculations/system-node-calculation";
+import { makeLoadNodeCalculationFields } from "../store/document/calculations/load-node-calculation";
+import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
+import { makeFlowSourceCalculationFields } from "../store/document/calculations/flow-source-calculation";
+import { ObjectStore } from "../htmlcanvas/lib/object-store";
+import { makePlantCalculationFields } from "../store/document/calculations/plant-calculation";
 import {
     assertUnreachable, getPsdMethods, isDrainage,
     isGermanStandard,
     StandardFlowSystemUids, SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
-import {Catalog} from "../../../common/src/api/catalog/types";
-import {determineConnectableSystemUid} from "../store/document/entities/lib";
+import { Catalog } from "../../../common/src/api/catalog/types";
+import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import {
     cloneSimple,
     EPS,
@@ -33,9 +33,9 @@ import {
     upperBoundTable
 } from "../../../common/src/lib/utils";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
-import {makeGasApplianceFields} from "../../../common/src/api/document/entities/gas-appliance";
-import {makeGasApplianceCalculationFields} from "../store/document/calculations/gas-appliance-calculation";
-import {PlantType} from "../../../common/src/api/document/entities/plants/plant-types";
+import { makeGasApplianceFields } from "../../../common/src/api/document/entities/gas-appliance";
+import { makeGasApplianceCalculationFields } from "../store/document/calculations/gas-appliance-calculation";
+import { PlantType } from "../../../common/src/api/document/entities/plants/plant-types";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 import { SupportedLocales } from "../../../common/src/api/locale";
@@ -51,6 +51,9 @@ export interface PsdCountEntry {
     drainageUnits: number;
     mainDrainageUnits?: number;
     highestDrainageUnits?: number;
+
+    mixedHotCold?: boolean;
+    warmTemperature?: number;
 }
 
 export interface FinalPsdCountEntry extends PsdCountEntry {
@@ -62,7 +65,7 @@ export interface ContextualPCE extends PsdCountEntry {
     correlationGroup: string;
 }
 
-export class PsdProfile extends Map<string, ContextualPCE> {}
+export class PsdProfile extends Map<string, ContextualPCE> { }
 
 export interface PsdUnitsByFlowSystem {
     [key: string]: FinalPsdCountEntry;
@@ -118,10 +121,10 @@ export function countPsdUnits(
                                 drainageUnits = mainFixture.asnzFixtureUnits;
                                 break;
                             case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                                drainageUnits =  mainFixture.enDischargeUnits;
+                                drainageUnits = mainFixture.enDischargeUnits;
                                 break;
                             case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
-                                drainageUnits =  mainFixture.upcFixtureUnits;
+                                drainageUnits = mainFixture.upcFixtureUnits;
                                 break;
                         }
                         result[suid].drainageUnits += drainageUnits!;
@@ -232,7 +235,7 @@ export function countPsdUnits(
 }
 
 export function addPsdCounts(
-    a: PsdCountEntry, 
+    a: PsdCountEntry,
     b: PsdCountEntry,
     document: DocumentState,
     catalog: Catalog,
@@ -240,7 +243,6 @@ export function addPsdCounts(
     let drainageUnits = a.drainageUnits + b.drainageUnits;
     let mainDrainageUnits;
     let highestDrainageUnits;
-
     if (document.drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
         const aDrainageUnits = a.mainDrainageUnits || a.drainageUnits;
         const bDrainageUnits = b.mainDrainageUnits || b.drainageUnits;
@@ -249,19 +251,33 @@ export function addPsdCounts(
             (a.highestDrainageUnits || a.drainageUnits), (b.highestDrainageUnits || b.drainageUnits)
         );
         const calculatedDrainageUnits = resolveEN1205622000DrainageUnits(document, catalog, mainDrainageUnits);
-        drainageUnits = (aDrainageUnits > 0 && calculatedDrainageUnits > highestDrainageUnits) 
-        ? calculatedDrainageUnits
-        : highestDrainageUnits;
+        drainageUnits = (aDrainageUnits > 0 && calculatedDrainageUnits > highestDrainageUnits)
+            ? calculatedDrainageUnits
+            : highestDrainageUnits;
     }
-    
+
+    let units = a.units + b.units;
+    let mixedHotCold;
+    let warmTemperature;
+    if (isGermanStandard(document.drawing.metadata.calculationParams.psdMethod)) {
+        mixedHotCold = a.mixedHotCold || b.mixedHotCold;
+        warmTemperature = a.warmTemperature || b.warmTemperature;
+
+        if (!!a.mixedHotCold && !!b.mixedHotCold && b.units && warmTemperature) {
+            units = a.units + +resolveDINUnits(document, b.units, warmTemperature!).toFixed(3);
+        }
+    }
+
     return {
-        units: a.units + b.units,
+        units: units,
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings,
         gasMJH: a.gasMJH + b.gasMJH,
-        drainageUnits: drainageUnits,
-        mainDrainageUnits: mainDrainageUnits,
-        highestDrainageUnits: highestDrainageUnits,
+        drainageUnits,
+        mainDrainageUnits,
+        highestDrainageUnits,
+        mixedHotCold,
+        warmTemperature,
     };
 }
 
@@ -308,10 +324,10 @@ export function equalPsdCounts(a: PsdCountEntry, b: PsdCountEntry): boolean {
 
 function isZeroPsdCounts(a: PsdCountEntry): boolean {
     return Math.abs(a.units) < EPS &&
-    Math.abs(a.continuousFlowLS) < EPS &&
-    Math.abs(a.dwellings) < EPS &&
-    Math.abs(a.gasMJH) < EPS &&
-    Math.abs(a.drainageUnits) < EPS;
+        Math.abs(a.continuousFlowLS) < EPS &&
+        Math.abs(a.dwellings) < EPS &&
+        Math.abs(a.gasMJH) < EPS &&
+        Math.abs(a.drainageUnits) < EPS;
 }
 
 export function isZeroWaterPsdCounts(a: PsdCountEntry): boolean {
@@ -369,9 +385,9 @@ export function insertPsdProfile(profile: PsdProfile, count: ContextualPCE) {
         if (!equalPsdCounts(count, profile.get(count.entity)!)) {
             throw new Error(
                 "Psd Profile given inconsistent values, before " +
-                    JSON.stringify(profile.get(count.entity)) +
-                    " after " +
-                    JSON.stringify(count)
+                JSON.stringify(profile.get(count.entity)) +
+                " after " +
+                JSON.stringify(count)
             );
         }
     }
@@ -417,6 +433,7 @@ export function countPsdProfile(
         total = addPsdCounts(total, contextual, document, catalog);
         highestLU = Math.max(highestLU, contextual.units);
     });
+
     return {
         units: total.units,
         dwellings: total.dwellings,
@@ -426,6 +443,8 @@ export function countPsdProfile(
         mainDrainageUnits: total.mainDrainageUnits,
         highestDrainageUnits: total.highestDrainageUnits,
         highestLU,
+        mixedHotCold: total.mixedHotCold,
+        warmTemperature: total.warmTemperature,
     };
 }
 
@@ -517,8 +536,7 @@ export function getPsdUnitName(psdMethod: SupportedPsdStandards, locale: Support
     assertUnreachable(psdMethod);
 }
 
-export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods, measurement: VolumeMeasurementSystem):  { name: string; abbreviation: string, units: Units } {
-            
+export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods, measurement: VolumeMeasurementSystem): { name: string; abbreviation: string, units: Units } {
     let units = Units.None;
     let abbreviation: string = 'FU';
     let name: string = 'Fixture Units';
@@ -538,7 +556,7 @@ export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods, me
                 assertUnreachable(measurement);
         }
     }
-    
+
     return { name, abbreviation, units }
 }
 
@@ -583,10 +601,11 @@ export function lookupFlowRate(
                     const a = parseCatalogNumberExact(standard.variables.a)!;
                     const b = parseCatalogNumberExact(standard.variables.b)!;
                     const c = parseCatalogNumberExact(standard.variables.c)!;
-    
+
                     fromLoading = a * psdU.units ** b - c;
                 }
             }
+
             break;
         }
         case PSDStandardType.LU_MAX_LOOKUP_TABLE: {
@@ -710,7 +729,7 @@ export function zeroCost(): Cost {
 export function addCosts(a: Cost | null, b: Cost | null): Cost {
     const value = (a ? a.value : 0) + (b ? b.value : 0);
     const exact = a !== null && a.exact && b !== null && b.exact;
-    return {value, exact};
+    return { value, exact };
 }
 
 export function roundNumber(value: number, decimalPlaces: number) {
@@ -722,4 +741,12 @@ export function resolveEN1205622000DrainageUnits(document: DocumentState, catalo
     const frequencyFactor = catalog.en12056FrequencyFactor[document.drawing.metadata.calculationParams.en12056FrequencyFactor];
 
     return (frequencyFactor * Math.sqrt(drainageUnits));
+}
+
+export function resolveDINUnits(document: DocumentState, units: number, warmTemp: number) {
+    const [cold, hot] = document.drawing.metadata.flowSystems;
+    const coldTemp = cold.temperature;
+    const hotTemp = hot.temperature;
+
+    return ((warmTemp - coldTemp) / (hotTemp - coldTemp)) * units;
 }

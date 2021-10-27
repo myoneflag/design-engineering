@@ -9,6 +9,9 @@
     - [Install Docker Compose](#install-docker-compose)
     - [Allow sudo permissions for gitlab-runner user](#allow-sudo-permissions-for-gitlab-runner-user)
   - [Configure credentials for AWS deployments](#configure-credentials-for-aws-deployments)
+  - [Logging into deploy server](#logging-into-deploy-server)
+  - [Troubleshooting](#troubleshooting)
+    - [Canceling build might cause permission errors with next build](#canceling-build-might-cause-permission-errors-with-next-build)
   - [Backup](#backup)
 
 ## Gitlab Runner setup
@@ -110,8 +113,36 @@ script:
 
 5. Start deploy build
 
+## Logging into deploy server
+
+```
+ssh -i "h2x-test-ec2-keypair.pem" ubuntu@ec2-54-219-161-79.us-west-1.compute.amazonaws.com
+```
+
+## Troubleshooting
+
+### Canceling build might cause permission errors with next build
+
+When canceling a deploy build after the AWS deployment has started, leftover files are peristsed and they will create permission error for the next build.  
+
+```
+Checking out b55ad869 as test...
+warning: failed to remove cloudformation/dist/710582a5/template.cfn.json.1: Permission denied
+warning: failed to remove cloudformation/dist/710582a5/worker.zip: Permission denied
+...
+```
+
+*Fix*
+Log into build server, then:  
+```
+cd /home/gitlab-runner/builds/yYyhiUP3/0/info892/H2X/
+sudo ./cloudformation/clean.sh
+```
+Logout.  
+Restart build from GitLab.  
+
+
 ## Backup
 
 Build server is backed up nightly with 30 day retention using AWS Backup.  
 See [backup plan](https://us-west-1.console.aws.amazon.com/backup/home?region=us-west-1#/backupplan/details/fb7a3b75-b13e-47cf-a105-051d64d2d2fe).  
-  

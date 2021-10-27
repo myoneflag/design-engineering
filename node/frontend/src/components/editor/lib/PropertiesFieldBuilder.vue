@@ -11,12 +11,12 @@
                 label-cols="12"
                 @blur="onCommitInternal"
                 :disabled="isDisabled(field)"
-                    :description="field.description"
+                :description="field.description"
             >
                     <div :class="missingRequired(field) ? 'pulse-orange' : ''" :ref="'field-' + field.property"  >
                             <b-row :style="'margin-top: -10px; margin-bottom: -5px;'" >
                         <b-col>
-                            <template v-if="field.type !== 'title'">
+                            <template v-if="field.type !== FieldType.Title && field.type !== FieldType.Advert">
                                 <table style="width: 100%">
                                     <tbody>
                                     <tr>
@@ -43,7 +43,6 @@
                                     </tbody>
                                 </table>
                             </template>
-                            <hr v-else />
                         </b-col>
                         <b-col cols="2" v-if="field.hasDefault" v-b-tooltip.hover title="Override Default">
                             <b-check
@@ -82,7 +81,7 @@
                             <slot v-if="field.slot" :name="field.property" v-bind:field="field"></slot>
                             
                         <b-form-textarea
-                                v-else-if="field.type === 'textarea'"
+                                v-else-if="field.type === FieldType.TextArea"
                             :value="renderedData(field.property)"
                             @input="setRenderedData(field, $event)"
                             :id="'input-' + field.property"
@@ -96,7 +95,7 @@
                         <b-row
                             style="(missingRequired(field) ? 'background-color: red' : '')"
                             v-else-if="
-                                field.type === 'number' && field.params.min != null && field.params.max != null
+                                field.type === FieldType.Number && field.params.min != null && field.params.max != null
                             "
                         >
                             <b-col cols="7">
@@ -128,7 +127,7 @@
                             </b-col>
                         </b-row>
 
-                        <b-row v-else-if="field.type === 'number'">
+                        <b-row v-else-if="field.type === FieldType.Number">
                             <b-col cols="12">
                                 <b-form-input
                                     :value="displayWithCorrectUnits(field)"
@@ -146,7 +145,7 @@
                         </b-row>
 
                         <b-dropdown
-                            v-else-if="field.type === 'choice'"
+                            v-else-if="field.type === FieldType.Choice"
                             class="float-left"
                             size="sm"
                             id="dropdown-1"
@@ -163,16 +162,18 @@
                                 {{ choice.name }}
                             </b-dropdown-item>
                         </b-dropdown>
-                        <div class="row row htc-row border border-dark text-center rounded-lg py-2 text-dark bg-light" @click="openTestingSite" v-else-if="field.type==='testing'">
-                            <div class="d-flex p-0 mx-auto"  >
-                                    <p class=" htctext">Request a <br/><b>Flow & Pressure Test </b><br/> (5 day lead time)</p>
+
+                        <a v-else-if="field.type === FieldType.Advert" :href="field.params.url" target="_blank" 
+                            class="row border text-center rounded-lg text-dark bg-light m-0">
+                            <div>                                
+                                <img :src="field.params.imagePath" class="w-100" :alt="field.title"/>
+                                <div v-html="field.params.titleHtml"></div>
+                                <div v-html="field.params.subtitleHtml"></div>
                             </div>
-                            <div class="mx-auto">
-                                <small class="px-2 ">Service only available in QLD and VIC</small>
-                            </div>
-                        </div>
+                        </a>
+                        
                         <PopoutColourPicker
-                            v-else-if="field.type === 'color'"
+                            v-else-if="field.type === FieldType.Color"
                             size="sm"
                             :value="renderedData(field.property)"
                             @input="setRenderedData(field, $event, true)"
@@ -180,27 +181,27 @@
                         />
 
                         <flow-system-picker
-                            v-else-if="field.type === 'flow-system-choice'"
+                            v-else-if="field.type === FieldType.FlowSystemChoice"
                             :flow-systems="field.params.systems"
                             :selected-system-uid="renderedData(field.property)"
                             @selectSystem="setRenderedData(field, field.params.systems[$event].uid, true)"
                         />
 
                         <rotation-picker
-                            v-else-if="field.type === 'rotation'"
+                            v-else-if="field.type === FieldType.Rotation"
                             :value="renderedData(field.property)"
                             @input="setRenderedData(field, $event, true)"
                             :disabled="isDisabled(field)"
                         />
 
                         <boolean-picker
-                            v-else-if="field.type === 'boolean'"
+                            v-else-if="field.type === FieldType.Boolean"
                             :value="renderedData(field.property)"
                             @input="setRenderedData(field, $event, true)"
                             :disabled="isDisabled(field)"
                         />
 
-                        <h5 v-else-if="field.type === 'title'">
+                        <h5 v-else-if="field.type === FieldType.Title">
                             {{ field.title }}
                         </h5>
 
@@ -230,7 +231,7 @@ import { DocumentState } from "../../../../src/store/document/types";
 import { Compact } from "vue-color";
 import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
 import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
-import { FieldParams, PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+import { FieldParams, PropertyField, FieldType } from "../../../../../common/src/api/document/entities/property-field";
 import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
 import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
 import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
@@ -241,8 +242,6 @@ import {
     convertMeasurementToMetric,
     Units
 } from "../../../../../common/src/lib/measurements";
-import { isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
-import { SupportedLocales } from "../../../../../common/src/api/locale";
 
 @Component({
     props: {
@@ -265,6 +264,10 @@ export default class PropertiesFieldBuilder extends Vue {
     // Typing into number text boxes is a bit sad unfortunately :(
     numberProxy = {} as any;
 
+    get FieldType() { 
+        return FieldType;
+    }
+
     mounted() {
         if (this.$props.target) {
             // scroll to it
@@ -279,9 +282,6 @@ export default class PropertiesFieldBuilder extends Vue {
 
     get readonly() {
         return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
-    }
-    openTestingSite(){
-        window.open(`https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E`)
     }
   
     displayWithCorrectUnits(field: PropertyField): number | null {

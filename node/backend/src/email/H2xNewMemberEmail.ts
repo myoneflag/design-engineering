@@ -1,7 +1,9 @@
+import Config from "../config/config";
+
 const H2xNewMemberEmail = (props: H2xNewMemberEmail) => {
     return {
-        from: process.env.EMAIL_ADDRESS,
-        to: process.env.EMAIL_ADDRESS,
+        from: Config.DEFAULT_EMAIL_FROM,
+        to: Config.NEW_MEMBERS_EMAIL,
         subject: 'H2X - New Member',
         html: `<!doctype html>
         <html ⚡4email>

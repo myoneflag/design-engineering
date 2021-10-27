@@ -3,29 +3,8 @@
         <b-row>
             <b-col>
                 <b-button-group
-                        style="margin-left: -380px"
+                        style="margin-left: -200px"
                 >
-
-                    <b-dropdown variant="outline-dark" size="sm" class="calculationBtn" text="Export (*)" >
-                        <b-dropdown-item @click="pdfSnapshot" variant="outline-dark" size="sm"> 
-                            PDF
-                        </b-dropdown-item>
-                        <b-dropdown-item @click="budgetReport" variant="outline-dark" size="sm"> 
-                            Bill of Materials (.xlsx)
-                        </b-dropdown-item>
-                        <b-dropdown-item @click="handleJsonExport" variant="outline-dark" size="sm">
-                            Revit Plugin (.json) <b-badge>BETA</b-badge> &nbsp; <b-link v-on:click.stop href="https://drive.google.com/file/d/1paqZlZ45_fYAjswlKSisy42Q_I7633Yp/view?usp=sharing" target="_blank"><b-icon icon="info-square" variant="dark"></b-icon></b-link>
-                        </b-dropdown-item>
-                    </b-dropdown>
-                    <b-button
-                        v-if="profile"
-                        variant="outline-dark"
-                        class="calculationBtn"
-                        @click="handleShareClick"
-                    >
-                        Share
-                        <v-icon name="share-alt" scale="1" />
-                    </b-button>
 
                     <b-button
                             variant="outline-dark"

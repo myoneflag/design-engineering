@@ -7,23 +7,34 @@
                         variant="outline-dark"
                         class="modebtn background btn-sm"
                         :class="{ onboarding: checkOnboardingClass(2) }"
-                        :pressed="mode === 0"
+                        :pressed="mode === DrawingMode.FloorPlan"
                         @click="toggleFloorPlan"
                     ><v-icon name="ruler-combined" scale="2" /><br />Floor Plan</b-button>
                     <b-button
                         variant="outline-dark"
                         class="modebtn pipes btn-sm"
                         :class="{ onboarding: checkOnboardingClass(3) }"
-                        :pressed="mode === 1"
+                        :pressed="mode === DrawingMode.Hydraulics"
                         @click="togglePlumbing"
                     ><v-icon name="wave-square" scale="2.5" /><br />Plumbing</b-button>
                     <b-button
                         variant="outline-dark"
                         class="modebtn results btn-sm"
                         :class="{ onboarding: checkOnboardingClass(4) }"
-                        :pressed="mode === 2"
+                        :pressed="mode === DrawingMode.Calculations && !this.showExport"
                         @click="toggleResults"
                     ><v-icon name="calculator" scale="2" /><br />Results</b-button>
+                    <div v-b-tooltip="showToolTip">
+                    <b-button
+                        variant="outline-dark"
+                        class="modebtn results btn-sm"
+                        :class="{ onboarding: checkOnboardingClass(5) }"
+                        :pressed="mode === DrawingMode.Calculations && this.showExport"
+                        :disabled="mode !== DrawingMode.Calculations"
+                        @click="toggleExport"
+                    ><v-icon name="file-export" scale="2" /><br />Export
+                    </b-button>
+                    </div>
                 </b-button-group>
             </b-col>
         </b-row>
@@ -36,15 +47,23 @@ import Component from "vue-class-component";
 import Mousetrap from 'mousetrap';
 import { DocumentState } from "../../store/document/types";
 import OnboardingState, { ONBOARDING_SCREEN } from "../../store/onboarding/types";
+import { DrawingMode } from "../../htmlcanvas/types";
 
 @Component({
     props: {
-        mode: Number
-    }
+        mode: Number,
+        showExport: Boolean,
+    },
 })
 export default class ModeButtons extends Vue {
+    data() { 
+        return {
+            DrawingMode: DrawingMode
+        }
+    }
+
     mounted() {
-        const { floorPlan, plumbing, results } = this.hotKeySetting;
+        const { floorPlan, plumbing, results, exportSettings } = this.hotKeySetting;
 
         if (floorPlan)
             Mousetrap.bind(floorPlan, this.toggleFloorPlan);
@@ -54,8 +73,19 @@ export default class ModeButtons extends Vue {
 
         if (results)
             Mousetrap.bind(results, this.toggleResults);
+      
+        if (exportSettings)
+            Mousetrap.bind(exportSettings, this.toggleExport);
     }
     
+    get showToolTip(): string{
+        if(this.document.uiState.drawingMode !== DrawingMode.Calculations){
+            return 'Please click on Results first';
+        }
+        else{
+            return '';
+        }
+    }
     get document(): DocumentState {
         return this.$store.getters["document/document"];
     }
@@ -73,18 +103,28 @@ export default class ModeButtons extends Vue {
     }
 
     toggleFloorPlan() {
-        this.$emit("update:mode", 0);
+        this.$emit("update:mode", DrawingMode.FloorPlan);
         this.$emit("floor-plan");
+        this.$emit('update:showExport', false)
     }
 
     togglePlumbing() {
-        this.$emit('update:mode', 1);
+        this.$emit('update:mode', DrawingMode.Hydraulics);
+        this.$emit('update:showExport', false)
     }
 
     toggleResults() {
-        this.$emit('update:mode', 2);
+        this.$emit('update:mode', DrawingMode.Calculations);
+        this.$emit('update:showExport', false)
+    }
+   
+    toggleExport() {
+        this.$emit('update:showExport', true)
     }
 
+    displayToolTip(){
+        return 'Please click on Results first';
+    }
     checkOnboardingClass(step: number) {
         return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
     }
@@ -99,6 +139,10 @@ export default class ModeButtons extends Vue {
     background-color: white;
 }
 
+.modebtn.results.btn-sm:disabled{
+    background: lightgray;
+    opacity:1;
+}
 .numberCircle {
     border-radius: 50%;
     margin-left: 20px;

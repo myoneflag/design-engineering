@@ -1,4 +1,4 @@
-import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+import { DrawableEntity, NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -1477,21 +1477,28 @@ export default class CalculationEngine implements CalculationContext {
 
     // Returns PSD of node and correlation group ID
     getTerminalPsdU(flowNode: FlowNode): ContextualPCE[] {
+        let units: ContextualPCE[] = [];
+
         if (flowNode.connectable === FLOW_SOURCE_ROOT) {
-            return [];
+            return units;
         }
 
-        const node = this.globalStore.get(flowNode.connectable)!;
+        const node = this.globalStore.get(flowNode.connectable)! as BaseBackedObject;
+        const entity = node.entity as DrawableEntityConcrete;
 
-        if (node.entity.type === EntityType.SYSTEM_NODE) {
+        if (entity.type === EntityType.SYSTEM_NODE) {
+            const systemUid = entity.systemUid as StandardFlowSystemUids;
             const parent = this.globalStore.get(node.entity.parentUid!);
+
             if (parent === undefined) {
                 throw new Error("System node is missing parent. " + JSON.stringify(node));
             }
             if (parent.uid !== flowNode.connection) {
                 return [];
             }
-            const parentEntity = parent.entity;
+
+            const parentEntity = parent.entity as DrawableEntityConcrete;
+
             switch (parentEntity.type) {
                 case EntityType.FIXTURE: {
                     const fixture = parentEntity as FixtureEntity;
@@ -1513,9 +1520,9 @@ export default class CalculationEngine implements CalculationContext {
                     }
 
                     for (const suid of fixture.roughInsInOrder) {
-                        if (node.uid === fixture.roughIns[suid].uid || (isDrainage(node.entity.systemUid) && isDrainage(suid))) {
+                        if (node.uid === fixture.roughIns[suid].uid || (isDrainage(systemUid) && isDrainage(suid))) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                                return [{
+                                units.push({
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
@@ -1523,9 +1530,10 @@ export default class CalculationEngine implements CalculationContext {
                                     correlationGroup: fixture.uid,
                                     drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
                                     gasMJH: 0,
-                                }];
+                                    mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
+                                });
                             } else {
-                                return [{
+                                units.push({
                                     units: Number(mainFixture.roughIns[suid].loadingUnits),
                                     continuousFlowLS: mainFixture.roughIns[suid].continuousFlowLS!,
                                     dwellings: 0,
@@ -1533,15 +1541,19 @@ export default class CalculationEngine implements CalculationContext {
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
                                     drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
-                                }];
+                                    mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
+                                });
                             }
                         }
                     }
-                    //throw new Error("Invalid connection to fixture");
-                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
+
+                    if (!units.length) {
+                        units.push(zeroContextualPCE(node.entity.uid, node.entity.uid))
+                    }
+                    break;
                 }
                 case EntityType.GAS_APPLIANCE: {
-                    return [{
+                    units.push({
                         units: 0,
                         continuousFlowLS: 0,
                         dwellings: 0,
@@ -1549,14 +1561,15 @@ export default class CalculationEngine implements CalculationContext {
                         correlationGroup: parentEntity.uid,
                         gasMJH: parentEntity.flowRateMJH!,
                         drainageUnits: 0,
-                    }];
+                    });
+                    break;
                 }
                 case EntityType.PLANT: {
                     switch (parentEntity.plant.type) {
                         case PlantType.RETURN_SYSTEM:
                             const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
                             if (filled.gasConsumptionMJH !== null && node.uid === filled.gasNodeUid) {
-                                return [{
+                                units.push({
                                     units: 0,
                                     continuousFlowLS: 0,
                                     dwellings: 0,
@@ -1564,7 +1577,7 @@ export default class CalculationEngine implements CalculationContext {
                                     correlationGroup: parentEntity.uid,
                                     gasMJH: filled.gasConsumptionMJH,
                                     drainageUnits: 0,
-                                }];
+                                });
                             }
                             break;
                         case PlantType.TANK:
@@ -1576,27 +1589,48 @@ export default class CalculationEngine implements CalculationContext {
                         default:
                             assertUnreachable(parentEntity.plant);
                     }
-                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
+
+                    if (!units.length) {
+                        units.push(zeroContextualPCE(node.entity.uid, node.entity.uid))
+                    }
+                    break;
                 }
+                case EntityType.BIG_VALVE:
+                    if (isGermanStandard(this.drawing.metadata.calculationParams.psdMethod)
+                        && systemUid === StandardFlowSystemUids.HotWater
+                        && (parentEntity.valve.type === BigValveType.TMV || parentEntity.valve.type === BigValveType.TEMPERING)) {
+
+                        units.push({
+                            ...zeroContextualPCE(node.entity.uid, node.entity.uid),
+                            mixedHotCold: true,
+                            warmTemperature: parentEntity.outputTemperatureC,
+                        });
+
+                        break;
+                    }
                 case EntityType.LOAD_NODE:
                 case EntityType.BACKGROUND_IMAGE:
                 case EntityType.RISER:
                 case EntityType.FLOW_SOURCE:
                 case EntityType.PIPE:
                 case EntityType.FITTING:
-                case EntityType.BIG_VALVE:
                 case EntityType.SYSTEM_NODE:
                 case EntityType.DIRECTED_VALVE:
-                    return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
+                    units.push(zeroContextualPCE(node.entity.uid, node.entity.uid));
+                    break;
                 default:
                     assertUnreachable(parentEntity);
             }
-            assertUnreachable(parentEntity);
+
+            if (units.length) {
+                return units;
+            }
+
             // Sadly, typescript type checking for return value was not smart enough to avoid these two lines.
             throw new Error("parent type is not a correct value");
-        } else if (node.entity.type === EntityType.LOAD_NODE) {
-            const correlationGroup = node.entity.linkedToUid || node.entity.uid;
-            const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, node.entity, this.catalog, this.nodes);
+        } else if (entity.type === EntityType.LOAD_NODE) {
+            const correlationGroup = entity.linkedToUid || entity.uid;
+            const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, entity, this.catalog, this.nodes);
 
             const selectedMaterialManufacturer = this.doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === filled.uid);
             const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
@@ -1608,7 +1642,6 @@ export default class CalculationEngine implements CalculationContext {
 
                 if (nodeProp !== undefined) {
                     // Special case for bs806 because it requires individual fixture information.
-                    const returnData: ContextualPCE[] = [];
                     for (let i = 0; i < nodeProp.fixtures.length; i++) {
                         let loadingUnits = 0;
                         let designFlowRateLS = 0;
@@ -1639,7 +1672,7 @@ export default class CalculationEngine implements CalculationContext {
                                 designFlowRateLS = parseCatalogNumberOrMin(this.catalog.fixtures[nodeProp.fixtures[i]].qLS[manufacturer][selectedOption][systemChk])!;
                                 loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[SupportedPsdStandards.bs806][systemChk])!;
 
-                                returnData.push({
+                                units.push({
                                     units: designFlowRateLS,
                                     continuousFlowLS: filled.node.continuousFlowLS!,
                                     dwellings: 0,
@@ -1661,7 +1694,7 @@ export default class CalculationEngine implements CalculationContext {
                             if (systemChk) {
                                 loadingUnits = parseCatalogNumberExact(this.catalog.fixtures[nodeProp.fixtures[i]].loadingUnits[psdStandard][systemChk])!;
 
-                                returnData.push({
+                                units.push({
                                     units: loadingUnits,
                                     continuousFlowLS: filled.node.continuousFlowLS!,
                                     dwellings: 0,
@@ -1674,7 +1707,7 @@ export default class CalculationEngine implements CalculationContext {
                         }
                     }
 
-                    return returnData;
+                    return units;
                 }
             } else {
                 let drainageUnits: number | null = null;
@@ -1691,10 +1724,11 @@ export default class CalculationEngine implements CalculationContext {
                     default:
                         assertUnreachable(this.doc.drawing.metadata.calculationParams.drainageMethod);
                 }
+
                 switch (filled.node.type) {
                     case NodeType.LOAD_NODE:
                         if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return [{
+                            units.push({
                                 units: filled.node.designFlowRateLS!,
                                 continuousFlowLS: filled.node.continuousFlowLS!,
                                 dwellings: 0,
@@ -1702,9 +1736,9 @@ export default class CalculationEngine implements CalculationContext {
                                 gasMJH: filled.node.gasFlowRateMJH,
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
-                            }];
+                            });
                         } else {
-                            return [{
+                            units.push({
                                 units: filled.node.loadingUnits!,
                                 continuousFlowLS: filled.node.continuousFlowLS!,
                                 dwellings: 0,
@@ -1712,11 +1746,12 @@ export default class CalculationEngine implements CalculationContext {
                                 gasMJH: filled.node.gasFlowRateMJH,
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
-                            }];
+                            });
                         }
+                        break;
                     case NodeType.DWELLING:
                         if (!!this.doc.drawing.metadata.calculationParams.dwellingMethod) {
-                            return [{
+                            units.push({
                                 units: 0,
                                 continuousFlowLS: filled.node.continuousFlowLS!,
                                 dwellings: filled.node.dwellings,
@@ -1724,9 +1759,9 @@ export default class CalculationEngine implements CalculationContext {
                                 gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
-                            }];
+                            });
                         } else if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
-                            return [{
+                            units.push({
                                 units: filled.node.designFlowRateLS!,
                                 continuousFlowLS: filled.node.continuousFlowLS!,
                                 dwellings: filled.node.dwellings,
@@ -1734,9 +1769,9 @@ export default class CalculationEngine implements CalculationContext {
                                 gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
-                            }];
+                            });
                         } else {
-                            return [{
+                            units.push({
                                 units: filled.node.loadingUnits!,
                                 continuousFlowLS: filled.node.continuousFlowLS!,
                                 dwellings: filled.node.dwellings,
@@ -1744,16 +1779,22 @@ export default class CalculationEngine implements CalculationContext {
                                 gasMJH: filled.node.gasFlowRateMJH * filled.node.dwellings!,
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
-                            }];
+                            });
                         }
+                        break;
                     default:
                         assertUnreachable(filled.node);
                 }
             }
-            throw new Error("invalid node type");
+
+            if (!units.length) {
+                throw new Error("invalid node type");
+            }
         } else {
-            return [zeroContextualPCE(node.entity.uid, node.entity.uid)];
+            units.push(zeroContextualPCE(node.entity.uid, node.entity.uid));
         }
+
+        return units;
     }
 
     configureEntityForPSD(

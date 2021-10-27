@@ -1,5 +1,5 @@
 <template>
-    <b-row style="position:absolute; left:300px; top:80px;">
+    <b-row style="position:absolute; left:350px; top:80px;">
         <b-col>
             <b-button-group>
                 <FlowSystemPicker

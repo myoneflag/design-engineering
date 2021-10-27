@@ -1,6 +1,8 @@
+import Config from "../config/config";
+
 const VerifyEmail = (props: VerifyEmail) => {
     return {
-        from: process.env.EMAIL_ADDRESS,
+        from: Config.DEFAULT_EMAIL_FROM,
         to: props.to,
         replyTo: 'jordan@h2xengineering.com',
         subject: 'H2X - Email Verification',

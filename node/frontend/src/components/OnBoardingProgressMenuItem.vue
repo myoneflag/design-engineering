@@ -2,8 +2,7 @@
     <b-nav-item id="on-boarding-progress-popover" @click="nextOnBoardingStep">
         {{ currentProgress.level.name }}
         <b-badge variant="primary"> {{ currentProgress.overallLevelProgress }}%</b-badge>
-        <FeedbackModal v-model="showFeedbackModal"/>
-
+        <FeedbackModal v-model="showFeedbackModal" feedbackType="feedback"/>
         <b-popover target="on-boarding-progress-popover" triggers="hover" placement="bottom"
                    v-if="!currentProgress.complete" style="max-width: 100%">
             <b-table-simple>

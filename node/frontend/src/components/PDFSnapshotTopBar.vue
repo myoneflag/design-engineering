@@ -1,5 +1,6 @@
 <template>
-    <b-row style="position:fixed; left:300px; top:80px;">
+    <b-row>
+        <div class="exportOptionsBar">
         <b-col class="col-auto">
             <PaperSizePicker v-model="document.uiState.exportSettings.paperSize" @input="redraw" />
         </b-col>
@@ -20,15 +21,17 @@
         </b-col>
         <b-col class="col-auto">
             <b-btn :disabled="true" variant="outline-dark" style="background-color: white; opacity: 100%">
-                <b-checkbox v-model="document.uiState.exportSettings.coverSheet" :disabled="!supportsCoverSheet"
+                <b-checkbox v-model="document.uiState.exportSettings.coverSheet" :disabled="!supportsCoverSheet || document.uiState.exportSettings.borderless"
                     >Inc. Cover Sheet</b-checkbox
                 >
             </b-btn>
             <b-btn :disabled="true" variant="outline-dark" style="background-color: white; opacity: 100%">
-                <b-checkbox v-model="document.uiState.exportSettings.floorPlans">Inc. Floor Plans</b-checkbox>
+                <b-checkbox v-model="document.uiState.exportSettings.floorPlans" :disabled="document.uiState.exportSettings.borderless">Inc. Floor Plans</b-checkbox>
             </b-btn>
         </b-col>
-        <b-col class="col-auto">
+        </div>
+        <div class="exportBar">
+         <b-col class="col-auto">
             <b-button-group>
                 <b-button variant="success" @click="exportPdfCurrent" id="export-pdf-btn" :disabled="exporting">
                     <b-spinner style="width: 1em; height: 1em;" v-if="exporting && !allLevels"></b-spinner> Export This
@@ -44,13 +47,12 @@
                 <b-tooltip target="export-pdf-btn" v-if="exporting" triggers="hover"
                     >Downloading full resolution assets</b-tooltip
                 >
+                <b-button variant="secondary" class="ml-4" @click="cancel">
+                     Cancel
+                </b-button>
             </b-button-group>
-        </b-col>
-        <b-col>
-            <b-button variant="secondary" @click="cancel">
-                Cancel
-            </b-button>
-        </b-col>
+         </b-col>
+         </div>
     </b-row>
 </template>
 
@@ -84,6 +86,7 @@ export default class PDFSnapshotTopBar extends Vue {
     allLevels = false;
 
     async exportPdf(allLevels: boolean) {
+        console.log("this document ui state is : ", this.document.uiState);
         this.allLevels = allLevels;
         if (!(this.$props.toolHandler instanceof PdfSnapshotTool)) {
             throw new Error("No pdf snapshot tool present");
@@ -104,7 +107,7 @@ export default class PDFSnapshotTopBar extends Vue {
         newVp.panAbs(-xdiff / 2, -ydiff / 2);
 
         this.exporting = true;
-
+        
         try {
             await exportPdf(this.$props.canvasContext, newVp, {
                 paperSize: this.document.uiState.exportSettings.paperSize,
@@ -161,5 +164,19 @@ export default class PDFSnapshotTopBar extends Vue {
     min-width: 60px;
     font-size: 12px;
     background-color: white;
+}
+
+.exportOptionsBar{
+    position: fixed; 
+    left: 50px; 
+    top: 80px; 
+    display: flex
+}
+
+.exportBar{
+    position: fixed;
+    bottom:  20px;
+    left: 65%;
+    display:  flex
 }
 </style>

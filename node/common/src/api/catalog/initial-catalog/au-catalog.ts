@@ -989,8 +989,8 @@ export const auCatalog: Catalog = {
                     "warm-water": "2",
                 },
                 bs8558: {
-                    "cold-water": "33",
-                    "warm-water": "33",
+                    "cold-water": "3",
+                    "warm-water": "3",
                 },
                 cibseGuideG: {
                     "low": "2",

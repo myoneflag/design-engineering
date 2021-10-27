@@ -27,7 +27,7 @@ l<template>
 
         <b-row>
           <b-col>
-            <b-alert variant="success" v-if="documents.length === 0 && loaded" show
+            <b-alert variant="success" v-if="allDocuments.length === 0 && loaded" show
               >You don't have any documents right now.</b-alert
             >
           </b-col>
@@ -102,7 +102,7 @@ l<template>
                   type="search"
                   id="searchbox"
                   v-model="searchCondition"
-                  v-debounce:500ms="filterDocumentsAfterDelay"
+                  v-debounce:500ms="filterDocuments"
                   class="form-control d-flex-inline"
                   placeholder="Search project name..."
                   aria-label="Search"
@@ -329,6 +329,11 @@ l<template>
             </b-col>
           </template>
         </b-row>
+        <b-row>
+          <span v-if="showTruncatedWarning">
+            Results truncated to {{ ADMIN_MAX_DISPLAY_COUNT }} documents.
+          </span>
+        </b-row>
       </b-container>
     </div>
     <Onboarding :screen="onboardingScreen"></Onboarding>
@@ -390,7 +395,7 @@ enum ProjectTabFilters {
   },
 })
 export default class Home extends Vue {
-  documents: Document[] = [];
+  allDocuments: Document[] = [];
   filteredDocuments: Document[] = [];
   loaded: boolean = false;
   showDeleted: boolean = false;
@@ -398,6 +403,7 @@ export default class Home extends Vue {
   compiledChangeLogs: ChangeLogMessage[] = [];
   selectedTags: string[] = [];
   projectFilter: number = ProjectTabFilters.MY_PROJECTS;
+  showTruncatedWarning: boolean = false;  
   searchCondition: string = "";
   contextId: number = 0;
   editTag: any = null;
@@ -413,6 +419,7 @@ export default class Home extends Vue {
       rule: (newTag: any) => !this.isTagValid(newTag)
     }
   ];
+  ADMIN_MAX_DISPLAY_COUNT = 100;
   isTagValid(newTag: any) {
     return (
       (this.filterArray(this.tagsArray, newTag.text).length == 0 && this.tagsArray.length < this.maxTagsLength) ||
@@ -426,14 +433,14 @@ export default class Home extends Vue {
   changeTab(tab: ProjectTabFilters) {
     this.selectedTags = [];
     this.projectFilter = tab;
-    if(tab === ProjectTabFilters.ALL_PROJECTS){
-      this.filteredDocuments = this.documents.slice(Math.max(this.documents.length - 49, 0));
-    }
+    this.filterDocuments();
   }
   tagClicked(tag: string) {
     this.selectedTags.indexOf(tag) == -1
       ? this.selectedTags.push(tag)
       : this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
+
+    this.filterDocuments();
   }
   contextMenu(docId: number, $event: any) {
     this.contextId = docId;
@@ -443,17 +450,58 @@ export default class Home extends Vue {
   openOnNewTab(docPath: string) {
     window.open(docPath);
   }
-  filterDocumentsAfterDelay(){
-    let docs = this.documents.filter((doc: Document) => {
-      return this.applyTabFilter(doc) && this.applySearchCondition(doc) && this.applyTagFilter(doc);
+
+  filterDocuments(){
+
+    const applyTabFilter = (doc: Document) => {
+      return (
+        this.profile &&
+        (this.projectFilter === ProjectTabFilters.MY_PROJECTS &&
+          doc.createdBy.username === this.profile.username) ||
+        (this.projectFilter === ProjectTabFilters.ORGANIZATION_PROJECTS &&
+          this.profile!.organization!.id == doc!.organization!.id) ||
+        this.projectFilter === ProjectTabFilters.ALL_PROJECTS
+      );
+    }
+
+    const applySearchCondition = (doc: Document) => {
+      return (
+        !this.searchCondition || 
+        (
+          this.searchCondition &&
+          this.searchCondition.length > 2 &&
+          (this.containsText(doc.metadata.title, this.searchCondition) ||
+          this.containsText(doc.organization.name, this.searchCondition) ||
+          this.containsText(doc.createdBy.username, this.searchCondition) ||
+          this.containsText(doc.tags, this.searchCondition) ||
+          doc.id.toString() === this.searchCondition)
+        )
+      );
+    }
+
+    const applyTagFilter = (doc: Document) => {
+      return this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc));
+    }
+
+    const applyDeleteFilter = (doc: Document): boolean => {
+      return ( this.profile.accessLevel <= AccessLevel.MANAGER && this.showDeleted ) || ( doc.state != DocumentStatus.DELETED )
+    }
+
+
+    let docs = this.allDocuments.filter((doc: Document) => {
+      return applyTabFilter(doc) && applySearchCondition(doc) && applyTagFilter(doc) && applyDeleteFilter(doc);
     });
 
-    if (this.projectFilter == ProjectTabFilters.ALL_PROJECTS && docs.length > 100 ) {
-      docs = docs.slice(0, 100)
+    if (this.projectFilter == ProjectTabFilters.ALL_PROJECTS && docs.length > this.ADMIN_MAX_DISPLAY_COUNT ) {
+      docs = docs.slice(0, this.ADMIN_MAX_DISPLAY_COUNT)
+      this.showTruncatedWarning = true;
+    } else {
+      this.showTruncatedWarning = false;
     }
 
     this.filteredDocuments = docs;
   }
+
   get tags() {
     return this.editTag.tags
       .split(",")
@@ -462,14 +510,17 @@ export default class Home extends Vue {
       })
       .map((item: string) => ({ text: item }));
   }
+
   filterArray(array: string[], condition: string, contain: boolean = false) {
     return array.filter((item: string) => {
       return item.toLowerCase().indexOf(condition.toLowerCase()) != -1 && (item.length == condition.length || contain);
     });
   }
+
   containsText(text: string, condition: string) {
     return text.toLowerCase().indexOf(condition.toLowerCase()) != -1;
   }
+
   get selectedTagsAutoComplete() {
     if (this.tag.length < 3) return [];
     return this.filterArray(this.documentTags, this.tag, true)
@@ -480,11 +531,9 @@ export default class Home extends Vue {
         return { text: item };
       });
   }
+
   get documentTags() {
-    var docTags = this.documents
-      .filter((item: Document) => {
-        return this.applyTabFilter(item) && item.state != DocumentStatus.DELETED;
-      })
+    var docTags = this.filteredDocuments
       .map((item) => {
         return item.tags;
       })
@@ -508,36 +557,6 @@ export default class Home extends Vue {
         return self.indexOf(value) === index;
       })
       .sort();
-  }
-
-  applyTabFilter(doc: Document) {
-    return (
-      this.profile &&
-      (this.projectFilter === ProjectTabFilters.MY_PROJECTS &&
-        doc.createdBy.username === this.profile.username) ||
-      (this.projectFilter === ProjectTabFilters.ORGANIZATION_PROJECTS &&
-        this.profile!.organization!.id == doc!.organization!.id) ||
-      this.projectFilter === ProjectTabFilters.ALL_PROJECTS
-    );
-  }
-
-  applySearchCondition(doc: Document) {
-    return (
-      !this.searchCondition || 
-      (
-        this.searchCondition &&
-        this.searchCondition.length > 2 &&
-        (this.containsText(doc.metadata.title, this.searchCondition) ||
-        this.containsText(doc.organization.name, this.searchCondition) ||
-        this.containsText(doc.createdBy.username, this.searchCondition) ||
-        this.containsText(doc.tags, this.searchCondition) ||
-        doc.id.toString() === this.searchCondition)
-      )
-    );
-  }
-
-  applyTagFilter(doc: Document) {
-    return this.selectedTags.length == 0 || (this.selectedTags.length > 0 && this.containsTag(doc));
   }
 
   toastValidationError() {
@@ -612,9 +631,8 @@ export default class Home extends Vue {
   docVisible(doc: Document) {
     switch (doc.state) {
       case DocumentStatus.ACTIVE:
-        return true;
       case DocumentStatus.DELETED:
-        return this.showDeleted;
+        return true;
       case DocumentStatus.PENDING:
         return this.profile.accessLevel <= AccessLevel.ADMIN;
       default:
@@ -632,11 +650,9 @@ export default class Home extends Vue {
     // fill documents
     getDocuments().then((res) => {
       if (res.success) {
-        this.documents.splice(0, this.documents.length, ...res.data);
-        this.documents.map((item) => {
-          item.tags = item.tags || "";
-        });
-        this.filteredDocuments = this.documents;
+        this.allDocuments = res.data;
+        this.allDocuments.forEach((item) => { item.tags = item.tags || "" });        
+        this.filterDocuments();
         this.loaded = true;
       } else {
         this.$bvToast.toast(res.message, {
@@ -649,6 +665,7 @@ export default class Home extends Vue {
 
   toggleShowDeleted() {
     this.showDeleted = !this.showDeleted;
+    this.filterDocuments();
   }
 
   createDocument() {

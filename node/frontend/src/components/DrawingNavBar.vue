@@ -36,7 +36,7 @@
                 exact 
                 :disabled="loading || disabled" 
                 v-if="profile"
-                :class="{ onboarding: checkOnboardingClass(6) }"
+                :class="{ onboarding: checkOnboardingClass(7) }"
             >
                 <span>
                     <v-icon name="cog"></v-icon>

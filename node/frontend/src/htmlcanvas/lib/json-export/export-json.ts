@@ -334,7 +334,7 @@ export function jsonExport(document: DocumentState, globalStore: GlobalStore) {
                     const currentLevelCalc = Object.entries(calculation.heights).find(
                         ([uid, props]) => uid === lprops.uid
                     );
-                    const riserSize = currentLevelCalc![1]?.sizeMM;
+                    const riserSize = currentLevelCalc ? currentLevelCalc![1]?.sizeMM : null;
                     let riserSizeInMM
                     if (riserSize === null) {
                         // riser is set to minimum size when null.

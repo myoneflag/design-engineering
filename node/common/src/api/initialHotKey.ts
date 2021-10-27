@@ -11,6 +11,10 @@ export const initialHotKey = {
         name: "Results",
         default: "alt+r",
     },
+    exportSettings: {
+        name: "Export",
+        default: "alt+e",
+    },
     settings: {
         name: "Settings",
         default: "alt+s",

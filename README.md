@@ -241,7 +241,6 @@ And adjust the value of the AWS_PROFILE to one created above.
 AWS_PROFILE=YOURNAME
 # for email
 SES_EMAIL_REGION=us-west-1
-EMAIL_ADDRESS=test@h2xtesting.com
 # for background uploads
 PDF_BUCKET=h2x-s3-pdf-local
 PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
