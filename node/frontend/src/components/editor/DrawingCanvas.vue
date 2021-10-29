@@ -203,6 +203,7 @@
     import SelectBox from "../../../src/htmlcanvas/objects/select-box";
     import * as _ from "lodash";
     import {AutoConnector} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+    import { getIdsOfSimilarEntities, entityTypeSupportsSimilar } from "../../../src/htmlcanvas/lib/black-magic/select-similar";
     import insertDirectedValve from "../../../src/htmlcanvas/tools/insert-directed-valve";
     import {ValveType} from "../../../../common/src/api/document/entities/directed-valves/valve-types";
     import {
@@ -219,7 +220,7 @@
     import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
-    import {NodeType, NodeVariant} from "../../../../common/src/api/document/entities/load-node-entity";
+    import LoadNodeEntity, {NodeType, NodeVariant, LoadNode} from "../../../../common/src/api/document/entities/load-node-entity";
     import {BigValveType} from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
     import {Buffer} from "./RenderBuffer";
     import {GlobalStore} from "../../htmlcanvas/lib/global-store";
@@ -281,10 +282,8 @@
         }
     })
     export default class DrawingCanvas extends Vue {
-        data() { 
-            return {
-                DrawingMode: DrawingMode
-            }
+        get DrawingMode() {
+            return DrawingMode;
         }
 
         get globalStore(): GlobalStore {
@@ -1077,7 +1076,7 @@
 
             const { type } = this.selectedEntities[0];
 
-            if (type === EntityType.PIPE || type === EntityType.FIXTURE) {
+            if (entityTypeSupportsSimilar(type)) {
                 var menuNode = this.$refs.menu as HTMLDivElement;
                 var rect = (this.$refs.drawingCanvas as HTMLCanvasElement).getBoundingClientRect();
                 var x = e.x - rect.left;
@@ -1091,51 +1090,11 @@
         }
 
         handleClickSelectSimilar() {
-            const selected = this.selectedEntities[0];            
-            const entities = Array.from((this.globalStore.entitiesInLevel.get(this.document.uiState.levelUid) || new Set()).values()).map((u) => this.globalStore.get(u)!.entity);
+            const selected = this.selectedEntities[0];
+            
+            const similarIds = getIdsOfSimilarEntities(selected, this.document.drawing, this.document.uiState.levelUid, this.globalStore);
 
-            for (const entity of entities) {
-                switch (selected.type) {
-                    case EntityType.FIXTURE: {
-                        if (entity.type === selected.type 
-                            && entity.uid !== selected.uid 
-                            && entity.name === selected.name)
-                        {
-                            this.select([entity.uid], SelectMode.Add);
-                        }
-                        break;
-                    }
-                    case EntityType.PIPE: {
-                        const filledPipe = fillPipeDefaultFields(this.document.drawing, 0, selected);
-                        
-                        if (entity.type === filledPipe.type) {
-                            const filledPipeSimilar = fillPipeDefaultFields(this.document.drawing, 0, entity);
-                            
-                            if (filledPipeSimilar.uid !== filledPipe.uid 
-                                && filledPipeSimilar.network === filledPipe.network 
-                                && filledPipeSimilar.systemUid === filledPipe.systemUid
-                                && filledPipeSimilar.material === filledPipe.material)
-                            {
-                                this.select([entity.uid], SelectMode.Add);
-                            }
-                        }
-                        break;
-                    }
-                    case EntityType.BACKGROUND_IMAGE:
-                    case EntityType.FITTING:
-                    case EntityType.RISER:
-                    case EntityType.SYSTEM_NODE:
-                    case EntityType.BIG_VALVE:
-                    case EntityType.DIRECTED_VALVE:
-                    case EntityType.LOAD_NODE:
-                    case EntityType.FLOW_SOURCE:
-                    case EntityType.PLANT:
-                    case EntityType.GAS_APPLIANCE:
-                        break;
-                    default:
-                        assertUnreachable(selected);
-                }
-            }
+            this.select(similarIds, SelectMode.Add);
 
             this.targetProperty = null;
             this.scheduleDraw();
