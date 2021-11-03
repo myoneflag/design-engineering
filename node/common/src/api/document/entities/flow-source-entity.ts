@@ -114,7 +114,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                     url: "https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E",
                     titleHtml: "<p style=\"font-size: small; margin:3px auto;\">Request a <b>Flow & Pressure Test</b></p>",
                     subtitleHtml: "",
-                    imagePath: "/img/adverts/htctestinglogo.png"
+                    imagePath: "/img/3rdparty/htctestinglogo.png"
                 }
             });
     }
