@@ -14,6 +14,7 @@ export default class VersionNumber extends Vue {
 </script>
 <style lang="less">
 #version-label {
+    font-size: 11px;
     position: absolute;
     bottom: 10px;
     left: 20px;
