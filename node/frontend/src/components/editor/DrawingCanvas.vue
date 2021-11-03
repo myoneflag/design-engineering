@@ -142,8 +142,8 @@
             <b-button class="helpButton" variant="outline-info" @click="showFeedbackModal=true">Help <b-icon icon="question-circle"/></b-button>
 
             <div v-if="document.uiState.levelUid === null" class="choose-level-instruction">
-                <v-icon name="arrow-left" scale="2"></v-icon>
-                Please Choose a Level
+                <v-icon name="arrow-left" scale="1"></v-icon>
+                Please add a Level
             </div>
             <resize-observer @notify="scheduleDraw"/>
         </div>
