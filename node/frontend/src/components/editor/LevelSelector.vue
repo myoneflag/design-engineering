@@ -245,7 +245,7 @@ export default class LevelSelector extends Vue {
     addAbove() {
         const highestFloor = this.sortedLevels[0];
         const highestHeight = highestFloor ? highestFloor.floorHeightM : 0;
-        const nMatch = highestFloor.abbreviation.match("[0-9]+");
+        const nMatch = highestFloor ? highestFloor.abbreviation.match("[0-9]+") : 0;
         let num: number;
         if (nMatch) {
             num = Number(nMatch[0]) + 1;
@@ -253,20 +253,23 @@ export default class LevelSelector extends Vue {
             num = this.numAboveFloors;
         }
         const newLvl: Level = {
-            abbreviation: "L" + num,
+            abbreviation: num ? "L" + num : "G",
             entities: {},
             floorHeightM: highestHeight + LEVEL_HEIGHT_DIFF_M,
-            name: "Level " + num,
+            name: num ? "Level " + num : "Ground",
             uid: uuid()
         };
         this.$store.dispatch("document/addLevel", newLvl);
         this.$store.dispatch("document/validateAndCommit");
+        if (!num) {
+            this.selectLevel(newLvl.uid)
+        }
     }
 
     addBelow() {
         const lowestFloor = this.sortedLevels[this.sortedLevels.length - 1];
         const lowestHeight = lowestFloor ? lowestFloor.floorHeightM : 0;
-        const nMatch = lowestFloor.abbreviation.match("[0-9]+");
+        const nMatch = lowestFloor ? lowestFloor.abbreviation.match("[0-9]+") : 0;
         let num: number;
         if (nMatch) {
             num = Number(nMatch[0]) + 1;
@@ -282,6 +285,9 @@ export default class LevelSelector extends Vue {
         };
         this.$store.dispatch("document/addLevel", newLvl);
         this.$store.dispatch("document/validateAndCommit");
+        if (num === 1) {
+            this.selectLevel(newLvl.uid)
+        }
     }
 
     get catalog(): Catalog {
