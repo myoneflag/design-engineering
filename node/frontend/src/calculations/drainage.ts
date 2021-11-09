@@ -85,7 +85,15 @@ export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, ps
     calc.psdUnits = psdUnits;
 
     const system = context.doc.drawing.metadata.flowSystems.find((fs) => fs.uid === entity.systemUid)!;
-    calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = getSizeOfVent(system, psdUnits);
+    const calculatedVentSize = getSizeOfVent(system, psdUnits);
+    if (entity.diameterMM == null) {
+        calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = calculatedVentSize;
+    } else {
+        if ( calculatedVentSize && entity.diameterMM < calculatedVentSize) {
+            calc.warning = "Overriden pipe diameter insufficient for drainage vent size.";
+            calc.warningLayout = "drainage"
+        }
+    }
     if (calc.realNominalPipeDiameterMM === null) {
         calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
     }
