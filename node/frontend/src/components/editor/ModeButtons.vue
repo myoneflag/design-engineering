@@ -6,21 +6,21 @@
                     <b-button
                         variant="outline-dark"
                         class="modebtn background btn-sm"
-                        :class="{ onboarding: checkOnboardingClass(2) }"
+                        :class="{ onboarding: checkOnboardingClass(DocumentStep.FloorPlan) }"
                         :pressed="mode === DrawingMode.FloorPlan"
                         @click="toggleFloorPlan"
                     ><v-icon name="ruler-combined" scale="2" /><br />Floor Plan</b-button>
                     <b-button
                         variant="outline-dark"
                         class="modebtn pipes btn-sm"
-                        :class="{ onboarding: checkOnboardingClass(3) }"
+                        :class="{ onboarding: checkOnboardingClass(DocumentStep.Plumbing) }"
                         :pressed="mode === DrawingMode.Hydraulics"
                         @click="togglePlumbing"
                     ><v-icon name="wave-square" scale="2.5" /><br />Plumbing</b-button>
                     <b-button
                         variant="outline-dark"
                         class="modebtn results btn-sm"
-                        :class="{ onboarding: checkOnboardingClass(4) }"
+                        :class="{ onboarding: checkOnboardingClass(DocumentStep.Results) }"
                         :pressed="mode === DrawingMode.Calculations && !this.showExport"
                         @click="toggleResults"
                     ><v-icon name="calculator" scale="2" /><br />Results</b-button>
@@ -28,7 +28,7 @@
                     <b-button
                         variant="outline-dark"
                         class="modebtn results btn-sm"
-                        :class="{ onboarding: checkOnboardingClass(5) }"
+                        :class="{ onboarding: checkOnboardingClass(DocumentStep.Export) }"
                         :pressed="mode === DrawingMode.Calculations && this.showExport"
                         :disabled="mode !== DrawingMode.Calculations"
                         @click="toggleExport"
@@ -47,6 +47,7 @@ import Component from "vue-class-component";
 import Mousetrap from 'mousetrap';
 import { DocumentState } from "../../store/document/types";
 import OnboardingState, { ONBOARDING_SCREEN } from "../../store/onboarding/types";
+import { DocumentStep } from "../../store/onboarding/steps";
 import { DrawingMode } from "../../htmlcanvas/types";
 
 @Component({
@@ -56,10 +57,13 @@ import { DrawingMode } from "../../htmlcanvas/types";
     },
 })
 export default class ModeButtons extends Vue {
-    data() { 
-        return {
-            DrawingMode: DrawingMode
-        }
+
+    get DrawingMode() { 
+        return DrawingMode;
+    }
+
+    get DocumentStep() { 
+        return DocumentStep;
     }
 
     mounted() {

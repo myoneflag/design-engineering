@@ -7,14 +7,14 @@
                         :flow-systems="flowSystems"
                         @selectSystem="selectSystem"
                         :disabled="isDrawing"
-                        :class="{onboarding: checkOnboardingClass(1)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.FlowSystems)}"
                 />
                 <b-button
                         v-if="systemLayout === 'water' || systemLayout === 'gas'"
                         variant="outline-dark"
                         class="insertBtn flowsource btn-sm"
                         @click="toggleWaterSource"
-                        :class="{onboarding: checkOnboardingClass(2)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.FlowSource)}"
                         v-b-tooltip.hover
                         title="Flow Source"
                 ></b-button>
@@ -23,7 +23,7 @@
                         variant="outline-dark"
                         class="insertBtn riser btn-sm"
                         @click="toggleRiser"
-                        :class="{onboarding: checkOnboardingClass(3)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.Riser)}"
                         v-b-tooltip.hover
                         title="Riser"
                         >
@@ -34,7 +34,7 @@
                         variant="outline-dark"
                         class="insertBtn pipes btn-sm"
                         @click="toggleReticulationPipe"
-                        :class="{onboarding: checkOnboardingClass(4)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.Reticulation)}"
                         v-b-tooltip.hover
                         title="Reticulation Pipe"
                     ><v-icon name="wave-square" scale="1.2" />{{
@@ -46,7 +46,7 @@
                         variant="outline-dark"
                         class="insertBtn pipes btn-sm"
                         @click="toggleConnectionPipe"
-                        :class="{onboarding: checkOnboardingClass(5)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.Connection)}"
                         v-b-tooltip.hover
                         title="Connection Pipe"
                         ><v-icon name="wave-square" scale="1.2" />{{
@@ -198,7 +198,7 @@
                         variant="outline-dark"
                         class="insertBtn rpzd-hot-cold btn-sm"
                         @click="toggleRPZD"
-                        :class="{onboarding: checkOnboardingClass(6)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.BigValves)}"
                         v-b-tooltip.hover
                         title="RPZD (Hot + Cold)"
                 ></b-button>
@@ -207,7 +207,7 @@
                         variant="outline-dark"
                         class="insertBtn tmv btn-sm"
                         @click="toggleTMV"
-                        :class="{onboarding: checkOnboardingClass(6)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.BigValves)}"
                         v-b-tooltip.hover
                         title="TMV (Warm + Cold)"
                 ></b-button>
@@ -216,7 +216,7 @@
                         variant="outline-dark"
                         class="insertBtn tempering-valve btn-sm"
                         @click="toggleTemperingValve"
-                        :class="{onboarding: checkOnboardingClass(6)}"
+                        :class="{onboarding: checkOnboardingClass(DocumentStep.BigValves)}"
                         v-b-tooltip.hover
                         title="Tempering Valve (Warm)"
                 ></b-button>
@@ -269,7 +269,7 @@
                 <b-dropdown 
                     text="Plants" 
                     class="insertEntityBtn"
-                    :class="{onboarding: checkOnboardingClass(7)}"
+                    :class="{onboarding: checkOnboardingClass(DocumentStep.Plant)}"
                     variant="outline-dark"
                     v-if="systemLayout === 'water'"
                 >
@@ -336,7 +336,7 @@
                 <b-dropdown
                     text="Fixtures"
                     class="insertEntityBtn"
-                    :class="{onboarding: checkOnboardingClass(8)}"
+                    :class="{onboarding: checkOnboardingClass(DocumentStep.Fixtures)}"
                     variant="outline-dark"
                     v-if="systemLayout === 'water' || systemLayout === 'drainage'"
                 >
@@ -359,7 +359,7 @@
                 <b-dropdown
                     text="Valves"
                     class="insertEntityBtn"
-                    :class="{onboarding: checkOnboardingClass(9)}"
+                    :class="{onboarding: checkOnboardingClass(DocumentStep.Valves)}"
                     variant="outline-dark"
                     v-if="systemLayout === 'water'"
                 >
@@ -383,7 +383,7 @@
                 <b-dropdown
                     text="Nodes"
                     class="insertEntityBtn"
-                    :class="{onboarding: checkOnboardingClass(10)}"
+                    :class="{onboarding: checkOnboardingClass(DocumentStep.Nodes)}"
                     variant="outline-dark"
                 >
                     <b-dropdown-item
@@ -429,6 +429,7 @@ import { ValveType } from "../../../../common/src/api/document/entities/directed
 import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
 import OnboardingState, { ONBOARDING_SCREEN } from "../../store/onboarding/types";
 import { NodeProps } from "../../../../common/src/models/CustomEntity";
+import { DocumentStep } from '../../store/onboarding/steps';
 
 @Component({
     components: { FlowSystemPicker },
@@ -540,6 +541,10 @@ export default class HydraulicsInsertPanel extends Vue {
 
     get PlantType() {
         return PlantType;
+    }
+
+    get DocumentStep() { 
+        return DocumentStep;
     }
 
     get selectedSystem(): FlowSystemParameters {
@@ -813,7 +818,7 @@ export default class HydraulicsInsertPanel extends Vue {
     }
 
     checkOnboardingClass(step: number) {
-        return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT_PLUMBING;
+        return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
     }
 
     toggleCustomNodePair(customNodeId: number | string) {

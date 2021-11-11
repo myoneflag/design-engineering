@@ -56,7 +56,7 @@
                 </div>
             </b-popover>
             <b-navbar-nav class="ml-auto">
-                <OnBoardingProgressMenuItem :class="{ onboarding: onboarding.currentStep === 1 }"/>
+                <OnBoardingProgressMenuItem :class="{ onboarding: checkOnboardingClass(HomeStep.Expert) }"/>
                 <ProfileMenuItem />
             </b-navbar-nav>
         </b-navbar>
@@ -69,7 +69,8 @@ import Component from "vue-class-component";
 import { sendEmailVerification, confirmEmail } from "../api/users";
 import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
 import OnBoardingProgressMenuItem from "./OnBoardingProgressMenuItem.vue";
-import OnboardingState from "../store/onboarding/types";
+import OnboardingState, { ONBOARDING_SCREEN } from "../store/onboarding/types";
+import { HomeStep } from '../store/onboarding/steps';
 
 @Component({
     props: {
@@ -89,8 +90,16 @@ export default class MainNavBar extends Vue {
         isLoading: false,
     }
 
+    get HomeStep() { 
+        return HomeStep;
+    }
+
     get onboarding(): OnboardingState {
         return this.$store.getters["onboarding/onboarding"];
+    }
+
+    checkOnboardingClass(step: number) {
+        return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.HOME;
     }
 
     get options() {

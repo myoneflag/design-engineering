@@ -36,7 +36,7 @@
                 exact 
                 :disabled="loading || disabled" 
                 v-if="profile"
-                :class="{ onboarding: checkOnboardingClass(7) }"
+                :class="{ onboarding: checkOnboardingClass(DocumentStep.Settings) }"
             >
                 <span>
                     <v-icon name="cog"></v-icon>
@@ -112,6 +112,7 @@ import { getDocumentOperations } from "../api/document";
 import { DrawingMode } from "../htmlcanvas/types";
 import { Operation } from "../../../common/src/models/Operation";
 import OnboardingState, { ONBOARDING_SCREEN } from "../store/onboarding/types";
+import { DocumentStep } from "../store/onboarding/steps";
 
 @Component({
     components: { ProfileMenuItem },
@@ -239,6 +240,10 @@ export default class DrawingNavBar extends Vue {
 
     get DrawingMode() {
         return DrawingMode;
+    }
+
+    get DocumentStep() {
+        return DocumentStep;
     }
 
     toggleSettings() {

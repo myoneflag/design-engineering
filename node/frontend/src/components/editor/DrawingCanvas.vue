@@ -15,7 +15,7 @@
 
         <CalculationsSidebar
                 v-if="
-                document.uiState.drawingMode === 2 &&
+                document.uiState.drawingMode === DrawingMode.Calculations &&
                     initialized && !showExport &&
                     (!toolHandler || toolHandler.config.calculationSideBar)
             "
@@ -29,7 +29,7 @@
             v-if="levelSelectorVisible && initialized" 
              @level-changed="floorLockStatus = false"
             :object-store="globalStore"
-            :class="{ onboarding: checkOnboardingClass(6) }"
+            :class="{ onboarding: checkOnboardingClass(DocumentStep.Levels) }"
         ></LevelSelector>
         <LUAndCostTable v-if="LUAndCostTableVisible && initialized && document.drawing"
                         :global-store="globalStore" :selected-entities="selectedEntities"
@@ -74,7 +74,7 @@
                 @insert-floor-plan="onFloorPlanSelected" 
                  @lock-unlock-floor="lockUnlockFloor"
                   :floor-lock-status="floorLockStatus"
-                v-if="document.uiState.drawingMode === 0 && profile"
+                v-if="document.uiState.drawingMode === DrawingMode.FloorPlan && profile"
             />
            
             <ExportPanel 
@@ -147,7 +147,7 @@
             </div>
             <resize-observer @notify="scheduleDraw"/>
         </div>
-        <Onboarding v-if="onboardingScreen" :screen="onboardingScreen"></Onboarding>
+        <Onboarding v-if="onboardingScreen" :screen="onboardingScreen" :mode.sync="document.uiState.drawingMode"></Onboarding>
     </drop>
 </template>
 
@@ -254,6 +254,7 @@
     import { I18N } from "../../../../common/src/api/locale/values";
     import { SupportedLocales } from "../../../../common/src/api/locale";
     import FeedbackModal from "../FeedbackModal.vue";
+    import { DocumentStep } from '../../store/onboarding/steps';
 
     @Component({
         components: {
@@ -282,8 +283,13 @@
         }
     })
     export default class DrawingCanvas extends Vue {
-        get DrawingMode() {
+
+        get DrawingMode() { 
             return DrawingMode;
+        }
+
+        get DocumentStep() {
+            return DocumentStep;
         }
 
         get globalStore(): GlobalStore {
@@ -591,13 +597,7 @@
         }
 
         get onboardingScreen() {
-            if (this.document.uiState.drawingMode === DrawingMode.FloorPlan) {
-                return  ONBOARDING_SCREEN.DOCUMENT;
-            } else if (this.document.uiState.drawingMode === DrawingMode.Hydraulics) {
-                return  ONBOARDING_SCREEN.DOCUMENT_PLUMBING; 
-            }
-
-            return '';
+            return ONBOARDING_SCREEN.DOCUMENT;
         }
 
         get onboarding(): OnboardingState {

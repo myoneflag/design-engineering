@@ -8,6 +8,5 @@ export default interface OnboardingState {
 export enum ONBOARDING_SCREEN {
     HOME = "HOME",
     DOCUMENT = "DOCUMENT",
-    DOCUMENT_PLUMBING = "DOCUMENT_PLUMBING",
     DOCUMENT_SETTING = "DOCUMENT_SETTING",
 }

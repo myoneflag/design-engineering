@@ -556,7 +556,6 @@ export function getDrainageUnitName(drainageMethod: SupportedDrainageMethods, me
                 assertUnreachable(measurement);
         }
     }
-
     return { name, abbreviation, units }
 }
 
