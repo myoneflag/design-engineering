@@ -1,16 +1,15 @@
 import axios from 'axios';
+import { Onboarding } from '../../../common/src/models/Onboarding';
 import { APIResult } from './../../../common/src/api/document/types';
 
 export interface UpdateOnboarding {
     id: number,
-    home?: boolean,
-    document?: boolean,
-    document_plumbing?: boolean,
-    document_setting?: boolean,
-    [key: string]: any,
+    home?: number,
+    document?: number,
+    document_setting?: number,
 }
 
-export async function updateOnboarding(props: UpdateOnboarding): Promise<APIResult<string>> {
+export async function updateOnboarding(props: UpdateOnboarding): Promise<APIResult<Onboarding>> {
     try {
         return (await axios.put("/api/onboarding/" + props.id, props)).data;
     } catch (e) {
@@ -21,3 +20,5 @@ export async function updateOnboarding(props: UpdateOnboarding): Promise<APIResu
         }
     }
 }
+
+

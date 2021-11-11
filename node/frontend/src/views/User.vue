@@ -47,7 +47,8 @@
                                     >
                                 </b-button-group>
                             </b-form>
-                            <b-button variant="success" @click="save">Save</b-button>
+                            <b-button variant="success" @click="save">Save</b-button><br/><br/>
+                            <b-button class="ml-2" variant="success" @click="resetOnBoarding">Reset Onboarding Tutorial</b-button>
                         </template>
                         <b-alert v-else variant="success" show>Loading...</b-alert>
                     </b-col>
@@ -107,6 +108,7 @@ import { AccessLevel, User as IUser } from "../../../common/src/models/User";
 import { getUser, updateUser } from "../api/users";
 import { AccessEvents } from "../../../common/src/models/AccessEvents";
 import { getAccessEvents } from "../api/access-events";
+import { updateOnboarding, UpdateOnboarding } from '../api/onboarding';
 
 @Component({
     components: { MainNavBar },
@@ -187,6 +189,20 @@ export default class User extends Vue {
                 }
             });
         }
+    }
+
+    resetOnBoarding(){
+        const onboardingUpdateProps: UpdateOnboarding = {
+            id: this.profile.onboarding!.id,
+            home: 0,
+            document: 0,
+            document_setting: 0,
+        }
+        updateOnboarding(onboardingUpdateProps).then(res => {
+            if (res.success) {
+                this.$store.dispatch("profile/setOnboarding", res.data);
+            }
+        });
     }
 
     get profile(): IUser {
