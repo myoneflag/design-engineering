@@ -23,6 +23,7 @@
             <b-dropdown-item to="/organizations">
                 All Organizations
             </b-dropdown-item>
+            <b-dropdown-item @click="createExampleDocument">Create Example Document</b-dropdown-item>
         </template>
         <template v-if="profile.accessLevel <= AccessLevel.SUPERUSER">
             <b-dropdown-divider></b-dropdown-divider>            
@@ -45,6 +46,8 @@ import router from "../../src/router";
 import { logout } from "../../src/api/logins";
 import { AccessLevel } from "../../../common/src/models/User";
 import FeedbackModal from "./FeedbackModal.vue";
+import { createDocument, EXAMPLE_DOCUMENT_ID } from "../api/document";
+import { SupportedLocales } from "../../../common/src/api/locale";
 
 @Component(
     {
@@ -112,6 +115,23 @@ export default class ProfileMenuItem extends Vue {
 
     renderFeedback() {
         this.showFeedbackModal = true;
+    }
+
+    get locale(): SupportedLocales {
+        return this.$store.getters["profile/locale"];
+    }
+
+    createExampleDocument() {
+        createDocument(this.locale, EXAMPLE_DOCUMENT_ID).then((res) => {
+            if (res.success) {
+                this.$router.push(`/document/${res.data.id}/1`);
+            } else {
+                this.$bvToast.toast(res.message, {
+                    variant: "danger",
+                    title: "Error creating new document"
+                });
+            }
+        });
     }
 }
 </script>

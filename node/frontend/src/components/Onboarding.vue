@@ -256,7 +256,7 @@ export default class Onboarding extends Vue {
         await getDocuments().then((res) => {
             if (res.success) {
                 const mine = res.data.filter((r) => r.createdBy.username === this.profile.username);
-                result = mine.length === 2;
+                result = mine.length === 1 || mine.length === 2;
             }
         });
 

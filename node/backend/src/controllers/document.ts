@@ -19,6 +19,9 @@ import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
 import {compressDocumentIfRequired} from "../services/compressDocument";
 import { toSupportedLocale } from "../../../common/src/api/locale";
+import { EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION, EXAMPLE_META } from "../../../common/src/api/constants/example-drawing";
+import { DocumentUpgrader } from "../services/DocumentUpgrader";
+import { Organization } from "../../../common/src/models/Organization";
 
 export class DocumentController {
     @ApiHandleError()
@@ -42,67 +45,61 @@ export class DocumentController {
     @AuthRequired()
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const user = await session.user;
-        if (!user.temporaryUser){
-            const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
-            const org = userWithOrg.organization;
-            if (user.accessLevel >= AccessLevel.MANAGER) {
-                // We can only create in our own org.
-                if (org === undefined || req.body.organization !== org.id) {
-                    res.status(401).send({
-                        success: false,
-                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization"),
-                    });
-                    return;
-                }
-            }
-
-            let qorg = req.body.organization;
-            if (!qorg && org) {
-                qorg = org.id;
-            }
-
-            await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
-                const sd = ShareDocument.create();
-                sd.token =  random(10);
-                await sd.save();
-
-                const doc = Document.create();
-                doc.organization = org1;
-                doc.createdBy = user;
-                doc.createdOn = new Date();
-                doc.locale = toSupportedLocale(req.body.locale);
-                doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
-                doc.version = CURRENT_VERSION;
-                doc.state = DocumentStatus.ACTIVE;
-                doc.shareDocument = sd;
-                await doc.save();
-
-                res.status(200).send({
-                    success: true,
-                    data: doc,
+        const createExampleDoc = parseInt(req.query.templateId, 10) === 1;
+        const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
+        const org = userWithOrg.organization;
+        if (user.accessLevel >= AccessLevel.MANAGER) {
+            if (!org) {
+                res.status(401).send({
+                    success: false,
+                    message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization"),
                 });
-            });
-        } else {
-            const sd = ShareDocument.create();
-            sd.token = random(10);
-            await sd.save();
-
-            const doc = Document.create();
-            doc.organization = null;
-            doc.createdBy = user;
-            doc.createdOn = new Date();
-            doc.locale = toSupportedLocale(req.body.locale);
-            doc.metadata = cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
-            doc.version = CURRENT_VERSION;
-            doc.state = DocumentStatus.ACTIVE;
-            doc.shareDocument = sd;
-            await doc.save();
-
-            res.status(200).send({
-                success: true,
-                data: doc
-            });
+                return;
+            }
         }
+
+        const sd = ShareDocument.create();
+        sd.token = random(10);
+        await sd.save();
+        const doc = Document.create();
+        doc.organization = org;
+        doc.createdBy = user;
+        doc.createdOn = new Date();
+        doc.locale = toSupportedLocale(req.body.locale);
+        doc.metadata = createExampleDoc ? EXAMPLE_META : cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
+        doc.version = createExampleDoc ? EXAMPLE_DRAWING_VERSION : CURRENT_VERSION;
+        doc.state = DocumentStatus.ACTIVE;
+        doc.shareDocument = sd;
+        await doc.save();
+
+        if ( createExampleDoc ) {
+            // save the first document operation
+            const now = new Date();
+            const op1 = Operation.create();
+            op1.document = Promise.resolve(doc);
+            op1.dateTime = now;
+            op1.blame = null;
+            op1.operation = diffState(initialDrawing(doc.locale), EXAMPLE_DRAWING, undefined)[0];
+            op1.orderIndex = 0;
+            await op1.save();
+
+            // save the first document operation
+            const op2 = Operation.create();
+            op2.document = Promise.resolve(doc);
+            op2.dateTime = now;
+            op2.blame = null;
+            op2.operation = { type : OPERATION_NAMES.COMMITTED_OPERATION, id : 1};
+            op2.orderIndex = 0;
+            await op2.save();
+
+            // In case the document is upgraded in development without updating the example document,
+            // the example document needs to be upgraded.
+            await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
+        }
+        res.status(200).send({
+            success: true,
+            data: doc,
+        });
     }
 
     @ApiHandleError()
