@@ -239,54 +239,8 @@ export class LoginController {
         event.success = true;
         await event.save();
 
-        // Create example document for new user
-        const sd = ShareDocument.create();
-        sd.token =  random(10);
-        await sd.save();
-
-        const doc = Document.create();
-        doc.organization = myUser.organization;
-        doc.createdBy = myUser;
-        doc.createdOn = new Date();
-        doc.metadata = {
-            "title": "Example Project",
-            "projectNumber": "0001",
-            "projectStage": "Design",
-            "designer": "H2X",
-            "reviewed": "JM",
-            "approved": "AH",
-            "revision": 1,
-            "client": "King Development",
-            "description": "This is an example project to showcase the benefits of H2X."
-        };
-        doc.version = EXAMPLE_DRAWING_VERSION;
-        doc.state = DocumentStatus.ACTIVE;
-        doc.shareDocument = sd;
-        await doc.save();
-
-        const now = new Date();
-        const op1 = Operation.create();
-        op1.document = Promise.resolve(doc);
-        op1.dateTime = now;
-        op1.blame = null;
-        op1.operation = diffState(initialDrawing(doc.locale), EXAMPLE_DRAWING, undefined)[0];
-        op1.orderIndex = 0;
-        await op1.save();
-        const op2 = Operation.create();
-        op2.document = Promise.resolve(doc);
-        op2.dateTime = now;
-        op2.blame = null;
-        op2.operation = {"type": OPERATION_NAMES.COMMITTED_OPERATION, "id": 1};
-        op2.orderIndex = 0;
-        await op2.save();
-
-        // In case the document is upgraded in development without updating the example document,
-        // the example document needs to be upgraded.
-        await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
-
         res.status(200).send({
-            success: true,
-            data: doc,
+            success: true
         });
     }
 

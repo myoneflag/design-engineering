@@ -156,6 +156,8 @@ import MainNavBar from "../../src/components/MainNavBar.vue";
 import { Document } from "../../../common/src/models/Document";
 import { User } from "../../../common/src/models/User";
 import { acceptEula, declineEula, logout } from "../api/logins";
+import { createDocument, EXAMPLE_DOCUMENT_ID } from "../api/document";
+import { SupportedLocales } from "../../../common/src/api/locale";
 
 @Component({
     components: {
@@ -189,13 +191,18 @@ export default class Home extends Vue {
         const res = await acceptEula();
         if (res.success) {
             await this.$store.dispatch("profile/setProfile", null);
-            window.location.replace("/document/" + (res.data! as Document).id+"/0");
+            await createDocument(this.locale, EXAMPLE_DOCUMENT_ID);
+            window.location.replace("/");
         } else {
             this.$bvToast.toast(res.message, {
                 variant: "danger",
                 title: "Error Connecting to Server"
             });
         }
+    }
+
+    get locale(): SupportedLocales {
+        return this.$store.getters['profile/locale'];
     }
 }
 </script>

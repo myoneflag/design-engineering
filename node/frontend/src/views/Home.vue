@@ -18,7 +18,7 @@ l<template>
           </b-col>
           <b-col class="text-right">
             <h1>
-              <b-button size="lg" class=" btn mt-3 btn-success" @click="createDocument"
+              <b-button size="lg" class=" btn mt-3 btn-success" @click="handleCreateDocument"
                 ><v-icon name="plus"></v-icon> New project</b-button
               >
             </h1>
@@ -668,39 +668,19 @@ export default class Home extends Vue {
     this.filterDocuments();
   }
 
-  createDocument() {
-    if (this.profile.organization) {
-      createDocument(this.profile.organization.id, this.locale).then((res) => {
-        if (res.success) {
-          this.$router.push(`/document/${res.data.id}/0`);
-        } else {
-          this.$bvToast.toast(res.message, {
-            variant: "danger",
-            title: "Error creating new document"
-          });
-        }
+  handleCreateDocument() {
+    createDocument(this.locale).then((res) => {
+      if (res.success) {
+        this.$router.push(`/document/${res.data.id}/0`);
+      } else {
+        this.$bvToast.toast(res.message, {
+          variant: "danger",
+          title: "Error creating new document"
+        });
+      }
 
-        this.$store.dispatch("profile/refreshOnBoardingStats");
-      });
-    } else if (this.profile.temporaryUser) {
-      createDocument(null, this.locale).then((res) => {
-        if (res.success) {
-          this.$router.push(`/document/${res.data.id}/0`);
-        } else {
-          this.$bvToast.toast(res.message, {
-            variant: "danger",
-            title: "Error creating new document"
-          });
-        }
-
-        this.$store.dispatch("profile/refreshOnBoardingStats");
-      });
-    } else {
-      this.$bvToast.toast("You need to belong to an organization to create a document", {
-        variant: "danger",
-        title: "Error creating new document"
-      });
-    }
+      this.$store.dispatch("profile/refreshOnBoardingStats");
+    });
   }
 
   canDeleteDoc(doc: Document) {

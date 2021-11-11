@@ -233,13 +233,19 @@ export async function getSharedDocument(sharedId: string): Promise<APIResult<Doc
     }
 }
 
-export async function createDocument(orgId: string | null, locale: SupportedLocales): Promise<APIResult<Document>> {
+export const EXAMPLE_DOCUMENT_ID = 1;
+export async function createDocument(locale: SupportedLocales, templateId: number | null = null): Promise<APIResult<Document>> {
     try {
+        let params = {};
+        if (templateId != null) {
+            params = {
+                templateId
+            }
+        }
         return (
             await axios.post("/api/documents/", {
-                organization: orgId,
                 locale: locale
-            })
+            }, { params: params } )
         ).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {

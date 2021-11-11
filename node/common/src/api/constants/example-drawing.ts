@@ -2,7 +2,17 @@ import { SupportedLocales } from './../locale/index';
 import { DrawingState, initialDrawing } from "../document/drawing";
 
 export const EXAMPLE_DRAWING_VERSION = 22;
-
+export const EXAMPLE_META = {
+    "title": "Example Project",
+    "projectNumber": "0001",
+    "projectStage": "Design",
+    "designer": "H2X",
+    "reviewed": "JM",
+    "approved": "AH",
+    "revision": 1,
+    "client": "King Development",
+    "description": "This is an example project to showcase the benefits of H2X."
+}
 export const EXAMPLE_DRAWING: DrawingState = {
     "metadata": {
         "generalInfo": {
