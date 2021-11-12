@@ -183,7 +183,6 @@ export class DocumentController {
             const user = await session.user;
             await user.reload();
             const org = user.organization;
-            console.log(user)
             if (org == null) {
                 results = [];
             } else {
@@ -271,23 +270,8 @@ export class DocumentController {
 
             const userWithOrg = await User.findOne({ username: user.username }, { relations: ["organization"] });
             const org = userWithOrg.organization;
-            if (user.accessLevel >= AccessLevel.MANAGER) {
-                // We can only create in our own org.
-                if (org === undefined || req.body.organization !== org.id) {
-                    res.status(401).send({
-                        success: false,
-                        message: "You can only create documents in your own organization. You are in " + (org ? org.id : "no organization")
-                    });
-                    return;
-                }
-            }
 
-            let qorg = req.body.organization;
-            if (!qorg && org) {
-                qorg = org.id;
-            }
-
-            await withOrganization(qorg, res, session, AccessType.READ, async (org1) => {
+            await withOrganization(org.id, res, session, AccessType.READ, async (org1) => {
                 const doc = Document.create();
                 doc.organization = org1;
                 doc.createdBy = user;
@@ -299,6 +283,7 @@ export class DocumentController {
                 doc.lastModifiedOn = target.lastModifiedOn;
                 doc.lastModifiedBy = target.lastModifiedBy;
                 doc.upgradingLockExpires = new Date();
+                doc.locale = target.locale;
 
                 await doc.save();
 
