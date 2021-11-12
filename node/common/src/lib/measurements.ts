@@ -36,7 +36,7 @@ export enum Units {
     Gallons = "gal",
     USGallons = "US gal", // wtf usa
     // Gas demands
-    ThermsPerHour = 'thm/hr',
+    BtuPerHour = 'Btu/hr',
 
     PipeDiameterMM = "pmm",
     CubicFeetPerHour = "ft^3/hr"
@@ -278,7 +278,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case EnergyMeasurementSystem.METRIC:
                     return [Units.MegajoulesPerHour, value];
                 case EnergyMeasurementSystem.IMPERIAL:
-                    return [Units.ThermsPerHour, value / 105.48];
+                    return [Units.BtuPerHour, value / 105.48];
             }
             return [Units.None, 0];
         case Units.MetersCubedPerHour:
@@ -301,12 +301,12 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     assertUnreachable(unitsPrefs.velocityMeasurementSystem);
             }
             return [Units.None, 0];
-        case Units.ThermsPerHour:
+        case Units.BtuPerHour:
             switch (unitsPrefs.energyMeasurementSystem) {
                 case EnergyMeasurementSystem.METRIC:
                     return [Units.MegajoulesPerHour, value * 105.48];
                 case EnergyMeasurementSystem.IMPERIAL:
-                    return [Units.ThermsPerHour, value];
+                    return [Units.BtuPerHour, value];
             }
             return [Units.None, 0];
         default:

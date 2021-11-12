@@ -134,7 +134,7 @@ export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
 
 export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
     {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
-    {name: "Therms (thm)", key: EnergyMeasurementSystem.IMPERIAL},
+    {name: "Therms (Btu)", key: EnergyMeasurementSystem.IMPERIAL},
 ];
 
 export interface GeneralInfo {
@@ -556,6 +556,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 ...result.metadata.calculationParams,
                 psdMethod: SupportedPsdStandards.bs806,
                 drainageMethod: SupportedDrainageMethods.EN1205622000DischargeUnits,
+                drainageSystem: "drainageSystem3",
                 combineLUs: true,
             }
             // 0 index is cold water.
