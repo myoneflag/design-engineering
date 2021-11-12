@@ -1,4 +1,4 @@
-import { Brackets } from "typeorm";
+import { Brackets, Entity, IsNull, SaveOptions } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
 import { DocumentClientMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
 import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
@@ -22,6 +22,8 @@ import { toSupportedLocale } from "../../../common/src/api/locale";
 import { EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION, EXAMPLE_META } from "../../../common/src/api/constants/example-drawing";
 import { DocumentUpgrader } from "../services/DocumentUpgrader";
 import { Organization } from "../../../common/src/models/Organization";
+import { CustomEntity } from "../../../common/src/models/CustomEntity";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 
 export class DocumentController {
     @ApiHandleError()
@@ -345,9 +347,23 @@ export class DocumentController {
                     await titleChangeOp.save();
                     await commitOp.save();
 
-
                     doc.nextOperationIndex = lastOrderIndex + 3;
                 }
+
+                // copy over custom entities to new document
+                const customEntities = await CustomEntity.find({
+                    select: ["id", "entity", "document_id", "type"],
+                    where: {
+                        document_id: targetId,
+                        type: EntityType.LOAD_NODE,
+                        deletedAt: IsNull(),
+                    },
+                });
+                customEntities.forEach( (custEnt) => {
+                    custEnt.document_id = doc.id;
+                    custEnt.created_by = session.user.name;
+                });
+                CustomEntity.insert(customEntities, {reload: false});
 
                 doc.state = DocumentStatus.ACTIVE;
                 await doc.save();
