@@ -2106,7 +2106,7 @@ export const usCatalog: Catalog = {
                     uid: 'bsen1057Cu',
                 },
                 {
-                    name: 'ATSM B88 TYPE K',
+                    name: 'ASTM B88 TYPE K',
                     abbreviation: 'B88 CU',
                     priceTableName: "Copper",
                     uid: 'atsmB88Cu',
@@ -2655,8 +2655,8 @@ export const usCatalog: Catalog = {
                     uid: 'rehauPex',
                 },
                 {
-                    name: 'ATSM F877',
-                    abbreviation: 'ATSM F877 PEX',
+                    name: 'ASTM F877',
+                    abbreviation: 'ASTM F877 PEX',
                     priceTableName: "PEX",
                     uid: 'atsmF877pex',
                 },

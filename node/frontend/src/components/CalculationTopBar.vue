@@ -39,7 +39,7 @@ import Component from "vue-class-component";
 import FlowSystemPicker from "../../src/components/editor/FlowSystemPicker.vue";
 import {DocumentState} from "../store/document/types";
 import CatalogState from "../store/catalog/types";
-import {getPsdMethods} from "../../../common/src/api/config";
+import {getPsdMethods, DRAINAGE_METHOD_CHOICES} from "../../../common/src/api/config";
 import {Catalog} from "../../../common/src/api/catalog/types";
 
 @Component({
@@ -58,23 +58,38 @@ export default class CalculationTopBar extends Vue {
         return this.$store.getters['catalog/default'];
     }
 
+    get calculationParams() {
+        return this.document.drawing.metadata.calculationParams;
+    }
+
     get peakFlowRateMethodName() {
-        return this.catalog.psdStandards[this.document.drawing.metadata.calculationParams.psdMethod].name;
+        return this.catalog.psdStandards[this.calculationParams.psdMethod].name;
+    }
+   
+   get drainageMethodName() {
+       const drainageMethodName = DRAINAGE_METHOD_CHOICES.find(d => d.key === this.calculationParams.drainageMethod)?.name;
+       return drainageMethodName;
     }
 
     get peakDwellingMethodName() {
-        if (this.document.drawing.metadata.calculationParams.dwellingMethod) {
-            return this.catalog.dwellingStandards[this.document.drawing.metadata.calculationParams.dwellingMethod].name;
+        if (this.calculationParams.dwellingMethod) {
+            return this.catalog.dwellingStandards[this.calculationParams.dwellingMethod].name;
         }
         return null;
     }
 
     get calculationSettingsString() {
-        if (this.peakDwellingMethodName) {
-            return `Using "${this.peakFlowRateMethodName}" and "${this.peakDwellingMethodName}"`;
-        } else {
-            return `Using "${this.peakFlowRateMethodName}"`;
+        if(this.document.uiState.pressureOrDrainage === 'drainage'){
+            return `Using "${this.drainageMethodName}"`;
         }
+        else{
+            if (this.peakDwellingMethodName) {
+                return `Using "${this.peakFlowRateMethodName}" and "${this.peakDwellingMethodName}"`;
+            } else {
+                return `Using "${this.peakFlowRateMethodName}"`;
+            }
+        }
+        
     }
 
     settings() {
