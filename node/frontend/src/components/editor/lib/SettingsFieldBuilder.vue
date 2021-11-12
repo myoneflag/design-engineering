@@ -213,13 +213,18 @@
                         </b-table-simple>
 
                         <b-form-input
-                            v-else
+                            v-else-if="field[2] === 'text'"
                             :value="getReactiveData(field[0])"
                             @input="setReactiveData(field[0], $event)"
                             :id="'input-' + field[0]"
                             :type="field[2]"
                             :placeholder="'Enter ' + field[1]"
                         />
+
+                        <p v-else-if="field[2] === 'locale'">
+                            {{ LOCALE_NAMES[getReactiveData(field[0])]}}
+                        </p>
+
                     </b-form-group>
                     <slot name="more-fields"/>
                 </b-col>
@@ -245,15 +250,14 @@ import Component from "vue-class-component";
 import { DocumentState } from "../../../../src/store/document/types";
 import { Compact } from "vue-color";
 import * as _ from "lodash";
-import { isString } from "lodash";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { Choice, cloneSimple, SelectField } from "../../../../../common/src/lib/utils";
-import { PropertyField } from "../../../../../common/src/api/document/entities/property-field";
 import {
     convertMeasurementSystem,
     convertMeasurementToMetric,
     Units
 } from "../../../../../common/src/lib/measurements";
+import { LOCALE_NAMES } from "../../../../../common/src/api/locale";
 
 @Component({
     props: {
@@ -269,6 +273,11 @@ import {
     }
 })
 export default class SettingsFieldBuilder extends Vue {
+
+    get LOCALE_NAMES() {
+        return LOCALE_NAMES;
+    }
+
     get document(): DocumentState {
         return this.$store.getters["document/document"];
     }

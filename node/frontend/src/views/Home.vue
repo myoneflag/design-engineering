@@ -739,8 +739,8 @@ export default class Home extends Vue {
   }
 
   async clone(doc: Document) {
-    if (this.profile && this.profile.organization) {
-      const res = await cloneDocument(doc.id, this.profile.organization.id);
+    if (this.profile) {
+      const res = await cloneDocument(doc.id);
       if (res.success) {
         this.reloadDocuments();
       } else {

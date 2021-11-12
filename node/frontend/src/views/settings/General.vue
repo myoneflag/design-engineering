@@ -14,11 +14,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { DocumentState } from "../../../src/store/document/types";
 import SettingsFieldBuilder from "../../../src/components/editor/lib/SettingsFieldBuilder.vue";
-import {
-    LENGTH_MEASUREMENT_CHOICES,
-    PRESSURE_MEASUREMENT_CHOICES,
-    TEMPERATURE_MEASUREMENT_CHOICES, VOLUME_MEASUREMENT_CHOICES
-} from "../../../../common/src/api/document/drawing";
 @Component({
     components: { SettingsFieldBuilder },
     beforeRouteLeave(to, from, next) {
@@ -32,15 +27,16 @@ import {
 export default class General extends Vue {
     get fields(): any[] {
         return [
-            ["title", "Project Title", "text"],
-            ["projectNumber", "Project No.", "text"],
-            ["projectStage", "Project Stage", "text"],
-            ["designer", "Designer", "text"],
-            ["reviewed", "Reviewed by", "text"],
-            ["approved", "Approved by", "text"],
-            ["revision", "Revision No.", "number"],
-            ["client", "Client", "text"],
-            ["description", "Description", "textarea"]
+            ["generalInfo.title", "Project Title", "text"],
+            ["generalInfo.projectNumber", "Project No.", "text"],
+            ["generalInfo.projectStage", "Project Stage", "text"],
+            ["generalInfo.designer", "Designer", "text"],
+            ["generalInfo.reviewed", "Reviewed by", "text"],
+            ["generalInfo.approved", "Approved by", "text"],
+            ["generalInfo.revision", "Revision No.", "number"],
+            ["generalInfo.client", "Client", "text"],
+            ["generalInfo.description", "Description", "textarea"],
+            ["locale", "Project Locale", "locale"],
         ];
     }
 
@@ -49,11 +45,11 @@ export default class General extends Vue {
     }
 
     get generalInfo() {
-        return this.document.drawing.metadata.generalInfo;
+        return { generalInfo: this.document.drawing.metadata.generalInfo, locale: this.document.locale };
     }
 
     get committedGeneralInfo() {
-        return this.document.committedDrawing.metadata.generalInfo;
+        return { generalInfo: this.document.committedDrawing.metadata.generalInfo, locale: this.document.locale };
     }
 
     save() {
