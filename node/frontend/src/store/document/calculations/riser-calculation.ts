@@ -222,9 +222,8 @@ export function emptyRiserCalculations(): RiserCalculation {
         cost: null,
         costBreakdown: null,
         expandedEntities: null,
-
-        warning: null,
-        warningLayout: null,
+        
+        warnings: null,
         heights: {}
     };
 }

@@ -24,6 +24,7 @@ import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
 import { BigValveType } from "../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import PlantCalculation from "../store/document/calculations/plant-calculation";
+import { addWarning, Warning } from "../store/document/calculations/warnings";
 
 export interface ReturnRecord {
     spTree: SPTree<Edge<string, FlowEdge>>;
@@ -479,11 +480,11 @@ export function setFlowRatesForReturn(context: CalculationEngine, record: Return
 
 interface BalanceCheckResult {
     balanced: boolean;
-    warning: string | null;
+    warning: Warning | null;
     leafSeries: boolean;
 }
 
-function setNodeWarningRecursive(engine: CalculationEngine, node: SPNode<Edge<unknown, FlowEdge>>, warning: string) {
+function setNodeWarningRecursive(engine: CalculationEngine, node: SPNode<Edge<unknown, FlowEdge>>, warning: Warning) {
     switch (node.type) {
         case "parallel":
             for (const n of node.siblings) {
@@ -499,8 +500,7 @@ function setNodeWarningRecursive(engine: CalculationEngine, node: SPNode<Edge<un
             if (node.edgeConcrete.value.type === EdgeType.PIPE) {
                 const pipe = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
                 const pCalc = engine.globalStore.getOrCreateCalculation(pipe.entity);
-
-                pCalc.warning = warning;
+                addWarning(pCalc, warning);
                 pCalc.rawReturnFlowRateLS = null; // Create dotted line
             }
             break;
@@ -513,7 +513,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
     switch (node.type) {
         case "parallel": {
             let balanced = true;
-            let warning: string | null = null;
+            let warning: Warning | null = null;
             let leafSeries = node.siblings.length === 1;
 
             for (const c of node.siblings) {
@@ -523,7 +523,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                 warning = warning || res.warning;
 
                 if (!res.balanced && (node.siblings.length > 1) && res.leafSeries) {
-                    setNodeWarningRecursive(engine, c, 'Missing Balancing Valve for Return');
+                    setNodeWarningRecursive(engine, c, Warning.MISSING_BALANCING_VALVE_FOR_RETURN);
                 } else if (res.warning && (node.siblings.length > 1) && res.leafSeries) {
                     setNodeWarningRecursive(engine, c, res.warning);
                 }
@@ -536,7 +536,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
         case "series": {
             let balanced = false;
             let leafSeries = true;
-            let warning: string | null = null;
+            let warning: Warning | null = null;
             for (const c of node.children) {
                 const res = warnMissingBalancingValvesRecursive(engine, c);
                 balanced = balanced || res.balanced;
@@ -548,7 +548,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
         case "leaf":
             if (node.edgeConcrete.value.type === EdgeType.PIPE) {
                 let connectedToBalancingValve = false;
-                let warning: string | null = null;
+                let warning: Warning | null = null;
                 const po = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
                 const pCalc = engine.globalStore.getOrCreateCalculation(po.entity);
 
@@ -576,22 +576,20 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                         case ValveType.RPZD_DOUBLE_ISOLATED:
                             if (node.edgeConcrete.value.uid === o.entity.sourceUid) {
                                 const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                                calc.warning = 'Valve in wrong direction';
-                                warning = calc.warning;
+                                addWarning(calc, Warning.VALVE_IN_WRONG_DIRECTION);
                             }
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE:
                             const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                            calc.warning = 'PRVs are forbidden here';
-                            warning = calc.warning;
+                            addWarning(calc, Warning.PRVS_ARE_FORBIDDEN_HERE);
                             break;
                         case ValveType.BALANCING:
                             connectedToBalancingValve = true;
                             break;
                         default:
-                            assertUnreachable(o.entity.valve);
+                            assertUnreachable(o.entity.valve as never);
                     }
                 }
 
@@ -615,7 +613,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
 export function warnMissingBalancingValves(engine: CalculationEngine, record: ReturnRecord): boolean {
     const res = warnMissingBalancingValvesRecursive(engine, record.spTree);
     if (!res.balanced && res.leafSeries) {
-        setNodeWarningRecursive(engine, record.spTree, 'Missing Balancing Valve for Return');
+        setNodeWarningRecursive(engine, record.spTree, Warning.MISSING_BALANCING_VALVE_FOR_RETURN);
     }
     return !res.balanced;
 }

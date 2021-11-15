@@ -140,8 +140,7 @@ export function emptyPlantCalculation(): PlantCalculation {
         circulationPressureLoss: null,
         heatLossKW: null,
         manufacturer: '',
-        warning: null,
-        warningLayout: null,
+        warnings: null,
         size: null,
         model: null,
     };

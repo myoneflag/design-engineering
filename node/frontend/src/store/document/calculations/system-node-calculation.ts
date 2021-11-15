@@ -66,12 +66,11 @@ export function emptySystemNodeCalculation(): SystemNodeCalculation {
         cost: null,
         costBreakdown: null,
         expandedEntities: null,
-
+        
         flowRateLS: null,
         psdUnits: null,
         pressureKPA: null,
         staticPressureKPA: null,
-        warning: null,
-        warningLayout: null,
+        warnings: null,
     };
 }

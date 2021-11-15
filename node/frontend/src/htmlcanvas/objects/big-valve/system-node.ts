@@ -243,8 +243,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
             psdUnits: calc.psdUnits,
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
-            warning: calc.warning,
-            warningLayout: calc.warningLayout,
+            warnings: calc.warnings,
             staticPressureKPA: calc.staticPressureKPA,
         };
 
@@ -259,7 +258,10 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         }
 
         tower.forEach(([v, p]) => {
-            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+            res.warnings = [
+                ...res.warnings || [],
+                ...context.globalStore.getOrCreateCalculation(v).warnings || []
+            ];
         });
 
         return res;

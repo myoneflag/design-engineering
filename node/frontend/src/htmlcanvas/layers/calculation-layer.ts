@@ -62,7 +62,6 @@ export default class CalculationLayer extends LayerImplementation {
             const scaleWarp = effRes / resolutionWL;
 
             const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, filters, forExport);
-
             if (!layout) {
                 return;
             }
@@ -71,19 +70,24 @@ export default class CalculationLayer extends LayerImplementation {
                 const loc = TM.applyToPoint(label[1], { x: 0, y: 0 });
                 if (vp.someOnScreen(Flatten.point(loc.x, loc.y))) {
                     const o = context.globalStore.get(label[0])!;
-                    if (label[3]) {
-                        if (!forExport) {
-                            // warning only
-                            vp.prepareContext(context.ctx, ...o.world2object);
-                            const s = context.vp.currToSurfaceScale(ctx);
-                            context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
-                            const box = o.drawCalculationBox(context, [], false, true);
-                        }
-                    } else {
+                    if (!label[3]) {
                         // actual message
                         vp.prepareContext(context.ctx, label[1]);
                         context.ctx.scale(1 / scaleWarp, 1 / scaleWarp);
                         o!.drawCalculationBox(context, label[2], undefined, undefined, forExport);
+                    } else if (label[0] === context.doc.uiState.warningFilter.activeEntityUid) {
+                        vp.prepareContext(context.ctx, ...o.world2object);
+                        const s = context.vp.currToSurfaceScale(ctx);
+                        context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
+                        o!.drawCalculationBox(context, label[2], false, false, forExport);
+                    } else {
+                        /* if (!forExport) {
+                            // warning only
+                            vp.prepareContext(context.ctx, ...o.world2object);
+                            const s = context.vp.currToSurfaceScale(ctx);
+                            context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
+                            o!.drawCalculationBox(context, [], false, true);
+                        } */
                     }
                 }
             }
@@ -106,7 +110,7 @@ export default class CalculationLayer extends LayerImplementation {
 
         const res = new LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]>(resolution);
 
-        let { ctx, vp } = context;
+        let { vp } = context;
         // standardize the layers to factors of 2.
         const rescale = resolution / vp.surfaceToWorldLength(LABEL_RESOLUTION_PX);
         vp = vp.copy();
@@ -138,7 +142,7 @@ export default class CalculationLayer extends LayerImplementation {
                 context.globalStore.getCalculation(o.entity)
             ) {
                 const fields = o.getCalculationFields(context, calculationFilters);
-                fields.forEach((f) => {
+                fields.forEach((f: any) => {
                     if (!obj2props.has(f.attachUid)) {
                         obj2props.set(f.attachUid, []);
                     }
@@ -150,7 +154,7 @@ export default class CalculationLayer extends LayerImplementation {
             // We only withhold adding records to obj2props on empty stuff because empty data generates empty
             // boxes, which sadly causes ILLEGAL_PARAMETERS in Flatten further down (a bug) :( so this is a
             // workaround but in theory is not needed.
-            if (isCalculated(o.entity) && (o.hasWarning(context) && !forExport)) {
+            if (isCalculated(o.entity) && (o.hasWarning(context, forExport) && !forExport)) {
                 if (!obj2props.has(o.uid)) {
                     obj2props.set(o.uid, []);
                 }
@@ -196,7 +200,7 @@ export default class CalculationLayer extends LayerImplementation {
 
             if (!drawn) {
                 // warnings must be drawn. Just show warning symbol.
-                if (o.calculated && o.hasWarning(context) && !forExport) {
+                if (o.calculated && o.hasWarning(context, forExport) && !forExport) {
                     const wc = o.toWorldCoord();
                     res.place(Flatten.circle(Flatten.point(wc.x, wc.y), vp.surfaceToWorldLength(WARNING_WIDTH)), [
                         o.uid,
@@ -248,7 +252,7 @@ export default class CalculationLayer extends LayerImplementation {
     messagePriority(context: DrawingContext, object: BaseBackedObject): number {
         if (isCalculated(object.entity)) {
             const calc = context.globalStore.getCalculation(object.entity);
-            if (calc && calc.warning !== null) {
+            if (calc && calc.warnings !== null) {
                 return 10000; // High priority to warnings.
             }
         }
@@ -312,17 +316,5 @@ export default class CalculationLayer extends LayerImplementation {
             context.effectivePriceTable,
             context.$store.getters["customEntity/nodes"]
         );
-    }
-
-    onMouseDown(event: MouseEvent, context: CanvasContext) {
-        return false;
-    }
-
-    onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
-        return UNHANDLED;
-    }
-
-    onMouseUp(event: MouseEvent, context: CanvasContext) {
-        return false;
     }
 }

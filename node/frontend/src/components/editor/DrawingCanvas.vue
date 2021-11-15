@@ -46,7 +46,7 @@
 
             <canvas
                 ref="drawingCanvas"
-                :title="!floorLockStatus && this.document.uiState.drawingMode==DrawingMode.FloorPlan ?'Click on the padlock to unlock':''"
+                :title="!floorLockStatus && this.document.uiState.drawingMode==DrawingMode.FloorPlan ? 'Click on the padlock to unlock':''"
                 @contextmenu="disableContextMenu"
                 v-bind:style="{
                     backgroundColor: 'aliceblue',
@@ -75,6 +75,16 @@
                  @lock-unlock-floor="lockUnlockFloor"
                   :floor-lock-status="floorLockStatus"
                 v-if="document.uiState.drawingMode === DrawingMode.FloorPlan && profile"
+            />
+           
+            <ExportPanel 
+                v-if="showExport &&
+                    initialized &&
+                    (!toolHandler || toolHandler.config.calculationSideBar)
+                "
+                :objects="visibleObjects"
+                :on-change="scheduleDraw"
+                :canvas-context="this"
             />
            
             <ExportPanel 
@@ -217,7 +227,7 @@
     import CalculationsSidebar from "../../../src/components/editor/CalculationsSidebar.vue";
     import DrawingNavBar from "../DrawingNavBar.vue";
     import LevelSelector from "./LevelSelector.vue";
-    import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
+    import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
     import util from "util";
     import insertLoadNode from "../../htmlcanvas/tools/insert-load-node";
     import LoadNodeEntity, {NodeType, NodeVariant, LoadNode} from "../../../../common/src/api/document/entities/load-node-entity";
@@ -337,7 +347,6 @@
         }
 
         get showHistoryBar() {
-            console.log(this.document.uiState.drawingMode, DrawingMode.History);
             return this.document.uiState.drawingMode === DrawingMode.History;
         }
 
@@ -438,7 +447,6 @@
                 case DrawingMode.History:
                     return this.hydraulicsLayer;
             }
-            assertUnreachable(this.document.uiState.drawingMode);
         }
 
         get propertiesVisible() {
@@ -457,6 +465,11 @@
             if (this.selectBox) {
                 return false;
             }
+
+            if (this.document.uiState.drawingMode !== DrawingMode.Hydraulics) {
+                return false;
+            }
+
             return true;
         }
 
@@ -725,15 +738,40 @@
                         this.scheduleDraw();
                     }
                     this.document.uiState.selectedUids.splice(0);
+                    this.document.uiState.warningFilter.activeEntityUid = '';
                     this.considerCalculating();
                     this.scheduleDraw();
                 }
             );
-             this.$watch(
+            this.$watch(
                 () => this.document.uiState.pressureOrDrainage,
                 () => {
                     this.select([], SelectMode.Replace);
                     this.considerCalculating();
+                }
+            );
+            this.$watch(
+                () => this.document.uiState.warningFilter.activeEntityUid,
+                (newVal, oldVal) => {
+                    if (!newVal) {
+                        this.document.uiState.selectedUids.splice(0);
+                    } else {
+                        // this.select([newVal], SelectMode.Replace);
+                        this.centerEntityOnScreen(newVal);
+                    }
+                    this.scheduleDraw();
+                }
+            );
+            this.$watch(
+                () => this.document.uiState.warningFilter.editEntityUid,
+                (newVal, oldVal) => {
+                    if (!newVal) {
+                        return
+                    }
+                    this.document.uiState.warningFilter.editEntityUid = '';
+                    this.select([newVal], SelectMode.Replace);
+                    this.centerEntityOnScreen(newVal);
+                    this.scheduleDraw();
                 }
             );
             (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
@@ -754,13 +792,12 @@
             for (const luid of Object.keys(this.document.drawing.levels)) {
                 this.changedLevelsSinceLastPLUCalc.add(luid);
             }
-          
 
-           this.setDrawingMode();
+            this.setDrawingMode();
             this.setIsPreview(false);
             // setInterval(this.drawLoop, 20);
             this.initialized = true;
-             this.scheduleDraw();
+            this.scheduleDraw();
         }
 
         setDrawingMode() {
@@ -1296,6 +1333,18 @@
                 deleted.add(ouid);
             });
             return deleted;
+        }
+
+        centerEntityOnScreen(entityUid: string): void {
+            const obj = this.globalStore.get(entityUid);
+            if (!obj) {
+                throw new Error("Selecting an object that doesn't exist");
+            }
+            const shape = obj.shape();
+            if (shape) {
+                this.viewPort.panToWc(shape.box.center);
+            }
+
         }
 
         async onSelectRequest(selectionTarget: SelectionTarget) {

@@ -14,7 +14,7 @@ import {Edge} from "./graph";
 import PipeCalculation, {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
 import Fixture from "src/htmlcanvas/objects/fixture";
-
+import { addWarning, Warning } from "../store/document/calculations/warnings";
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
     const calc = context.globalStore.getOrCreateCalculation(entity);
@@ -63,8 +63,7 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
 
 
                 if (calc.realNominalPipeDiameterMM === null) {
-                    calc.warning = 'Update Flow System Settings';
-                    calc.warningLayout = 'drainage';
+                    addWarning(calc, Warning.UPDATE_FLOW_SYSTEM_SETTINGS, "drainage");
                     calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
                 }
             }
@@ -90,8 +89,7 @@ export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, ps
         calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = calculatedVentSize;
     } else {
         if ( calculatedVentSize && entity.diameterMM < calculatedVentSize) {
-            calc.warning = "Overriden pipe diameter insufficient for drainage vent size.";
-            calc.warningLayout = "drainage"
+            addWarning(calc, Warning.OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT, "drainage");
         }
     }
     if (calc.realNominalPipeDiameterMM === null) {
@@ -352,8 +350,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 if (currPipe?.entity.type === EntityType.PIPE) {    
                                     const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
                                     if (visitedUnventedRun.has(curr.value.uid)) {
-                                        currPCalc.warning = "Loop in pipesystem detected";
-                                        currPCalc.warningLayout = 'drainage';
+                                        addWarning(currPCalc, Warning.LOOP_IN_PIPESYSTEM_DETECTED, "drainage");
                                         console.warn("Loop in pipesystem detected for id: " + curr.value.uid)
                                         break;
                                     }
@@ -364,10 +361,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                     const [_, unventedConverted] =
                                         convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, unventedLength!);
                                     currPCalc.ventTooFarDist = true;
-                                    currPCalc.warning = 'Max unvented length of ' +
-                                        (maxConverted as number).toFixed(2) + units +
-                                        " exceeded " + (unventedConverted as number).toFixed(2) + units;
-                                    currPCalc.warningLayout = 'drainage';
+                                    addWarning(currPCalc, Warning.MAX_UNVENTED_LENGTH, "drainage", {value: (maxConverted as number).toFixed(2) + units, max: (unventedConverted as number).toFixed(2) + units});
                                     curr = parentOf.get(curr.from.connectable);
                                 }
                             }
@@ -383,8 +377,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 UnventedDrainageFlowExceeds=true;
                                 const currPCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
                                 currPCalc.ventTooFarWC = true;
-                                currPCalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
-                                currPCalc.warningLayout = 'drainage';
+                                addWarning(currPCalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", {value: maxUnventedWCs + ' WC\'s'});
                                 // const accountedFor = pCalc.ventTooFarWC;
                                 // let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
                                 // while (curr) {
@@ -594,8 +587,7 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
                         console.log("For fixture " + fixture.uid + " we have " + units.drainageUnits + ' and max is ' + maxUnventedUnits);
                         if (units.drainageUnits > maxUnventedUnits) {
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
-                            fcalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
-                            fcalc.warningLayout = 'drainage';
+                            addWarning(fcalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", {value: maxUnventedWCs + ' WC\'s'});
                         }
                     }
                 }
@@ -695,8 +687,7 @@ export function produceUnventedLengthWarningsAndGetUnventedGroup(context: Calcul
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
                             const [units, converted] =
                                 convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM);
-                            fcalc.warning = 'Max unvented length of ' + (converted as number).toFixed(2) + units + " exceeded";
-                            fcalc.warningLayout = 'drainage';
+                            addWarning(fcalc, Warning.MAX_UNVENTED_LENGTH, "drainage", {value: (converted as number).toFixed(2) + units});
                         }
                     }
                 }

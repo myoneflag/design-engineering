@@ -366,8 +366,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             flowRateLS: calc.flowRateLS,
             pressureDropKPA: calc.pressureDropKPA,
             pressureKPA: calc.pressureKPA,
-            warning: calc.warning,
-            warningLayout: calc.warningLayout,
+            warnings: calc.warnings,
             pressureByEndpointKPA: {},
             staticPressureKPA: calc.staticPressureKPA,
         };
@@ -418,7 +417,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         }
 
         tower.forEach(([v, p]) => {
-            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+            res.warnings = [
+                ...res.warnings || [],
+                ...context.globalStore.getOrCreateCalculation(v).warnings || []
+            ];
         });
 
         return res;

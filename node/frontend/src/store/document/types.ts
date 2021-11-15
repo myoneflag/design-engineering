@@ -8,6 +8,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { Operation } from "../../../../common/src/models/Operation";
 import { PAPER_SIZES, PaperSize } from "../../../../common/src/api/paper-config";
 import { SupportedLocales } from "../../../../common/src/api/locale";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -39,6 +40,8 @@ export interface UIState {
     lastUsedValveVid: ValveId | null;
 
     calculationFilters: CalculationFilters;
+    warningFilter: WarningFilter;
+
     levelUid: string | null;
     viewOnly: boolean;
     viewOnlyReason: string | null;
@@ -82,6 +85,21 @@ export interface FilterKey {
     name: string;
     enabled: boolean;
 }
+
+export interface WarningFilter {
+    hiddenUids: string[];
+    collapsedLevelType: LevelTypeKey[];
+    showHiddenWarnings: boolean;
+    showWarningsToPDF: boolean;
+    activeEntityUid: string;
+    editEntityUid: string;
+}
+export interface LevelTypeKey {
+    levelUid: string;
+    visible: boolean;
+    types: EntityType[];
+}
+
 /**
  * A document is a drawing + all of its history and meta attributes.
  */
@@ -144,6 +162,14 @@ export const initialUIState: UIState = {
     },
     isCalculating: false,
     calculationFilters: {},
+    warningFilter: {
+        hiddenUids: [],
+        collapsedLevelType: [],
+        showHiddenWarnings: true,
+        showWarningsToPDF: true,
+        activeEntityUid: '',
+        editEntityUid: '',
+    },
     levelUid: null,
     viewOnly: true,
     viewOnlyReason: null,
