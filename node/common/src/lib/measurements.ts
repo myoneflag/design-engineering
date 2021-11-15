@@ -42,6 +42,10 @@ export enum Units {
     CubicFeetPerHour = "ft^3/hr"
 }
 
+export enum Conversion {
+    MegajoulestoBTU = 947.82,
+}
+
 export enum EnergyMeasurementSystem {
     METRIC = "METRIC",
     IMPERIAL = "IMPERIAL",
@@ -278,7 +282,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                 case EnergyMeasurementSystem.METRIC:
                     return [Units.MegajoulesPerHour, value];
                 case EnergyMeasurementSystem.IMPERIAL:
-                    return [Units.BtuPerHour, value / 105.48];
+                    return [Units.BtuPerHour, value * Conversion.MegajoulestoBTU];
             }
             return [Units.None, 0];
         case Units.MetersCubedPerHour:
@@ -304,7 +308,7 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
         case Units.BtuPerHour:
             switch (unitsPrefs.energyMeasurementSystem) {
                 case EnergyMeasurementSystem.METRIC:
-                    return [Units.MegajoulesPerHour, value * 105.48];
+                    return [Units.MegajoulesPerHour, value / Conversion.MegajoulestoBTU];
                 case EnergyMeasurementSystem.IMPERIAL:
                     return [Units.BtuPerHour, value];
             }
