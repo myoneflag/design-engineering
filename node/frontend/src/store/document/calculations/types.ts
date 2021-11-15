@@ -1,18 +1,18 @@
-import {Cost, PsdCountEntry} from "../../../calculations/utils";
-import {CalculationField, CalculationLayout, FieldCategory} from "./calculation-field";
-import {Units} from "../../../../../common/src/lib/measurements";
-import {DrawableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
-import {CostBreakdown} from "../../../htmlcanvas/lib/types";
+import { Cost, PsdCountEntry } from "../../../calculations/utils";
+import { CalculationField, CalculationLayout, FieldCategory } from "./calculation-field";
+import { Units } from "../../../../../common/src/lib/measurements";
+import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
+import { CostBreakdown } from "../../../htmlcanvas/lib/types";
+import { WarningDetail } from "./warnings"
 
 export interface PsdCalculation {
     psdUnits: PsdCountEntry | null;
 }
 
 export interface Calculation {
-    warning: string | null;
-    warningLayout: CalculationLayout | null;
+    warnings: WarningDetail[] | null;
     cost: Cost | null;
-    costBreakdown: Array<{qty: number, path: string}> | null;
+    costBreakdown: Array<{ qty: number, path: string }> | null;
     expandedEntities: DrawableEntityConcrete[] | null;
 }
 

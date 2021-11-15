@@ -197,8 +197,7 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         staticPressureKPA: null,
         kvValue: null,
         pressureKPA: null,
-        warning: null,
-        warningLayout: null,
+        warnings: null,
         sizeMM: null
     };
 }

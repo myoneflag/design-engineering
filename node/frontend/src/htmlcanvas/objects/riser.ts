@@ -30,6 +30,7 @@ import { Interaction, InteractionType } from "../lib/interaction";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
 import { I18N } from "../../../../common/src/api/locale/values";
+import { addWarning, Warning } from "../../../src/store/document/calculations/warnings";
 
 @CalculatedObject
 @SelectableObject
@@ -380,8 +381,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             expandedEntities: null,
 
             heights: {},
-            warning: null,
-            warningLayout: null,
+            warnings: null,
         };
         const IAmDrainage = isDrainage(this.entity.systemUid);
 
@@ -514,8 +514,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 }
 
                 if (overFlowedLevels.length > 0) {
-                    res.warningLayout = 'drainage';
-                    res.warning = "Max " + I18N.loadingUnits[context.doc.locale] + " per level exceeded on level " + overFlowedLevels.join(", ");
+                    addWarning(res, Warning.MAX_PER_LEVEL_EXCEEDED, 'drainage', {value: I18N.loadingUnits[context.doc.locale], level: overFlowedLevels.join(", ")});
                 }
             }
         }

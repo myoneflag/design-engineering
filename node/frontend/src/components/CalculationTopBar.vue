@@ -1,33 +1,23 @@
 <template>
     <b-row style="position:fixed; left:350px; top:80px; max-width: 400px;">
-        <b-col class="col-auto">
-            <b-button-group>
-                <b-button variant="outline-dark" class="calculationBtn source btn-sm" @click="settings"
-                    >Calculation Settings</b-button
-                >
-            </b-button-group>
-        </b-col>
         <b-col>
-            <template v-if="isCalculating">
+            <template v-if="$props.isCalculating">
                 <b-spinner style="width: 1.8rem; height: 1.8rem;"></b-spinner>
                 <label>&nbsp; Calculating</label>
             </template>
-            <template v-else-if="upToDate()">
-                <table>
+            <template v-else>
+                <table role="button" @click="settings">
                     <tbody>
-                    <tr>
-                        <td>
-                            <v-icon name="check" scale="2" color="green"></v-icon>
-                        </td>
-                        <td>
-                            <label class="calculation-setting-string">{{&nbsp;calculationSettingsString}}</label>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>
+                                <v-icon name="check" scale="2" color="green"></v-icon>
+                            </td>
+                            <td>
+                                <label class="calculation-setting-string" role="button">&nbsp; {{calculationSettingsString}}</label>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-            </template>
-            <template v-else>
-                <b-button variant="warning" @click="reCalculate">Recalculate</b-button>
             </template>
         </b-col>
     </b-row>
@@ -38,8 +28,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FlowSystemPicker from "../../src/components/editor/FlowSystemPicker.vue";
 import {DocumentState} from "../store/document/types";
-import CatalogState from "../store/catalog/types";
-import {getPsdMethods, DRAINAGE_METHOD_CHOICES} from "../../../common/src/api/config";
+import {DRAINAGE_METHOD_CHOICES} from "../../../common/src/api/config";
 import {Catalog} from "../../../common/src/api/catalog/types";
 
 @Component({
@@ -50,6 +39,10 @@ import {Catalog} from "../../../common/src/api/catalog/types";
     }
 })
 export default class CalculationTopBar extends Vue {
+    mounted() {
+        if (!this.upToDate() && !this.$props.isCalculating) this.$props.onReCalculate();
+    }
+
     get document(): DocumentState {
         return this.$store.getters['document/document'];
     }

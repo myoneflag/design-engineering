@@ -321,6 +321,8 @@ export function keycodeToImgName(keyCode: KeyCode): string {
 const imgStore: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
 
 export let warningSignImg: HTMLImageElement;
+export let warningEyeImg: HTMLImageElement;
+export let warningEyeSlashImg: HTMLImageElement;
 
 export function getWarningSignImg() {
     if (warningSignImg === undefined) {
@@ -328,6 +330,22 @@ export function getWarningSignImg() {
         warningSignImg.src = require("../assets/warning-sign.svg");
     }
     return warningSignImg;
+}
+
+export function getEyeImg() {
+    if (warningEyeImg === undefined) {
+        warningEyeImg = new Image();
+        warningEyeImg.src = require("../assets/eye.svg");
+    }
+    return warningEyeImg;
+}
+
+export function getEyeSlashImg() {
+    if (warningEyeSlashImg === undefined) {
+        warningEyeSlashImg = new Image();
+        warningEyeSlashImg.src = require("../assets/eye-slash.svg");
+    }
+    return warningEyeSlashImg;
 }
 // @ts-ignore
 
@@ -416,6 +434,14 @@ export function polygonOverlapsShapeApprox(a: Flatten.Polygon, shape: Flatten.Sh
     } else {
         throw new Error("Unknown shape type");
     }
+}
+
+export function toCapitalize(str: string): string {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+    }
+    return splitStr.join(' '); 
 }
 
 export function wrapText(

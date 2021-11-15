@@ -8,7 +8,7 @@ import { getFields } from "../calculations/utils";
 import { getEntityName } from "../../../common/src/api/document/entities/types";
 import Vue from 'vue';
 import { Color } from "../../../common/src/api/document/drawing";
-import {assertUnreachable} from "../../../common/src/api/config";
+import { assertUnreachable } from "../../../common/src/api/config";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -40,7 +40,7 @@ export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     }
 };
 
-export function color2rgb(color: Color): {r: number, g: number, b: number} {
+export function color2rgb(color: Color): { r: number, g: number, b: number } {
     const num = parseInt(color.hex.substr(1), 16);
     return {
         r: (num >> 16) & 0xff,
@@ -49,12 +49,12 @@ export function color2rgb(color: Color): {r: number, g: number, b: number} {
     };
 }
 
-export function rgb2color(rgb: {r: number, g: number, b: number}): Color {
+export function rgb2color(rgb: { r: number, g: number, b: number }): Color {
     let str = ((rgb.r << 16) | (rgb.g << 8) | (rgb.b << 0)).toString(16);
-    return {hex: '#' + str};
+    return { hex: '#' + str };
 }
 
-export function rgb2style(rgb: {r: number, g: number, b: number}, a?: number): string {
+export function rgb2style(rgb: { r: number, g: number, b: number }, a?: number): string {
     if (a === undefined || a === 1) {
         const str = ((rgb.r << 16) | (rgb.g << 8) | (rgb.b << 0)).toString(16);
         return '#' + str;

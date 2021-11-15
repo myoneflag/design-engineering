@@ -158,13 +158,13 @@ import Component from "vue-class-component";
 import { DocumentState } from "../../store/document/types";
 import uuid from "uuid";
 import { countPsdUnits, getPsdUnitName } from "../../calculations/utils";
-import { lighten } from "../../lib/utils";
 import { GROUND_FLOOR_MIN_HEIGHT_M } from "../../lib/types";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Level } from "../../../../common/src/api/document/drawing";
 import { LEVEL_HEIGHT_DIFF_M } from "../../../../common/src/api/config";
 import { User } from "../../../../common/src/models/User";
 import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../../common/src/lib/measurements";
+import { DrawingMode } from '../../../src/htmlcanvas/types';
 
 @Component({
     props: {
@@ -226,6 +226,19 @@ export default class LevelSelector extends Vue {
     }
 
     selectLevel(levelUid: string) {
+        if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
+            let collapsedLevelType = this.document.uiState.warningFilter.collapsedLevelType;
+            collapsedLevelType = [
+                ...collapsedLevelType.filter((e) => e.levelUid !== levelUid).map((e) => ({...e, visible: false})),
+                {
+                    levelUid: levelUid,
+                    visible: true,
+                    types: []
+                }
+            ]
+            Vue.set(this.document.uiState.warningFilter, "collapsedLevelType", collapsedLevelType);
+            Vue.set(this.document.uiState.warningFilter, "activeEntityUid", "");
+        }
         this.$emit("level-changed", levelUid);
         this.$store.dispatch("document/setCurrentLevelUid", levelUid);
     }

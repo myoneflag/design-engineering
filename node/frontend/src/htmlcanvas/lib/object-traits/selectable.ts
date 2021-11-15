@@ -1,5 +1,5 @@
 import DrawableObject from "../../../../src/htmlcanvas/lib/drawable-object";
-import { MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
+import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
 import { ViewPort } from "../../../../src/htmlcanvas/viewport";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
@@ -16,12 +16,16 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
         selectable: true = true;
 
         onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
+            if (context.document.uiState.drawingMode === DrawingMode.Calculations) {
+                return false;
+            }
             const wc = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
             const oc = this.toObjectCoord(wc);
 
             // Check bounds
             let result = false;
             // Shift key for remove select mode
+            // Disable selection in calculation mode
             if (context.isSelected(this.uid) === event.shiftKey) {
                 if (this.inBounds(oc)) {
                     this.onSelect(event);
@@ -34,6 +38,9 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
         }
 
         onMouseMove(event: MouseEvent, context: CanvasContext): MouseMoveResult {
+            if (context.document.uiState.drawingMode === DrawingMode.Calculations) {
+                return UNHANDLED;
+            }
             const result2: MouseMoveResult = super.onMouseMove(event, context);
             if (result2.handled) {
                 return result2;
@@ -43,6 +50,9 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
         }
 
         onMouseUp(event: MouseEvent, context: CanvasContext): boolean {
+            if (context.document.uiState.drawingMode === DrawingMode.Calculations) {
+                return false;
+            }
             const wc = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
             if (this.entity) {
                 const oc = this.toObjectCoord(wc);

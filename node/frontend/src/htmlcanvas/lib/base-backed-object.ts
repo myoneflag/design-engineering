@@ -129,7 +129,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 
-    hasWarning(context: DrawingContext): boolean {
+    hasWarning(context: DrawingContext, forExport: boolean): boolean {
         throw new Error("Not implemented. Please use @CalculatedObject to implement.");
     }
 

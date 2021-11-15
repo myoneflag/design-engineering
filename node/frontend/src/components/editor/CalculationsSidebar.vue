@@ -3,14 +3,23 @@
         <b-row>
             <b-col>
                 <b-button-group
-                        style="margin-left: -200px"
+                        style="margin-left: -250px"
                 >
+                    <b-button
+                            variant="outline-dark"
+                            class="calculationBtn"
+                            @click="togglePopup('warning')"
+                            :pressed="popupShown === 'warning'"
+                    >
+                        Warnings
+                        <v-icon name="caret-down" scale="1" />
+                    </b-button>
 
                     <b-button
                             variant="outline-dark"
                             class="calculationBtn"
-                            @click="filterShown = !filterShown"
-                            :pressed="filterShown"
+                            @click="togglePopup('filter')"
+                            :pressed="popupShown === 'filter'"
                     >
                         Filters
                         <v-icon name="caret-down" scale="1" />
@@ -18,7 +27,7 @@
                 </b-button-group>
             </b-col>
         </b-row>
-        <b-row v-if="filterShown">
+        <b-row v-if="popupShown === 'filter'">
             <b-col>
                 <div class="filterPanel">
                     <div v-for="(objectFilters, type) in filters" :key="type">
@@ -41,6 +50,10 @@
                 </div>
             </b-col>
         </b-row>
+        <warnings
+            v-if="popupShown === 'warning'"
+            :on-change="$props.onChange"
+        />
         <b-modal id="bv-modal-example" hide-footer>
             <template v-slot:modal-title>
                 Get link
@@ -81,9 +94,13 @@ import { getEffectiveFilter } from "../../lib/utils";
 import { User } from "../../../../common/src/models/User";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
+import Warnings from "./Warnings.vue";
+import { isCalculated } from "../../store/document/calculations";
 
 @Component({
-    components: {},
+    components: {
+        Warnings
+    },
     props: {
         objects: Array,
         onChange: Function,
@@ -91,16 +108,31 @@ import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
     }
 })
 export default class CalculationsSidebar extends Vue {
-    filterShown = true;
+    popupShown = '';
     shareLink: string = window.location.origin + "/";
     generate: { isLoading: boolean } = {
         isLoading: false
     };
-  $bvToast: any;
-  $bvModal: any;
-  entity: any;
+    $bvToast: any;
+    $bvModal: any;
+    entity: any;
 
     mounted() {
+        this.$watch(
+            () => this.document.uiState.warningFilter.activeEntityUid,
+            () => {
+                this.popupShown = 'warning';
+                this.$props.onChange();
+            }
+        );
+        this.$watch(
+            () => this.document.uiState.lastCalculationId,
+            () => {
+                this.popupShown = this.hasWarning() ? 'warning' : 'filter';
+            }
+        );
+        /** have any warnings, please show the Warnings panel expanded */
+        this.popupShown = this.hasWarning() ? 'warning' : 'filter';
         this.stageNewFilters();
     }
 
@@ -127,6 +159,22 @@ export default class CalculationsSidebar extends Vue {
 
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    hasWarning(): boolean {
+        for (const o of this.globalStore.values()) {
+            if (isCalculated(o.entity)) {
+                const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+                if (calculation.warnings?.length) return true;
+            }
+        }
+        return false;
+    }
+    
+    /* toggle Warnings and Filters */
+    togglePopup(target: string) {
+        if (this.popupShown === target) this.popupShown = '';
+        else this.popupShown = target;
     }
 
     stageNewFilters() {
@@ -256,7 +304,7 @@ export default class CalculationsSidebar extends Vue {
     right: 20px;
     min-height: 100px;
     top: 80px;
-    width: 300px;
+    width: 400px;
 }
 
 .filterPanel {

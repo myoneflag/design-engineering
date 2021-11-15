@@ -371,15 +371,17 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
             flowRateLS: calc.flowRateLS,
             pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
-            warning: calc.warning,
-            warningLayout: calc.warningLayout,
+            warnings: calc.warnings,
             staticPressureKPA: calc.staticPressureKPA,
         };
 
         const tower = this.getCalculationTower(context);
 
         tower.forEach(([v, p]) => {
-            res.warning = res.warning || context.globalStore.getOrCreateCalculation(v).warning;
+            res.warnings = [
+                ...res.warnings || [],
+                ...context.globalStore.getOrCreateCalculation(v).warnings || []
+            ];
         });
 
         return res;

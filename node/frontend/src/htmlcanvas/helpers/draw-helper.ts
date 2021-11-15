@@ -55,6 +55,58 @@ export function drawRectangles(ctx: CanvasRenderingContext2D, rectangles: Rectan
   ctx.stroke();
 }
 
+/* Draw Round Rectangle */
+export function drawRoundRectangle(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+    fill: boolean = true,
+    stroke: boolean = false
+) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    if (fill) {
+        ctx.fill();
+    }
+    if (stroke) {
+        ctx.stroke();
+    }
+}
+
+/* Draw Warning Icon */
+export function drawWarningIcon(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+) {
+    // Triangle
+    ctx.beginPath();
+    ctx.moveTo(x + width / 2, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.closePath();
+    
+    ctx.lineWidth = 2;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    // Exclamation mark
+    ctx.font = `bold ${height}px serif`;
+    ctx.fillText("!", x + width / 2 - 5, y + height - 2);
+}
 
 export function prepareStroke(entity:BaseBackedObject,ctx: CanvasRenderingContext2D){
     if(!entity.isActive())    
