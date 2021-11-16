@@ -123,7 +123,7 @@
                                     </label>
                                 </b-col>
 
-                                <b-col cols="1" style="padding: 0" v-if="profile">
+                                <b-col cols="1" style="padding: 0" v-if="profile && level.uid != 'ground'">
                                     <b-button
                                         @click="
                                             $event.stopPropagation();
