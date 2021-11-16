@@ -27,8 +27,8 @@
                         @blur="onCommitInternal"
                     ></b-form-input>
                     <b-input-group-append>
-                        <b-dropdown :text="selectedLevel[slot].name" size="sm" variant="info">
-                            <b-dropdown-item
+                        <b-dropdown :text="selectedLevel[slot].name" size="sm" variant="info" class="riserLevelDropdown">
+                            <b-dropdown-item 
                                 v-for="level in levelsToOptions" :key="level.text"
                                 :active="level.value === selectedLevelUidByProp[slot]"
                                 @click="selectedLevelUidByProp[slot] = level.value"
@@ -269,6 +269,13 @@ export default class RiserProperties extends Vue {
 </script>
 
 <style lang="less">
+
+.riserLevelDropdown .dropdown-menu {
+    max-height: 600px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+
 .sidebar-title {
     position: relative;
     font-size: 30px;
