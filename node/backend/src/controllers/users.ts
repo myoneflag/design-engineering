@@ -364,8 +364,8 @@ export class UserController {
 
         let now = +new Date();
 
-        const oneday = 60 * 60 * 24 * 1000;
-        if ((now - +new Date(user.password_reset_dt)) > oneday) {
+        const twoweeks = 2 * 7 * 60 * 60 * 24 * 1000;
+        if ((now - +new Date(user.password_reset_dt)) > twoweeks) {
             return res.send({
                 success: false,
                 message: "Password reset link has expired.",
