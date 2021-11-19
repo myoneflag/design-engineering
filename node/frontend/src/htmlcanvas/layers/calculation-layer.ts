@@ -82,7 +82,7 @@ export default class CalculationLayer extends LayerImplementation {
                         o!.drawCalculationBox(context, label[2], false, false, forExport);
                     } else {
                         /* if (!forExport) {
-                            // warning only
+                            // warning icon only
                             vp.prepareContext(context.ctx, ...o.world2object);
                             const s = context.vp.currToSurfaceScale(ctx);
                             context.ctx.scale(MIN_SCALE / s, MIN_SCALE / s);
