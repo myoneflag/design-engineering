@@ -747,7 +747,7 @@
                 () => this.document.uiState.pressureOrDrainage,
                 () => {
                     this.select([], SelectMode.Replace);
-                    this.considerCalculating();
+                    // this.considerCalculating();
                 }
             );
             this.$watch(
@@ -1448,7 +1448,6 @@
         }
 
         scheduleDraw() {
-            
             if (this.reactiveRenderQueue.length === 0) {
                 this.reactiveRenderQueue.push(
                     this.drawFast().then(() => {
