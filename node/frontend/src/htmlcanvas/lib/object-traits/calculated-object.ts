@@ -1,10 +1,7 @@
 import { CalculatableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
 import { DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { CalculationFilters } from "../../../../src/store/document/types";
-import {
-    CalculationData,
-    CalculationDataType,
-} from "../../../../src/store/document/calculations/calculation-field";
+import { CalculationData, CalculationDataType } from "../../../../src/store/document/calculations/calculation-field";
 import Flatten from "@flatten-js/core";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
 import { DEFAULT_FONT_NAME } from "../../../../src/config";
@@ -18,6 +15,7 @@ import { CalculationContext } from "../../../calculations/types";
 import { EntityType, getEntityName } from "../../../../../common/src/api/document/entities/types";
 import { CalculationConcrete } from "../../../store/document/calculations/calculation-concrete";
 import { NoFlowAvailableReason } from "../../../store/document/calculations/pipe-calculation";
+import { WarningDetail } from "../../../store/document/calculations/warnings";
 import { assertUnreachable } from "../../../../../common/src/api/config";
 import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { I18N } from "../../../../../common/src/api/locale/values";
@@ -145,92 +143,117 @@ export function CalculatedObject<
             warnSignOnly: boolean = false,
             forExport: boolean = false
         ): Flatten.Box {
-
-            const { ctx, vp } = context;
-
-            const calculation = context.globalStore.getCalculation(this.entity);
-            const { hiddenUids, showHiddenWarnings, activeEntityUid } = context.doc.uiState.warningFilter;
-            const warnings = calculation?.warnings?.filter((e) => e.title && ((!forExport && showHiddenWarnings) || !hiddenUids.includes(e.uid)))!;
-
             if (warnSignOnly) {
-                if (warnings?.length && this.hasWarning(context, forExport) && !forExport) {
-                    ctx.fillStyle = "#000";
-                    ctx.strokeStyle = "#000";
-                    if (!_.difference(warnings.map((e) => e.uid), hiddenUids).length) {
-                        ctx.fillStyle = "#00000040";
-                        ctx.strokeStyle = "#00000040";
-                    }
-                    return this.drawWarningSignOnly(context, dryRun);
-                }
-                return new Flatten.Box();
+                return this.drawWarningSignOnly(context, dryRun);
             }
 
+            const { ctx, vp } = context;
+            const calculation = context.globalStore.getCalculation(this.entity);
+            const hasWarning = this.hasWarning(context, forExport);
+            const warnings = this.visibleWarnings(context, forExport);
+            const { hiddenUids, activeEntityUid } = context.doc.uiState.warningFilter;
+
             // ctx.fillText(this.entity.calculation!.realNominalPipeDiameterMM!.toPrecision(2), 0, 0);
-
+            
+            let height = 0;
             let maxWidth = 0;
-            let warnHeight = 0;
-            warnings?.forEach((warning) => {
-                if (this.hasWarning(context, forExport)) {
-                    const warnWidth = ctx.measureText(warning!.title!);
-                    maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
-                    ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
-                    warnHeight += wrapText(ctx, toCapitalize(warning!.title!), 0, 0, maxWidth, FIELD_HEIGHT, true);
+            for (let i = data.length - 1; i >= 0; i--) {
+                const datum = data[i];
+
+                if (datum.type === CalculationDataType.VALUE && datum.value) {
+                    if (datum.type === CalculationDataType.VALUE) {
+                        ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                        height += (datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier) * FIELD_FONT_SIZE;
+                    } else {
+                        ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                        height += FIELD_FONT_SIZE;
+                    }
+
+                    const text = this.makeDatumText(context, datum);
+                    if (Array.isArray(text)) {
+                        for (let i2 = 0; i2 < text.length; i2++) {
+                            const metrics = ctx.measureText(text[i2]);
+                            maxWidth = Math.max(maxWidth, metrics.width);
+                        }
+
+                        height += (FIELD_FONT_SIZE * (text.length - 1));
+                    } else {
+                        const metrics = ctx.measureText(text);
+                        maxWidth = Math.max(maxWidth, metrics.width);
+                    }
                 }
-            });
-            warnHeight = Math.max(WARNING_HEIGHT, warnHeight);
-            let y = warnHeight / 2;
+            }
 
-            const box = new Flatten.Box(
-                -maxWidth / 2 - RECT_PADDING,
-                -warnHeight / 2 - RECT_PADDING,
-                maxWidth / 2 + RECT_PADDING,
-                warnHeight / 2 + RECT_PADDING
-            );
+            if (hasWarning) {
+                const warnWidth = ctx.measureText(calculation!.warnings![0].title!);
+                maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
+            }
 
-            if (this.hasWarning(context, forExport)) {
+            let warnHeight = 0;
+            if (hasWarning) {
+                ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
+                warnings.forEach((warning) => {
+                    warnHeight += wrapText(ctx, toCapitalize(warning.title!), 0, 0, maxWidth, FIELD_HEIGHT, true);
+                });
+                height += warnHeight;
+            }
+            let y = height / 2;
+
+            const box = new Flatten.Box(-maxWidth / 2 - RECT_PADDING, -height / 2 - RECT_PADDING, maxWidth / 2 + RECT_PADDING, height / 2 + RECT_PADDING);
+
+            if (hasWarning) {
                 box.xmin -= WARNING_WIDTH + RECT_PADDING;
             }
 
             if (!dryRun) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.strokeStyle = "#000";
-                if (this.hasWarning(context, forExport)) {
+                if (hasWarning) {
                     ctx.fillStyle = "rgba(255,215,0, 0.8)";
+                    // highlight warning in result view
                     if (this.entity.uid === activeEntityUid && !forExport) {
                         ctx.fillStyle = "rgba(0,123,255, 0.8)";
                     }
-                    drawRoundRectangle(
-                        ctx,
-                        box.xmin,
-                        box.ymin,
-                        box.xmax - box.xmin,
-                        box.ymax - box.ymin,
-                        RECT_ROUND
-                    );
                 }
+                drawRoundRectangle(
+                    ctx,
+                    box.xmin,
+                    box.ymin,
+                    box.xmax - box.xmin,
+                    box.ymax - box.ymin,
+                    RECT_ROUND
+                );
 
                 ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 ctx.fillStyle = "#000";
 
-                if (this.hasWarning(context, forExport)) {
+                if (hasWarning) {
                     ctx.font = "bold " + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
 
-                    warnings?.forEach((warning) => {
+                    warnings.forEach((warning) => {
                         ctx.fillStyle = "#000";
-                        ctx.strokeStyle = "#000";
                         if (hiddenUids.includes(warning.uid) && !forExport) {
-                            ctx.fillStyle = "#00000040"; // hidden warning color
-                            ctx.strokeStyle = "#00000040";
+                            ctx.fillStyle = "#00000040";
                         }
-                        y += wrapText(
+
+                        warnHeight = wrapText(ctx, toCapitalize(warning.title!), 0, 0, maxWidth, FIELD_HEIGHT, true);
+                        y -= wrapText(
                             ctx,
-                            toCapitalize(warnings?.length > 1 ? `• ${warning!.title!}` : warning!.title!),
+                            toCapitalize(warnings.length > 1 ? `• ${warning.title!}` : warning.title!),
                             -maxWidth / 2,
                             y - warnHeight + FIELD_HEIGHT,
                             maxWidth,
                             FIELD_HEIGHT
                         );
-                    })
+                    });
+
+                    ctx.fillStyle = "#000";
+                    ctx.strokeStyle = "#000";
+                    if (!_.difference(warnings.map((e) => e.uid), hiddenUids).length) {
+                        ctx.fillStyle = "#00000040";
+                        ctx.strokeStyle = "#00000040";
+                    }
+
                     drawWarningIcon(
                         ctx,
                         -maxWidth / 2 - WARNING_WIDTH - RECT_PADDING,
@@ -240,37 +263,7 @@ export function CalculatedObject<
                     );
                 }
 
-                /** text under warning */
-                let height = 0;
-                for (let i = data.length - 1; i >= 0; i--) {
-                    const datum = data[i];
-    
-                    if (datum.type === CalculationDataType.VALUE && datum.value) {
-                        if (datum.type === CalculationDataType.VALUE) {
-                            ctx.font = (datum.bold ? "bold " : "") + FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
-                            height += (datum.fontMultiplier === undefined ? 1 : datum.fontMultiplier) * FIELD_FONT_SIZE;
-                        } else {
-                            ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
-                            height += FIELD_FONT_SIZE;
-                        }
-    
-                        const text = this.makeDatumText(context, datum);
-                        if (Array.isArray(text)) {
-                            for (let i2 = 0; i2 < text.length; i2++) {
-                                const metrics = ctx.measureText(text[i2]);
-                                maxWidth = Math.max(maxWidth, metrics.width);
-                            }
-    
-                            height += (FIELD_FONT_SIZE * (text.length - 1));
-                        } else {
-                            const metrics = ctx.measureText(text);
-                            maxWidth = Math.max(maxWidth, metrics.width);
-                        }
-                    }
-                }
-
                 let datumDrawn: boolean = false;
-                y = warnHeight / 2 + height + RECT_PADDING * 2;
                 for (let i = data.length - 1; i >= 0; i--) {
                     const datum = data[i];
 
@@ -294,7 +287,7 @@ export function CalculatedObject<
                                 .color;
                             ctx.fillStyle = lighten(col.hex, -20);
                         }
-
+                    
                         const text = this.makeDatumText(context, data[i]);
                         if (Array.isArray(text)) {
                             for (let i2 = 0; i2 < text.length; i2++) {
@@ -306,7 +299,7 @@ export function CalculatedObject<
                             y -= multiplier * FIELD_HEIGHT;
                         }
 
-                        datumDrawn = true
+                        datumDrawn = true 
                     }
                 }
 
@@ -319,7 +312,7 @@ export function CalculatedObject<
                     const worldMax = vp.toWorldCoord(
                         TM.applyToPoint(context.vp.currToScreenTransform(ctx), { x: box.xmax, y: box.ymax })
                     );
-                    if (this.hasWarning(context, forExport)) {
+                    if (hasWarning) {
                         worldMin.x -= WARNING_WIDTH;
                     }
                     const worldBox = new Flatten.Box(
@@ -371,6 +364,11 @@ export function CalculatedObject<
             }
 
             const locs: TM.Matrix[] = this.locateCalculationBoxWorld(context, data, newScale);
+            try {
+                this.drawCalculationBox(context, data, true, false, forExport);
+            } catch (error) {
+                console.log(error);
+            }
             const box = this.drawCalculationBox(context, data, true, false, forExport);
 
             return locs.map((loc) => {
@@ -462,21 +460,50 @@ export function CalculatedObject<
             return res;
         }
 
+        visibleWarnings(context: DrawingContext, forExport: boolean): WarningDetail[] {
+            if (!this.hasWarning(context, forExport)) {
+                return []
+            }
+            const calculation = context.globalStore.getCalculation(this.entity);
+            const { hiddenUids, showHiddenWarnings } = context.doc.uiState.warningFilter;
+            return calculation!.warnings!.filter((warning) => showHiddenWarnings || !hiddenUids.includes(warning.uid));
+        }
+
         hasWarning(context: DrawingContext, forExport: boolean): boolean {
             const calculation = context.globalStore.getCalculation(this.entity);
             if (calculation && calculation.warnings === undefined) {
                 throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
-            if (!calculation) {
+            if (!calculation || !calculation.warnings?.length) {
                 return false;
             }
+
             const { hiddenUids, showHiddenWarnings, showWarningsToPDF } = context.doc.uiState.warningFilter;
-            return showWarningsToPDF && !!calculation.warnings?.find((warning) =>
-                warning.title &&
-                ((!forExport && showHiddenWarnings) || !hiddenUids.includes(warning.uid)) &&
-                ((!warning.warningLayout && context.doc.uiState.pressureOrDrainage === 'pressure') ||
-                context.doc.uiState.pressureOrDrainage === warning.warningLayout)
-            );
+            if (forExport && !showWarningsToPDF) {
+                return false;
+            }
+            if ((forExport || !showHiddenWarnings) && !_.difference(calculation.warnings.map((e) => e.uid), hiddenUids).length) {
+                return false;
+            }
+
+            const warning = calculation.warnings[0];
+            switch (warning.warningLayout) {
+                case null:
+                case undefined:
+                case "pressure":
+                    if (context.doc.uiState.pressureOrDrainage !== 'pressure') {
+                        return false;
+                    }
+                    break;
+                case "drainage":
+                    if (context.doc.uiState.pressureOrDrainage !== 'drainage') {
+                        return false;
+                    }
+                    break;
+                default:
+                    assertUnreachable(warning.warningLayout! as never);
+            }
+            return true;
         }
     };
 }
