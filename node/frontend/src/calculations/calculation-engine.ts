@@ -2734,7 +2734,7 @@ export default class CalculationEngine implements CalculationContext {
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxWorking);
                                     let [_, actualPressureDisplay] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, actualPressure);
-                                    actualPressureDisplay = roundNumber(actualPressureDisplay as number, 2);
+                                    actualPressureDisplay = roundNumber(actualPressureDisplay as number, 3);
                                     addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, {pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}`});
                                 }
                             }
