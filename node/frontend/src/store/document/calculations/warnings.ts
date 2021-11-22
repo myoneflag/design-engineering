@@ -56,7 +56,7 @@ export const WarningDetails: {[key: string]: WarningDescription} = {
         helpLink: "",
     },
     MAX_PRESSURE_EXCEEDED_PIPE: {
-        title: "Safe Working Pressure Exceeded ${pressure}",
+        title: "Safe Working Pressure of ${pressure} Exceeded (${actual})",
         description: `The safe working pressure of the chosen pipe material has been exceeded.<br/>
         To resolve this, you can choose a new pipe material in the Settings > Flow Systems.
         Alternatively, consider adding pressure reduction valves to your system or reduce the pressure at the pump.
