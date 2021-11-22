@@ -48,6 +48,7 @@ import {
     isZeroWaterPsdCounts,
     lookupFlowRate,
     PsdProfile,
+    roundNumber,
     subtractPsdProfiles,
     zeroContextualPCE,
     zeroCost,
@@ -2731,9 +2732,10 @@ export default class CalculationEngine implements CalculationContext {
                                 if (actualPressure > maxWorking) {
                                     const [units, maxWorkingDisplay] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxWorking);
-                                    const [_, actualPressureDisplay] =
+                                    let [_, actualPressureDisplay] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, actualPressure);
-                                    addWarning(calc, Warning.CHANGE_THE_PEAK_FLOW_RATE_CALCULATION_METHOD, null, {pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${actualPressure}`});
+                                    actualPressureDisplay = roundNumber(actualPressureDisplay as number, 3);
+                                    addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, {pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}`});
                                 }
                             }
                         }
