@@ -6,7 +6,8 @@ import { WarningFilter } from "../types";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 
 export enum Warning {
-    MAX_PRESSURE_EXCEEDED,
+    MAX_PRESSURE_EXCEEDED_NODE,
+    MAX_PRESSURE_EXCEEDED_PIPE,
     MAX_FLOW_RATE_EXCEEDED,
     MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED,
     MAX_UNVENTED_LENGTH,
@@ -24,7 +25,7 @@ export enum Warning {
     PRVS_ARE_FORBIDDEN_HERE,
     MISSING_BALANCING_VALVE_FOR_RETURN,
     NOT_ENOUGH_PRESSURE,
-    PRESSURE_MORE_THAN_TARGET,
+    PRESSURE_PRV_MORE_THAN_TARGET,
     OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT,
 }
 
@@ -46,12 +47,19 @@ export interface WarningUi extends WarningDetail {
 }
 
 export const WarningDetails: {[key: string]: WarningDescription} = {
-    MAX_PRESSURE_EXCEEDED: {
-        title: "Maximum pressure exceeded ${pressure}", // > ${target}
-        description: `The safe working pressure of the chosen pipe material has been exceeded.<br /> To resolve this, you can choose a new pipe material in the Settings > Flow Systems.
-
+    MAX_PRESSURE_EXCEEDED_NODE: {
+        title: "Maximum Pressure Exceeded ${pressure}",
+        description: `The maximum inlet pressure of the node has been exceeded.<br />
+        To resolve this, you will need to add pressure reducing valves to your design.
+        Alternatively, consider reducing the pressure at the pump or overriding the inlet pressure properties of the node.
+        If you are surprised to receive this warning, please review the flow source and floor level heights as they may have been entered incorrectly.`,
+        helpLink: "",
+    },
+    MAX_PRESSURE_EXCEEDED_PIPE: {
+        title: "Safe Working Pressure of ${pressure} Exceeded (${actual})",
+        description: `The safe working pressure of the chosen pipe material has been exceeded.<br/>
+        To resolve this, you can choose a new pipe material in the Settings > Flow Systems.
         Alternatively, consider adding pressure reduction valves to your system or reduce the pressure at the pump.
-        
         If you are surprised to receive this warning, please review the flow source and floor level heights as they may have been entered incorrectly.`,
         helpLink: "https://youtu.be/R_PIJg7i6uE",
     },
@@ -190,9 +198,11 @@ export const WarningDetails: {[key: string]: WarningDescription} = {
         If you are surprised to receive this warning, please review the flow source and floor level heights as they may have been entered incorrectly.`,
         helpLink: "https://youtu.be/mXg5FMYT8eY",
     },
-    PRESSURE_MORE_THAN_TARGET: {
+    PRESSURE_PRV_MORE_THAN_TARGET: {
         title: "Pressure of ${pressure} is more than ${ratio}x the target pressure of ${target}",
-        description: "",
+        description: `The inlet pressure at the pressure reduction valve is more than \${ratio}x the specified outlet pressure of the pressure reduction valve which can cause maintenance issues.
+        To resolve this, you can install multiple pressure reduction valves in series, ensuring not to reduce the pressure by more than a \${ratio}:1 ratio each time.
+        Alternatively, consider reducing the pressure at the pump or overriding the inlet pressure properties of the fixtures/nodes.`,
         helpLink: "",
     },
     OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT: {
@@ -214,6 +224,7 @@ export const addWarning = (
             newWarningDetail = {
                 ...newWarningDetail,
                 title: newWarningDetail?.title?.replace(`\$\{${key}\}`, params[key]?.toString() || '')!,
+                description: newWarningDetail?.description?.replace(`\$\{${key}\}`, params[key]?.toString() || '')!,
             };
         });
     }
