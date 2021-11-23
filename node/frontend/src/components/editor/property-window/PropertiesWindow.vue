@@ -6,7 +6,7 @@
                 :selected-object="selectedObjects[0]"
                 :on-delete="onDelete"
                 :on-change="onChange"
-                v-if="mode === 0"
+                v-if="mode === DrawingMode.FloorPlan"
             />
             <RiserProperties
                 v-else-if="entity.type === ENTITY_NAMES.RISER"
@@ -207,6 +207,10 @@ export default class PropertiesWindow extends Vue {
 
     destroyed() {
         MainEventBus.$off("delete-pressed", this.$props.onDelete);
+    }
+
+    get DrawingMode() {
+        return DrawingMode;
     }
 
     get readonly() {
