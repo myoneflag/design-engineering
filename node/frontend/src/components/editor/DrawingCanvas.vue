@@ -466,7 +466,8 @@
                 return false;
             }
 
-            if (this.document.uiState.drawingMode !== DrawingMode.Hydraulics) {
+            if (this.document.uiState.drawingMode !== DrawingMode.Hydraulics &&
+                this.document.uiState.drawingMode !== DrawingMode.FloorPlan ) {
                 return false;
             }
 
