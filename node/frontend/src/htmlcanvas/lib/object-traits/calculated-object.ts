@@ -479,7 +479,7 @@ export function CalculatedObject<
             }
 
             const { hiddenUids, showHiddenWarnings, showWarningsToPDF } = context.doc.uiState.warningFilter;
-            if (forExport && !showWarningsToPDF) {
+            if (!showWarningsToPDF) {
                 return false;
             }
             if ((forExport || !showHiddenWarnings) && !_.difference(calculation.warnings.map((e) => e.uid), hiddenUids).length) {
