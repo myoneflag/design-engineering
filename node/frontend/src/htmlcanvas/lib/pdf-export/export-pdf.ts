@@ -311,34 +311,41 @@ async function drawFooter(doc: PDFKit.PDFDocument,context:CanvasContext) {
     doc.y = oy;
 }
 
+const COOVER_SHEET_FS_COLUMN = 4;
+const COVER_SHEET_MAX_FS_COLUMNS = 2;
+
 async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, options: ExportPdfOptions) {
-    doc.addPage({ size: [mm2pt(options.paperSize.widthMM), mm2pt(options.paperSize.heightMM)] });
+    const pageWidth = mm2pt(options.paperSize.widthMM);
+    const pageHeight = mm2pt(options.paperSize.heightMM);
+    const titleFontScale = 0.7;
+    const contentFontScale = 1;
+    doc.addPage({ size: [pageWidth, pageHeight]});
     await drawFooter(doc, context);
     const generalInfo = context.document.drawing.metadata.generalInfo;
     const calculationParams = context.document.drawing.metadata.calculationParams;
     const flowSystems = context.document.drawing.metadata.flowSystems;
 
-    let contentHeight = 1200;
-    if (flowSystems.length < 4) {
-        contentHeight -= 150 * Math.min(3, 4 - flowSystems.length);
+    let contentHeight = pageHeight * 0.9;
+    if (flowSystems.length < COOVER_SHEET_FS_COLUMN) {
+        contentHeight -= 150 * Math.min(3, COOVER_SHEET_FS_COLUMN - flowSystems.length);
     }
     doc.y += (doc.page.height - contentHeight) / 2;
-    doc.fontSize(50);
+    doc.fontSize(50 * titleFontScale);
     doc.fillColor([47, 84, 150]);
     doc.text(generalInfo.title.toUpperCase(), { align: "center" });
-    doc.fontSize(30);
+    doc.fontSize(30 * titleFontScale);
     doc.fillColor("black");
     if (generalInfo.projectNumber) {
         doc.text("PROJECT NO. " + generalInfo.projectNumber, { align: "center" });
     }
 
-    doc.y += 30;
-    doc.fontSize(70);
+    doc.y += 30 * titleFontScale;
+    doc.fontSize(70 * titleFontScale);
     doc.fillColor([47, 84, 150]);
     doc.text("WATER SYSTEM RESULTS", { align: "center" });
 
-    doc.y += 30;
-    doc.fontSize(20);
+    doc.y += 30 * titleFontScale;
+    doc.fontSize(20 * contentFontScale);
     doc.fillColor("black");
     doc.text("Designed by " + ((await getCompanyName(context)) || "").toUpperCase(), { align: "center" });
     doc.y += 10;
@@ -347,9 +354,10 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
     const l = (doc.page.width - w) / 2;
     drawGeneralTable(doc, context, 10, w, 10, l, doc.y, true, true);
 
-    doc.y += 80;
+    doc.y += 80 * titleFontScale;
 
-    const flowSystemPagesNeeded = Math.ceil(flowSystems.length / 4);
+    const flowSystemPagesNeeded = Math.ceil(flowSystems.length / COOVER_SHEET_FS_COLUMN);
+    const flowSystemsPerPage = Math.min(flowSystemPagesNeeded, COVER_SHEET_MAX_FS_COLUMNS);
 
     const columnYStart = doc.y;
     const cursorY = columnYStart;
@@ -358,13 +366,15 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
 
     // Calculation Params
 
-    doc.x = (doc.page.width - pageletWidth * (flowSystemPagesNeeded + 1)) / 2 + mm2pt(MARGIN_SIZE_MM);
+    const baseDocx = (doc.page.width - pageletWidth * (flowSystemsPerPage + 1)) / 2 + mm2pt(MARGIN_SIZE_MM);
+    doc.x = baseDocx;
     let paramContentTop = doc.y;
     doc.lineGap(8);
     doc.fillColor("Black");
-    doc.fontSize(25);
+    doc.fontSize(25 * titleFontScale);
     doc.text("Design Parameters");
     doc.fontSize(10);
+    let extraPageCount = 0;
     if (calculationParams.psdMethod) {
         const ox = doc.x;
         const oy = doc.y;
@@ -489,13 +499,19 @@ async function drawCoverSheet(context: CanvasContext, doc: PDFKit.PDFDocument, o
             }
         }
         doc.x = ox;
-        doc.y += 10;
+        doc.y += 8;
 
-        if (i % 4 === 3) {
-            doc.x += pageletWidth;
-            doc.y = paramContentTop;
-        }
         i++;
+        if (i / COOVER_SHEET_FS_COLUMN >= COVER_SHEET_MAX_FS_COLUMNS * (extraPageCount + 1)) {
+            doc.addPage({ size: [pageWidth, pageHeight]});                        
+            i = 0;
+            doc.y = (doc.page.height - contentHeight) / 2;            
+            doc.x = baseDocx + pageletWidth;
+            extraPageCount++;
+        } else if (i % COOVER_SHEET_FS_COLUMN === 0) {
+            doc.x += pageletWidth;
+            doc.y = extraPageCount ? (doc.page.height - contentHeight) / 2 : paramContentTop ;
+        }
     }
 }
 
