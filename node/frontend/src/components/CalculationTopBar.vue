@@ -10,8 +10,14 @@
                     <tbody>
                         <tr>
                             <td>
-                                <v-icon name="check" scale="2" color="green"></v-icon>
-                            </td>
+                                <v-icon v-if="calculationsSuccess()" 
+                                        id="calculation-check-success" name="check" scale="2" color="green"></v-icon>
+                                <v-icon v-else
+                                        id="calculation-check-error" name="exclamation" scale="2" color="red"></v-icon>
+                                <b-tooltip target="calculation-check-error" triggers="hover">
+                                    Errors have occurred while performing calculations.
+                                </b-tooltip>
+                            <td>
                             <td>
                                 <label class="calculation-setting-string" role="button">&nbsp; {{calculationSettingsString}}</label>
                             </td>
@@ -40,7 +46,8 @@ import {Catalog} from "../../../common/src/api/catalog/types";
 })
 export default class CalculationTopBar extends Vue {
     mounted() {
-        if (!this.upToDate() && !this.$props.isCalculating) this.$props.onReCalculate();
+        if (!this.calculationsUpToDate() && !this.$props.isCalculating) 
+            this.$props.onReCalculate();
     }
 
     get document(): DocumentState {
@@ -89,8 +96,12 @@ export default class CalculationTopBar extends Vue {
         this.$router.push({ name: "settings/calculations" });
     }
 
-    upToDate() {
+    calculationsUpToDate() {
         return this.$store.getters["document/calculationsUpToDate"];
+    }
+
+    calculationsSuccess() {
+        return this.$store.getters["document/calculationsSuccess"];
     }
 
     reCalculate() {

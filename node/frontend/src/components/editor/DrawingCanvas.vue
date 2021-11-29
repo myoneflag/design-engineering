@@ -1627,6 +1627,7 @@
                 }
             } catch (e) {
                 this.drawError(e);
+                console.error(e);
             }
         }
 
@@ -1848,6 +1849,7 @@
                     // that's fine, just exit, because a newer frame wants to render.
                 } else {
                     this.drawError(e);
+                    console.error(e);                    
                 }
             } finally {
                 if (!forExport) {

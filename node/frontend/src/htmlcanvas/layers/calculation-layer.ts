@@ -9,12 +9,7 @@ import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import Flatten from "@flatten-js/core";
-import {
-    cooperativeYield,
-    matrixScale,
-    polygonOverlapsShapeApprox,
-    polygonsOverlap
-} from "../../../src/htmlcanvas/utils";
+import { cooperativeYield} from "../../../src/htmlcanvas/utils";
 import { isCalculated } from "../../../src/store/document/calculations";
 import * as TM from "transformation-matrix";
 import { levelIncludesRiser, tm2flatten } from "../../../src/htmlcanvas/lib/utils";
@@ -27,6 +22,12 @@ import { assertUnreachable } from "../../../../common/src/api/config";
 import LayoutAllocator from "../lib/layout-allocator";
 import stringify from "json-stable-stringify";
 import { getEffectiveFilter } from "../../lib/utils";
+import { updateCalculationReport } from "../../api/reports";
+import AbbreviatedCalculationReport, { PipeCalculationReportEntry } from "../../../../common/src/api/reports/calculation-report";
+import { CalculationType } from "../../../src/store/document/calculations/types";
+import PipeCalculation from "src/store/document/calculations/pipe-calculation";
+import RiserCalculation from "src/store/document/calculations/riser-calculation";
+import { Entity } from "typeorm";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -294,6 +295,8 @@ export default class CalculationLayer extends LayerImplementation {
         this.layout.clear();
 
         context.document.uiState.isCalculating = true;
+        context.document.uiState.lastCalculationSuccess = false;
+
         this.calculator = new CalculationEngine();
         this.calculator.calculate(
             context.globalStore,
@@ -303,13 +306,13 @@ export default class CalculationLayer extends LayerImplementation {
                 if (success) {
                     context.document.uiState.lastCalculationId = context.document.nextId;
                     context.document.uiState.lastCalculationUiSettings = {
-
                     };
+                    context.document.uiState.lastCalculationSuccess = true;
+
+                    const calculationReport = createCalculationReport(context);
+                    updateCalculationReport(context.document.documentId, calculationReport)    
                 }
                 context.document.uiState.isCalculating = false;
-                // this.resetDocument(context.document);
-
-                // Create new messages
 
                 done();
             },
@@ -317,4 +320,45 @@ export default class CalculationLayer extends LayerImplementation {
             context.$store.getters["customEntity/nodes"]
         );
     }
+}
+function createCalculationReport(context: CanvasContext) {
+    const calculationReport: AbbreviatedCalculationReport = { calculations: {} };    
+    const calculations = calculationReport.calculations;
+    for (const k of context.globalStore.getCalculations().keys()) {
+        const calc = context.globalStore.getCalculations().get(k);
+        if (k.length == 36 && calc) {
+            switch (calc.type) {
+                case CalculationType.PipeCalculation:
+                    const pipeCalc = calc as PipeCalculation;
+                    const pipeCalcEntry = {
+                        type: EntityType.PIPE,
+                        nominalSizeMM: pipeCalc.realNominalPipeDiameterMM,
+                        lengthM: pipeCalc.lengthM
+                    }
+                    calculations[k] = pipeCalcEntry;
+                    break;
+                case CalculationType.RiserCalculation:
+                    const riserCalc = calc as RiserCalculation;
+                    const pipesComponents: PipeCalculationReportEntry[] = [];
+                    const sortedLevels = Object.values(context.document.drawing.levels).sort((a, b) => a.floorHeightM - b.floorHeightM);
+                    for(let lvlIndex = 0; lvlIndex < sortedLevels.length-1; lvlIndex++ ) {
+                        const level = sortedLevels[lvlIndex];
+                        pipesComponents.push( {
+                            type: EntityType.PIPE,
+                            nominalSizeMM: riserCalc.heights[level.uid].sizeMM,
+                            lengthM: lvlIndex < sortedLevels.length ? sortedLevels[lvlIndex+1].floorHeightM - level.floorHeightM : 0,
+                        } );
+                    }
+                    const riserCalcEntry = {
+                        type: EntityType.RISER,
+                        expandedEntities: pipesComponents
+                    }
+                    calculations[k] = riserCalcEntry;
+                    break;
+                default:
+                    break;
+                }
+            }
+    }
+    return calculationReport;
 }

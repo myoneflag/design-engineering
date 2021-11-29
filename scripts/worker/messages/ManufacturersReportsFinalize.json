@@ -1,0 +1,6 @@
+{
+    "task": "ManufacturersReportsFinalize", 
+    "params": {
+        "reportId": "${REPORTID}"
+    }
+}

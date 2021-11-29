@@ -25,7 +25,7 @@ import {
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import PipeEntity from "../../../../common/src/api/document/entities/pipe-entity";
 import FlowSourceEntity from "../../../../common/src/api/document/entities/flow-source-entity";
-import FlowSourceCalculation from "../../store/document/calculations/flow-source-calculation";
+import FlowSourceCalculation, { emptyFlowSourceCalculation } from "../../store/document/calculations/flow-source-calculation";
 import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
@@ -363,17 +363,11 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
             throw new Error("Flow Source Calculations not found");
         }
 
-        // explicitly create this to help with refactors
-        const res: FlowSourceCalculation = {
-            costBreakdown: null,
-            cost: null,
-            expandedEntities: null,
-
-            flowRateLS: calc.flowRateLS,
-            pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
-            warnings: calc.warnings,
-            staticPressureKPA: calc.staticPressureKPA,
-        };
+        const res = emptyFlowSourceCalculation();
+        res.flowRateLS = calc.flowRateLS;
+        res.pressureKPA = calc.pressureKPA;
+        res.warnings = calc.warnings;
+        res.staticPressureKPA = calc.staticPressureKPA;
 
         const tower = this.getCalculationTower(context);
 

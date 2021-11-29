@@ -9,13 +9,13 @@ This outlines the procedure of invokign the worker servers to perform the docume
 3. Click `Send and receive message`
 4. Use the following message body:
 ```json
-{ "task": "documentUpgradeScan" }
+{ "task": "DocumentUpgradeScan" }
 ```
 Click Send message
 
 To trigger the document upgrade of only one document, use the following message:
 ```json
-{ "task": "documentUpgradeExecute", "parameters": { "docId": "DOCUMENTID" } }
+{ "task": "DocumentUpgradeExecute", "params": { "docId": "${DOCUMENTID}" } }
 ```
 
 5. Monitor upgrade process in Cloudwatch Log insights

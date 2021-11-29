@@ -14,7 +14,7 @@ import BigValveEntity, {
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 // tslint:disable-next-line:max-line-length
 import BigValveCalculation, {
-    EmptyBigValveCalculations
+    emptyBigValveCalculations
 } from "../../store/document/calculations/big-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
@@ -105,7 +105,7 @@ export class GlobalStore extends ObjectStore {
                     this.calculationStore.set(entity.uid, cloneSimple(emptyPipeCalculation()));
                     break;
                 case EntityType.BIG_VALVE:
-                    this.calculationStore.set(entity.uid, cloneSimple(EmptyBigValveCalculations(entity)));
+                    this.calculationStore.set(entity.uid, cloneSimple(emptyBigValveCalculations(entity)));
                     break;
                 case EntityType.FITTING:
                     this.calculationStore.set(entity.uid, cloneSimple(emptyFittingCalculation()));
@@ -153,6 +153,10 @@ export class GlobalStore extends ObjectStore {
 
     getCalculation(entity: CalculatableEntityConcrete): CalculationConcrete | undefined {
         return this.calculationStore.get(entity.uid);
+    }
+
+    getCalculations() {
+        return this.calculationStore;
     }
 
     setCalculation(uid: string, calculation: CalculationConcrete) {

@@ -4,7 +4,7 @@ import {
     CalculationLayout,
     FieldCategory
 } from "../../../../src/store/document/calculations/calculation-field";
-import {Calculation, PsdCalculation} from "../../../../src/store/document/calculations/types";
+import {Calculation, CalculationType, PsdCalculation} from "../../../../src/store/document/calculations/types";
 import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/document/entities/pipe-entity";
 import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
 import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
@@ -329,6 +329,7 @@ export function makePipeCalculationFields(
 
 export function emptyPipeCalculation(): PipeCalculation {
     return {
+        type: CalculationType.PipeCalculation,
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

@@ -5,6 +5,7 @@ import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} f
 import {Catalog} from "../../catalog/types";
 import {convertMeasurementSystem, convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
 import {isDrainage, StandardFlowSystemUids} from "../../config";
+import { getPipeManufacturer, getEntityNetwork, getEntitySystem } from "./utils";
 
 export default interface PipeEntity extends DrawableEntity {
     type: EntityType.PIPE;
@@ -48,7 +49,7 @@ export function makePipeFields(
         return c;
     });
     const flowSystemSettings = drawing.metadata.flowSystems.find((prop) => prop.uid === result.systemUid)!;
-    const manufacturer = drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === result.material)?.manufacturer || 'generic';
+    const manufacturer = getPipeManufacturer(drawing, result);
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize[manufacturer])
         .map((d) => {
             const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
@@ -167,7 +168,7 @@ export function makePipeFields(
             type: FieldType.Choice,
             params: {
                 choices: diameters,
-                initialValue: diameters[0].key
+                initialValue: diameters && diameters.length ? diameters[0].key : null
             },
             multiFieldId: "diameterMM",
         },
@@ -191,15 +192,17 @@ export function makePipeFields(
 export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: number, value: PipeEntity) {
     const result = cloneSimple(value);
 
-    // get system
-    const system = drawing.metadata.flowSystems.find((s) => s.uid === value.systemUid);
+    const system = getEntitySystem(drawing, result);
 
     if (system) {
-        if (result.maximumVelocityMS == null) {
-            result.maximumVelocityMS = Number(system.networks[result.network].velocityMS);
-        }
-        if (result.material == null) {
-            result.material = system.networks[result.network].material;
+        const network = getEntityNetwork(drawing, result);
+        if (network) {
+            if (result.maximumVelocityMS == null) {
+                result.maximumVelocityMS = Number(network.velocityMS);
+            }
+            if (result.material == null) {
+                result.material = network.material;
+            }
         }
         if (result.lengthM == null) {
             // We don't want entities to depend on objects. So their distance is to be provided instead, because

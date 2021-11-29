@@ -13,7 +13,6 @@ export enum BigValveType {
 }
 
 export interface TmvValve {
-    // ATM Machine. Sigh
     type: BigValveType.TMV;
     catalogId: "tmv";
     warmOutputUid: string;

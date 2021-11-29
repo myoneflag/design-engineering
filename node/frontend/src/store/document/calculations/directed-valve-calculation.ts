@@ -3,6 +3,7 @@ import DirectedValveEntity from "../../../../../common/src/api/document/entities
 import {
     addPressureCalculationFields,
     Calculation,
+    CalculationType,
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
@@ -188,6 +189,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
 export function emptyDirectedValveCalculation(): DirectedValveCalculation {
     return {
+        type: CalculationType.DirectedValveCalculation,
         costBreakdown: null,
         cost: null,
         expandedEntities: null,

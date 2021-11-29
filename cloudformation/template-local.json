@@ -40,6 +40,76 @@
                 ]
               }            
           }
+        },
+        "DataBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-data-${EnvName}" },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-data-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+        "ReportsBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-reports-${EnvName}" },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-reports-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+        "InstancePolicy": {
+          "Type": "AWS::IAM::Policy",
+          "Properties": {
+            "PolicyName" : { "Fn::Sub": "h2x-application-policy-${EnvName}" },
+             "PolicyDocument": {
+                "Version" : "2012-10-17",
+                "Statement": [ 
+                  {
+                    "Sid": "S3PdfBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "PdfBucket", "Arn" ] }, "/*" ] ] }
+                  },
+                  {
+                    "Sid": "S3PdfRenderBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "PdfRendersBucket", "Arn" ] }, "/*" ] ] }
+                  },
+                  {
+                    "Sid": "S3DataBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": [ { "Fn::GetAtt": [ "DataBucket", "Arn" ] }, { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "DataBucket", "Arn" ] }, "/*" ] ] } ]
+                  },
+                  {
+                    "Sid": "S3ReportsBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": [ { "Fn::GetAtt": [ "ReportsBucket", "Arn" ] }, { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "ReportsBucket", "Arn" ] }, "/*" ] ] } ]
+                  },
+                  {
+                    "Sid": "SendSesEmail",
+                    "Effect": "Allow",
+                    "Action": "ses:SendRawEmail",
+                    "Resource": "*"
+                  }
+                ]
+             },
+             "Groups": [ "DeveloperLocal" ]
+          }
         }
     },
    "Outputs": {

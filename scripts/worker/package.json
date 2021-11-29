@@ -1,0 +1,19 @@
+{
+  "name": "worker-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "worker:reports:new": "export REPORTID=$(date +'%Y-%m-%d-%H:%M') && echo $REPORTID > .lastreportid",
+    "worker:reports:start": "npm run worker:reports:new && npm run worker:reports:doc:scan",
+    "worker:reports:doc:scan": "export REPORTID=$(cat .lastreportid) && aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/DocumentsReportsScan.json)\" --region local --endpoint-url http://localhost:9324/queue/h2x-worker-queue",
+    "worker:reports:doc": "export REPORTID=$(cat .lastreportid) && aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/DocumentsReportsExecute.json)\" --region local --endpoint-url http://localhost:9324/queue/h2x-worker-queue",
+    "worker:reports:manufacturer:scan": "export REPORTID=$(cat .lastreportid) && aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/ManufacturersReportsScan.json)\" --region local --endpoint-url http://localhost:9324/queue/h2x-worker-queue",
+    "worker:reports:manufacturer": "export REPORTID=$(cat .lastreportid) && aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/ManufacturersReportsExecute.json)\" --region local --endpoint-url http://localhost:9324/queue/h2x-worker-queue",
+    "worker:reports:manufacturer:finalize": "export REPORTID=$(cat .lastreportid) && aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/ManufacturersReportsFinalize.json)\" --region local --endpoint-url http://localhost:9324/queue/h2x-worker-queue",
+    "worker:upgrade:scan": "aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/DocumentUpgradeScan.json)\"",    
+    "worker:upgrade:execute": "aws sqs send-message --queue-url http://localhost:9324/queue/h2x-worker-queue --message-body \"$(envsubst < messages/DocumentUpgradeExecute.json)\""
+  },
+  "author": "",
+  "license": "ISC"
+}

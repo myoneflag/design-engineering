@@ -1,7 +1,7 @@
 import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
-    Calculation, PressureCalculation,
+    Calculation, CalculationType, PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
 import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
@@ -63,6 +63,7 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, doc: D
 
 export function emptySystemNodeCalculation(): SystemNodeCalculation {
     return {
+        type: CalculationType.SystemNodeCalculation,
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

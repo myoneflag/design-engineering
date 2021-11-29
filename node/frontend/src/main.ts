@@ -3,7 +3,6 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store/store";
 import "./registerServiceWorker";
-import StackTrace from "stacktrace-js";
 
 import VueYouTubeEmbed from "vue-youtube-embed";
 import filters from "./filters";
@@ -19,7 +18,6 @@ import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue'
 import { InputGroupPlugin } from 'bootstrap-vue';
 // @ts-ignore
 import VueResize from "vue-resize";
-import { submitErrorReport, updateErrorReport } from "./api/error-report";
 Vue.config.productionTip = false;
 Vue.use(VueDragDrop);
 
@@ -33,79 +31,11 @@ Vue.use(VueResize);
 Vue.use(VueYouTubeEmbed);
 Vue.component("v-icon", VueAwesome);
 
-const sentErrors = new Set<string>();
+import { reportError } from "./api/error-report";
 
-async function reportError(message: string, error: Error) {
-    if (sentErrors.has(message.toString())) {
-        return;
-    }
-    sentErrors.add(message.toString());
-    submitErrorReport(
-        store.getters.appVersion,
-        message ? message.toString() : "[No Message]",
-        error.name,
-        error.stack || "No Stack",
-        window.location.href
-    ).then((res) => {
-        if (res.success) {
-            StackTrace.fromError(error).then((trace) => {
-                updateErrorReport(
-                    res.data.id,
-                    undefined,
-                    trace
-                        .map(
-                            (frame) =>
-                                frame.functionName +
-                                " " +
-                                frame.fileName +
-                                ":" +
-                                frame.columnNumber +
-                                ":" +
-                                frame.lineNumber
-                        )
-                        .join("\n")
-                );
-            });
-            const msgstr =
-                "An error occurred: " +
-                message.toString() +
-                ". Our developers have been notified and " +
-                "will find a fix as soon as they can. You should perhaps refresh the page - if you don't, the " +
-                "document may become unreliable. If the issue persists and is preventing you from working, " +
-                "please contact our team and we will assist immediately. Thank you for your patience.";
-
-            if (vue) {
-                vue.$bvToast.toast(
-                    "Our developers have been notified and will find a fix as soon as they can. \n" +
-                        "If you experience problems with the page from now on, please refresh.\n" +
-                        "Thank you for your patience!",
-                    {
-                        title: "An exception occurred: " + message.toString(),
-                        variant: "warning"
-                    }
-                );
-            } else {
-                window.alert(msgstr);
-            }
-        } else {
-            const msgstr =
-                "An error occurred, but we couldn't even report the error! D'oh! If this is not a " +
-                "network issue, please contact the developers. Message: " +
-                message.toString() +
-                " and why we " +
-                "couldn't report it: " +
-                res.message.toString();
-            if (vue) {
-                vue.$bvModal.msgBoxOk(msgstr);
-            } else {
-                window.alert(msgstr);
-            }
-        }
-    });
-}
 
 Vue.config.errorHandler = async (err, vm, msg) => {
-    await reportError("From Vue: " + msg, err);
+    await reportError(msg.toString(), err);
     throw err;
 };
 
@@ -121,3 +51,8 @@ const vue = new Vue({
     store,
     render: (h) => h(App)
 }).$mount("#app");
+
+// @ts-ignore
+document.vue = vue;
+// @ts-ignore
+document.store = store;

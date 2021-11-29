@@ -5,15 +5,7 @@ import {AuthRequired} from "../helpers/withAuth";
 import {AccessType, withDocument} from "../helpers/withResources";
 import { ShareDocument } from '../../../common/src/models/ShareDocument';
 import { Document } from '../../../common/src/models/Document';
-import { SupportedLocales } from "../../../common/src/api/locale";
-import { usCatalog } from "../../../common/src/api/catalog/initial-catalog/us-catalog";
-import { ukCatalog } from "../../../common/src/api/catalog/initial-catalog/uk-catalog";
-
-const catalogsByLocale = {
-    [SupportedLocales.AU]: auCatalog,
-    [SupportedLocales.UK]: ukCatalog,
-    [SupportedLocales.US]: usCatalog
-};
+import { CatalogsByLocale } from "../../../common/src/api/catalog/manager";
 
 export class CatalogController {
     @AuthRequired()
@@ -21,14 +13,14 @@ export class CatalogController {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             return res.status(200).send({
                 success: true,
-                data: catalogsByLocale[doc.locale],
+                data: CatalogsByLocale[doc.locale],
             });
         });
     }
 
     public async getCatalogShare(req: Request, res: Response) {
         const token = req.params.id;
-        const sd = await ShareDocument.findOne({token: token});
+        const sd = await ShareDocument.findOne({token});
 
         if (!sd) {
             return res.status(401).send({
@@ -37,12 +29,12 @@ export class CatalogController {
             });
         }
 
-        const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}})
-        
+        const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}} )
+
         if (doc) {
             return res.status(200).send({
                 success: true,
-                data: catalogsByLocale[doc.locale],
+                data: CatalogsByLocale[doc.locale],
             });
         } else {
             return res.status(401).send({

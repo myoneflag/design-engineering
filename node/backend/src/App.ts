@@ -64,8 +64,8 @@ class App {
     private setMiddlewares(): void {
         this.express.use(cors());
         this.express.use(morgan("dev"));
-        this.express.use(bodyParser.json());
-        this.express.use(bodyParser.urlencoded({ extended: false }));
+        this.express.use(bodyParser.json({limit: '20mb'}));
+        this.express.use(bodyParser.urlencoded({ extended: false, limit: '20Mb' }));
         this.express.use(helmet());
         this.express.use(cookieParser());
     }

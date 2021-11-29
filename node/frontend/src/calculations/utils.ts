@@ -731,11 +731,6 @@ export function addCosts(a: Cost | null, b: Cost | null): Cost {
     return { value, exact };
 }
 
-export function roundNumber(value: number, decimalPlaces: number) {
-    const factor = Math.pow(10, decimalPlaces)
-    return Math.round((value + Number.EPSILON) * factor) / factor
-}
-
 export function resolveEN1205622000DrainageUnits(document: DocumentState, catalog: Catalog, drainageUnits: number) {
     const frequencyFactor = catalog.en12056FrequencyFactor[document.drawing.metadata.calculationParams.en12056FrequencyFactor];
 

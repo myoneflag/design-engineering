@@ -9,9 +9,10 @@
   "scripts": {
     "clean": "rm -r dist/**",
     "prep": ". ../config/build.env && run-s prep-dist prep-template prep-params prep-artifacts upload-artifacts",
-    "validate": ". ../config/build.env && run-s prep-template prep-params validate-template",
+    "validate": ". ../config/build.env && run-s prep-dist prep-template prep-params validate-template",
     "create": ". ../config/build.env && run-s prep create-stack wait-create-stack describe-stack",
     "update": ". ../config/build.env && run-s prep update-stack wait-update-stack describe-stack",
+    "update-local": "env=local && . ../config/build.env && aws cloudformation update-stack --stack-name ${CFStackName} --template-body file://template-local.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion} && npm run wait-update-stack",
     "delete": ". ../config/build.env && run-s delete-stack wait-delete-stack",
     "prep-dist": "mkdir -p ${WEB_DIST} && mkdir -p ${WORKER_DIST}",
     "prep-template": "jsmin template.json > dist/${GIT_COMMIT}/template.cfn.json.1 && export DATESTAMP=`date +\"%m%d%y%H%M%S\"` && sed \"s/_DATESTAMP_/${DATESTAMP}/g\" dist/${GIT_COMMIT}/template.cfn.json.1 > dist/${GIT_COMMIT}/template.cfn.json",

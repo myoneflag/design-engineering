@@ -6,15 +6,13 @@ import {
     ConnectableEntity,
     Coord,
     DrawingState,
-    Level,
-    NetworkType,
-    SelectedMaterialManufacturer
-} from "../drawing";
+    NetworkType} from "../drawing";
 import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
 import {isDrainage, LEVEL_HEIGHT_DIFF_M} from "../../config";
 import {Catalog} from "../../catalog/types";
 import {getDrainageMaterials, getWaterDrainageMaterials} from "./pipe-entity";
 import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
+import { getPipeManufacturer } from "./utils";
 
 export default interface RiserEntity extends ConnectableEntity {
     type: EntityType.RISER;
@@ -43,7 +41,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         };
         return c;
     });
-    const manufacturer = drawing.metadata.catalog.pipes.find((pipe: SelectedMaterialManufacturer) => pipe.uid === result.material)?.manufacturer || 'generic';
+    const manufacturer = getPipeManufacturer(drawing, result);
     const diameters = Object.keys(catalog.pipes[result.material!].pipesBySize[manufacturer]).map((d) => {
         const val = convertPipeDiameterFromMetric(drawing.metadata.units, parseCatalogNumberExact(d));
         const c: Choice = {

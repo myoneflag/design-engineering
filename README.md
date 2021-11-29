@@ -20,6 +20,8 @@ First, check out the [documentation](./docs/README.md).
   - [AWS credentials](#aws-credentials)
     - [Configure local environment with AWS](#configure-local-environment-with-aws)
   - [Start the app](#start-the-app)
+  - [Worker (Optional)](#worker-optional)
+    - [Worker commands](#worker-commands)
   - [VSCode configuration](#vscode-configuration)
     - [Useful plugins](#useful-plugins)
   - [Documentation](#documentation-1)
@@ -161,7 +163,7 @@ apt-get install imagemagick ghostscript
    npm run dev:local
    ```
 
-**Start local servers**  
+### Start local servers
 All commands to be executed on the host machine.
 
 1. Ensure you use node 12  
@@ -182,12 +184,7 @@ All commands to be executed on the host machine.
    npm install
    npm run dev
    ```
-4. Run worker *(OPTIONAL, in a new terminal)*
-   ```bash
-   cd node/backend
-   npm run dev-worker
-   ```
-5. Run frontend
+4. Run frontend
    ```bash
    cd node/frontend
    npm install
@@ -239,13 +236,22 @@ And adjust the value of the AWS_PROFILE to one created above.
 
 ```bash
 AWS_PROFILE=YOURNAME
+
 # for email
 SES_EMAIL_REGION=us-west-1
 # for background uploads
 PDF_BUCKET=h2x-s3-pdf-local
 PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
+DATA_BUCKET=h2x-s3-data-local
+REPORTS_BUCKET=h2x-s3-reports-local
 # for Zapier
 WEBHOOK_ZAPIER_CREATE_HUBSPOT_CONTACT=https://hooks.zapier.com/hooks/catch/10073114/b69cx4e
+
+# Worker SQS queue
+AWS_REGION=us-west-1
+SQS_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
+DEBUG_SQS_ENDPOINT_URL=http://sqs:9324
+DEBUG_SQS_SSL_ENABLED=false
 ```
 
 Then run
@@ -267,6 +273,55 @@ npm run dev
 * Then, log out and create a new user.  
   Sign up with an email like `test+anything@h2xtesting.com`. This is our wildcard test email.  
 * Ask you colleagues for the `test@h2xtesting.com` login credentials for future testing.
+
+## Worker (Optional)
+
+Run worker 
+```bash
+cd node/backend
+npm run dev-worker
+```
+
+The worker server needs additionally 2 more docker containers running: `sqs` and `sqsd`.  
+When running `dev` or `minimal`, these two containers are started automatically.  
+When running `local`, they need to be configured and started manually:  
+
+1. Add host entry for sqs: 
+In `/etc/hosts` file
+```
+127.0.0.1   sqs
+```
+
+2. Adjust URLs in `docker-compose.yaml`
+```
+  sqsd:
+    ...
+    environment:
+      # for local running worker
+      - SQSD_WORKER_HTTP_URL=http://host.docker.internal:8013/workermessage
+      # for dev or minimal running worker
+      # - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
+      ...
+```
+
+3. Start containers:
+```bash
+cd docker
+npm run start --service=sqs
+npm run start --service=sqsd
+```
+
+### Worker commands
+
+On AWS, the Worker is being invoked by the SQSD Elastic Beanstalk daemon When messages are received in the SQS queue.  
+Locally we can invoke the worker by placing messages in the local SQS instance.  
+
+The worker is a Node.JS express server,with a separate router and acepting API calls on the `/workermessages` endpoint.
+Code: 
+* entry point: `node/backend/src/index-worker.ts`
+* handler: `node/backend/src/controllers/worker.ts`
+
+To issue worker commands locally, use the commands described in the `scripts/worker` [readme](scripts/worker/README.md).
 
 ## VSCode configuration
 

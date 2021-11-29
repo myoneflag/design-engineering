@@ -29,6 +29,7 @@ import {
     VelocityMeasurementSystem,
     VolumeMeasurementSystem
 } from "../../lib/measurements";
+import { ReportingStatus } from "../../reporting/ReportingFilter";
 
 export interface Coord {
     x: number;
@@ -147,6 +148,7 @@ export interface GeneralInfo {
     revision: number;
     client: string;
     description: string;
+    reportingStatus?: ReportingStatus;
 }
 
 export interface Color {

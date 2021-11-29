@@ -2,7 +2,7 @@ import { CalculationField, FieldCategory} from "../../../../src/store/document/c
 import BigValveEntity, {
     BigValveType
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { Calculation } from "../../../../src/store/document/calculations/types";
+import { Calculation, CalculationType } from "../../../../src/store/document/calculations/types";
 import { PsdCountEntry } from "../../../calculations/utils";
 import { DocumentState } from "../types";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../../../common/src/api/config";
@@ -109,8 +109,9 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
     return result;
 }
 
-export function EmptyBigValveCalculations(entity: BigValveEntity): BigValveCalculation {
+export function emptyBigValveCalculations(entity: BigValveEntity): BigValveCalculation {
     const result: BigValveCalculation = {
+        type: CalculationType.BigValveCalculation,
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

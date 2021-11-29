@@ -1,8 +1,8 @@
 import { APIResult } from "../../../common/src/api/document/types";
-import { Document } from "../../../common/src/models/Document";
 import axios from "axios";
 import { ErrorReport, ErrorStatus } from "../../../common/src/models/Error";
 import { CreateErrorRequest } from "../../../backend/src/models/Error";
+import StackTrace from "stacktrace-js";
 
 export async function getErrorReports(
     statuses?: ErrorStatus[],
@@ -77,4 +77,80 @@ export async function updateErrorReport(
             return { success: false, message: e.message };
         }
     }
+}
+
+const sentErrors = new Set<string>();
+
+export async function reportError(message: string, error: Error) {
+    // @ts-ignore
+    const vue = document.vue;
+    // @ts-ignore
+    const store = document.store;
+
+    if (sentErrors.has(message.toString())) {
+        return;
+    }
+    sentErrors.add(message.toString());
+    submitErrorReport(
+        store.getters.appVersion,
+        message ? message.toString() : "[No Message]",
+        error.name,
+        error.stack || "No Stack",
+        window.location.href
+    ).then((res) => {
+        if (res.success) {
+            StackTrace.fromError(error).then((trace) => {
+                updateErrorReport(
+                    res.data.id,
+                    undefined,
+                    trace
+                        .map(
+                            (frame) =>
+                                frame.functionName +
+                                " " +
+                                frame.fileName +
+                                ":" +
+                                frame.columnNumber +
+                                ":" +
+                                frame.lineNumber
+                        )
+                        .join("\n")
+                );
+            });
+            const msgstr =
+                "An error occurred: " +
+                message.toString() +
+                ". Our developers have been notified and " +
+                "will find a fix as soon as they can. You should perhaps refresh the page - if you don't, the " +
+                "document may become unreliable. If the issue persists and is preventing you from working, " +
+                "please contact our team and we will assist immediately. Thank you for your patience.";
+
+            if (vue) {
+                vue.$bvToast.toast(
+                    "Our developers have been notified and will find a fix as soon as they can. \n" +
+                        "If you experience problems with the page from now on, please refresh.\n" +
+                        "Thank you for your patience!",
+                    {
+                        title: "An exception occurred: " + message.toString(),
+                        variant: "warning"
+                    }
+                );
+            } else {
+                window.alert(msgstr);
+            }
+        } else {
+            const msgstr =
+                "An error occurred, but we couldn't even report the error! D'oh! If this is not a " +
+                "network issue, please contact the developers. Message: " +
+                message.toString() +
+                " and why we " +
+                "couldn't report it: " +
+                res.message.toString();
+            if (vue) {
+                vue.$bvModal.msgBoxOk(msgstr);
+            } else {
+                window.alert(msgstr);
+            }
+        }
+    });
 }

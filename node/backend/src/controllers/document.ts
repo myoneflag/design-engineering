@@ -1,11 +1,9 @@
 import { Brackets, Entity, IsNull, SaveOptions } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
-import { DocumentClientMessage, DocumentWSMessageType } from "../../../common/src/api/document/types";
-import { OPERATION_NAMES, OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
-import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
-import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
+import { OPERATION_NAMES } from "../../../common/src/api/document/operation-transforms";
+import { initialDrawing } from "../../../common/src/api/document/drawing";
 import { diffState } from "../../../common/src/api/document/state-differ";
-import { assertUnreachable, CURRENT_VERSION } from "../../../common/src/api/config";
+import { CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { Operation } from "../../../common/src/models/Operation";
 import { Session } from "../../../common/src/models/Session";
@@ -17,8 +15,8 @@ import { AccessType, withDocument, withOrganization } from "../helpers/withResou
 import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
-import {compressDocumentIfRequired} from "../services/compressDocument";
 import { toSupportedLocale } from "../../../common/src/api/locale";
+import { handleWebSocket } from "./document/handlers";
 import { EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION, EXAMPLE_META } from "../../../common/src/api/constants/example-drawing";
 import { DocumentUpgrader } from "../services/DocumentUpgrader";
 import { Organization } from "../../../common/src/models/Organization";
@@ -115,7 +113,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: null
+                data: null,
             });
         });
     }
@@ -127,7 +125,7 @@ export class DocumentController {
             if (doc.state !== DocumentStatus.DELETED) {
                 res.status(400).send({
                     success: false,
-                    message: "can't restore a document that isn't deleted"
+                    message: "can't restore a document that isn't deleted",
                 });
             }
             doc.state = DocumentStatus.ACTIVE;
@@ -135,7 +133,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: null
+                data: null,
             });
         });
     }
@@ -144,7 +142,7 @@ export class DocumentController {
     @AuthRequired()
     public async update(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.UPDATE, async (doc) => {
-            const { organization, metadata,tags } = req.body;
+            const { organization, metadata, tags } = req.body;
 
             if (organization !== undefined) {
                 let called = false;
@@ -160,9 +158,9 @@ export class DocumentController {
             if (metadata !== undefined) {
                 doc.metadata = metadata;
             }
-            if (tags!==undefined){
+            if (tags !== undefined) {
                 doc.tags = tags;
-            } 
+            }
 
             await doc.save();
             res.status(200).send({
@@ -186,19 +184,19 @@ export class DocumentController {
             if (org == null) {
                 results = [];
             } else {
-                let where = [ 
-                    { organization: org.id, state: DocumentStatus.ACTIVE }
+                const where = [
+                    { organization: org.id, state: DocumentStatus.ACTIVE },
                 ];
                 if (session.user.accessLevel <= AccessLevel.MANAGER) {
-                    where.push({ organization: org.id, state: DocumentStatus.DELETED })
+                    where.push({ organization: org.id, state: DocumentStatus.DELETED });
                 }
 
-                results = await Document.find( { 
+                results = await Document.find( {
                     where,
                     order: {
-                        createdOn: "DESC"
-                    }
-                })
+                        createdOn: "DESC",
+                    },
+                });
             }
         } else {
             results = await Document.find({ order: { createdOn: "DESC" } });
@@ -206,7 +204,7 @@ export class DocumentController {
 
         res.status(200).send({
             success: true,
-            data: results
+            data: results,
         });
     }
 
@@ -216,11 +214,10 @@ export class DocumentController {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             res.status(200).send({
                 success: true,
-                data: doc
+                data: doc,
             });
         });
     }
-
 
     @ApiHandleError()
     public async findOneShared(req: Request, res: Response, next: NextFunction, session: Session) {
@@ -230,12 +227,12 @@ export class DocumentController {
         if (!doc) {
             return res.status(404).send({
                 success: false,
-                message: "Shared document link is invalid"
+                message: "Shared document link is invalid",
             });
         }
         res.status(200).send({
             success: true,
-            data: doc
+            data: doc,
         });
     }
 
@@ -254,7 +251,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: ops
+                data: ops,
             });
         });
     }
@@ -310,7 +307,6 @@ export class DocumentController {
                 const drawingWithTitle = initialDrawing(doc.locale);
                 drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
 
-
                 const titleChangeDiff = diffState(drawing, drawingWithTitle, undefined);
 
                 if (titleChangeDiff.length) {
@@ -320,7 +316,6 @@ export class DocumentController {
                     titleChangeOp.blame = session.user;
                     titleChangeOp.dateTime = new Date();
                     titleChangeOp.operation = titleChangeDiff[0];
-
 
                     const commitOp = Operation.create();
                     commitOp.orderIndex = lastOrderIndex + 2;
@@ -367,201 +362,12 @@ const router = Router();
 const controller = new DocumentController();
 
 router.ws("/:id/websocket", (ws, req) => {
+    const docId = Number(req.params.id);
     withAuth(
         req,
         async (session) => {
-            withDocument(Number(req.params.id), null, session, AccessType.UPDATE, async (doc) => {
-                // sanity checks.
-                // await compressDocumentIfRequired(doc);
-                switch (doc.state) {
-                    case DocumentStatus.ACTIVE:
-                        if (doc.version !== CURRENT_VERSION) {
-                            const msg: DocumentClientMessage = [{
-                                type: DocumentWSMessageType.DOCUMENT_ERROR,
-                                message: 'Cannot open this document - it is out of date.',
-                            }];
-                            ws.send(JSON.stringify(msg));
-                            return;
-                        }
-
-                        // that's ok
-                        break;
-                    case DocumentStatus.DELETED: {
-                        const msg: DocumentClientMessage = [{
-                            type: DocumentWSMessageType.DOCUMENT_ERROR,
-                            message: 'Cannot open this document - it is deleted.',
-                        }];
-                        ws.send(JSON.stringify(msg));
-                        return ;
-                    }
-                    case DocumentStatus.PENDING: {
-                        const msg: DocumentClientMessage = [{
-                            type: DocumentWSMessageType.DOCUMENT_ERROR,
-                            message: 'Cannot open this document - it is pending. Try again later',
-                        }];
-                        ws.send(JSON.stringify(msg));
-                        return;
-                    }
-                    default:
-                        assertUnreachable(doc.state);
-                }
-
-                const cdoc = new ConcurrentDocument(
-                    Number(req.params.id),
-                    async (nextOpId) => {
-                        operations = await Operation
-                            .createQueryBuilder("operation")
-                            .leftJoinAndSelect("operation.blame", "user")
-                            .where("operation.document = :document", { document: Number(req.params.id) })
-                            .andWhere('operation.orderIndex > :minOrderIndex', {minOrderIndex: lastOpId})
-                            .orderBy("operation.orderIndex", "ASC")
-                            .getMany();
-
-                        for (const op of operations) {
-                            toSend.push({
-                                type: DocumentWSMessageType.OPERATION,
-                                operation: op.operation,
-                            });
-                            lastOpId = op.orderIndex;
-                        }
-                        await sendQueueToWs();
-                    },
-                    async () => {
-                        toSend.push({
-                            type: DocumentWSMessageType.DOCUMENT_DELETED,
-                        });
-                        await sendQueueToWs();
-                    });
-
-
-                const pingPid = setInterval(function timeout() {
-                    try {
-                        ws.ping("heartbeat");
-                    } catch (e) {
-                        closeHandler();
-                    }
-                }, 10000);
-
-                const closeHandler = () => {
-                    clearInterval(pingPid);
-                    cdoc.close();
-                };
-
-                ws.on("close", closeHandler);
-
-                ws.on("message", (message) => {
-                    // use a message queue to process each message serially.
-                    messageQueue.push(message as string);
-                    onMessageQueuePush();
-                });
-
-                const messageQueue: string[] = [];
-                let messageQueueWorking = false;
-                async function onMessageQueuePush() {
-                    if (!messageQueueWorking) {
-                        messageQueueWorking = true;
-
-                        while (messageQueue.length) {
-                            const message = messageQueue.splice(0, 1)[0];
-
-                            const ops: OperationTransformConcrete[] = JSON.parse(message as string);
-                            if (ops.length) {
-
-                                let nextOpId = 0;
-                                await cdoc.withDocumentLock(async (tx, docVal) => {
-                                    nextOpId = docVal.nextOperationIndex;
-                                    const now = new Date();
-                                    for (const op of ops) {
-                                        op.id = nextOpId;
-                                        const toStore = Operation.create();
-                                        toStore.document = Promise.resolve(docVal);
-                                        toStore.dateTime = now;
-                                        toStore.blame = session.user;
-
-                                        toStore.operation = op;
-                                        toStore.orderIndex = op.id;
-                                        await tx.save(toStore);
-                                        nextOpId += 1;
-                                        docVal.nextOperationIndex = nextOpId;
-                                    }
-
-                                    docVal.lastModifiedBy = session.user;
-                                    docVal.lastModifiedOn = now;
-                                    await tx.save(docVal);
-                                });
-
-                                await cdoc.notifyUpdate(nextOpId);
-                            }
-                        }
-
-                        messageQueueWorking = false;
-                    }
-                }
-
-
-                let operations: Operation[] = [];
-                let drawing: DrawingState = initialDrawing(doc.locale);
-                let lastOpId = -1;
-                // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
-                // initial document state.
-                await cdoc.withDocumentLock(async (tx, docVal) => {
-
-                    operations = await tx.getRepository(Operation)
-                        .createQueryBuilder("operation")
-                        .leftJoinAndSelect("operation.blame", "user")
-                        .where("operation.document = :document", { document: Number(req.params.id) })
-                        .orderBy("operation.orderIndex", "ASC")
-                        .getMany();
-
-
-                    // form document to get snapshot
-                    drawing = initialDrawing(doc.locale);
-                    for (const op of operations) {
-                        if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
-                            applyDiffNative(drawing, op.operation.diff);
-                        }
-                        lastOpId = op.orderIndex;
-                    }
-
-                    docVal.metadata = drawing.metadata.generalInfo;
-                    await tx.save(docVal);
-                });
-
-
-                const wholeThing = diffState(initialDrawing, drawing, undefined);
-
-                const toSend: DocumentClientMessage = [];
-
-                if (operations.length) {
-                    if (wholeThing.length) {
-                        wholeThing[0].id = lastOpId - 1;
-                        toSend.push({ type: DocumentWSMessageType.OPERATION, operation: wholeThing[0] });
-                    }
-                    toSend.push({
-                        type: DocumentWSMessageType.OPERATION,
-                        operation: { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOpId },
-                    });
-                }
-
-                toSend.push({
-                    type: DocumentWSMessageType.DOCUMENT_LOADED,
-                });
-
-                let working = false;
-                async function sendQueueToWs() {
-                    if (!working) {
-                        working = true;
-                        while (toSend.length) {
-                            const sendNow = toSend.splice(0);
-                            await ws.send(JSON.stringify(sendNow));
-                        }
-                        working = false;
-                    }
-                }
-
-                await sendQueueToWs();
-
-            });
+            withDocument(docId, null, session, AccessType.UPDATE,
+                async (doc) => handleWebSocket(doc, ws, false, session));
         },
         (msg) => {
             ws.send("You are not authorised");
@@ -572,154 +378,19 @@ router.ws("/:id/websocket", (ws, req) => {
 
 router.ws("/share/:id/websocket", async (ws, req) => {
     const token = req.params.id;
-    const sd = await ShareDocument.findOne({token: token});
+    const sd = await ShareDocument.findOne({token});
 
     if (!sd) {
         ws.send('Invalid link!');
         return;
     }
-    
+
     const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}});
     if (!doc) {
         ws.send('Document has been deleted!');
         return;
     }
-
-    // sanity checks.
-    switch (doc.state) {
-        case DocumentStatus.ACTIVE:
-            if (doc.version !== CURRENT_VERSION) {
-                const msg: DocumentClientMessage = [{
-                    type: DocumentWSMessageType.DOCUMENT_ERROR,
-                    message: 'Cannot open this document - it is out of date.',
-                }];
-                ws.send(JSON.stringify(msg));
-                return;
-            }
-
-            // that's ok
-            break;
-        case DocumentStatus.DELETED: {
-            const msg: DocumentClientMessage = [{
-                type: DocumentWSMessageType.DOCUMENT_ERROR,
-                message: 'Cannot open this document - it is deleted.',
-            }];
-            ws.send(JSON.stringify(msg));
-            return ;
-        }
-        case DocumentStatus.PENDING: {
-            const msg: DocumentClientMessage = [{
-                type: DocumentWSMessageType.DOCUMENT_ERROR,
-                message: 'Cannot open this document - it is pending. Try again later',
-            }];
-            ws.send(JSON.stringify(msg));
-            return;
-        }
-        default:
-            assertUnreachable(doc.state);
-    }
-
-    const cdoc = new ConcurrentDocument(
-        doc.id,
-        async () => {
-            operations = await Operation
-                .createQueryBuilder("operation")
-                .leftJoinAndSelect("operation.blame", "user")
-                .where("operation.document = :document", { document: doc.id })
-                .andWhere('operation.orderIndex > :minOrderIndex', {minOrderIndex: lastOpId})
-                .orderBy("operation.orderIndex", "ASC")
-                .getMany();
-
-            for (const op of operations) {
-                toSend.push({
-                    type: DocumentWSMessageType.OPERATION,
-                    operation: op.operation,
-                });
-                lastOpId = op.orderIndex;
-            }
-            await sendQueueToWs();
-        },
-        async () => {
-            toSend.push({
-                type: DocumentWSMessageType.DOCUMENT_DELETED,
-            });
-            await sendQueueToWs();
-        }
-    );
-
-    const pingPid = setInterval(function timeout() {
-        try {
-            ws.ping("heartbeat");
-        } catch (e) {
-            closeHandler();
-        }
-    }, 10000);
-
-    const closeHandler = () => {
-        clearInterval(pingPid);
-        cdoc.close();
-    };
-
-    ws.on("close", closeHandler);
-    
-    let operations: Operation[] = [];
-    let drawing: DrawingState = initialDrawing(doc.locale);
-    let lastOpId = -1;
-    // Now that we have hooked update handlers, Load document. Reconstruct the state, and send the
-    // initial document state.
-    await cdoc.withDocumentLock(async (tx, docVal) => {
-        operations = await tx.getRepository(Operation)
-            .createQueryBuilder("operation")
-            .leftJoinAndSelect("operation.blame", "user")
-            .where("operation.document = :document", { document: doc.id })
-            .orderBy("operation.orderIndex", "ASC")
-            .getMany();
-
-        // form document to get snapshot
-        drawing = initialDrawing(doc.locale);
-        for (const op of operations) {
-            if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
-                applyDiffNative(drawing, op.operation.diff);
-            }
-            lastOpId = op.orderIndex;
-        }
-
-        docVal.metadata = drawing.metadata.generalInfo;
-        await tx.save(docVal);
-    });
-
-    const wholeThing = diffState(initialDrawing, drawing, undefined);
-
-    const toSend: DocumentClientMessage = [];
-
-    if (operations.length) {
-        if (wholeThing.length) {
-            wholeThing[0].id = lastOpId - 1;
-            toSend.push({ type: DocumentWSMessageType.OPERATION, operation: wholeThing[0] });
-        }
-        toSend.push({
-            type: DocumentWSMessageType.OPERATION,
-            operation: { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOpId },
-        });
-    }
-
-    toSend.push({
-        type: DocumentWSMessageType.DOCUMENT_LOADED,
-    });
-
-    let working = false;
-    async function sendQueueToWs() {
-        if (!working) {
-            working = true;
-            while (toSend.length) {
-                const sendNow = toSend.splice(0);
-                await ws.send(JSON.stringify(sendNow));
-            }
-            working = false;
-        }
-    }
-
-    await sendQueueToWs();
+    handleWebSocket(doc, ws, true, null);
 });
 
 router.post("/:id/reset", controller.reset.bind(controller));

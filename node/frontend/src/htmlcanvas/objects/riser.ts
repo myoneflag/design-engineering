@@ -19,7 +19,7 @@ import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-t
 import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
 import {DrawableEntityConcrete, EdgeLikeEntity} from "../../../../common/src/api/document/entities/concrete-entity";
-import RiserCalculation from "../../store/document/calculations/riser-calculation";
+import RiserCalculation, { emptyRiserCalculations } from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
 import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
 import { Coord, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
@@ -374,15 +374,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     }
 
     collectCalculations(context: CalculationContext): RiserCalculation {
-        // explicitly create this to help with refactors
-        const res: RiserCalculation = {
-            costBreakdown: null,
-            cost: null,
-            expandedEntities: null,
-
-            heights: {},
-            warnings: null,
-        };
+        const res = emptyRiserCalculations();
         const IAmDrainage = isDrainage(this.entity.systemUid);
 
         const tower = this.getCalculationTower(context);

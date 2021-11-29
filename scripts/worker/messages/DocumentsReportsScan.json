@@ -1,0 +1,6 @@
+{
+    "task": "DocumentsReportsScan",
+    "params": {
+        "reportId": "${REPORTID}"
+    }
+}

@@ -1,4 +1,4 @@
-import { DrawableEntity, NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -48,13 +48,13 @@ import {
     isZeroWaterPsdCounts,
     lookupFlowRate,
     PsdProfile,
-    roundNumber,
     subtractPsdProfiles,
     zeroContextualPCE,
     zeroCost,
     zeroFinalPsdCounts,
     zeroPsdCounts,
 } from "../../src/calculations/utils";
+import { roundNumber } from "../../../common/src/lib/mathutils";
 import FittingCalculation from "../../src/store/document/calculations/fitting-calculation";
 import DirectedValveCalculation from "../../src/store/document/calculations/directed-valve-calculation";
 import SystemNodeCalculation from "../../src/store/document/calculations/system-node-calculation";
@@ -110,7 +110,8 @@ import { calculateGas } from "./gas";
 import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { processDrainage, sizeDrainagePipe } from "./drainage";
-import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../common/src/lib/measurements";
+import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
+import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
@@ -191,7 +192,7 @@ export default class CalculationEngine implements CalculationContext {
         return this.drawableObjectUids.map((u) => this.globalStore.get(u)!);
     }
 
-    calculate(
+    async calculate(
         objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
@@ -199,55 +200,61 @@ export default class CalculationEngine implements CalculationContext {
         priceTable: PriceTable,
         nodes: NodeProps[],
     ) {
-        this.networkObjectUids = [];
-        this.drawableObjectUids = [];
-        this.globalStore = objectStore;
-        this.priceTable = priceTable;
-        this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
-        if (this.globalStore.dependedBy.size) {
-            throw new Error(
-                "couldn't clear cache, dependedBy still " +
-                JSON.stringify(this.globalStore.dependedBy, (key, value) => {
-                    if (value instanceof Map) {
-                        return [...value];
-                    }
-                    return value;
-                })
-            );
-        }
-        if (this.globalStore.dependsOn.size) {
-            throw new Error(
-                "couldn't clear cache, dependsOn still " +
-                JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
-                    if (value instanceof Map) {
-                        return [...value];
-                    }
-                    return value;
-                })
-            );
-        }
-        this.globalStore.forEach((o) => {
-            if (o.cache.size) {
-                throw new Error("couldn't clear cache");
+        try {
+            this.networkObjectUids = [];
+            this.drawableObjectUids = [];
+            this.globalStore = objectStore;
+            this.priceTable = priceTable;
+            this.globalStore.forEach((o) => this.globalStore.bustDependencies(o.uid));
+            if (this.globalStore.dependedBy.size) {
+                throw new Error(
+                    "couldn't clear cache, dependedBy still " +
+                    JSON.stringify(this.globalStore.dependedBy, (key, value) => {
+                        if (value instanceof Map) {
+                            return [...value];
+                        }
+                        return value;
+                    })
+                );
             }
-        });
-        this.doc = doc;
-        this.catalog = catalog;
-        this.drawing = this.doc.drawing;
-        this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
-        this.nodes = nodes;
-        this.combineLUs = doc.drawing.metadata.calculationParams.combineLUs;
+            if (this.globalStore.dependsOn.size) {
+                throw new Error(
+                    "couldn't clear cache, dependsOn still " +
+                    JSON.stringify([...this.globalStore.dependsOn], (key, value) => {
+                        if (value instanceof Map) {
+                            return [...value];
+                        }
+                        return value;
+                    })
+                );
+            }
+            this.globalStore.forEach((o) => {
+                if (o.cache.size) {
+                    throw new Error("couldn't clear cache");
+                }
+            });
+            this.doc = doc;
+            this.catalog = catalog;
+            this.drawing = this.doc.drawing;
+            this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
+            this.nodes = nodes;
+            this.combineLUs = doc.drawing.metadata.calculationParams.combineLUs;
+    
+            const success = this.preValidate();
+    
+            if (!success) {
+                done(false);
+                return;
+            }
 
-        const success = this.preValidate();
-
-        if (!success) {
+            this.equationEngine = new EquationEngine();
+            this.doRealCalculation();
+            done(true);    
+        } catch (error) {            
+            console.error(error);
+            await reportError("Calculation error", error as Error);
             done(false);
-            return;
         }
-
-        this.equationEngine = new EquationEngine();
-        this.doRealCalculation();
-        done(true);
     }
 
     clearCalculations() {
