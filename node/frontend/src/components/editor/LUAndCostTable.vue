@@ -63,9 +63,9 @@
         getDrainageUnitName,
         lookupFlowRate,
         PsdUnitsByFlowSystem,
-        roundNumber,
         zeroFinalPsdCounts
     } from "../../calculations/utils";
+    import {roundNumber} from "../../../../common/src/lib/mathutils";
     import {Catalog} from "../../../../common/src/api/catalog/types";
     import {NetworkType} from "../../../../common/src/api/document/drawing";
     import {ALL_DRAINAGE_SYSTEM_UIDS, StandardFlowSystemUids} from "../../../../common/src/api/config";

@@ -2,6 +2,7 @@ import { FieldCategory, CalculationField} from "../../../../src/store/document/c
 import {
     addPressureCalculationFields,
     Calculation,
+    CalculationType,
     PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
@@ -71,6 +72,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
 
 export function emptyFittingCalculation(): FittingCalculation {
     return {
+        type: CalculationType.FittingCalculation,
         costBreakdown: null,
         cost: null,
         expandedEntities: null,

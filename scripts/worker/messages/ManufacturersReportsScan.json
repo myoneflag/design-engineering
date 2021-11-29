@@ -1,0 +1,6 @@
+{
+    "task": "ManufacturersReportsScan", 
+    "params": {
+        "reportId": "${REPORTID}"
+    }
+}

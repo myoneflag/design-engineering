@@ -2,12 +2,18 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default {
+
+  MODE_PRODUCTION: process.env.MODE === "production",
+
   PORT: process.env.PORT || '3000',
 
   FRONTEND_REL_PATH: process.env.MODE === "production" ? "../../../../frontend/dist" : "../../frontend/dist",
 
   PDF_BUCKET: process.env.PDF_BUCKET,
   PDF_RENDERS_BUCKET: process.env.PDF_RENDERS_BUCKET,
+
+  DATA_BUCKET: process.env.DATA_BUCKET,
+  REPORTS_BUCKET: process.env.REPORTS_BUCKET,
 
   SQS_QUEUE_URL: process.env.SQS_QUEUE_URL,
   DEBUG_SQS_ENDPOINT_URL: process.env.DEBUG_SQS_ENDPOINT_URL,
@@ -25,4 +31,11 @@ export default {
   NEW_MEMBERS_EMAIL: process.env.NEW_MEMBERS_EMAIL || 'test+local.newmembers@h2xtesting.com',
   FEEDBACK_EMAIL: process.env.FEEDBACK_EMAIL || 'test+local.feedback@h2xtesting.com',
   BUGS_EMAIL: process.env.BUGS_EMAIL || 'test+local.bugs@h2xtesting.com',
+
+  WEB_APP_HOSTNAME: process.env.WEB_APP_HOSTNAME || "localhost:8010",
+  WEB_APP_SSL: process.env.WEB_APP_SSL === "true" || false,
+
+  getWebAppUrl() {
+    return ( this.WEB_APP_SSL ? "https" : "http" ) + "://" + this.WEB_APP_HOSTNAME;
+  },
 };

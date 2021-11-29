@@ -84,6 +84,10 @@ export const getters: GetterTree<DocumentState, RootState> = {
         return result;
     },
 
+    calculationsSuccess(state): boolean {
+        return state.uiState.lastCalculationSuccess;
+    },
+
     calculationsUpToDate(state): boolean {
         if (
             state.uiState.lastCalculationId < state.nextId

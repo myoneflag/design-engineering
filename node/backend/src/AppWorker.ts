@@ -19,7 +19,7 @@ class AppWorker {
     private setMiddlewares(): void {
         this.express.use(cors());
         this.express.use(morgan("dev"));
-        this.express.use(bodyParser.json());
+        this.express.use(bodyParser.json({limit: '20mb'}));
     }
 
     private setRoutes(): void {
@@ -33,5 +33,3 @@ class AppWorker {
 }
 
 export default new AppWorker().express;
-
-

@@ -1,0 +1,7 @@
+{
+    "task": "ManufacturersReportsExecute", 
+    "params": {
+        "reportId": "${REPORTID}",
+        "manufacturer": "${MANUFACTURER}"
+    }
+}

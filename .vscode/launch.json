@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch backend with nodemon",
+            "program": "${workspaceFolder}/node/backend/src/index.ts",
+            "request": "launch",
+            "restart": true,
+            "runtimeExecutable": "nodemon",
+            "runtimeArgs": [ "--exec", "ts-node" ],
+            "env": { "PORT": "8012" },
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node"
+        },
+        {
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",

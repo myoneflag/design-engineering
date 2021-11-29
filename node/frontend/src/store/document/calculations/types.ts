@@ -1,15 +1,29 @@
-import { Cost, PsdCountEntry } from "../../../calculations/utils";
-import { CalculationField, CalculationLayout, FieldCategory } from "./calculation-field";
-import { Units } from "../../../../../common/src/lib/measurements";
-import { DrawableEntityConcrete } from "../../../../../common/src/api/document/entities/concrete-entity";
-import { CostBreakdown } from "../../../htmlcanvas/lib/types";
+import {Cost, PsdCountEntry} from "../../../calculations/utils";
+import {CalculationField, FieldCategory} from "./calculation-field";
+import {Units} from "../../../../../common/src/lib/measurements";
+import {DrawableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { WarningDetail } from "./warnings"
+
+export enum CalculationType { 
+    RiserCalculation,
+    PipeCalculation,
+    BigValveCalculation,
+    DirectedValveCalculation,
+    FittingCalculation,
+    FixtureCalculation,
+    SystemNodeCalculation,
+    LoadNodeCalculation,
+    FlowSourceCalculation,
+    PlantCalculation,
+    GasApplianceCalculation
+}
 
 export interface PsdCalculation {
     psdUnits: PsdCountEntry | null;
 }
 
 export interface Calculation {
+    type: CalculationType;
     warnings: WarningDetail[] | null;
     cost: Cost | null;
     costBreakdown: Array<{ qty: number, path: string }> | null;

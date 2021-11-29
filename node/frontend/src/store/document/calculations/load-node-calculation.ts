@@ -2,6 +2,7 @@ import { FieldCategory, CalculationField} from "../../../../src/store/document/c
 import {
     addPressureCalculationFields,
     Calculation,
+    CalculationType,
     PressureCalculation, PsdCalculation
 } from "../../../../src/store/document/calculations/types";
 import LoadNodeEntity, { NodeType } from "../../../../../common/src/api/document/entities/load-node-entity";
@@ -83,6 +84,7 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, doc: Docum
 
 export function emptyLoadNodeCalculation(): LoadNodeCalculation {
     return {
+        type: CalculationType.LoadNodeCalculation,
         costBreakdown: null,
         cost: null,
         expandedEntities: null,

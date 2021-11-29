@@ -180,7 +180,8 @@
             "ManagedPolicyArns": [ 
               "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier",
               "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier",
-              "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+              "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+              { "Ref": "ManagedInstancePolicy" }
             ],
             "Tags": [ 
               { "Key": "Name", "Value": { "Fn::Sub": "h2x-instancerole-${EnvName}"} },
@@ -190,11 +191,11 @@
            }
         },
 
-        "InstancePolicy": {
-          "Type": "AWS::IAM::Policy",
+        "ManagedInstancePolicy": {
+          "Type": "AWS::IAM::ManagedPolicy",
           "Properties": {
-            "PolicyName" : { "Fn::Sub": "h2x-application-policy-${EnvName}" },
-             "PolicyDocument": {
+            "ManagedPolicyName" : { "Fn::Sub": "h2x-application-policy-${EnvName}" },
+            "PolicyDocument": {
                 "Version" : "2012-10-17",
                 "Statement": [ 
                   {
@@ -210,6 +211,18 @@
                     "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "PdfRendersBucket", "Arn" ] }, "/*" ] ] }
                   },
                   {
+                    "Sid": "S3DataBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": [ { "Fn::GetAtt": [ "DataBucket", "Arn" ] }, { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "DataBucket", "Arn" ] }, "/*" ] ] } ]
+                  },
+                  {
+                    "Sid": "S3ReportsBucketAccess",
+                    "Action": "s3:*",
+                    "Effect": "Allow",
+                    "Resource": [ { "Fn::GetAtt": [ "ReportsBucket", "Arn" ] }, { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "ReportsBucket", "Arn" ] }, "/*" ] ] } ]
+                  },
+                  {
                     "Sid": "ConnectRdsDb",
                     "Action": "rds-db:connect",
                     "Effect": "Allow",
@@ -220,12 +233,15 @@
                     "Effect": "Allow",
                     "Action": "ses:SendRawEmail",
                     "Resource": "*"
+                  }, 
+                  {
+                    "Sid": "SQSMessageAccess",
+                    "Effect": "Allow",
+                    "Action": "sqs:*",
+                    "Resource": { "Fn::GetAtt" : [ "WorkerQueue", "Arn" ]}
                   }
                 ]
-             },
-             "Roles": [ {
-                "Ref": "InstanceIAMRole"
-             } ]
+             }
           }
         },
 
@@ -372,6 +388,11 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "SQS_QUEUE_URL",
+                "Value": { "Ref": "WorkerQueue" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "MQ_URL",
                 "Value":  { "Fn::Select" : [ 0, { "Fn::GetAtt": [ "MQBroker", "WssEndpoints" ] } ] }
               },
@@ -400,7 +421,16 @@
                 "OptionName": "PDF_RENDERS_BUCKET",
                 "Value": { "Ref": "PdfRendersBucket" }
               },
-
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "DATA_BUCKET",
+                "Value": { "Ref": "DataBucket" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "REPORTS_BUCKET",
+                "Value": { "Ref": "ReportsBucket" }
+              },
               // email SES sending params
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
@@ -431,9 +461,17 @@
                 "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "BUGS_EMAIL",
                 "Value": { "Ref": "BugsEmail" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "WEB_APP_HOSTNAME",
+                "Value": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "WEB_APP_SSL",
+                "Value": "true"
               }
-
-
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.4.4 running Docker"
           }
@@ -568,8 +606,28 @@
               },
               {
                 "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "DATA_BUCKET",
+                "Value": { "Ref": "DataBucket" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "REPORTS_BUCKET",
+                "Value": { "Ref": "ReportsBucket" }
+              },              
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
                 "OptionName": "AWS_REGION",
                 "Value": { "Ref": "AWS::Region" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "WEB_APP_HOSTNAME",
+                "Value": { "Fn::Sub": "app-${EnvName}.${DnsZoneName}" }
+              },
+              {
+                "Namespace": "aws:elasticbeanstalk:application:environment",
+                "OptionName": "WEB_APP_SSL",
+                "Value": "true"
               }
             ],
             "SolutionStackName": "64bit Amazon Linux 2 v3.4.4 running Docker"
@@ -796,6 +854,41 @@
               ]
           }
         }, 
+        "DataBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-data-${EnvName}" },
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            },            
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-data-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+        "ReportsBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "AccessControl": "Private",
+            "BucketName": { "Fn::Sub": "h2x-s3-reports-${EnvName}" },
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            },            
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-reports-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
 
         // DNS record
         "DnsRecord": {

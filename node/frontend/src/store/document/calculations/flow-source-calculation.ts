@@ -1,7 +1,7 @@
 import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
-    Calculation, PressureCalculation,
+    Calculation, CalculationType, PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
@@ -43,6 +43,7 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: D
 
 export function emptyFlowSourceCalculation(): FlowSourceCalculation {
     return {
+        type: CalculationType.FlowSourceCalculation,
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

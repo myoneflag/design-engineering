@@ -357,19 +357,13 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         const calc = context.globalStore.getOrCreateCalculation(this.getCalculationTower(context)[0][0]);
 
-        // explicitly create this to help with refactors
-        const res: FittingCalculation = {
-            costBreakdown: null,
-            cost: null,
-            expandedEntities: null,
-
-            flowRateLS: calc.flowRateLS,
-            pressureDropKPA: calc.pressureDropKPA,
-            pressureKPA: calc.pressureKPA,
-            warnings: calc.warnings,
-            pressureByEndpointKPA: {},
-            staticPressureKPA: calc.staticPressureKPA,
-        };
+        const res = emptyFittingCalculation();
+        res.flowRateLS = calc.flowRateLS;
+        res.pressureDropKPA = calc.pressureDropKPA;
+        res.pressureKPA = calc.pressureKPA;
+        res.warnings = calc.warnings;
+        res.pressureByEndpointKPA = {};
+        res.staticPressureKPA = calc.staticPressureKPA;
 
         const tower = this.getCalculationTower(context);
 

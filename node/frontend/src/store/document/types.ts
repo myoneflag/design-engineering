@@ -32,6 +32,7 @@ export interface UIState {
 
     lastCalculationId: number;
     lastCalculationUiSettings: CalculationUiSettings;
+    lastCalculationSuccess: boolean,
     isCalculating: boolean;
 
     selectedUids: string[];
@@ -160,6 +161,7 @@ export const initialUIState: UIState = {
     lastCalculationUiSettings: {
         demandType: null
     },
+    lastCalculationSuccess: false,
     isCalculating: false,
     calculationFilters: {},
     warningFilter: {

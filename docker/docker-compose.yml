@@ -62,7 +62,10 @@ services:
     depends_on:
       - sqs
     environment:
-      - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
+      # for local running worker
+      - SQSD_WORKER_HTTP_URL=http://host.docker.internal:8013/workermessage
+      # for dev or minimal running worker
+      # - SQSD_WORKER_HTTP_URL=http://worker:80/workermessage
       - SQSD_QUEUE_NAME=h2x-worker-queue
       - SQSD_QUEUE_URL=http://sqs:9324/queue/h2x-worker-queue
       - SQSD_SSL_ENABLED=false
@@ -99,6 +102,8 @@ services:
     environment:
       - PDF_BUCKET=h2x-s3-pdf-local
       - PDF_RENDERS_BUCKET=h2x-s3-pdfrenders-local
+      - DATA_BUCKET=h2x-s3-data-local
+      - REPORTS_BUCKET=h2x-s3-reports-local
       - AWS_REGION=us-west-1
       - AWS_PROFILE=${AWS_PROFILE}
       - SES_EMAIL_REGION=us-west-1

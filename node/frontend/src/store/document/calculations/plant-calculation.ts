@@ -1,5 +1,5 @@
 import {CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
-import {Calculation} from "../../../../src/store/document/calculations/types";
+import {Calculation, CalculationType} from "../../../../src/store/document/calculations/types";
 import {Units} from "../../../../../common/src/lib/measurements";
 import PlantEntity from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import {PlantType} from "../../../../../common/src/api/document/entities/plants/plant-types";
@@ -128,6 +128,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
 
 export function emptyPlantCalculation(): PlantCalculation {
     return {
+        type: CalculationType.PlantCalculation,
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

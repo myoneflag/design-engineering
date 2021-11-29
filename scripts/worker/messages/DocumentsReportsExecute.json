@@ -1,0 +1,7 @@
+{
+    "task": "DocumentsReportsExecute",
+    "params": {
+        "docId": "${DOCID}", 
+        "reportId": "${REPORTID}"
+    }
+}

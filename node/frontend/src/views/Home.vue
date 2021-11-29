@@ -325,6 +325,10 @@ l<template>
                     <v-icon name="save"></v-icon>
                   </b-button>
                 </div>
+                <div class="text-right mt-1" v-if="canViewReportingStatus()" v-b-tooltip.hover.right :title="reportingStatusString(doc)">
+                  <b-badge v-if="reportingStatus(doc)" variant="success">Rx</b-badge>
+                  <b-badge v-else class="text-muted" variant="light"><s>Rx</s></b-badge>
+                </div>
               </b-card>
             </b-col>
           </template>
@@ -348,7 +352,8 @@ import {
   canUserRestoreDocument,
   Document,
   DocumentStatus
-} from "../../../common/src//models/Document";
+} from "../../../common/src/models/Document";
+import ReportingFilter, { ReportingStatus } from "../../../common/src/reporting/ReportingFilter";
 import {
   cloneDocument,
   createDocument,
@@ -501,7 +506,6 @@ export default class Home extends Vue {
 
     this.filteredDocuments = docs;
   }
-
   get tags() {
     return this.editTag.tags
       .split(",")
@@ -510,7 +514,6 @@ export default class Home extends Vue {
       })
       .map((item: string) => ({ text: item }));
   }
-
   filterArray(array: string[], condition: string, contain: boolean = false) {
     return array.filter((item: string) => {
       return item.toLowerCase().indexOf(condition.toLowerCase()) != -1 && (item.length == condition.length || contain);
@@ -689,6 +692,18 @@ export default class Home extends Vue {
     }
 
     return canUserDeleteDocument(doc, this.profile);
+  }
+
+  canViewReportingStatus() {
+    return this.profile && this.profile.accessLevel <= AccessLevel.ADMIN;
+  }
+
+  reportingStatus(doc: Document) {
+    return ReportingFilter.autoIncludedStatus(doc) === ReportingStatus.Included;
+  }
+
+  reportingStatusString(doc: Document) {
+    return ReportingFilter.includedStatusString(doc);
   }
 
   canRestoreDoc(doc: Document) {

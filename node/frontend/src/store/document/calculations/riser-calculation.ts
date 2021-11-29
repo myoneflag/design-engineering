@@ -6,6 +6,7 @@ import {
 import {
     addPressureCalculationFields,
     Calculation,
+    CalculationType,
     PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
@@ -219,6 +220,8 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 
 export function emptyRiserCalculations(): RiserCalculation {
     return {
+        type: CalculationType.RiserCalculation,
+        
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

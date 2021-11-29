@@ -2,6 +2,7 @@ import { FieldCategory, CalculationField} from "../../../../src/store/document/c
 import {
     addPressureCalculationFields,
     Calculation,
+    CalculationType,
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import FixtureEntity from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
@@ -66,6 +67,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {
     const result: FixtureCalculation = {
+        type: CalculationType.FixtureCalculation,
         costBreakdown: null,
         cost: null,
         expandedEntities: null,

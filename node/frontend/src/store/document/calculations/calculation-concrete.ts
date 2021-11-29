@@ -12,7 +12,6 @@ import GasApplianceCalculation from "./gas-appliance-calculation";
 export type CalculationConcrete =
     | RiserCalculation
     | PipeCalculation
-    | PipeCalculation
     | BigValveCalculation
     | FittingCalculation
     | FixtureCalculation

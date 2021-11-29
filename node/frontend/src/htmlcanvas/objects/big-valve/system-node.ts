@@ -26,11 +26,12 @@ import { CalculationData } from "../../../../src/store/document/calculations/cal
 import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
-import SystemNodeCalculation from "../../../store/document/calculations/system-node-calculation";
+import SystemNodeCalculation, { emptySystemNodeCalculation } from "../../../store/document/calculations/system-node-calculation";
 import {assertUnreachable, isDrainage} from "../../../../../common/src/api/config";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
 import {flowSystemsCompatible} from "../../lib/utils";
+import { CalculationType } from "src/store/document/calculations/types";
 
 @CalculatedObject
 @ConnectableObject({customCopyObjects: true})
@@ -234,18 +235,12 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         const ghost = ce.filter((e) => e.type === this.type)[0] as SystemNodeEntity;
         const calc = context.globalStore.getOrCreateCalculation(ghost);
 
-        // explicitly create this to help with refactors
-        const res: SystemNodeCalculation = {
-            costBreakdown: null,
-            cost: null,
-            expandedEntities: null,
-
-            psdUnits: calc.psdUnits,
-            flowRateLS: calc.flowRateLS,
-            pressureKPA: calc.pressureKPA, // TODO: differentiate this in different levels
-            warnings: calc.warnings,
-            staticPressureKPA: calc.staticPressureKPA,
-        };
+        const res = emptySystemNodeCalculation();
+        res.psdUnits = calc.psdUnits;
+        res.flowRateLS = calc.flowRateLS;
+        res.pressureKPA = calc.pressureKPA;
+        res.warnings = calc.warnings;
+        res.staticPressureKPA = calc.staticPressureKPA;
 
         const tower = this.getCalculationTower(context);
 
