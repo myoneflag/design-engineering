@@ -11,6 +11,8 @@ H2X uses three major environments:
 | stage       | https://app-stage.h2xtesting.com | on every `release-*` branch update or tag | create users with `test+something@h2xtesting.com`.   Database backup restored from prod occasionally. |
 | prod        | https://app.h2xengineering.com   | manually triggered on tag `release-*`     | Live system!                                                                                          |
 
+All currently deployed environments: https://gitlab.com/info892/H2X/-/environments  
+
 ## Builds
 On every branch push/merge request push, we have a `backend` and `frontend` build that are executing.  
 If that build fails we get a notification on #build-notifications.  
@@ -20,10 +22,14 @@ The build basically executes `npm install`, `npm build` for both apps (see `./gi
 
 ## Deployments
 Deployment plan:
+* all merge requests will build the frontend and backend - no deployment
+* all pushes to branches called `app-name` > automatically deployed to `app-name.h2xtesting.com`
+  * when deleting the branch `app-name`, it's corressponding environment will be deleted
 * pushes to branch `test` > automatically deployed to app-test
+  * nothign happens with `app-test.h2xtesting.com` when you delete the test branch
 * pushes to branches `release-*` > automatically deployed to app-stage
 * **tags** of branches `release-*` > automatically deployed to app-stage
-* **tags** of master or release-* branches > will be manually pushed to production
+* **tags** of master or release-* branches > will be *manually* pushed to production
 
 Useful links:
 * what builds are executed (aka pipelines in GitLab) https://gitlab.com/info892/H2X/-/pipelines
