@@ -29,7 +29,11 @@ First, check out the [documentation](./docs/README.md).
     - [Develop AWS Cloudformation stack (advanced)](#develop-aws-cloudformation-stack-advanced)
     - [Configure `local`, `dev` or `minimal` environment to use separate AWS resources (advanced)](#configure-local-dev-or-minimal-environment-to-use-separate-aws-resources-advanced)
     - [Production build (advanced)](#production-build-advanced)
-- [Deployment scripts (advanced)](#deployment-scripts-advanced)
+      - [Docker](#docker-1)
+      - [Cloudformation template](#cloudformation-template)
+    - [Deployment scripts (advanced)](#deployment-scripts-advanced)
+      - [Deploy](#deploy)
+      - [Delete](#delete)
 
 ## Clone source
 
@@ -378,6 +382,11 @@ export env=stage
 export AWS_PROFILE=awsprofile
 ```
 
+This file contains environment variables that are source-d before the following commands. see `config/build.env`.
+For each environment we take the default values `config/default.env` and add specific values ff there is a specific config file for that environment.
+
+#### Docker
+
 Prep and build docker
 ```
 cd docker
@@ -397,13 +406,33 @@ This will:
 * build the production version of the *backend+frontend* as `prod-web` and the *worker* as `prod-worker` by invoking `docker-compose --profile prod build`
 * tags the last local images
 * pushes them to ECR
-* creates descriptor files for the Cloudformation ElasticBeanstalk update.
+* creates descriptor files for the Cloudformation ElasticBeanstalk update. (in `dist/$COMMIT_ID`)
 
-# Deployment scripts (advanced) 
+#### Cloudformation template
+
+The cloud formation part of the process is as follows:
+* `npm run prep-template` - processes the template file to remove comments and force renaming of a couple of the resources using the DATESTAMP variable.
+* `npm run prep-params` - creates a params.json file that will be used when we invoke the aws cloudformation CLI command.
+* `npm run prep-artifacts` - creates zip files for elastic beanstalk configuration
+* `npm run upload-artifacts` - uploads zip files to S3 deployment bucket
+
+Then, we invoke either `npm run update` or `npm run create` depending if the environment already exists or not. 
+
+### Deployment scripts (advanced) 
+
+#### Deploy
 Executing a full docker build, and aws update with that build:
 
 ```
 export env=test
 export AWS_PROFILE=_awsprofile_
 ./deploy.sh
+```
+
+#### Delete
+Deleting an existing environment:
+```
+export env=gone
+export AWS_PROFILE=_awsprofile_
+./delete.sh
 ```
