@@ -2742,12 +2742,12 @@ export default class CalculationEngine implements CalculationContext {
                                     let [_, actualPressureDisplay] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, actualPressure);
                                     actualPressureDisplay = roundNumber(actualPressureDisplay as number, 3);
-                                    addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, {pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}`});
+                                    addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}` });
                                 }
                             }
                         }
                     }
-                    if (!calc || (o.entity.systemUid===StandardFlowSystemUids.Gas &&  calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
+                    if (!calc || (o.entity.systemUid === StandardFlowSystemUids.Gas && calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
                         addWarning(calc, Warning.PRESSURE_AT_UPSTREAM_NEEDS_HIGHER_THAN_DOWNSTREAM);
                     }
 
@@ -2783,7 +2783,7 @@ export default class CalculationEngine implements CalculationContext {
                         if ((calc.hotPeakFlowRate || 0) > maxFlowRateLS || (calc.coldPeakFlowRate || 0) > maxFlowRateLS) {
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.LitersPerSecond, maxFlowRateLS);
-                            addWarning(calc, Warning.MAX_FLOW_RATE_EXCEEDED, null, {flowRate: `${converted}${units}`});
+                            addWarning(calc, Warning.MAX_FLOW_RATE_EXCEEDED, null, { flowRate: `${converted}${units}` });
                         }
                     }
                     break;
@@ -2803,19 +2803,19 @@ export default class CalculationEngine implements CalculationContext {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].minPressureKPA);
-                            addWarning(calculation, Warning.NOT_ENOUGH_PRESSURE, null, {systemName: system.name, required: (converted as number).toFixed(0) + units});
+                            addWarning(calculation, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
                         } else if ((calculation.inlets[suid].staticPressureKPA || 0) > e.roughIns[suid].maxPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].maxPressureKPA);
-                            addWarning(calculation, Warning.MAX_PRESSURE_OVERLOAD, null, {systemName: system.name, max: (converted as number).toFixed(0) + units});
+                            addWarning(calculation, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
                         }
                     }
                     if (!(o as Fixture).validateConnectionPoints()) {
                         addWarning(calculation, Warning.CONNECT_THE_FIXTURE_TO_A_FLOW_SYSTEM);
                     }
-                    if(calculation.warnings && !calculation.warnings.length)  calculation.warnings=null;
-                  break;
+                    if (calculation.warnings && !calculation.warnings.length) calculation.warnings = null;
+                    break;
                 }
                 case EntityType.DIRECTED_VALVE: {
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
@@ -2845,7 +2845,7 @@ export default class CalculationEngine implements CalculationContext {
 
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
                                     const [units, converted] = convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxInletPressure);
-                                    addWarning(calculation, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, {pressure: (converted as number).toFixed(2) + units});
+                                    addWarning(calculation, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: (converted as number).toFixed(2) + units });
                                 }
                             }
 
@@ -2860,7 +2860,7 @@ export default class CalculationEngine implements CalculationContext {
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, inPressure);
                                     const [_, targetConverted] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, o.entity.valve.targetPressureKPA);
-                                    addWarning(calculation, Warning.PRESSURE_PRV_MORE_THAN_TARGET, null, {pressure: (inPressureConverted as number).toFixed(2) + units, ratio, target: targetConverted + units});
+                                    addWarning(calculation, Warning.PRESSURE_PRV_MORE_THAN_TARGET, null, { pressure: (inPressureConverted as number).toFixed(2) + units, ratio, target: targetConverted + units });
                                 }
                             }
                             break;
@@ -2886,13 +2886,18 @@ export default class CalculationEngine implements CalculationContext {
                         const [_, mpConverted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
 
-                        addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_NODE, null, {pressure: (pConverted as number).toFixed(2) + units, target: (mpConverted as number).toFixed(2) + units});
+                        addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_NODE, null, { pressure: (pConverted as number).toFixed(2) + units, target: (mpConverted as number).toFixed(2) + units });
                     } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA && filled.systemUidOption != "gas") {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
 
                         const [units, converted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.minPressureKPA);
-                        addWarning(calc, Warning.NOT_ENOUGH_PRESSURE, null, {systemName: system.name, required: (converted as number).toFixed(0) + units});
+                        addWarning(calc, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
+                    } else if ((calc.staticPressureKPA || 0) > filled.maxPressureKPA!) {
+                        const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
+                        const [units, converted] =
+                            convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
+                        addWarning(calc, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
                     }
                     break;
                 }
