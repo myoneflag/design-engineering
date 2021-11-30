@@ -43,6 +43,7 @@ deploy_test:
   environment:
     name: test
     url: https://app-test.h2xtesting.com
+    deployment_tier: testing
   only:
     - test
 
@@ -51,6 +52,7 @@ deploy_feature:
   environment:
     name: $CI_COMMIT_REF_SLUG
     url: https://app-FEATURE.h2xtesting.com
+    deployment_tier: development
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile
   script:
@@ -61,6 +63,40 @@ deploy_feature:
     - sudo -E ./cloudformation/clean.sh
   only:
     - /^feature-.*$/
+
+deploy-app:
+  stage: deploy
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    url: https://$CI_COMMIT_REF_SLUG.h2xtesting.com
+    deployment_tier: development    
+    on_stop: stop-deploy-app
+  variables:
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
+  script:
+    - export env=${CI_COMMIT_BRANCH/app-/}
+    - echo "Deploy env $env for $CI_COMMIT_BRANCH"
+    - sudo -E ./cloudformation/deploy.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  only:
+    - /^app-.*$/
+
+stop-deploy-app:
+  stage: deploy
+  when: manual
+  variables:
+    GIT_STRATEGY: none
+    AWS_PROFILE: h2x-gitlab-runner-test-profile
+  script:
+    - export env=${CI_COMMIT_BRANCH/app-/}
+    - echo "Delete env $env for $CI_COMMIT_BRANCH"
+    - sudo -E ./cloudformation/delete.sh
+  after_script:
+    - sudo -E ./cloudformation/clean.sh
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    action: stop
 
 deploy_stage:
   stage: deploy
@@ -75,6 +111,7 @@ deploy_stage:
   environment:
     name: stage
     url: https://app-stage.h2xtesting.com
+    deployment_tier: staging
   only:
     - tags
     - /^release-.*$/
@@ -92,6 +129,7 @@ deploy_prod:
   environment:
     name: prod
     url: https://app.h2xengineering.com
+    deployment_tier: production    
   only:
     - tags
   when: manual

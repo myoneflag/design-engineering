@@ -36,12 +36,14 @@
   It allows others looking at the Jira card to see the code progress being made.
 * Name the branch as `DEV-123-draw-arrow`.  
   No other 'bugfix', or 'feature' words needed.
-* Merge with "delete source branch" so we keep repo clean.
+* Merge with "delete source branch" so we keep repo clean.  
 
 ## Deployment
 * If you want your changes deployed, merge your branch to `test`, and it will be automatically deployed to `app-test`.
 * DO NOT merge from **test** into your branch.  
   Changes in `test` might not make it in `master`. If other MRs have been merged, update from `master`.
+
+* If your work has to be on a different environment because it's risky or it will take long, create a new branch called `app-NAME`, merge your `DEV-NNN` branch to `APP-NAME`, and it will be automatically deployed to `app-NAME.h2xtesting.com`. e.g. `app-revit`, `app-infra`, `app-super`, etc. NAME has to be single word no special chars all lowercase.
 
 ## Jira updates
 * All updates about the feature or task should be added to the Jira ticket.  
