@@ -3,8 +3,9 @@ import LoadingUnitTable from "./psd-standard/loading-unit-table";
 import LoadingUnitHotColdTable from "./psd-standard/loading-unit-hot-cold-table";
 import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
-import {EN12056FrequencyFactor, SupportedPsdStandards } from "../config";
-import {FixturesTable, PipesTable} from "./price-table";
+import { EN12056FrequencyFactor, SupportedPsdStandards } from "../config";
+import { FixturesTable, PipesTable } from "./price-table";
+import { CirculatingPumpsManufacturers, HotWaterPlantManufacturers, RheemVariant, RheemVariantValues } from "../document/entities/plants/plant-types";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -51,7 +52,10 @@ export enum GreaseInterceptorTrapLocationCategory {
 
 export interface GreaseInterceptorTrap {
     manufacturer: GreaseInterceptorTrapManufacturer[];
-    location: any[];
+    location: {
+        name: string;
+        uid: string
+    }[];
     size: {
         [key: string]: {
             [key: string]: {
@@ -80,7 +84,7 @@ export interface Catalog {
     backflowValves: { [key: string]: BackflowValveSpec };
     psdStandards: { [key: string]: PSDSpec };
     dwellingStandards: { [key: string]: DwellingSpec };
-    en12056FrequencyFactor: { [key in EN12056FrequencyFactor]: number};
+    en12056FrequencyFactor: { [key in EN12056FrequencyFactor]: number };
     gasDiversification: DwellingDiversificationTable;
     fluids: { [key: string]: FluidsSpec };
     prv: PRVSpec;
@@ -89,7 +93,7 @@ export interface Catalog {
     greaseInterceptorTrap?: GreaseInterceptorTrap;
 }
 
-export type DwellingDiversificationTable = {[key: number]: number};
+export type DwellingDiversificationTable = { [key: number]: number };
 
 export type BalancingValveManufacturer = Manufacturer<'Balancing Valve'>;
 
@@ -99,13 +103,86 @@ export interface BalancingValveSpec {
 
 export type HotWaterPlantManufacturer = Manufacturer<'Hot Water Plant'>;
 
+export type HotWaterPlantSize = Partial<Record<
+    HotWaterPlantManufacturers,
+    HotWaterPlantSizeManufacturerProps
+>>;
+
+export type HotWaterPlantSizeManufacturerProps = Record<
+    keyof typeof RheemVariant,
+    HotWaterPlantSizeManufacturerVariantProps
+>;
+
+export type HotWaterPlantSizeManufacturerVariantProps = Record<
+    number,
+    HotWaterPlantSizeProps
+>;
+
+export type HotWaterPlantSizeProps = HotWaterPlantSizePropsTankPak
+    | HotWaterPlantSizePropsElectric
+    | HotWaterPlantSizePropsHeatPump
+    | HotWaterPlantSizePropsContinuousFlow;
+
+export type HotWaterPlantFlowRateTemperature = 20
+    | 25
+    | 30
+    | 35
+    | 40
+    | 45
+    | 50
+    | 55
+    | 60
+    | 65
+    | 70;
+
+export interface HotWaterPlantSizePropsAbstract {
+    model?: string;
+    heaters?: number;
+    widthMM: number;
+    depthMM: number;
+    flowRate: Partial<Record<HotWaterPlantFlowRateTemperature, number>>;
+    gas: {
+        requirement: number,
+        pressure: number,
+    }
+}
+
+export type HotWaterPlantSizePropsContinuousFlow = HotWaterPlantSizePropsAbstract;
+
+export interface HotWaterPlantSizePropsTankPak extends HotWaterPlantSizePropsAbstract {
+    tanks: number;
+    tanksCategoryL: '325' | '410';
+}
+
+export interface HotWaterPlantSizePropsElectric extends HotWaterPlantSizePropsAbstract {
+    minimumInitialDelivery: number;
+}
+
+export interface HotWaterPlantSizePropsHeatPump extends HotWaterPlantSizePropsAbstract {
+    kW: number;
+    roomTemperature: number;
+}
+
+export interface StorageTank {
+    model: string;
+    capacity: number;
+    widthMM: number;
+    depthMM: number;
+}
+
 export interface HotWaterPlant {
     manufacturer: HotWaterPlantManufacturer[];
-    grundfosPressureDrop: { 
-        [key: string]: { 
+    rheemVariants: {
+        name: RheemVariant;
+        uid: RheemVariantValues;
+    }[];
+    grundfosPressureDrop: {
+        [key: string]: {
             [key: string]: string
         }
     };
+    size: HotWaterPlantSize;
+    storageTanks: Record<number, StorageTank>
 }
 export type PRVManufacturer = Manufacturer<'PRV'>;
 
@@ -213,7 +290,8 @@ export interface Manufacturer<ManufacturerEntryNames> {
     abbreviation: string;
     priceTableName: ManufacturerEntryNames;
     uid: string;
-    option?: string[]
+    option?: string[];
+    returns?: boolean;
 }
 
 export interface PipeSpec {

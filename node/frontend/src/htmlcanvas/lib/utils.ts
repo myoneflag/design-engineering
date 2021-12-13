@@ -111,10 +111,12 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
             return fe.outletAboveFloorM!;
         case EntityType.GAS_APPLIANCE:
             return entity.outletAboveFloorM;
-        case EntityType.PLANT:
         case EntityType.BIG_VALVE:
         case EntityType.PIPE:
             return entity.heightAboveFloorM;
+        case EntityType.PLANT:
+            const filled = fillPlantDefaults(entity, context.drawing, context.catalog,);
+            return filled.heightAboveFloorM!;
     }
     assertUnreachable(entity);
 }
@@ -326,8 +328,14 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
     }
 }
 
-export function getPlantPressureLossKPA(entity: PlantEntity, drawing: DrawingState, pressureKPA: number | null, flowLs?: number) {
-    const filled = fillPlantDefaults(entity, drawing);
+export function getPlantPressureLossKPA(
+    entity: PlantEntity, 
+    drawing: DrawingState,
+    catalog: Catalog,
+    pressureKPA: number | null,
+    flowLs?: number
+) {
+    const filled = fillPlantDefaults(entity, drawing, catalog);
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
         switch (filled.plant.pressureLoss.pressureMethod) {

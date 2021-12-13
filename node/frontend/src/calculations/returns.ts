@@ -448,7 +448,7 @@ function setFlowRatesNode(
 // Takes a look at the return loop, and calculates the return flow rates of each pipe. Pipes are found as leaf nodes
 // in the series parallel tree.
 export function setFlowRatesForReturn(context: CalculationEngine, record: ReturnRecord): number | null {
-    const filled = fillPlantDefaults(record.plant, context.drawing);
+    const filled = fillPlantDefaults(record.plant, context.drawing, context.catalog);
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
         throw new Error('Can only set return flow rates for return system');

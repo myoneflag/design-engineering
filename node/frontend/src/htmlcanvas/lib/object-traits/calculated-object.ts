@@ -59,6 +59,10 @@ export function CalculatedObject<
 
         makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
+                if (datum.static) {
+                    return datum.value as any as string[] | string;
+                }
+
                 const convFun = datum.convert || convertMeasurementSystem;
                 const docUnits = context.doc.drawing.metadata.units;
                 let units: Units = datum.units;
@@ -154,7 +158,7 @@ export function CalculatedObject<
             const { hiddenUids, activeEntityUid } = context.doc.uiState.warningFilter;
 
             // ctx.fillText(this.entity.calculation!.realNominalPipeDiameterMM!.toPrecision(2), 0, 0);
-            
+
             let height = 0;
             let maxWidth = 0;
             for (let i = data.length - 1; i >= 0; i--) {
@@ -287,7 +291,7 @@ export function CalculatedObject<
                                 .color;
                             ctx.fillStyle = lighten(col.hex, -20);
                         }
-                    
+
                         const text = this.makeDatumText(context, data[i]);
                         if (Array.isArray(text)) {
                             for (let i2 = 0; i2 < text.length; i2++) {
@@ -299,7 +303,7 @@ export function CalculatedObject<
                             y -= multiplier * FIELD_HEIGHT;
                         }
 
-                        datumDrawn = true 
+                        datumDrawn = true;
                     }
                 }
 

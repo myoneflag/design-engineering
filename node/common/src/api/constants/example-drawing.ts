@@ -2268,6 +2268,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "7c470d70-8f12-4bff-8ebb-862fc84870c2"
                 },
                 "f261b766-9a0f-42da-bc73-1549eff202c7": {
+                    "version": 1,
                     "heightAboveFloorM": 2,
                     "heightMM": 1300,
                     "widthMM": 2500,
@@ -2294,7 +2295,16 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "gasNodeUid": "aaaa60b4-1c5a-4efb-a6a2-d0f6ec524324",
                         "gasPressureKPA": null,
                         "returnVelocityMS": null,
-                        "addReturnToPSDFlowRate": true
+                        "addReturnToPSDFlowRate": true,
+                        "rheemVariant": null,
+                        "rheemPeakHourCapacity": null,
+                        "rheemMinimumInitialDelivery": null,
+                        "rheemkWRating": null,
+                        "rheemStorageTankSize": null,
+                    },
+                    "calculation": {
+                        "widthMM": null,
+                        "depthMM": null,
                     }
                 },
                 "3b95a13b-be67-4cb1-8169-c50da9489473": {
@@ -7252,6 +7262,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "b3d9041c-721a-4b23-90d1-fdd9d5ddae9b"
                 },
                 "aa79a0c4-39c3-4e63-8a97-6ca6c4f5e70e": {
+                    "version": 1,
                     "heightAboveFloorM": 1,
                     "heightMM": 500,
                     "widthMM": 1200,
@@ -7278,6 +7289,10 @@ export const EXAMPLE_DRAWING: DrawingState = {
                             "staticPressureKPA": null,
                             "pumpPressureKPA": null
                         }
+                    },
+                    "calculation": {
+                        "widthMM": null,
+                        "depthMM": null,
                     }
                 },
                 "1ef30858-4e4a-42d2-98e0-07e4e2fac089": {
@@ -8244,6 +8259,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "64d6f74f-800a-4e45-ac13-74e238950ba0"
                 },
                 "f5b251aa-6416-400b-b166-46c1bd99edc6": {
+                    "version": 1,
                     "heightAboveFloorM": 0.75,
                     "heightMM": 1100,
                     "widthMM": 2100,
@@ -8268,6 +8284,10 @@ export const EXAMPLE_DRAWING: DrawingState = {
                             "pressureMethod": "STATIC_PRESSURE",
                             "staticPressureKPA": 0
                         }
+                    },
+                    "calculation": {
+                        "widthMM": null,
+                        "depthMM": null,
                     }
                 },
                 "d84d543c-ea98-436a-8611-9cef9c249b7f": {
@@ -14168,6 +14188,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "key": "39aa765c-b8b1-4f4b-a305-79a4cd934f4e.png"
                 },
                 "c3439528-c948-4a58-aeb5-977e45f8e6d4": {
+                    "version": 1,
                     "heightAboveFloorM": 2,
                     "heightMM": 3200,
                     "widthMM": 3200,
@@ -14192,6 +14213,10 @@ export const EXAMPLE_DRAWING: DrawingState = {
                             "pressureMethod": "STATIC_PRESSURE",
                             "staticPressureKPA": 20
                         }
+                    },
+                    "calculation": {
+                        "widthMM": null,
+                        "depthMM": null,
                     }
                 },
                 "7dc7ed3e-1ce2-4b19-b255-547b5a914f36": {
@@ -14221,6 +14246,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "configuration": 1
                 },
                 "1910d32c-6bc1-4621-a095-14c22b09b9eb": {
+                    "version": 1,
                     "heightAboveFloorM": 0.75,
                     "heightMM": 1300,
                     "widthMM": 1300,
@@ -14245,6 +14271,10 @@ export const EXAMPLE_DRAWING: DrawingState = {
                             "pressureMethod": "PUMP_DUTY",
                             "pumpPressureKPA": 400
                         }
+                    },
+                    "calculation": {
+                        "widthMM": null,
+                        "depthMM": null,
                     }
                 },
                 "1ec0ea04-13c5-44c6-a16b-2e51ce4dc4b3": {

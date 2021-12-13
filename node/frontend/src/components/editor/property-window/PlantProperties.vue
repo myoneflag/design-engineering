@@ -1,165 +1,331 @@
 <template>
-    <b-container>
-        <b-row>
-            <b-col>
-                <h3>{{name}} ({{ selectedEntity.name }})</h3>
-            </b-col>
-        </b-row>
-        <slot> </slot>
-        <PropertiesFieldBuilder
-            :fields="fields"
-            :reactive-data="reactiveData"
-            :default-data="defaultData"
-            :on-commit="onCommit"
-            :on-change="onChange"
-            :target="targetProperty"
-        >
-            <template v-for="slot in ['plant.capacity']" v-slot:[slot]="{field}">
-                <div :key="slot">
-                    <b-dropdown
-                        :key="slot"
-                        class="float-left"
-                        size="sm"
-                        id="dropdown-1"
-                        :text="choiceName(getPropertyByString(reactiveData, field.property), field.params.choices)"
-                        variant="outline-secondary"
-                    >
-                        <b-dropdown-item
-                            v-for="(choice, index) in field.params.choices"
-                            @click="setPropertyByString(reactiveData, field.property, choice.key)"
-                            :key="index"
-                            size="sm"
-                        >
-                            {{ choice.name }}
-                        </b-dropdown-item>
-                    </b-dropdown>
-                    <span
-                        class="d-inline-flex circle-border border border-primary rounded-circle text-primary"
-                        style="margin: 4px 6px;padding: 4px;"
-                        v-b-modal.grease-interceptor-trap-size-guide
-                    >
-                        <v-icon name="info" style="width:12px;height:12px;"></v-icon>
-                    </span>
-                </div>
-            </template>
-        </PropertiesFieldBuilder>
-        <b-row>
-            <b-col>
-                <b-button size="sm" variant="danger" @click="onDelete">
-                    Delete
-                </b-button>
-            </b-col>
-        </b-row>
+  <b-container>
+    <b-row>
+      <b-col>
+        <h3>{{ name }} ({{ selectedEntity.name }})</h3>
+      </b-col>
+    </b-row>
 
-        <b-modal id="grease-interceptor-trap-size-guide" centered title="Size Guide" hide-footer>
-            <img src="@/assets/Grease_Interceptor_Trap_Size_Guide.png">
-        </b-modal>
-    </b-container>
+    <PropertiesFieldBuilder
+      :fields="fields"
+      :reactive-data="reactiveData"
+      :default-data="defaultData"
+      :on-commit="onCommit"
+      :on-change="onChange"
+    >
+      <template v-for="slot in ['plant.capacity', 'plant.rheemPeakHourCapacity']" v-slot:[slot]="{ field }">
+        <div :key="slot" class="field-slot">
+          <b-dropdown
+            v-if="slot === 'plant.capacity'"
+            class="float-left"
+            size="sm"
+            id="dropdown-1"
+            :text="choiceName(getPropertyByString(defaultData, field.property), field.params.choices)"
+            variant="outline-secondary"
+            :disabled="isDisabled(field)"
+          >
+            <b-dropdown-item
+              v-for="(choice, index) in field.params.choices"
+              @click="setPropertyByString(reactiveData, field.property, choice.key)"
+              :key="index"
+              size="sm"
+            >
+              {{ choice.name }}
+            </b-dropdown-item>
+          </b-dropdown>
+
+          <b-input-group v-if="slot === 'plant.rheemPeakHourCapacity'" size="sm" append="L">
+            <b-form-input
+              :id="'input-' + field.property"
+              :min="field.params.min"
+              :max="field.params.max || undefined"
+              type="number"
+              :placeholder="'Enter ' + field.title"
+              :disabled="isDisabled(field)"
+              :value="getPropertyByString(defaultData, field.property)"
+              @input="setPropertyByString(reactiveData, field.property, $event)"
+            ></b-form-input>
+          </b-input-group>
+
+          <span
+            class="d-inline-flex circle-border border border-primary rounded-circle text-primary"
+            style="margin: 4px 6px; padding: 4px"
+            v-b-modal="slot"
+          >
+            <v-icon name="info" style="width: 12px; height: 12px"></v-icon>
+          </span>
+        </div>
+      </template>
+    </PropertiesFieldBuilder>
+
+    <b-row>
+      <b-col>
+        <b-button size="sm" variant="danger" @click="onDelete"> Delete </b-button>
+      </b-col>
+    </b-row>
+
+    <b-modal id="plant.capacity" centered title="Size Guide" hide-footer>
+      <img src="@/assets/Grease_Interceptor_Trap_Size_Guide.png" />
+    </b-modal>
+
+    <b-modal id="plant.rheemPeakHourCapacity" centered title="Size Guide" hide-footer>
+      <img src="@/assets/Hot_Water_Plant_Size_Guide.png" />
+    </b-modal>
+  </b-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import PropertiesFieldBuilder from "../../../../src/components/editor/lib/PropertiesFieldBuilder.vue";
-import { DocumentState } from "../../../../src/store/document/types";
-import { fillPlantDefaults, makePlantEntityFields } from "../../../../../common/src/api/document/entities/plants/plant-entity";
+import { Watch, Prop } from "vue-property-decorator";
+import uuid from "uuid";
+import PropertiesFieldBuilder from "../../../components/editor/lib/PropertiesFieldBuilder.vue";
+import { MainEventBus } from "../../../store/main-event-bus";
+import { DocumentState } from "../../../store/document/types";
+import { DrawingMode } from "../../../htmlcanvas/types";
+import { DrawingContext } from "../../../htmlcanvas/lib/types";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
+import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
+import PlantEntity, {
+  fillPlantDefaults,
+  makePlantEntityFields,
+  PLANT_ENTITY_VERSION,
+  doPlantEntityUpgrade
+} from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
-import {getEntityName} from "../../../../../common/src/api/document/entities/types";
-import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { Choice } from "../../../../../common/src/lib/utils";
-import { Watch } from "vue-property-decorator";
+import { getEntityName, EntityType } from "../../../../../common/src/api/document/entities/types";
+import { PropertyField } from "../../../../../common/src/api/document/entities/property-field";
+import {
+  DrainageGreaseInterceptorTrap,
+  RheemVariantValues,
+  ReturnSystemPlant
+} from "../../../../../common/src/api/document/entities/plants/plant-types";
+import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
+import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
+import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
+import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 
 @Component({
-    components: { PropertiesFieldBuilder },
-    props: {
-        selectedEntity: Object,
-        selectedObject: Object,
-        targetProperty: String,
-        onDelete: Function,
-        onChange: Function
-    }
+  components: { PropertiesFieldBuilder }
 })
 export default class PlantProperties extends Vue {
-    getPropertyByString = getPropertyByString;
-    setPropertyByString = setPropertyByString;
-    
-    get fields() {
-        return makePlantEntityFields(this.defaultCatalog, this.document.drawing, this.$props.selectedEntity, this.document.drawing.metadata.flowSystems);
+  getPropertyByString = getPropertyByString;
+  setPropertyByString = setPropertyByString;
+
+  @Prop()
+  drawingContext: DrawingContext;
+
+  @Prop()
+  selectedEntity: PlantEntity;
+
+  @Prop()
+  selectedObject: BaseBackedObject;
+
+  @Prop()
+  onDelete: () => void;
+
+  @Prop()
+  onChange: () => void;
+
+  get globalStore(): GlobalStore {
+    return this.$props.selectedObject.globalStore;
+  }
+
+  get readonly() {
+    return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
+  }
+
+  get fields() {
+    return makePlantEntityFields(
+      this.defaultCatalog,
+      this.document.drawing,
+      this.$props.selectedEntity,
+      this.document.drawing.metadata.flowSystems
+    );
+  }
+
+  get name() {
+    return getEntityName(this.$props.selectedEntity);
+  }
+
+  get document(): DocumentState {
+    return this.$store.getters["document/document"];
+  }
+
+  get defaultCatalog(): Catalog {
+    return this.$store.getters["catalog/default"];
+  }
+
+  get reactiveData(): PlantEntity {
+    return this.$props.selectedEntity;
+  }
+
+  get defaultData(): PlantEntity {
+    return fillPlantDefaults(this.$props.selectedEntity, this.document.drawing, this.defaultCatalog);
+  }
+
+  mounted() {
+    MainEventBus.$on("redraw", this.$props.scheduleDraw);
+
+    if (this.reactiveData.version === undefined || this.reactiveData.version < PLANT_ENTITY_VERSION) {
+      if (this.reactiveData.version === undefined) {
+        setPropertyByString(this.reactiveData, "version", 0);
+      }
+
+      doPlantEntityUpgrade(this.reactiveData);
+
+      this.onCommit();
+    }
+  }
+
+  destroyed() {
+    MainEventBus.$off("redraw", this.$props.scheduleDraw);
+  }
+
+  async onCommit() {
+    await this.$store.dispatch("document/validateAndCommit");
+  }
+
+  choiceName(key: string, choices: Choice[]): string {
+    const result = choices.find((c) => c.key === key);
+    if (result) {
+      return result.name;
+    }
+    return key + " (not found...)";
+  }
+
+  isDisabled(field: PropertyField) {
+    if (this.readonly) {
+      return true;
+    }
+    if (field.readonly) {
+      return true;
+    }
+    if (field.requiresInput) {
+      return false;
     }
 
-    get name() {
-        return getEntityName(this.$props.selectedEntity);
+    return (
+      (field.isCalculated || field.hasDefault) && getPropertyByString(this.reactiveData, field.property, true) === null
+    );
+  }
+
+  @Watch("reactiveData.plant.location")
+  @Watch("reactiveData.plant.position")
+  @Watch("reactiveData.plant.capacity")
+  handleGreaseInterceptorTrapSizeUpdate() {
+    const plant = this.defaultData.plant as DrainageGreaseInterceptorTrap;
+    const manufacturer = this.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer;
+    const size = this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][plant.location!]?.[plant.position!]?.[
+      plant.capacity!
+    ];
+
+    if (!!size) {
+      setPropertyByString(this.reactiveData, "plant.lengthMM", size.lengthMM);
+      setPropertyByString(this.reactiveData, "widthMM", size.widthMM);
+      this.onCommit();
+    }
+  }
+
+  @Watch("reactiveData.plant.rheemVariant")
+  handleRheemVariantUpdate(newVal: keyof typeof RheemVariantValues, oldVal: keyof typeof RheemVariantValues) {
+    if (oldVal === RheemVariantValues.tankpak) {
+      this.cleaTankpakValues();
+    } else if (oldVal === RheemVariantValues.electric) {
+      this.clearElectricValues();
+    } else if (oldVal === RheemVariantValues.heatPump) {
+      this.clearHeatPumpValues();
     }
 
-    get reactiveData() {
-        return this.$props.selectedEntity;
+    if (([RheemVariantValues.electric, RheemVariantValues.heatPump] as any[]).includes(newVal)) {
+      this.disconnectGasPipe();
     }
 
-    get document(): DocumentState {
-        return this.$store.getters["document/document"];
-    }
+    this.onCommit();
+  }
 
-    get defaultCatalog(): Catalog {
-        return this.$store.getters["catalog/default"];
-    }
+  private disconnectGasPipe() {
+    const gasNodeUid = (this.reactiveData.plant as ReturnSystemPlant).gasNodeUid;
+    const cons = this.globalStore.getConnections(gasNodeUid);
 
-    get defaultData() {
-        return fillPlantDefaults(this.$props.selectedEntity, this.document.drawing);
-    }
+    if (cons.length > 0) {
+      const gasNode = this.globalStore.get(gasNodeUid)?.entity as SystemNodeEntity;
+      const gasPipe = this.globalStore.get(cons[0])?.entity as PipeEntity;
+      const { center } = this.reactiveData;
 
-    async onCommit() {
-        await this.$store.dispatch("document/validateAndCommit");
-    }
+      const fitting: FittingEntity = {
+        uid: uuid(),
+        type: EntityType.FITTING,
+        systemUid: gasPipe.systemUid,
+        color: gasPipe.color,
+        center: {
+          x: center.x - Math.abs(gasNode.center.x) - 200,
+          y: center.y + Math.abs(gasNode.center.y)
+        },
+        parentUid: null,
+        calculationHeightM: null
+      };
 
-    choiceName(key: string, choices: Choice[]): string {
-        const result = choices.find((c) => c.key === key);
-        if (result) {
-            return result.name;
-        }
-        return key + " (not found...)";
-    }
+      this.$store.dispatch("document/addEntity", fitting);
 
-    @Watch('reactiveData.plant.location')
-    @Watch('reactiveData.plant.position')
-    @Watch('reactiveData.plant.capacity')
-    handleGreaseInterceptorTrapSizeUpdate() {
-        const manufacturer = this.document.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
-        const selectedSize = this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][this.reactiveData.plant.location]?.[this.reactiveData.plant.position]?.[this.reactiveData.plant.capacity];
-
-        if (!!selectedSize) {
-            setPropertyByString(this.reactiveData, 'lengthMM', selectedSize.lengthMM);
-            setPropertyByString(this.reactiveData, 'widthMM', selectedSize.widthMM);
-            this.onCommit();
-        }
+      this.$store.dispatch("document/updatePipeEndpoints", {
+        entity: gasPipe,
+        endpoints: [
+          gasPipe.endpointUid[0] === gasNodeUid ? fitting.uid : gasPipe.endpointUid[0],
+          gasPipe.endpointUid[1] === gasNodeUid ? fitting.uid : gasPipe.endpointUid[1]
+        ]
+      });
     }
+  }
+
+  private cleaTankpakValues() {
+    setPropertyByString(this.reactiveData, "plant.rheemPeakHourCapacity", null);
+  }
+
+  private clearElectricValues() {
+    setPropertyByString(this.reactiveData, "plant.rheemPeakHourCapacity", null);
+    setPropertyByString(this.reactiveData, "plant.rheemMinimumInitialDelivery", null);
+  }
+
+  private clearHeatPumpValues() {
+    setPropertyByString(this.reactiveData, "plant.rheemPeakHourCapacity", null);
+    setPropertyByString(this.reactiveData, "plant.rheemkWRating", null);
+    setPropertyByString(this.reactiveData, "plant.rheemStorageTankSize", null);
+  }
 }
 </script>
 
 <style lang="less">
 .sidebar-title {
-    position: relative;
-    font-size: 30px;
-    z-index: 1;
+  position: relative;
+  font-size: 30px;
+  z-index: 1;
+  overflow: hidden;
+  text-align: center;
+
+  &:before,
+  &:after {
+    position: absolute;
+    top: 51%;
     overflow: hidden;
-    text-align: center;
+    width: 50%;
+    height: 1px;
+    content: "\a0";
+    background-color: lightgray;
+  }
 
-    &:before,
-    &:after {
-        position: absolute;
-        top: 51%;
-        overflow: hidden;
-        width: 50%;
-        height: 1px;
-        content: "\a0";
-        background-color: lightgray;
-    }
-
-    &:before {
-        margin-left: -50%;
-        text-align: right;
-    }
+  &:before {
+    margin-left: -50%;
+    text-align: right;
+  }
 }
-#grease-interceptor-trap-size-guide .modal-dialog {
-    max-width: max-content;
+
+.modal-dialog {
+  max-width: max-content;
+}
+
+.field-slot {
+  display: flex;
 }
 </style>

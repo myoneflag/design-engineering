@@ -7,6 +7,7 @@ export enum DocumentWSMessageType {
     DOCUMENT_DELETED = "DOCUMENT_DELETED",
     DOCUMENT_LOADED = "DOCUMENT_LOADED",
     DOCUMENT_ERROR = 'DOCUMENT_ERROR',
+    DOCUMENT_UPDATE = 'DOCUMENT_UPDATE',
 }
 
 export interface DocumentMessage {
@@ -18,8 +19,13 @@ export interface OperationMessage extends DocumentMessage {
     operation: OT.OperationTransformConcrete;
 }
 
-export interface DocumentErrorMessage extends DocumentMessage  {
+export interface DocumentErrorMessage extends DocumentMessage {
     type: DocumentWSMessageType.DOCUMENT_ERROR;
+    message: string;
+}
+
+export interface DocumentUpdateMessage extends DocumentMessage {
+    type: DocumentWSMessageType.DOCUMENT_UPDATE;
     message: string;
 }
 
@@ -28,7 +34,7 @@ export interface DocumentUpdate {
     nextOpId: number;
 }
 
-export interface DocumentDeletedMessage extends DocumentMessage  {
+export interface DocumentDeletedMessage extends DocumentMessage {
     type: DocumentWSMessageType.DOCUMENT_DELETED;
 }
 
@@ -36,7 +42,7 @@ export interface DocumentLoadedMessage extends DocumentMessage {
     type: DocumentWSMessageType.DOCUMENT_LOADED;
 }
 
-export type DocumentClientMessageSingle = OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage | DocumentErrorMessage;
+export type DocumentClientMessageSingle = OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage | DocumentErrorMessage | DocumentUpdateMessage;
 export type DocumentClientMessage = Array<DocumentClientMessageSingle>;
 export type DocumentInternalEvent = DocumentUpdate | DocumentDeletedMessage;
 

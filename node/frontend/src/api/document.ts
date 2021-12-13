@@ -43,6 +43,7 @@ export function openDocument(
                         onLoaded();
                         break;
                     case DocumentWSMessageType.DOCUMENT_ERROR:
+                    case DocumentWSMessageType.DOCUMENT_UPDATE:
                         onError(msg.message);
                         break;
                     default:
@@ -94,6 +95,7 @@ export function openDocumentShare(
                         onLoaded();
                         break;
                     case DocumentWSMessageType.DOCUMENT_ERROR:
+                    case DocumentWSMessageType.DOCUMENT_UPDATE:
                         onError(msg.message);
                         break;
                     default:
@@ -120,7 +122,7 @@ export async function updateDocument(
     id: number,
     organization: string | undefined,
     metadata: GeneralInfo | undefined,
-    tags:string | undefined
+    tags: string | undefined
 ): Promise<APIResult<Document>> {
     try {
         return (

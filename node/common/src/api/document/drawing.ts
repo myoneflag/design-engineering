@@ -107,35 +107,35 @@ export interface UnitsParameters {
 
 
 export const LENGTH_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (mm)", key: MeasurementSystem.METRIC},
-    {name: "Imperial (in, ft)", key: MeasurementSystem.IMPERIAL},
+    { name: "Metric (mm)", key: MeasurementSystem.METRIC },
+    { name: "Imperial (in, ft)", key: MeasurementSystem.IMPERIAL },
 ];
 
 export const PRESSURE_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (kpa)", key: PressureMeasurementSystem.METRIC},
-    {name: "Imperial (psi)", key: PressureMeasurementSystem.IMPERIAL},
-    {name: "UK (bar)", key: PressureMeasurementSystem.UK}
+    { name: "Metric (kpa)", key: PressureMeasurementSystem.METRIC },
+    { name: "Imperial (psi)", key: PressureMeasurementSystem.IMPERIAL },
+    { name: "UK (bar)", key: PressureMeasurementSystem.UK }
 ];
 
 export const TEMPERATURE_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (\u00B0C)", key: MeasurementSystem.METRIC},
-    {name: "Imperial (\u00B0F)", key: MeasurementSystem.IMPERIAL},
+    { name: "Metric (\u00B0C)", key: MeasurementSystem.METRIC },
+    { name: "Imperial (\u00B0F)", key: MeasurementSystem.IMPERIAL },
 ];
 
 export const VELOCITY_MEASUREMENT_CHOICES: Choice[] = [
-    {name: 'Metric (m/s)', key: VelocityMeasurementSystem.METRIC},
-    {name: 'Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL},
+    { name: 'Metric (m/s)', key: VelocityMeasurementSystem.METRIC },
+    { name: 'Imperial (ft/s)', key: VelocityMeasurementSystem.IMPERIAL },
 ];
 
 export const VOLUME_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Metric (L)", key: VolumeMeasurementSystem.METRIC},
-    {name: "UK Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL},
-    {name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US},
+    { name: "Metric (L)", key: VolumeMeasurementSystem.METRIC },
+    { name: "UK Imperial (gal)", key: VolumeMeasurementSystem.IMPERIAL },
+    { name: "US Imperial (US gal)", key: VolumeMeasurementSystem.US },
 ];
 
 export const ENERGY_MEASUREMENT_CHOICES: Choice[] = [
-    {name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC},
-    {name: "Therms (Btu)", key: EnergyMeasurementSystem.IMPERIAL},
+    { name: "Megajoules (mj)", key: EnergyMeasurementSystem.METRIC },
+    { name: "Therms (Btu)", key: EnergyMeasurementSystem.IMPERIAL },
 ];
 
 export interface GeneralInfo {
@@ -156,7 +156,7 @@ export interface Color {
 }
 
 export const COLORS = {
-    YELLOW: {hex: "#FFFF00"},
+    YELLOW: { hex: "#FFFF00" },
 };
 
 export enum NetworkType {
@@ -222,8 +222,8 @@ export interface DrainageProperties {
 
     stackSizeDiminish: boolean;
     stackDedicatedVent: boolean;
-    maxUnventedLengthM: {[key: number]: number | undefined};
-    maxUnventedCapacityWCs: {[key: number]: number | undefined};
+    maxUnventedLengthM: { [key: number]: number | undefined };
+    maxUnventedCapacityWCs: { [key: number]: number | undefined };
 
     horizontalPipeSizing: HorizontalPipeSizing[];
     availablePipeSizesMM: number[];
@@ -247,7 +247,7 @@ export interface FlowSystemParameters extends WithID {
 
     drainageProperties: DrainageProperties;
 
-    networks: { [key in keyof typeof NetworkType]: NetworkParams};
+    networks: { [key in keyof typeof NetworkType]: NetworkParams };
 }
 
 export interface CalculationParameters {
@@ -298,11 +298,11 @@ export const initialDrainageProperties: DrainageProperties = {
     ventColor: { hex: '#ff7755' },
     availablePipeSizesMM: [40, 50, 65, 80, 100, 125, 150, 225, 300, 375],
     horizontalPipeSizing: [
-        {minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65},
-        {minUnits: 166, maxUnits: 855, sizeMM: 150, gradePCT: 1},
-        {minUnits: 856, maxUnits: 1310, sizeMM: 150, gradePCT: 1.65},
-        {minUnits: 1311, maxUnits: 4500, sizeMM: 225, gradePCT: 1},
-        {minUnits: 4501, maxUnits: 11400, sizeMM: 300, gradePCT: 1},
+        { minUnits: 0, maxUnits: 165, sizeMM: 100, gradePCT: 1.65 },
+        { minUnits: 166, maxUnits: 855, sizeMM: 150, gradePCT: 1 },
+        { minUnits: 856, maxUnits: 1310, sizeMM: 150, gradePCT: 1.65 },
+        { minUnits: 1311, maxUnits: 4500, sizeMM: 225, gradePCT: 1 },
+        { minUnits: 4501, maxUnits: 11400, sizeMM: 300, gradePCT: 1 },
     ],
     maxUnventedCapacityWCs: {
         40: 2,
@@ -330,26 +330,26 @@ export const initialDrainageProperties: DrainageProperties = {
     },
     stackDedicatedVent: false,
     stackPipeSizing: [
-        {minUnits: 0, maxUnits: 500, sizeMM: 100, maximumUnitsPerLevel: 125},
-        {minUnits: 501, maxUnits: 1000, sizeMM: 125, maximumUnitsPerLevel: 250},
-        {minUnits: 1001, maxUnits: 2400, sizeMM: 150, maximumUnitsPerLevel: 600},
-        {minUnits: 2401, maxUnits: 7000, sizeMM: 225, maximumUnitsPerLevel: 1750},
+        { minUnits: 0, maxUnits: 500, sizeMM: 100, maximumUnitsPerLevel: 125 },
+        { minUnits: 501, maxUnits: 1000, sizeMM: 125, maximumUnitsPerLevel: 250 },
+        { minUnits: 1001, maxUnits: 2400, sizeMM: 150, maximumUnitsPerLevel: 600 },
+        { minUnits: 2401, maxUnits: 7000, sizeMM: 225, maximumUnitsPerLevel: 1750 },
     ],
     stackSizeDiminish: false,
     stackVentPipeSizing: [
-        {minUnits: 0, maxUnits: 56, sizeMM: 65},
-        {minUnits: 57, maxUnits: 80, sizeMM: 80},
-        {minUnits: 81, maxUnits: 500, sizeMM: 100},
-        {minUnits: 501, maxUnits: 1100, sizeMM: 125},
-        {minUnits: 1101, maxUnits: 2400, sizeMM: 150},
-        {minUnits: 2401, maxUnits: 7000, sizeMM: 225},
+        { minUnits: 0, maxUnits: 56, sizeMM: 65 },
+        { minUnits: 57, maxUnits: 80, sizeMM: 80 },
+        { minUnits: 81, maxUnits: 500, sizeMM: 100 },
+        { minUnits: 501, maxUnits: 1100, sizeMM: 125 },
+        { minUnits: 1101, maxUnits: 2400, sizeMM: 150 },
+        { minUnits: 2401, maxUnits: 7000, sizeMM: 225 },
     ],
     ventSizing: [
-        {minUnits: 0, maxUnits: 10, sizeMM: 40},
-        {minUnits: 11, maxUnits: 30, sizeMM: 50},
-        {minUnits: 31, maxUnits: 175, sizeMM: 65},
-        {minUnits: 176, maxUnits: 400, sizeMM: 80},
-        {minUnits: 401, maxUnits: 600, sizeMM: 100},
+        { minUnits: 0, maxUnits: 10, sizeMM: 40 },
+        { minUnits: 11, maxUnits: 30, sizeMM: 50 },
+        { minUnits: 31, maxUnits: 175, sizeMM: 65 },
+        { minUnits: 176, maxUnits: 400, sizeMM: 80 },
+        { minUnits: 401, maxUnits: 600, sizeMM: 100 },
     ],
 };
 
@@ -505,7 +505,7 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
     {
         name: "Rising Main",
         temperature: 20,
-        color: {hex: "#7100c2"},
+        color: { hex: "#7100c2" },
         uid: StandardFlowSystemUids.RisingMain,
         fluid: "sewage",
         hasReturnSystem: false,
@@ -551,6 +551,15 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                     manufacturer: 'viking',
                     selected: null,
                 }],
+                hotWaterPlant: [{
+                    uid: 'circulatingPumps',
+                    manufacturer: 'grundfos',
+                    selected: null,
+                }, {
+                    uid: 'hotWaterPlant',
+                    manufacturer: 'rheem',
+                    selected: null,
+                }]
             }
             break;
         case SupportedLocales.UK:
@@ -573,6 +582,18 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.catalog.pipes[1].manufacturer = "enIso15875pex"
             result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
 
+            result.metadata.catalog = {
+                ...result.metadata.catalog,
+                hotWaterPlant: [{
+                    uid: 'circulatingPumps',
+                    manufacturer: 'grundfos',
+                    selected: null,
+                }, {
+                    uid: 'hotWaterPlant',
+                    manufacturer: 'rheem',
+                    selected: null,
+                }]
+            }
             break;
         case SupportedLocales.US:
             result.metadata.units = {
@@ -604,8 +625,8 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             const hotWater = result.metadata.flowSystems.find((item) => item.uid === StandardFlowSystemUids.HotWater)!;
             hotWater.temperature = f2C(140);
             hotWater.insulationThicknessMM = in2MM(1);
-            hotWater.insulationMaterial=InsulationMaterials.mineralWool;
-            hotWater.returnMaxVelocityMS=ft2M(3);
+            hotWater.insulationMaterial = InsulationMaterials.mineralWool;
+            hotWater.returnMaxVelocityMS = ft2M(3);
             hotWater.networks.RISERS.velocityMS =
                 hotWater.networks.RETICULATIONS.velocityMS =
                 hotWater.networks.CONNECTIONS.velocityMS = ft2M(5);
@@ -638,18 +659,21 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 sewage.temperature = f2C(70)
             }
 
-            result.metadata.catalog.hotWaterPlant=[ { manufacturer: "generic", uid: "hotWaterPlant", selected: null,}]
-            result.metadata.catalog.mixingValves=[
-                { manufacturer: "caleffi", uid: "temperingValve", selected: null,},
-                { manufacturer: "caleffi", uid: "tmv", selected: null,}
+            result.metadata.catalog.hotWaterPlant = [
+                { uid: "circulatingPumps", manufacturer: "generic", selected: null, },
+                { uid: 'hotWaterPlant', manufacturer: 'generic', selected: null },
+            ]
+            result.metadata.catalog.mixingValves = [
+                { manufacturer: "caleffi", uid: "temperingValve", selected: null, },
+                { manufacturer: "caleffi", uid: "tmv", selected: null, }
             ]
 
             result.metadata.calculationParams.ceilingPipeHeightM = ft2M(9);
 
 
-            for(const flowSystem of result.metadata.flowSystems){
+            for (const flowSystem of result.metadata.flowSystems) {
                 // tslint:disable-next-line:forin
-                for ( const j in flowSystem.drainageProperties.maxUnventedLengthM ) {
+                for (const j in flowSystem.drainageProperties.maxUnventedLengthM) {
                     flowSystem.drainageProperties.maxUnventedLengthM[j] = ft2M(30);
                 }
             }
@@ -672,6 +696,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
         default:
             assertUnreachable(locale);
     }
+
     return result;
 }
 
@@ -942,26 +967,24 @@ export const initialAustralianDrawing: DrawingState = {
         catalog: {
             pipes: [
                 { manufacturer: "kemblaCu", uid: "copperTypeB", selected: null },
-                { manufacturer: "rehauPex", uid: "pexSdr74", selected: null,},
-                { manufacturer: "kemblaS/s", uid: "stainlessSteel", selected: null,},
-                { manufacturer: "blucherSS", uid: "stainlessSteelSewer", selected: null,},
+                { manufacturer: "rehauPex", uid: "pexSdr74", selected: null, },
+                { manufacturer: "kemblaS/s", uid: "stainlessSteel", selected: null, },
+                { manufacturer: "blucherSS", uid: "stainlessSteelSewer", selected: null, },
             ],
             backflowValves: [
-                { manufacturer: "apolloRpzd", uid: "RPZD", selected: null,},
+                { manufacturer: "apolloRpzd", uid: "RPZD", selected: null, },
             ],
             mixingValves: [
-                { manufacturer: "caleffi", uid: "temperingValve", selected: null,},
-                { manufacturer: "enware", uid: "tmv", selected: null,},
+                { manufacturer: "caleffi", uid: "temperingValve", selected: null, },
+                { manufacturer: "enware", uid: "tmv", selected: null, },
             ],
             prv: [
-                { manufacturer: "caleffi", uid: "prv", selected: null,},
+                { manufacturer: "caleffi", uid: "prv", selected: null, },
             ],
             balancingValves: [
-                { manufacturer: "cimberio", uid: "balancingValves", selected: null,},
+                { manufacturer: "cimberio", uid: "balancingValves", selected: null, },
             ],
-            hotWaterPlant: [
-                { manufacturer: "grundfos", uid: "hotWaterPlant", selected: null,},
-            ],
+            hotWaterPlant: [],
             fixtures: [],
         },
         priceTable: {},

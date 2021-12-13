@@ -108,7 +108,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     .modal-content {
         width: 450px;
     }

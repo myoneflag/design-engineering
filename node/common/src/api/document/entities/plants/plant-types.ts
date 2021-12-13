@@ -7,6 +7,13 @@ export enum PlantType {
     DRAINAGE_GREASE_INTERCEPTOR_TRAP = 'DRAINAGE_GREASE_INTERCEPTOR_TRAP',
 }
 
+export enum HotWaterPlantCatalogList {
+    'hotWaterPlant' = 'hotWaterPlant',
+    'circulatingPumps' = 'circulatingPumps',
+};
+
+export type CirculatingPumpsManufacturers = 'generic' | 'grundfos';
+
 export enum HotWaterPlantGrundfosSettingsName {
     "20-60-1" = 'Grundfos UPS 20-60 N Setting 1',
     "20-60-2" = 'Grundfos UPS 20-60 N Setting 2',
@@ -14,6 +21,22 @@ export enum HotWaterPlantGrundfosSettingsName {
     "32-80-1" = 'Grundfos UPS 32-80 N Setting 1',
     "32-80-2" = "Grundfos UPS 32-80 N Setting 2",
     "32-80-3" = "Grundfos UPS 32-80 N Setting 3",
+}
+
+export type HotWaterPlantManufacturers = 'generic' | 'rheem';
+
+export enum RheemVariant {
+    'continuousFlow' = 'Continuous Flow',
+    'tankpak' = 'Tankpak',
+    'electric' = 'HD Electric',
+    'heatPump' = 'Heat Pump',
+}
+
+export enum RheemVariantValues {
+    'continuousFlow' = 'continuousFlow',
+    'tankpak' = 'tankpak',
+    'electric' = 'electric',
+    'heatPump' = 'heatPump',
 }
 
 export interface Plant {
@@ -62,6 +85,11 @@ export interface ReturnSystemPlant extends Plant {
     gasConsumptionMJH: number | null;
     gasPressureKPA: number | null;
     gasNodeUid: string;
+    rheemVariant: keyof typeof RheemVariantValues | null;
+    rheemPeakHourCapacity: number | null;
+    rheemMinimumInitialDelivery: number | null;
+    rheemkWRating: number | null;
+    rheemStorageTankSize: number | null;
 }
 
 
@@ -75,15 +103,17 @@ export interface DrainagePit extends Plant {
     pressureLoss: StaticPressure;
 }
 
+export type GreaseInterceptorTrapManufacturers = 'generic' | 'viking'
+
 export enum GreaseInterceptorTrapLocation {
-    'nsw'   = 'NSW',
-    'act'   = 'ACT',
-    'vic'   = 'VIC',
-    'qld'   = 'QLD',
-    'sa'    = 'SA',
-    'wa'    = 'WA',
-    'tas'   = 'TAS',
-    'nt'    = 'NT',
+    'nsw' = 'NSW',
+    'act' = 'ACT',
+    'vic' = 'VIC',
+    'qld' = 'QLD',
+    'sa' = 'SA',
+    'wa' = 'WA',
+    'tas' = 'TAS',
+    'nt' = 'NT',
 }
 
 export enum GreaseInterceptorTrapPosition {
@@ -94,9 +124,10 @@ export enum GreaseInterceptorTrapPosition {
 export interface DrainageGreaseInterceptorTrap extends Plant {
     type: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP;
     pressureLoss: StaticPressure;
-    location: keyof typeof GreaseInterceptorTrapLocation;
-    position: keyof typeof GreaseInterceptorTrapPosition;
-    capacity: string;
+    lengthMM: number | null;
+    location: keyof typeof GreaseInterceptorTrapLocation | null;
+    position: keyof typeof GreaseInterceptorTrapPosition | null;
+    capacity: string | null;
 }
 
 export interface CustomPlant extends Plant {
@@ -104,4 +135,13 @@ export interface CustomPlant extends Plant {
     pressureLoss: AnyPressure;
 }
 
-export type PlantConcrete = ReturnSystemPlant | TankPlant | CustomPlant | PumpPlant | DrainagePit | DrainageGreaseInterceptorTrap;
+export type PlantConcrete = ReturnSystemPlant
+    | TankPlant
+    | CustomPlant
+    | PumpPlant
+    | DrainagePit
+    | DrainageGreaseInterceptorTrap;
+
+export type PlantManufacturers = HotWaterPlantManufacturers
+    | CirculatingPumpsManufacturers
+    | GreaseInterceptorTrapManufacturers;

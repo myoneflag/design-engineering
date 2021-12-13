@@ -1,39 +1,66 @@
-import {FieldType, PropertyField} from "../property-field";
-import {EntityType} from "../types";
-import {CenteredEntity, COLORS, Coord, DrawingState, FlowSystemParameters} from "../../drawing";
-import {cloneSimple} from "../../../../lib/utils";
-import {PlantConcrete, PlantType, PressureMethod} from "./plant-types";
-import {assertUnreachable, isDrainage} from "../../../config";
-import {Units} from "../../../../lib/measurements";
-import { Catalog } from './../../../catalog/types';
+import {
+    CenteredEntity,
+    COLORS,
+    Coord,
+    DrawingState,
+    FlowSystemParameters
+} from "../../drawing";
+import { EntityType } from "../types";
+import {
+    FieldType,
+    PropertyField,
+} from "../property-field";
+import {
+    PlantType,
+    PlantConcrete,
+    PlantManufacturers,
+    HotWaterPlantManufacturers,
+    GreaseInterceptorTrapManufacturers,
+    PressureMethod,
+    ReturnSystemPlant,
+} from "./plant-types";
+import {
+    assertUnreachable,
+    isDrainage,
+} from "../../../config";
 import { auCatalog } from "../../../catalog/initial-catalog/au-catalog";
+import { Catalog, HotWaterPlant, HotWaterPlantSizePropsElectric, HotWaterPlantSizePropsHeatPump } from './../../../catalog/types';
+import { Units } from "../../../../lib/measurements";
+import { cloneSimple, Complete, setPropertyByString } from "../../../../lib/utils";
+
+export const PLANT_ENTITY_VERSION = 1;
 
 export default interface PlantEntity extends CenteredEntity {
-    type: EntityType.PLANT;
+    version: number;
+
     center: Coord;
-    inletSystemUid: string;
-    outletSystemUid: string;
-    outletTemperatureC: number | null;
-
-    name: string;
-
     rotation: number;
     rightToLeft: boolean;
 
-    heightAboveFloorM: number;
-
-    widthMM: number;
-    heightMM: number;
-    lengthMM?: number;
-
     inletUid: string;
+    inletSystemUid: string;
     outletUid: string;
+    outletSystemUid: string;
+
+    name: string;
+    type: EntityType.PLANT;
+
+    widthMM: number | null;
+    heightMM: number | null;
+    heightAboveFloorM: number | null;
+    outletTemperatureC: number | null;
 
     plant: PlantConcrete;
+
+    calculation: {
+        widthMM: number | null;
+        depthMM: number | null;
+    };
 }
 
 export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
-    const iAmDrainage = isDrainage(entity.outletSystemUid) || isDrainage(entity.inletSystemUid);
+    const filled = fillPlantDefaults(entity, drawing, catalog);
+    const iAmDrainage = isDrainage(filled.outletSystemUid) || isDrainage(filled.inletSystemUid);
 
     const res: PropertyField[] = [
         {
@@ -44,12 +71,12 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             type: FieldType.Choice,
             params: {
                 choices: [
-                    {name: 'Return System', key: PlantType.RETURN_SYSTEM},
-                    {name: 'Tank', key: PlantType.TANK},
-                    {name: 'Pump', key: PlantType.PUMP},
-                    {name: 'Custom', key: PlantType.CUSTOM},
-                    {name: 'Drainage Pit', key: PlantType.DRAINAGE_PIT},
-                    {name: 'Grease Interceptor Trap', key: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP},
+                    { name: 'Return System', key: PlantType.RETURN_SYSTEM },
+                    { name: 'Tank', key: PlantType.TANK },
+                    { name: 'Pump', key: PlantType.PUMP },
+                    { name: 'Custom', key: PlantType.CUSTOM },
+                    { name: 'Drainage Pit', key: PlantType.DRAINAGE_PIT },
+                    { name: 'Grease Interceptor Trap', key: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP },
                 ],
             },
             readonly: true,
@@ -93,80 +120,9 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
         },
     ];
 
-    switch (entity.plant.type) {
+    switch (filled.plant.type) {
         case PlantType.RETURN_SYSTEM:
-            res.push(
-                {
-                    property: "name",
-                    title: "Name",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Text,
-                    params: null,
-                    multiFieldId: "name"
-                },
-                {
-                    property: "heightAboveFloorM",
-                    title: "Height Above Floor",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: null, max: null },
-                    multiFieldId: "heightAboveFloorM",
-                    units: Units.Meters,
-                },
-                {
-                    property: "plant.returnMinimumTemperatureC",
-                    title: "Minimum Return Temperature",
-                    hasDefault: true,
-                    highlightOnOverride: COLORS.YELLOW,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: null, max: entity.outletTemperatureC },
-                    multiFieldId: "returnMinimumTemperatureC",
-                    units: Units.Celsius,
-                },
-                {
-                    property: "plant.returnVelocityMS",
-                    title: "Maximum Return Velocity (M/s)",
-                    hasDefault: true,
-                    highlightOnOverride: COLORS.YELLOW,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "returnVelocityMS",
-                    units: Units.MetersPerSecond,
-                },
-                {
-                    property: "plant.addReturnToPSDFlowRate",
-                    title: "Add Return to PSD Flow Rate",
-                    hasDefault: false,
-                    isCalculated: false,
-                    type: FieldType.Boolean,
-                    params: null,
-                    multiFieldId: "addReturnToPSDFlowRate",
-                },
-                {
-                    property: "plant.gasConsumptionMJH",
-                    title: "Gas Consumption",
-                    hasDefault: true,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "gasConsumptionMJH",
-                    units: Units.MegajoulesPerHour,
-                },
-                {
-                    property: "plant.gasPressureKPA",
-                    title: "Gas Pressure",
-                    hasDefault: true,
-                    isCalculated: false,
-                    type: FieldType.Number,
-                    params: { min: 0, max: null },
-                    multiFieldId: "gasPressureKPA",
-                    units: Units.KiloPascals,
-                }
-            );
+            resolvePlantReturnSystemFields(res, drawing, filled, catalog.hotWaterPlant)
             break;
         case PlantType.TANK:
         case PlantType.PUMP:
@@ -183,7 +139,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                 {
                     property: "heightAboveFloorM",
                     title: "Height Above Floor",
-                    hasDefault: false,
+                    hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: null, max: null },
@@ -206,7 +162,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                 {
                     property: "heightAboveFloorM",
                     title: "Height Above Floor",
-                    hasDefault: false,
+                    hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: null, max: null },
@@ -225,7 +181,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                             { name: "Dynamic Pressure Loss", key: PressureMethod.FIXED_PRESSURE_LOSS, disabled: false },
                         ]
                     },
-                    multiFieldId: "pressureMethod"
+                    multiFieldId: "plant.pressureLoss.pressureMethod",
                 },
             );
             break;
@@ -243,82 +199,85 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             )
             break;
         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-            const manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
+            const manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer as GreaseInterceptorTrapManufacturers;
 
-            res.splice(2, 0, {
-                property: 'plant.location',
-                title: 'Location',
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Choice,
-                params: {
-                    choices: auCatalog.greaseInterceptorTrap!.location.map(i => ({name: i.name, key: i.uid})),
+            res.splice(2, 0,
+                {
+                    property: 'plant.location',
+                    title: 'Location',
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Choice,
+                    params: {
+                        choices: auCatalog.greaseInterceptorTrap!.location.map((i) => ({ name: i.name, key: i.uid })),
+                    },
+                    multiFieldId: 'plant.location',
                 },
-                multiFieldId: 'plant.location',
-            },
-            {
-                property: 'plant.position',
-                title: 'Position',
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Choice,
-                params: {
-                    choices: [
-                        { name: 'Below Ground', key: 'belowGround' },
-                        { name: 'Above Ground', key: 'aboveGround' },
-                    ]
+                {
+                    property: 'plant.position',
+                    title: 'Position',
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Choice,
+                    params: {
+                        choices: [
+                            { name: 'Below Ground', key: 'belowGround' },
+                            { name: 'Above Ground', key: 'aboveGround' },
+                        ]
+                    },
+                    multiFieldId: 'plant.position',
                 },
-                multiFieldId: 'plant.position',
-            },
-            {
-                property: 'plant.capacity',
-                title: 'Grease Interceptor Trap Capacity',
-                hasDefault: false,
-                isCalculated: false,
-                type: FieldType.Choice,
-                params: {
-                    choices: Object.keys(auCatalog.greaseInterceptorTrap!.size[manufacturer]?.[entity.plant.location]?.[entity.plant.position] || [])
-                        .map(key => ({
+                {
+                    property: 'plant.capacity',
+                    title: 'Capacity',
+                    hasDefault: true,
+                    isCalculated: false,
+                    type: FieldType.Choice,
+                    params: {
+                        choices: Object.keys(
+                            auCatalog.greaseInterceptorTrap!.size[manufacturer]?.[filled.plant.location!]?.[filled.plant.position!] || []
+                        ).map((key) => ({
                             name: key,
                             key
-                        }))
-                },
-                multiFieldId: 'plant.capacity',
-                slot: true,
-            });
+                        })),
+                    },
+                    multiFieldId: 'plant.capacity',
+                    slot: true,
+                }
+            );
 
             res.push(
                 {
                     property: "widthMM",
                     title: "Width",
-                    hasDefault: false,
+                    hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "widthMM",
+                    multiFieldId: null,
                     units: Units.Millimeters,
-                    readonly: isReadonly(catalog, drawing, entity),
+                    readonly: isReadonly(drawing, filled),
                 },
                 {
-                    property: "lengthMM",
+                    property: "plant.lengthMM",
                     title: "Length",
-                    hasDefault: false,
+                    hasDefault: true,
                     isCalculated: false,
                     type: FieldType.Number,
                     params: { min: 0, max: null },
-                    multiFieldId: "lengthMM",
+                    multiFieldId: null,
                     units: Units.Millimeters,
-                    readonly: isReadonly(catalog, drawing, entity),
+                    readonly: isReadonly(drawing, filled),
                 }
             );
             break;
         default:
-            assertUnreachable(entity.plant);
+            assertUnreachable(filled.plant);
     }
 
     if (!iAmDrainage) {
-        if (entity.plant.type !== PlantType.RETURN_SYSTEM) {
-            switch (entity.plant.pressureLoss.pressureMethod) {
+        if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
+            switch (filled.plant.pressureLoss.pressureMethod) {
                 case PressureMethod.PUMP_DUTY:
                     res.push({
                         property: "plant.pressureLoss.pumpPressureKPA",
@@ -326,8 +285,8 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                         hasDefault: true,
                         isCalculated: false,
                         type: FieldType.Number,
-                        params: {min: 0, max: null},
-                        multiFieldId: "pumpPressureKPA",
+                        params: { min: 0, max: null },
+                        multiFieldId: "plant.pressureLoss.pumpPressureKPA",
                         units: Units.KiloPascals,
                     });
                     break;
@@ -338,8 +297,8 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                         hasDefault: true,
                         isCalculated: false,
                         type: FieldType.Number,
-                        params: {min: 0, max: null},
-                        multiFieldId: "pressureLossKPA",
+                        params: { min: 0, max: null },
+                        multiFieldId: "plant.pressureLoss.pressureLossKPA",
                         units: Units.KiloPascals,
                     });
                     break;
@@ -350,55 +309,59 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
                         hasDefault: true,
                         isCalculated: false,
                         type: FieldType.Number,
-                        params: {min: 0, max: null},
-                        multiFieldId: "staticPressureKPA",
+                        params: { min: 0, max: null },
+                        multiFieldId: "plant.pressureLoss.staticPressureKPA",
                         units: Units.KiloPascals,
                     });
                     break;
                 default:
-                    assertUnreachable(entity.plant.pressureLoss);
+                    assertUnreachable(filled.plant.pressureLoss);
             }
         }
 
-        res.push(
-            {
-                property: "outletTemperatureC",
-                title: "Outlet Temperature",
-                hasDefault: true,
-                highlightOnOverride: COLORS.YELLOW,
-                isCalculated: false,
-                type: FieldType.Number,
-                params: { min: null, max: null },
-                multiFieldId: "outletTemperatureC",
-                units: Units.Celsius,
-            },
+        if (!(filled.plant.type === PlantType.RETURN_SYSTEM
+            && drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === 'hotWaterPlant')!.manufacturer === 'rheem')) {
 
-        );
+            res.push(
+                {
+                    property: "outletTemperatureC",
+                    title: "Outlet Temperature",
+                    hasDefault: true,
+                    highlightOnOverride: COLORS.YELLOW,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: null, max: null },
+                    multiFieldId: "outletTemperatureC",
+                    units: Units.Celsius,
+                },
+
+            );
+        }
     }
 
-    if (entity.plant.type !== PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+    if (filled.plant.type !== PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
         res.push(
             {
                 property: "widthMM",
                 title: "Width",
-                hasDefault: false,
+                hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: "widthMM",
+                multiFieldId: null,
                 units: Units.Millimeters,
-                readonly: isReadonly(catalog, drawing, entity),
+                readonly: isReadonly(drawing, filled),
             },
             {
                 property: "heightMM",
                 title: "Height",
-                hasDefault: false,
+                hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
-                multiFieldId: "heightMM",
+                multiFieldId: null,
                 units: Units.Millimeters,
-                readonly: isReadonly(catalog, drawing, entity),
+                readonly: isReadonly(drawing, filled),
             }
         );
     }
@@ -406,80 +369,379 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
     return res;
 }
 
-export function fillPlantDefaults(value: PlantEntity, drawing: DrawingState) {
-    const result = cloneSimple(value);
+export function fillPlantDefaults(
+    entity: PlantEntity,
+    drawing: DrawingState,
+    catalog: Catalog,
+) {
+    const result = cloneSimple(entity);
 
-    if (value.plant.type !== PlantType.RETURN_SYSTEM) {
-        switch (value.plant.pressureLoss.pressureMethod) {
+    if (result.version === undefined) {
+        result.version = 0;
+    }
+
+    if (result.version < PLANT_ENTITY_VERSION) {
+        doPlantEntityUpgrade(result);
+    }
+
+    if (result.plant.type !== PlantType.RETURN_SYSTEM) {
+        switch (result.plant.pressureLoss.pressureMethod) {
             case PressureMethod.PUMP_DUTY:
-                if (value.plant.pressureLoss.pumpPressureKPA === null) {
-                    value.plant.pressureLoss.pumpPressureKPA = 0;
+                if (result.plant.pressureLoss.pumpPressureKPA === null) {
+                    result.plant.pressureLoss.pumpPressureKPA = 0;
                 }
                 break;
             case PressureMethod.STATIC_PRESSURE:
-                if (value.plant.pressureLoss.staticPressureKPA === null) {
-                    value.plant.pressureLoss.staticPressureKPA = 0;
+                if (result.plant.pressureLoss.staticPressureKPA === null) {
+                    result.plant.pressureLoss.staticPressureKPA = 0;
                 }
                 break;
             case PressureMethod.FIXED_PRESSURE_LOSS:
-                if (value.plant.pressureLoss.pressureLossKPA === null) {
-                    value.plant.pressureLoss.pressureLossKPA = 0;
+                if (result.plant.pressureLoss.pressureLossKPA === null) {
+                    result.plant.pressureLoss.pressureLossKPA = 0;
                 }
                 break;
             default:
-                assertUnreachable(value.plant.pressureLoss);
+                assertUnreachable(result.plant.pressureLoss);
         }
     }
 
-    if (value.outletTemperatureC === null) {
-        const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
-        result.outletTemperatureC = outSystem ? Number(outSystem.temperature) : Number(drawing.metadata.calculationParams.roomTemperatureC);
+    if (result.outletTemperatureC === null) {
+        const outSystem = drawing.metadata.flowSystems.find(
+            (s) => s.uid === result.outletSystemUid
+        );
+
+        result.outletTemperatureC = outSystem
+            && Number(outSystem.temperature)
+            || Number(drawing.metadata.calculationParams.roomTemperatureC);
     }
+
+    let manufacturer: PlantManufacturers = 'generic';
+    let size;
 
     switch (result.plant.type) {
         case PlantType.RETURN_SYSTEM:
+            manufacturer = drawing.metadata.catalog.hotWaterPlant.find(
+                (i) => i.uid === 'hotWaterPlant'
+            )!.manufacturer as HotWaterPlantManufacturers;
+
             if (result.plant.returnMinimumTemperatureC === null) {
-                result.plant.returnMinimumTemperatureC = result.outletTemperatureC! - 5;
+                result.plant.returnMinimumTemperatureC = result.outletTemperatureC - 5;
             }
             if (result.plant.returnVelocityMS === null) {
-                const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === value.outletSystemUid)!;
+                const outSystem = drawing.metadata.flowSystems.find((s) => s.uid === result.outletSystemUid)!;
                 result.plant.returnVelocityMS = Number(outSystem.returnMaxVelocityMS);
             }
-            if (result.plant.gasConsumptionMJH === null) {
-                result.plant.gasConsumptionMJH = 500;
+
+            if (manufacturer === 'rheem') {
+                if (result.plant.rheemVariant === undefined || result.plant.rheemVariant === null) {
+                    result.plant.rheemVariant = 'continuousFlow';
+                }
+                if (result.plant.rheemPeakHourCapacity === undefined || result.plant.rheemPeakHourCapacity === null) {
+                    result.plant.rheemPeakHourCapacity = 0;
+                }
+                if (!result.plant.rheemMinimumInitialDelivery) {
+                    result.plant.rheemMinimumInitialDelivery = 50;
+                }
+                if (!result.plant.rheemkWRating) {
+                    result.plant.rheemkWRating = 16;
+                }
+                if (!result.plant.rheemStorageTankSize) {
+                    result.plant.rheemStorageTankSize = 325;
+                }
+
+                size = catalog.hotWaterPlant.size.rheem![result.plant.rheemVariant]!;
+
+                if (result.heightAboveFloorM === null) {
+                    result.heightAboveFloorM = 2;
+                }
+                if (result.plant.gasConsumptionMJH === null) {
+                    result.plant.gasConsumptionMJH = size[1].gas.requirement;
+                }
+                if (result.plant.gasPressureKPA === null) {
+                    result.plant.gasPressureKPA = size[1].gas.pressure;
+                }
+            } else {
+                if (result.plant.gasConsumptionMJH === null) {
+                    result.plant.gasConsumptionMJH = 500;
+                }
+                if (result.plant.gasPressureKPA === null) {
+                    result.plant.gasPressureKPA = 2.75;
+                }
             }
-            if (result.plant.gasPressureKPA === null) {
-                result.plant.gasPressureKPA = 2.75;
+
+            break;
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer as GreaseInterceptorTrapManufacturers;
+
+            if (result.plant.location === null) {
+                result.plant.location = 'nsw';
             }
+            if (result.plant.position === null) {
+                result.plant.position = 'belowGround';
+            }
+            if (result.plant.capacity === null) {
+                result.plant.capacity = manufacturer === 'generic'
+                    ? '1000L'
+                    : '1000';
+            }
+
+            size = catalog.greaseInterceptorTrap!.size[manufacturer][result.plant.location][result.plant.position][result.plant.capacity];
+
+            if (result.widthMM === null) {
+                result.widthMM = size.widthMM;
+            }
+            if (result.heightMM === null) {
+                result.heightMM = size.heightMM;
+            }
+            if (result.plant.lengthMM === null) {
+                result.plant.lengthMM = size.lengthMM;
+            }
+
             break;
         case PlantType.TANK:
         case PlantType.CUSTOM:
         case PlantType.PUMP:
         case PlantType.DRAINAGE_PIT:
-        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             break;
         default:
             assertUnreachable(result.plant);
     }
 
+    if (result.widthMM === null) {
+        result.widthMM = result.calculation.widthMM || 500;
+    }
+    if (result.heightMM === null) {
+        result.heightMM = result.calculation.depthMM || 300;
+    }
+    if (result.heightAboveFloorM === null) {
+        result.heightAboveFloorM = 0.75;
+    }
+
     return result;
 }
 
-function isReadonly(catalog: Catalog, drawing: DrawingState, entity: PlantEntity) {
-    let isReadonly = false;
-    switch(entity.plant.type) {
+function resolvePlantReturnSystemFields(
+    fields: PropertyField[],
+    drawing: DrawingState,
+    entity: PlantEntity,
+    hotWaterPlantCatalog: HotWaterPlant,
+): PropertyField[] {
+    const plant = entity.plant as ReturnSystemPlant;
+    const manufacturer = drawing.metadata.catalog.hotWaterPlant.find(
+        (i) => i.uid === 'hotWaterPlant'
+    )!.manufacturer as HotWaterPlantManufacturers;
+
+    if (manufacturer === 'rheem') {
+        fields.splice(0, 1, {
+            property: 'plant.rheemVariant',
+            title: 'Plant Type',
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Choice,
+            params: {
+                choices: hotWaterPlantCatalog.rheemVariants.map((i) => ({ name: i.name, key: i.uid }))
+            },
+            multiFieldId: 'plant.rheemVariant',
+        });
+
+        if (plant.rheemVariant === 'tankpak' || plant.rheemVariant === 'electric' || plant.rheemVariant === 'heatPump') {
+            const newFields: PropertyField[] = [
+                {
+                    property: 'plant.rheemPeakHourCapacity',
+                    title: 'Peak Hour Capacity',
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: {
+                        min: 0,
+                        max: null,
+                    },
+                    multiFieldId: 'plant.rheemPeakHourCapacity',
+                    slot: true,
+                }
+            ];
+
+            if (plant.rheemVariant === 'electric') {
+                newFields.push({
+                    property: 'plant.rheemMinimumInitialDelivery',
+                    title: 'Minimum Initial Delivery',
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Choice,
+                    params: {
+                        choices: [...new Set((Object.values(hotWaterPlantCatalog.size.rheem![plant.rheemVariant]!) as HotWaterPlantSizePropsElectric[]).map((i) => i.minimumInitialDelivery))].map((i) => ({ name: `${i}`, key: i }))
+                    },
+                    multiFieldId: 'plant.rheemMinimumInitialDelivery',
+                });
+            }
+
+            if (plant.rheemVariant === 'heatPump') {
+                newFields.splice(0, 0,
+                    {
+                        property: 'plant.rheemkWRating',
+                        title: 'kW Rating',
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Choice,
+                        params: {
+                            choices: [...new Set((Object.values(hotWaterPlantCatalog.size.rheem![plant.rheemVariant]!) as HotWaterPlantSizePropsHeatPump[]).map((i) => i.kW))].map((i) => ({ name: `${i}`, key: i }))
+                        },
+                        multiFieldId: 'plant.rheemkWRating',
+                    },
+                    {
+                        property: 'plant.rheemStorageTankSize',
+                        title: 'Storage Tank Size (L)',
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Choice,
+                        params: {
+                            choices: Object.values(hotWaterPlantCatalog.storageTanks).map((i) => ({ name: `${i.capacity}`, key: i.capacity }))
+                        },
+                        multiFieldId: 'plant.rheemStorageTankSize',
+                    })
+            }
+
+            fields.splice(1, 0, ...newFields);
+        }
+    }
+
+    const otherFields: PropertyField[] = [
+        ...(manufacturer !== 'rheem' && [
+            {
+                property: "name",
+                title: "Name",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Text,
+                params: null,
+                multiFieldId: "name"
+            } as PropertyField
+        ] || []),
+        {
+            property: "heightAboveFloorM",
+            title: "Height Above Floor",
+            hasDefault: true,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "heightAboveFloorM",
+            units: Units.Meters,
+        },
+        {
+            property: "plant.returnMinimumTemperatureC",
+            title: "Minimum Return Temperature",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: null, max: entity.outletTemperatureC },
+            multiFieldId: "plant.returnMinimumTemperatureC",
+            units: Units.Celsius,
+        },
+        {
+            property: "plant.returnVelocityMS",
+            title: "Maximum Return Velocity (M/s)",
+            hasDefault: true,
+            highlightOnOverride: COLORS.YELLOW,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "plant.returnVelocityMS",
+            units: Units.MetersPerSecond,
+        },
+        {
+            property: "plant.addReturnToPSDFlowRate",
+            title: "Add Return to PSD Flow Rate",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Boolean,
+            params: null,
+            multiFieldId: "plant.addReturnToPSDFlowRate",
+        },
+        {
+            property: "plant.gasConsumptionMJH",
+            title: "Gas Consumption",
+            hasDefault: manufacturer !== 'rheem',
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "plant.gasConsumptionMJH",
+            units: Units.MegajoulesPerHour,
+            readonly: manufacturer === 'rheem',
+        },
+        {
+            property: "plant.gasPressureKPA",
+            title: "Gas Pressure",
+            hasDefault: manufacturer !== 'rheem',
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "plant.gasPressureKPA",
+            units: Units.KiloPascals,
+            readonly: manufacturer === 'rheem',
+        }];
+
+    fields.push(...otherFields);
+
+    return fields;
+}
+
+function isReadonly(drawing: DrawingState, entity: PlantEntity) {
+    const catalog = drawing.metadata.catalog;
+
+    let readOnly = false;
+
+    switch (entity.plant.type) {
+        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+            readOnly = catalog.greaseInterceptorTrap![0].manufacturer as GreaseInterceptorTrapManufacturers !== 'generic';
+            break;
         case PlantType.RETURN_SYSTEM:
         case PlantType.TANK:
         case PlantType.CUSTOM:
         case PlantType.PUMP:
         case PlantType.DRAINAGE_PIT:
             break;
-        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-            const manufacturer = drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
-            isReadonly = manufacturer !== 'generic';
-            break;
         default:
             assertUnreachable(entity.plant);
     }
-    return isReadonly;
+
+    return readOnly;
+}
+
+export const doPlantEntityUpgrade = (entity: Complete<PlantEntity>) => {
+    switch (entity.version) {
+        case 0:
+            upgrade0to1(entity);
+            break;
+    }
+}
+
+const upgrade0to1 = (entity: Complete<PlantEntity>) => {
+    if (entity.calculation === undefined) {
+        setPropertyByString(entity, 'calculation', {
+            widthMM: null,
+            depthMM: null,
+        });
+    }
+
+    if (entity.plant.type === PlantType.RETURN_SYSTEM) {
+        if (entity.plant.rheemVariant === undefined) {
+            setPropertyByString(entity, 'plant.rheemVariant', null);
+        }
+        if (entity.plant.rheemPeakHourCapacity === undefined) {
+            setPropertyByString(entity, 'plant.rheemPeakHourCapacity', null);
+        }
+        if (entity.plant.rheemMinimumInitialDelivery === undefined) {
+            setPropertyByString(entity, 'plant.rheemMinimumInitialDelivery', null);
+        }
+        if (entity.plant.rheemkWRating === undefined) {
+            setPropertyByString(entity, 'plant.rheemkWRating', null);
+        }
+        if (entity.plant.rheemStorageTankSize === undefined) {
+            setPropertyByString(entity, 'plant.rheemStorageTankSize', null);
+        }
+    }
+
+    setPropertyByString(entity, 'version', ++entity.version);
 }

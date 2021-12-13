@@ -217,16 +217,16 @@ export const EPS_ABS = 1e-8;
 export const EPS = 1e-8;
 
 export interface SelectField {
-    value: number | string; 
+    value: number | string;
     text: string;
 }
 
 export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends Array<infer U>
-        ? Array<DeepPartial<U>>
-        : T[P] extends ReadonlyArray<infer U>
-            ? ReadonlyArray<DeepPartial<U>>
-            : DeepPartial<T[P]>
+    ? Array<DeepPartial<U>>
+    : T[P] extends ReadonlyArray<infer U>
+    ? ReadonlyArray<DeepPartial<U>>
+    : DeepPartial<T[P]>
 };
 
 export function lowerCase(str: string) {
@@ -235,4 +235,111 @@ export function lowerCase(str: string) {
     } else {
         return str.toLowerCase();
     }
+}
+
+function traverseAndFlatten(currentNode: object, target: object, flattenedKey?: string | number) {
+    for (const key in currentNode) {
+        if (currentNode.hasOwnProperty(key)) {
+            let newKey;
+            if (flattenedKey === undefined) {
+                newKey = key;
+            } else {
+                newKey = flattenedKey + '.' + key;
+            }
+
+            const value = (currentNode as any)[key];
+            if (typeof value === "object") {
+                traverseAndFlatten(value, target, newKey);
+            } else {
+                (target as any)[newKey] = value;
+            }
+        }
+    }
+}
+
+export function flatten(obj: object) {
+    const flattenedObject = {};
+
+    traverseAndFlatten(obj, flattenedObject, undefined);
+
+    return flattenedObject;
+}
+
+export type KeysOfUnion<T> = T extends T ? keyof T : never;
+
+/**
+ * Get the next from goal
+ * @param goal the number to be look
+ * @param list the list of number or object to be look at
+ * @param key the key in object if param `list` is in list of object
+ * @param exact return same value as goal if present
+ */
+export const getNext = (goal: number, list: ({} | number)[], exact: boolean = false, key?: string): number | {} => {
+    const isObject = typeof list[0] === 'object';
+
+    if (isObject && !key) {
+        throw new Error("Please provide key");
+    }
+
+    let condition;
+    let extractCurrVal;
+    let extractPrevVal;
+    let min;
+    return list.reduce((prev, curr) => {
+        extractCurrVal = curr;
+        extractPrevVal = prev;
+        if (isObject) {
+            extractCurrVal = getPropertyByString(curr, key!);
+            extractPrevVal = getPropertyByString(prev, key!);
+        }
+
+        min = Math.min(extractCurrVal, extractPrevVal);
+        condition = exact ? min >= goal : min > goal;
+
+        if (condition) {
+            return extractCurrVal < extractPrevVal ? curr : prev;
+        } else {
+            return extractCurrVal > extractPrevVal ? curr : prev;
+        }
+    });
+}
+
+export function getPropertyByString(obj: any, s: string, existential: boolean = false) {
+    s = s.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
+    s = s.replace(/^\./, ""); // strip a leading dot
+    const a = s.split(".");
+    for (let i = 0, n = a.length; i < n; ++i) {
+        const k = a[i];
+        if (existential) {
+            if (obj) {
+                obj = obj[k];
+            }
+        } else {
+            obj = obj[k]; // ensure an error is thrown
+        }
+    }
+    return obj;
+}
+
+export function setPropertyByString(obj: any, s: string, val: any, existential: boolean = false) {
+    s = s.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
+    s = s.replace(/^\./, ""); // strip a leading dot
+    const a = s.split(".");
+    for (let i = 0, n = a.length; i < n; ++i) {
+        const k = a[i];
+        if (i === a.length - 1) {
+            obj[k] = val;
+        } else {
+            obj = obj[k];
+            if (existential) {
+                if (obj == null) {
+                    obj = {};
+                }
+            }
+        }
+    }
+}
+
+export type Complete<T> = {
+    [P in keyof Required<T>]: Complete<T[P]>;
 }
