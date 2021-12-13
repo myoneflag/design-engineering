@@ -4,7 +4,7 @@ import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -26,19 +26,20 @@ import { DEFAULT_FONT_NAME } from "../../../src/config";
 import SystemNode from "./big-valve/system-node";
 import Flatten from "@flatten-js/core";
 import Cached from "../lib/cached";
-import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
+import PlantEntity, { fillPlantDefaults } from "../../../../common/src/api/document/entities/plants/plant-entity";
 import PlantCalculation from "../../store/document/calculations/plant-calculation";
 import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { Coord, coordDist2, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
-import { PlantType, ReturnSystemPlant } from "../../../../common/src/api/document/entities/plants/plant-types";
+import { HotWaterPlantManufacturers, PlantManufacturers, PlantType, ReturnSystemPlant } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
 import Pipe from "./pipe";
 import { drawPipeCap, drawRectangles } from "../helpers/draw-helper";
 import { Side } from "../helpers/side";
-import { DrainageGreaseInterceptorTrap } from './../../../../common/src/api/document/entities/plants/plant-types';
+import { RheemVariant, GreaseInterceptorTrapManufacturers, RheemVariantValues } from './../../../../common/src/api/document/entities/plants/plant-types';
+import store from "../../../src/store/store";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -48,13 +49,17 @@ export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 @CenteredObject
 @SnappableObject
 export default class Plant extends BackedDrawableObject<PlantEntity> implements Calculated {
+    private readonly withGas = [RheemVariantValues.continuousFlow, RheemVariantValues.tankpak] as any[];
+
     static register(): void {
         DrawableObjectFactory.registerEntity(EntityType.PLANT, Plant);
     }
 
     drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
-        const { ctx, vp } = context;
+        const { ctx } = context;
         const { selected } = args;
+
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, context.catalog);
 
         this.withWorldScale(context, { x: 0, y: 0 }, () => {
             const lastAlpha = ctx.globalAlpha;
@@ -63,12 +68,12 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 ctx.globalAlpha = 0.5;
             }
 
-            let entitywidthMM = this.entity.widthMM;
-            let entityHeightMM = this.entity.heightMM;
+            let entitywidthMM = filled.widthMM!;
+            let entityHeightMM = filled.heightMM!;
 
-            if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-                entityHeightMM = this.entity.widthMM;
-                entitywidthMM = this.entity.lengthMM!;
+            if (filled.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+                entityHeightMM = filled.widthMM!;
+                entitywidthMM = filled.plant.lengthMM!;
             }
 
             const l = -entitywidthMM / 2;
@@ -91,20 +96,20 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             ctx.rect(l, t, r - l, b - t);
             ctx.stroke();
 
-            const inletFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.inletSystemUid);
+            const inletFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.inletSystemUid);
             const outletFS = context.doc.drawing.metadata.flowSystems.find(
-                (s) => s.uid === this.entity.outletSystemUid
+                (s) => s.uid === filled.outletSystemUid
             );
             const GasFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === "gas");
-         
-            const middleOfBox=t - (t - b) / 2;
-               const capTop = middleOfBox - 23;
-            const widthOfConnectionPoint=70;
-            const heightOfConnectionPoint=10;
-            const secondConnectionTop=t - (3 * (t - b)) / 4;
-            const secondConnectionCapTop = secondConnectionTop-23;
-            if (inletFS && !this.getConnectedPipe(this.entity.inletUid, inletFS)) {
-                
+
+            const middleOfBox = t - (t - b) / 2;
+            const capTop = middleOfBox - 23;
+            const widthOfConnectionPoint = 70;
+            const heightOfConnectionPoint = 10;
+            const secondConnectionTop = t - (3 * (t - b)) / 4;
+            const secondConnectionCapTop = secondConnectionTop - 23;
+            if (inletFS && !this.getConnectedPipe(filled.inletUid, inletFS)) {
+
                 drawRectangles(ctx, [
                     {
                         point: { left: l - widthOfConnectionPoint, top: middleOfBox },
@@ -114,28 +119,33 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                     }
                 ]);
                 drawPipeCap(ctx, { top: capTop, left: l - widthOfConnectionPoint - 10 }, Side.LEFT);
-              
+
             }
-            if (outletFS && !this.getConnectedPipe(this.entity.outletUid, outletFS)) {
+            if (outletFS && !this.getConnectedPipe(filled.outletUid, outletFS)) {
                 drawRectangles(ctx, [
                     {
                         point: { left: r, top: middleOfBox },
                         width: widthOfConnectionPoint,
                         height: heightOfConnectionPoint,
-                        strokeStyle:outletFS?.color.hex || ""
+                        strokeStyle: outletFS?.color.hex || ""
                     }
                 ]);
-               
-                drawPipeCap(ctx, { top: capTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
-                  
 
+                drawPipeCap(ctx, { top: capTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
             }
 
-            if (this.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                const gasUId = (this.entity.plant as ReturnSystemPlant).gasNodeUid;
-                const returnUid = (this.entity.plant as ReturnSystemPlant).returnUid;
-                if (GasFS && !this.getConnectedPipe(gasUId, GasFS)) {
-                  
+            if (filled.plant.type === PlantType.RETURN_SYSTEM) {
+                const gasUId = (filled.plant as ReturnSystemPlant).gasNodeUid;
+                const returnUid = (filled.plant as ReturnSystemPlant).returnUid;
+                const hotWaterPlantManufacturer = this.document.drawing.metadata.catalog.hotWaterPlant?.find(
+                    i => i.uid === 'hotWaterPlant'
+                )?.manufacturer || "generic" as HotWaterPlantManufacturers;
+
+                if (GasFS && !this.getConnectedPipe(gasUId, GasFS)
+                    && (hotWaterPlantManufacturer === 'generic'
+                        || (hotWaterPlantManufacturer !== 'generic'
+                            && this.withGas.includes(filled.plant.rheemVariant)))) {
+
                     drawRectangles(ctx, [
                         {
                             point: { left: l - widthOfConnectionPoint, top: secondConnectionTop },
@@ -146,39 +156,40 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                     ]);
                     drawPipeCap(
                         ctx,
-                        { top: secondConnectionCapTop, left: l - widthOfConnectionPoint- 10 },
+                        { top: secondConnectionCapTop, left: l - widthOfConnectionPoint - 10 },
                         Side.LEFT
                     );
                 }
-                if (outletFS && !this.getConnectedPipe(returnUid, outletFS)) {
-                   drawRectangles(ctx, [
-                       {
-                           point: { left: r, top: secondConnectionTop },
-                           width: widthOfConnectionPoint,
-                           height: heightOfConnectionPoint,
-                           strokeStyle: outletFS?.color.hex || ""
-                       }
-                   ]);
 
-                   drawPipeCap(ctx, { top: secondConnectionCapTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
+                if (outletFS && !this.getConnectedPipe(returnUid, outletFS)) {
+                    drawRectangles(ctx, [
+                        {
+                            point: { left: r, top: secondConnectionTop },
+                            width: widthOfConnectionPoint,
+                            height: heightOfConnectionPoint,
+                            strokeStyle: outletFS?.color.hex || ""
+                        }
+                    ]);
+
+                    drawPipeCap(ctx, { top: secondConnectionCapTop, left: r + widthOfConnectionPoint + 10 }, Side.RIGHT);
                 }
             }
             ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
 
             const ts = Math.min(entitywidthMM, entityHeightMM) * 0.7;
             ctx.beginPath();
-            ctx.moveTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), -ts / 2);
-            ctx.lineTo((+ts / 2) * (this.entity.rightToLeft ? -1 : 1), 0);
-            ctx.lineTo((-ts / 2) * (this.entity.rightToLeft ? -1 : 1), +ts / 2);
+            ctx.moveTo((-ts / 2) * (filled.rightToLeft ? -1 : 1), -ts / 2);
+            ctx.lineTo((+ts / 2) * (filled.rightToLeft ? -1 : 1), 0);
+            ctx.lineTo((-ts / 2) * (filled.rightToLeft ? -1 : 1), +ts / 2);
             ctx.closePath();
             ctx.fill();
 
-            if (selected || args.overrideColorList.length ) {
+            if (selected || args.overrideColorList.length) {
                 ctx.fillStyle = rgb2style(getHighlightColor(selected, args.overrideColorList), 0.4);
                 ctx.fillRect(boxl, boxt, boxw, boxh);
             }
 
-            const name = this.resolveDisplayName(context, this.entity);
+            const name = this.resolveDisplayName(context, filled);
 
             const fontSize = Math.round(this.toWorldLength(entitywidthMM) / name.length);
             ctx.font = fontSize + "px " + DEFAULT_FONT_NAME;
@@ -223,16 +234,18 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         return (this.document.uiState.pressureOrDrainage === 'drainage' && iAmDrainage) ||
             (this.document.uiState.pressureOrDrainage === 'pressure' && iAmPressure);
     }
+
     getConnectedPipe(connectionUid: string, flowSystem: FlowSystemParameters): any {
         for (const itemUid of this.globalStore.getConnections(connectionUid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item && item.entityBacked &&
-                 item.entityBacked.type === EntityType.PIPE &&
-                 (item as Pipe).entity.systemUid === flowSystem.uid) {
-                    return item;
-                }
+            if (item && item.entityBacked &&
+                item.entityBacked.type === EntityType.PIPE &&
+                (item as Pipe).entity.systemUid === flowSystem.uid) {
+                return item;
+            }
         }
     }
+
     validateConnectionPoints(): boolean {
         const inletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.inletSystemUid);
         const outletFS = this.document.drawing.metadata.flowSystems.find((s) => s.uid === this.entity.outletSystemUid);
@@ -245,17 +258,19 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         }
         return true;
     }
+
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, context.catalog);
         const angle = (this.toWorldAngleDeg(0) / 180) * Math.PI;
         const height = data.length * FIELD_HEIGHT;
         const wc = this.toWorldCoord();
 
-        let entitywidthMM = this.entity.widthMM;
-        let entityHeightMM = this.entity.heightMM;
+        let entitywidthMM = filled.widthMM!;
+        let entityHeightMM = filled.heightMM!;
 
-        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-            entityHeightMM = this.entity.widthMM;
-            entitywidthMM = this.entity.lengthMM!;
+        if (filled.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = filled.widthMM!;
+            entitywidthMM = filled.plant.lengthMM!;
         }
 
         const res = [
@@ -272,7 +287,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 TM.identity(),
                 TM.translate(wc.x, wc.y),
                 TM.rotate(angle + Math.PI + delta),
-                TM.translate(0, -Math.max(entitywidthMM, entityHeightMM) + offset),
+                TM.translate(0, -entityHeightMM / 2),
                 TM.scale(scale),
                 TM.translate(0, -height / 2),
                 TM.rotate(-angle - Math.PI - delta)
@@ -289,20 +304,23 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         if (!this.isActive()) {
             return false;
         }
-        let entitywidthMM = this.entity.widthMM;
-        let entityHeightMM = this.entity.heightMM;
 
-        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-            entityHeightMM = this.entity.widthMM;
-            entitywidthMM = this.entity.lengthMM!;
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+
+        let entitywidthMM = filled.widthMM!;
+        let entityHeightMM = filled.heightMM!;
+
+        if (filled.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = filled.widthMM!;
+            entitywidthMM = filled.plant.lengthMM!;
         }
         const capDistance = 100;
 
-        const l = -entitywidthMM / 2 -capDistance;
+        const l = -entitywidthMM / 2 - capDistance;
         const r = entitywidthMM / 2 + capDistance;
         const b = entityHeightMM / 2 + capDistance;
-        const t = -entityHeightMM/ 2 - capDistance;
-        if(objectCoord.x >= l && objectCoord.y >= t &&  objectCoord.x <= r  && objectCoord.y <= b )
+        const t = -entityHeightMM / 2 - capDistance;
+        if (objectCoord.x >= l && objectCoord.y >= t && objectCoord.x <= r && objectCoord.y <= b)
             return true;
         return false;
     }
@@ -315,11 +333,21 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     getInletsOutlets(): SystemNode[] {
-        const result: string[] = [this.entity.inletUid, this.entity.outletUid];
-        switch (this.entity.plant.type) {
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+        const result: string[] = [filled.inletUid, filled.outletUid];
+        switch (filled.plant.type) {
             case PlantType.RETURN_SYSTEM:
-                result.push(this.entity.plant.returnUid);
-                result.push(this.entity.plant.gasNodeUid);
+                const hotWaterPlantManufacturer: HotWaterPlantManufacturers = this.document.drawing.metadata.catalog.hotWaterPlant?.find(i => i.uid === 'hotWaterPlant')?.manufacturer as HotWaterPlantManufacturers || "generic";
+
+                result.push(filled.plant.returnUid);
+
+                if (hotWaterPlantManufacturer === 'generic'
+                    || (hotWaterPlantManufacturer === 'rheem'
+                        && this.withGas.includes(filled.plant.rheemVariant))) {
+
+                    result.push(filled.plant.gasNodeUid);
+                }
+
                 break;
             case PlantType.TANK:
             case PlantType.CUSTOM:
@@ -328,8 +356,9 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                 break;
             default:
-                assertUnreachable(this.entity.plant);
+                assertUnreachable(filled.plant);
         }
+
         return result.map((uid) => this.globalStore.get(uid) as SystemNode);
     }
 
@@ -349,7 +378,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
-        
+
         switch (interaction.type) {
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
@@ -404,7 +433,8 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         signed: boolean,
         pressureKPA: number | null
     ): number | null {
-        const ga = context.drawing.metadata.calculationParams.gravitationalAcceleration;
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+
         let sign = 1;
         if (flowLS < 0) {
             const oldFrom = from;
@@ -416,23 +446,30 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
         }
 
-        const { drawing, catalog, globalStore } = context;
+        const { drawing, catalog } = context;
 
-        if (from.connectable === this.entity.inletSystemUid) {
-            if (to.connectable !== this.entity.outletSystemUid) {
+        if (from.connectable === filled.inletSystemUid) {
+            if (to.connectable !== filled.outletSystemUid) {
                 throw new Error("Misconfigured flow network");
             }
         }
 
-        if (to.connectable === this.entity.inletSystemUid) {
-            if (from.connectable !== this.entity.outletSystemUid) {
+        if (to.connectable === filled.inletSystemUid) {
+            if (from.connectable !== filled.outletSystemUid) {
                 throw new Error("Misconfigured flow network");
             }
 
             return sign * (1e10 + flowLS);
         }
 
-        const pl = getPlantPressureLossKPA(this.entity, this.document.drawing, pressureKPA, flowLS);
+        const pl = getPlantPressureLossKPA(
+            filled,
+            drawing,
+            catalog,
+            pressureKPA,
+            flowLS
+        );
+
         if (pl === null) {
             return null;
         }
@@ -441,7 +478,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             sign *
             kpa2head(
                 pl,
-                getFluidDensityOfSystem(this.entity.inletSystemUid, context.doc, context.catalog)!,
+                getFluidDensityOfSystem(filled.inletSystemUid, context.doc, context.catalog)!,
                 context.drawing.metadata.calculationParams.gravitationalAcceleration
             )
         );
@@ -467,28 +504,30 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     onUpdate() {
         super.onUpdate();
 
-        const outlet = this.globalStore.get(this.entity.outletUid);
-        const inlet = this.globalStore.get(this.entity.inletUid);
-        const retlet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.returnUid) : undefined;
-        const gaslet = this.entity.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(this.entity.plant.gasNodeUid) : undefined;
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
 
-        let entitywidthMM = this.entity.widthMM;
-        let entityHeightMM = this.entity.heightMM;
+        const outlet = this.globalStore.get(filled.outletUid);
+        const inlet = this.globalStore.get(filled.inletUid);
+        const retlet = filled.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(filled.plant.returnUid) : undefined;
+        const gaslet = filled.plant.type === PlantType.RETURN_SYSTEM ? this.globalStore.get(filled.plant.gasNodeUid) : undefined;
 
-        if (this.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-            entityHeightMM = this.entity.widthMM;
-            entitywidthMM = this.entity.lengthMM!;
+        let entitywidthMM = filled.widthMM!;
+        let entityHeightMM = filled.heightMM!;
+
+        if (filled.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+            entityHeightMM = filled.widthMM!;
+            entitywidthMM = filled.plant.lengthMM!;
         }
 
         if (retlet instanceof SystemNode) {
-            if (retlet.entity.systemUid !== this.entity.outletSystemUid) {
-                retlet.entity.systemUid = this.entity.outletSystemUid;
+            if (retlet.entity.systemUid !== filled.outletSystemUid) {
+                retlet.entity.systemUid = filled.outletSystemUid;
             }
 
             if (
-                Math.abs(retlet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(retlet.entity.center.x - (entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1)) > EPS
             ) {
-                retlet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                retlet.entity.center.x = (entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1);
             }
 
             if (
@@ -499,35 +538,35 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         }
 
         if (outlet instanceof SystemNode) {
-            if (outlet.entity.systemUid !== this.entity.outletSystemUid) {
-                outlet.entity.systemUid = this.entity.outletSystemUid;
+            if (outlet.entity.systemUid !== filled.outletSystemUid) {
+                outlet.entity.systemUid = filled.outletSystemUid;
             }
 
             if (
-                Math.abs(outlet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(outlet.entity.center.x - (entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1)) > EPS
             ) {
-                outlet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                outlet.entity.center.x = (entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1);
             }
         }
 
         if (inlet instanceof SystemNode) {
-            if (inlet.entity.systemUid !== this.entity.inletSystemUid) {
-                inlet.entity.systemUid = this.entity.inletSystemUid;
+            if (inlet.entity.systemUid !== filled.inletSystemUid) {
+                inlet.entity.systemUid = filled.inletSystemUid;
             }
 
             if (
-                Math.abs(inlet.entity.center.x - (-entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1)) > EPS
+                Math.abs(inlet.entity.center.x - (-entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1)) > EPS
             ) {
-                inlet.entity.center.x = (-entitywidthMM / 2) * (this.entity.rightToLeft ? -1 : 1);
+                inlet.entity.center.x = (-entitywidthMM / 2) * (filled.rightToLeft ? -1 : 1);
             }
         }
 
         if (gaslet instanceof SystemNode) {
 
             if (
-                Math.abs(gaslet.entity.center.x - (entitywidthMM / 2) * (this.entity.rightToLeft ? 1 : -1)) > EPS
+                Math.abs(gaslet.entity.center.x - (entitywidthMM / 2) * (filled.rightToLeft ? 1 : -1)) > EPS
             ) {
-                gaslet.entity.center.x = (entitywidthMM / 2) * (this.entity.rightToLeft ? 1 : -1);
+                gaslet.entity.center.x = (entitywidthMM / 2) * (filled.rightToLeft ? 1 : -1);
             }
 
             if (
@@ -610,25 +649,38 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     resolveDisplayName(context: DrawingContext, entity: PlantEntity): string {
-        let name = this.entity.name;
-        switch(entity.plant.type) {
+        const catalog = context.catalog;
+        const filled = fillPlantDefaults(this.entity, this.document.drawing, catalog);
+
+        let manufacturer: PlantManufacturers = 'generic';
+        let name = entity.name;
+
+        switch (entity.plant.type) {
             case PlantType.RETURN_SYSTEM:
-            case PlantType.PUMP:
-            case PlantType.TANK:
-            case PlantType.DRAINAGE_PIT:
-            case PlantType.CUSTOM:
+                manufacturer = context.doc.drawing.metadata.catalog.hotWaterPlant.find(
+                    i => i.uid === 'hotWaterPlant'
+                )!.manufacturer as HotWaterPlantManufacturers;
+
+                if (manufacturer === 'rheem') {
+                    name = `${manufacturer} ${RheemVariant[entity.plant.rheemVariant!]}`.toUpperCase();
+                }
+
                 break;
             case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-                const catalog = context.catalog;
-                const plant = this.entity.plant as DrainageGreaseInterceptorTrap;
-                const manufacturer = context.doc.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
-                
+                manufacturer = context.doc.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer as GreaseInterceptorTrapManufacturers;
+
                 let manufacturerName = '';
                 if (manufacturer !== 'generic') {
                     manufacturerName = catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name + ' PANELTIM®';
                 }
 
-                name = `${manufacturerName} ${plant.capacity} ${this.entity.name}`
+                name = `${manufacturerName} ${entity.plant.capacity} ${filled.name}`;
+
+                break;
+            case PlantType.PUMP:
+            case PlantType.TANK:
+            case PlantType.DRAINAGE_PIT:
+            case PlantType.CUSTOM:
                 break;
             default:
                 assertUnreachable(entity.plant);

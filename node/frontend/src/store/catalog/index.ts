@@ -4,7 +4,7 @@ import { getters } from "../../../src/store/catalog/getters";
 import { actions } from "../../../src/store/catalog/actions";
 import { mutations } from "../../../src/store/catalog/mutations";
 import CatalogState from "../../../src/store/catalog/types";
-import {EN12056FrequencyFactor} from "../../../../common/src/api/config";
+import { EN12056FrequencyFactor } from "../../../../common/src/api/config";
 
 export const state: CatalogState = {
     defaultCatalog: {
@@ -32,7 +32,10 @@ export const state: CatalogState = {
         },
         hotWaterPlant: {
             manufacturer: [],
+            rheemVariants: [],
             grundfosPressureDrop: {},
+            size: {},
+            storageTanks: {},
         }
     },
     loaded: false

@@ -4,12 +4,12 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import CalculationEngine from "../../../src/calculations/calculation-engine";
-import {EntityType, getEntityName} from "../../../../common/src/api/document/entities/types";
+import { EntityType, getEntityName } from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import Flatten from "@flatten-js/core";
-import { cooperativeYield} from "../../../src/htmlcanvas/utils";
+import { cooperativeYield } from "../../../src/htmlcanvas/utils";
 import { isCalculated } from "../../../src/store/document/calculations";
 import * as TM from "transformation-matrix";
 import { levelIncludesRiser, tm2flatten } from "../../../src/htmlcanvas/lib/utils";
@@ -302,7 +302,7 @@ export default class CalculationLayer extends LayerImplementation {
             context.globalStore,
             context.document,
             context.effectiveCatalog,
-            (success) => {
+            async (success) => {
                 if (success) {
                     context.document.uiState.lastCalculationId = context.document.nextId;
                     context.document.uiState.lastCalculationUiSettings = {
@@ -310,8 +310,11 @@ export default class CalculationLayer extends LayerImplementation {
                     context.document.uiState.lastCalculationSuccess = true;
 
                     const calculationReport = createCalculationReport(context);
-                    updateCalculationReport(context.document.documentId, calculationReport)    
+                    updateCalculationReport(context.document.documentId, calculationReport)
                 }
+
+                await context.$store.dispatch("document/commit", { skipUndo: false });
+
                 context.document.uiState.isCalculating = false;
 
                 done();
@@ -322,7 +325,7 @@ export default class CalculationLayer extends LayerImplementation {
     }
 }
 function createCalculationReport(context: CanvasContext) {
-    const calculationReport: AbbreviatedCalculationReport = { calculations: {} };    
+    const calculationReport: AbbreviatedCalculationReport = { calculations: {} };
     const calculations = calculationReport.calculations;
     for (const k of context.globalStore.getCalculations().keys()) {
         const calc = context.globalStore.getCalculations().get(k);
@@ -341,13 +344,13 @@ function createCalculationReport(context: CanvasContext) {
                     const riserCalc = calc as RiserCalculation;
                     const pipesComponents: PipeCalculationReportEntry[] = [];
                     const sortedLevels = Object.values(context.document.drawing.levels).sort((a, b) => a.floorHeightM - b.floorHeightM);
-                    for(let lvlIndex = 0; lvlIndex < sortedLevels.length-1; lvlIndex++ ) {
+                    for (let lvlIndex = 0; lvlIndex < sortedLevels.length - 1; lvlIndex++) {
                         const level = sortedLevels[lvlIndex];
-                        pipesComponents.push( {
+                        pipesComponents.push({
                             type: EntityType.PIPE,
                             nominalSizeMM: riserCalc.heights[level.uid].sizeMM,
-                            lengthM: lvlIndex < sortedLevels.length ? sortedLevels[lvlIndex+1].floorHeightM - level.floorHeightM : 0,
-                        } );
+                            lengthM: lvlIndex < sortedLevels.length ? sortedLevels[lvlIndex + 1].floorHeightM - level.floorHeightM : 0,
+                        });
                     }
                     const riserCalcEntry = {
                         type: EntityType.RISER,
@@ -357,8 +360,8 @@ function createCalculationReport(context: CanvasContext) {
                     break;
                 default:
                     break;
-                }
             }
+        }
     }
     return calculationReport;
 }

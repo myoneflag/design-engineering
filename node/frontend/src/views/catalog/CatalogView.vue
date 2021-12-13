@@ -40,7 +40,7 @@
                             <b-col cols="12">
                                 <b-collapse :id="'collapse' + prop" :visible="onlyOneTable">
                                     <b-form-group 
-                                        v-if="paths.length <= 2 && prop === 'prv' || prop === 'hotWaterPlant'" 
+                                        v-if="paths.length <= 2 && prop === 'prv'" 
                                         :label-cols="3" 
                                         label="Manufacturer"
                                         class="manufacturer-field mt-4"
@@ -169,6 +169,7 @@
             </template>
         </template>
         
+        <HotWaterPlantCatalog v-if="displayCatalog('hotWaterPlant')" @save="save"></HotWaterPlantCatalog>
         <GreaseInterceptorTrapCatalog v-if="displayCatalog('greaseInterceptorTrap')" @save="save"></GreaseInterceptorTrapCatalog>
     </b-container>
 </template>
@@ -188,10 +189,12 @@ import { SelectedMaterialManufacturer } from "../../../../common/src/api/documen
 import { HotWaterPlantGrundfosSettingsName } from "../../../../common/src/api/document/entities/plants/plant-types";
 import { SupportedLocales } from "../../../../common/src/api/locale";
 import GreaseInterceptorTrapCatalog from "./GreaseInterceptorTrapCatalog.vue";
+import HotWaterPlantCatalog from "./HotWaterPlantCatalog.vue";
 
 @Component({
     components: { 
         MainNavBar,
+        HotWaterPlantCatalog,
         GreaseInterceptorTrapCatalog,
     },
     props: {
@@ -199,6 +202,12 @@ import GreaseInterceptorTrapCatalog from "./GreaseInterceptorTrapCatalog.vue";
     }
 })
 export default class CatalogView extends Vue {
+    private readonly catalogWidthScreenList = [
+        'greaseInterceptorTrap',
+        'hotWaterPlant',
+        'hotWaterPlant-circulatingPumps',
+    ];
+
     onRowClick(prop: string, params: Array<{ _key: string }>) {
         if (params.length === 0) {
             return;
@@ -257,10 +266,6 @@ export default class CatalogView extends Vue {
             pathArr.splice(2, 0, this.manufacturer);
         }
 
-        if (pathArr[0] === 'hotWaterPlant' && pathArr.length === 2) {
-            pathArr.splice(pathArr.length - 1, 1);
-        }
-
         if (pathArr.join(".") === "") {
             return this.catalog;
         }
@@ -282,9 +287,7 @@ export default class CatalogView extends Vue {
         let numTables = 0;
         for (const key of Object.keys(schema)) {
             if (data.hasOwnProperty(key)) {
-                if (schema[key] && schema[key]!.table 
-                    || key === 'balancingValves'
-                    || key === 'hotWaterPlant') {
+                if (schema[key] && schema[key]!.table || key === 'balancingValves') {
                     numTables++;
                 }
             }
@@ -294,9 +297,9 @@ export default class CatalogView extends Vue {
 
     get manufacturer(): string {
         /* Simple, just to avoid error because this catalog is separated into a new component */
-        if (this.paths[1]?.text === 'greaseInterceptorTrap') return "";
+        if (this.catalogWidthScreenList.includes(this.paths[1]?.text)) return "";
 
-        if (this.paths[1] && this.paths[1].text in ['prv', 'hotWaterPlant']) {
+        if (this.paths[1]?.text === 'prv') {
             return this.selMtlMftr(this.paths[1].text)[0]?.manufacturer || 'generic';
         } else if (this.paths.length <= 2) {
             return '';
@@ -310,7 +313,7 @@ export default class CatalogView extends Vue {
     }
 
     get inCatalogScreen() {
-        return !(this.paths[1]?.text !== 'greaseInterceptorTrap');
+        return this.catalogWidthScreenList.includes(this.paths[1]?.text);
     }
 
     display(units: Units | undefined, prop: string) {
@@ -394,16 +397,6 @@ export default class CatalogView extends Vue {
             } else if (prop === 'prv') {
                 const manufacturer = this.document.drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
                 entries = entries.size[manufacturer];
-            } else if (prop === 'hotWaterPlant') {
-                const manufacturer = this.document.drawing.metadata.catalog.hotWaterPlant[0]?.manufacturer || 'generic';
-                
-                if (manufacturer === 'grundfos') {
-                    entries = entries.grundfosPressureDrop;
-                } else {
-                    return { items: [], fields: [] }
-                }
-            } else if (prop === 'grundfosPressureDrop') {
-                entries = entries[this.paths[2].text];
             }
 
             for (const [key, value] of Object.entries(entries)) {
@@ -514,11 +507,7 @@ export default class CatalogView extends Vue {
                             item[table.primaryName] = parseFloat(Number(item[table.primaryName]).toFixed(5));
                         }
                     } else {
-                        if (prop === 'hotWaterPlant') {
-                            item[table.primaryName] = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[key];
-                        } else {
-                            item[table.primaryName] = key;
-                        }
+                        item[table.primaryName] = key;
                     }
                 }
 
@@ -637,8 +626,11 @@ export default class CatalogView extends Vue {
     }
 
     displayCatalog(catalog: string) {
-        return (!this.paths[1] || this.paths[1].text === catalog) 
-            && (catalog === 'greaseInterceptorTrap' && this.document.locale === SupportedLocales.AU);
+        if (catalog === 'greaseInterceptorTrap' && this.document.locale !== SupportedLocales.AU) return false;
+        
+        return this.paths.length === 1
+            || this.paths[1]?.text === catalog
+            || (this.paths[1]?.text === 'hotWaterPlant-circulatingPumps' && catalog === 'hotWaterPlant');
     }
 }
 </script>

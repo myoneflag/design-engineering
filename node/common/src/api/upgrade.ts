@@ -4,14 +4,14 @@ import {
     initialAustralianDrawing,
     initialDrainageProperties
 } from "./document/drawing";
-import {EntityType} from "./document/entities/types";
-import {InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards} from "./config";
-import {PlantType} from "./document/entities/plants/plant-types";
-import {cloneSimple} from "../lib/utils";
-import {FlowSourceEntityV11} from "./document/entities/flow-source-entity";
+import { EntityType } from "./document/entities/types";
+import { InsulationJackets, InsulationMaterials, StandardFlowSystemUids, SupportedPsdStandards } from "./config";
+import { PlantType } from "./document/entities/plants/plant-types";
+import { cloneSimple } from "../lib/utils";
+import { FlowSourceEntityV11 } from "./document/entities/flow-source-entity";
 import { v4 as uuidv4 } from 'uuid';
-import {FlowConfiguration, SystemNodeEntity} from "./document/entities/big-valve/big-valve-entity";
-import {ValveType} from "./document/entities/directed-valves/valve-types";
+import { FlowConfiguration, SystemNodeEntity } from "./document/entities/big-valve/big-valve-entity";
+import { ValveType } from "./document/entities/directed-valves/valve-types";
 
 // This file is for managing upgrades between versions.
 // Remember to copy this directory before developing a major change, and bump the api version number, then
@@ -315,14 +315,14 @@ export function upgrade18to19(original: DrawingState) {
     }
 }
 
-    // Then, we have to add fixtureUnits to load nodes.
-    // Add variant field
+// Then, we have to add fixtureUnits to load nodes.
+// Add variant field
 
-    // Add drainage rough in to fixtures.
-    // Vent colour setting to flow systems
+// Add drainage rough in to fixtures.
+// Vent colour setting to flow systems
 
 
-const newSewerNodeOf: {[key: string]: string} = {};
+const newSewerNodeOf: { [key: string]: string } = {};
 
 export function upgrade19to20and21(original: DrawingState) {
     if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {

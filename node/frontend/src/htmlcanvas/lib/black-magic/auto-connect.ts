@@ -32,6 +32,7 @@ import {assertUnreachable, isDrainage, StandardFlowSystemUids} from "../../../..
 import {Coord, NetworkType} from "../../../../../common/src/api/document/drawing";
 import {fillDirectedValveFields} from "../../../store/document/entities/fillDirectedValveFields";
 import {fillDefaultLoadNodeFields} from "../../../store/document/entities/fillDefaultLoadNodeFields";
+import { fillPlantDefaults } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -254,7 +255,12 @@ export class AutoConnector {
                     );
                     return [fixture.outletAboveFloorM!, fixture.outletAboveFloorM!];
                 case EntityType.PLANT:
-                    return [entity.heightAboveFloorM, entity.heightAboveFloorM];
+                    const filled = fillPlantDefaults(
+                        entity,
+                        this.context.document.drawing,
+                        this.context.effectiveCatalog,
+                    )
+                    return [filled.heightAboveFloorM!, filled.heightAboveFloorM!];
                 case EntityType.GAS_APPLIANCE:
                     return [entity.outletAboveFloorM, entity.outletAboveFloorM];
                 case EntityType.BACKGROUND_IMAGE:
@@ -400,6 +406,11 @@ export class AutoConnector {
                             }
                             break;
                         case EntityType.PLANT:
+                            const filled = fillPlantDefaults(
+                                po.entity,
+                                this.context.document.drawing,
+                                this.context.effectiveCatalog,
+                            );
                             if (me.entity.uid === po.entity.inletUid) {
                                 vec = Flatten.vector([-1, 0])
                                     .rotate((po.toWorldAngleDeg(0) / 180) * Math.PI)
@@ -409,7 +420,7 @@ export class AutoConnector {
                                     .rotate((po.toWorldAngleDeg(0) / 180) * Math.PI)
                                     .multiply(PLANT_EXTEND_DIST_MM);
                             }
-                            heightM = po.entity.heightAboveFloorM;
+                            heightM = filled.heightAboveFloorM!;
                             break;
                         case EntityType.BACKGROUND_IMAGE:
                         case EntityType.FITTING:

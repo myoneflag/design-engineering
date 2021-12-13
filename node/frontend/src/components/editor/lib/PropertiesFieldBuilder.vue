@@ -1,9 +1,9 @@
 <template>
     <b-row>
         <b-col>
-            <template v-for="field in fields" >
-            <b-form-group
-                label-size="sm"
+            <template v-for="field in fields">
+                <b-form-group
+                    label-size="sm"
                     v-if="!field.hideFromPropertyWindow"
                 :key="field.property"
                 :id="'input-group-' + field.property"

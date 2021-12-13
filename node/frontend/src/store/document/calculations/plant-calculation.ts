@@ -1,10 +1,10 @@
-import {CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
-import {Calculation, CalculationType} from "../../../../src/store/document/calculations/types";
-import {Units} from "../../../../../common/src/lib/measurements";
+import { CalculationField, FieldCategory } from "../../../../src/store/document/calculations/calculation-field";
+import { Calculation, CalculationType } from "../../../../src/store/document/calculations/types";
+import { Units } from "../../../../../common/src/lib/measurements";
 import PlantEntity from "../../../../../common/src/api/document/entities/plants/plant-entity";
-import {PlantType} from "../../../../../common/src/api/document/entities/plants/plant-types";
-import {DocumentState} from "../types";
-import {assertUnreachable} from "../../../../../common/src/api/config";
+import { HotWaterPlantManufacturers, PlantType } from "../../../../../common/src/api/document/entities/plants/plant-types";
+import { DocumentState } from "../types";
+import { assertUnreachable } from "../../../../../common/src/api/config";
 
 export default interface PlantCalculation extends Calculation {
     pressureDropKPA: number | null;
@@ -17,7 +17,9 @@ export default interface PlantCalculation extends Calculation {
     gasPressureKPA: number | null;
 
     size: string | null;
-    model: string | null;
+    model: string | string[] | null;
+    widthMM: number | null;
+    depthMM: number | null;
 }
 
 export function makePlantCalculationFields(value: PlantEntity, doc: DocumentState): CalculationField[] {
@@ -79,6 +81,10 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
         ];
 
         if (value.plant.type === PlantType.RETURN_SYSTEM) {
+            const manufacturer = doc.drawing.metadata.catalog.hotWaterPlant.find(
+                i => i.uid === 'hotWaterPlant'
+            )?.manufacturer as HotWaterPlantManufacturers;
+
             results.push(
                 {
                     property: "gasFlowRateMJH",
@@ -87,7 +93,6 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                     units: Units.MegajoulesPerHour,
                     category: FieldCategory.FlowRate,
                 },
-
                 {
                     property: "gasPressureKPA",
                     title: "Gas Pressure",
@@ -95,6 +100,22 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                     units: Units.KiloPascals,
                     category: FieldCategory.FlowRate,
                 },
+                ...(manufacturer === 'rheem' && [{
+                    property: "model",
+                    title: "Model",
+                    short: "",
+                    units: Units.None,
+                    category: FieldCategory.FlowRate,
+                    static: true,
+                },
+                {
+                    property: "size",
+                    title: "Dimensions w/ Clearance",
+                    short: "",
+                    units: Units.None,
+                    category: FieldCategory.FlowRate,
+                    static: true,
+                }] as CalculationField[] || [])
             );
         }
 
@@ -107,6 +128,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                     units: Units.None,
                     category: FieldCategory.GreaseInterceptorTrap,
                     layouts: ['drainage'],
+                    static: true,
                 },
                 {
                     property: "model",
@@ -115,6 +137,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                     units: Units.None,
                     category: FieldCategory.GreaseInterceptorTrap,
                     layouts: ['drainage'],
+                    static: true,
                 },
             );
         }
@@ -144,5 +167,7 @@ export function emptyPlantCalculation(): PlantCalculation {
         warnings: null,
         size: null,
         model: null,
+        widthMM: null,
+        depthMM: null,
     };
 }

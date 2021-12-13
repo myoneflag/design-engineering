@@ -1,6 +1,7 @@
 import { DwellingStandardType, PSDStandardType } from "../psd-standard/types";
 import { Catalog, State } from "../types";
 import { EN12056FrequencyFactor } from "../../config";
+import { RheemVariant, RheemVariantValues } from "../../document/entities/plants/plant-types";
 
 export const ukCatalog: Catalog = {
     fixtures: {
@@ -5717,8 +5718,51 @@ export const ukCatalog: Catalog = {
     },
     hotWaterPlant: {
         manufacturer: [
-            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: "Hot Water Plant" },
-            { name: "Grundfos", abbreviation: "Grundfos", uid: "grundfos", priceTableName: "Hot Water Plant" }
+            {
+                name: "Generic",
+                abbreviation: "Generic",
+                uid: "generic",
+                priceTableName: "Hot Water Plant",
+                returns: true
+            },
+            {
+                name: "Grundfos",
+                abbreviation: "Grundfos",
+                uid: "grundfos",
+                priceTableName: "Hot Water Plant",
+                returns: true,
+            },
+            {
+                name: "Generic",
+                abbreviation: "Generic",
+                uid: "generic",
+                priceTableName: "Hot Water Plant",
+            },
+            {
+                name: "Rheem",
+                abbreviation: "Rheem",
+                uid: "rheem",
+                priceTableName: "Hot Water Plant"
+            },
+
+        ],
+        rheemVariants: [
+            {
+                name: RheemVariant.continuousFlow,
+                uid: RheemVariantValues.continuousFlow,
+            },
+            {
+                name: RheemVariant.tankpak,
+                uid: RheemVariantValues.tankpak,
+            },
+            {
+                name: RheemVariant.electric,
+                uid: RheemVariantValues.electric,
+            },
+            {
+                name: RheemVariant.heatPump,
+                uid: RheemVariantValues.heatPump,
+            },
         ],
         grundfosPressureDrop: {
             "20-60-1": {
@@ -5847,7 +5891,2373 @@ export const ukCatalog: Catalog = {
                 "2.886": "13.118",
                 "3.056": "9.814",
             }
-        }
+        },
+        size: {
+            rheem: {
+                continuousFlow: {
+                    1: {
+                        heaters: 1,
+                        widthMM: 1000,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 0.45,
+                            30: 0.381,
+                            35: 0.3,
+                            40: 0.286,
+                            45: 0.254,
+                            50: 0.229,
+                            55: 0.208,
+                            60: 0.1,
+                            65: 0.176,
+                            70: 0.163,
+                        },
+                        gas: {
+                            requirement: 205,
+                            pressure: 2.75,
+                        }
+                    },
+                    2: {
+                        heaters: 2,
+                        widthMM: 1350,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 0.9,
+                            30: 0.762,
+                            35: 0.6,
+                            40: 0.571,
+                            45: 0.508,
+                            50: 0.457,
+                            55: 0.416,
+                            60: 0.2,
+                            65: 0.352,
+                            70: 0.326,
+                        },
+                        gas: {
+                            requirement: 410,
+                            pressure: 2.75,
+                        }
+                    },
+                    3: {
+                        heaters: 3,
+                        widthMM: 1700,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 1.35,
+                            30: 1.143,
+                            35: 0.9,
+                            40: 0.857,
+                            45: 0.762,
+                            50: 0.686,
+                            55: 0.623,
+                            60: 0.3,
+                            65: 0.527,
+                            70: 0.490,
+                        },
+                        gas: {
+                            requirement: 615,
+                            pressure: 2.75,
+                        }
+                    },
+                    4: {
+                        heaters: 4,
+                        widthMM: 2050,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 1.8,
+                            30: 1.524,
+                            35: 1.2,
+                            40: 1.143,
+                            45: 1.016,
+                            50: 0.914,
+                            55: 0.831,
+                            60: 0.4,
+                            65: 0.703,
+                            70: 0.653,
+                        },
+                        gas: {
+                            requirement: 820,
+                            pressure: 2.75,
+                        }
+                    },
+                    5: {
+                        heaters: 5,
+                        widthMM: 2400,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 2.25,
+                            30: 1.904,
+                            35: 1.5,
+                            40: 1.428,
+                            45: 1.270,
+                            50: 1.143,
+                            55: 1.039,
+                            60: 0.5,
+                            65: 0.879,
+                            70: 0.816,
+                        },
+                        gas: {
+                            requirement: 1025,
+                            pressure: 2.75,
+                        }
+                    },
+                    6: {
+                        heaters: 6,
+                        widthMM: 2750,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 2.7,
+                            30: 2.285,
+                            35: 1.8,
+                            40: 1.714,
+                            45: 1.524,
+                            50: 1.371,
+                            55: 1.247,
+                            60: 0.6,
+                            65: 1.055,
+                            70: 0.979,
+                        },
+                        gas: {
+                            requirement: 1230,
+                            pressure: 2.75,
+                        }
+                    },
+                    7: {
+                        heaters: 7,
+                        widthMM: 3100,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 3.15,
+                            30: 2.666,
+                            35: 2.1,
+                            40: 2.000,
+                            45: 1.778,
+                            50: 1.600,
+                            55: 1.454,
+                            60: 0.7,
+                            65: 1.231,
+                            70: 1.143,
+                        },
+                        gas: {
+                            requirement: 1435,
+                            pressure: 2.75,
+                        }
+                    },
+                    8: {
+                        heaters: 8,
+                        widthMM: 3450,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 3.6,
+                            30: 3.047,
+                            35: 2.4,
+                            40: 2.285,
+                            45: 2.031,
+                            50: 1.828,
+                            55: 1.662,
+                            60: 0.8,
+                            65: 1.406,
+                            70: 1.306,
+                        },
+                        gas: {
+                            requirement: 1640,
+                            pressure: 2.75,
+                        }
+                    },
+                    9: {
+                        heaters: 9,
+                        widthMM: 3800,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 4.05,
+                            30: 3.428,
+                            35: 2.7,
+                            40: 2.571,
+                            45: 2.285,
+                            50: 2.057,
+                            55: 1.870,
+                            60: 0.9,
+                            65: 1.582,
+                            70: 1.469,
+                        },
+                        gas: {
+                            requirement: 1845,
+                            pressure: 2.75,
+                        }
+                    },
+                    10: {
+                        heaters: 10,
+                        widthMM: 4150,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 4.5,
+                            30: 3.809,
+                            35: 3,
+                            40: 2.857,
+                            45: 2.539,
+                            50: 2.285,
+                            55: 2.078,
+                            60: 1,
+                            65: 1.758,
+                            70: 1.632,
+                        },
+                        gas: {
+                            requirement: 2050,
+                            pressure: 2.75,
+                        }
+                    },
+                    11: {
+                        heaters: 11,
+                        widthMM: 4500,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 4.95,
+                            30: 4.190,
+                            35: 3.3,
+                            40: 3.142,
+                            45: 2.793,
+                            50: 2.514,
+                            55: 2.285,
+                            60: 1.1,
+                            65: 1.934,
+                            70: 1.796,
+                        },
+                        gas: {
+                            requirement: 2255,
+                            pressure: 2.75,
+                        }
+                    },
+                    12: {
+                        heaters: 12,
+                        widthMM: 4850,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 5.4,
+                            30: 4.571,
+                            35: 3.6,
+                            40: 3.428,
+                            45: 3.047,
+                            50: 2.742,
+                            55: 2.493,
+                            60: 1.2,
+                            65: 2.110,
+                            70: 1.959,
+                        },
+                        gas: {
+                            requirement: 2460,
+                            pressure: 2.75,
+                        }
+                    },
+                    13: {
+                        heaters: 13,
+                        widthMM: 5200,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 5.85,
+                            30: 4.952,
+                            35: 3.9,
+                            40: 3.714,
+                            45: 3.301,
+                            50: 2.971,
+                            55: 2.701,
+                            60: 1.3,
+                            65: 2.285,
+                            70: 2.122,
+                        },
+                        gas: {
+                            requirement: 2665,
+                            pressure: 2.75,
+                        }
+                    },
+                    14: {
+                        heaters: 14,
+                        widthMM: 5550,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 6.3,
+                            30: 5.333,
+                            35: 4.2,
+                            40: 3.999,
+                            45: 3.555,
+                            50: 3.200,
+                            55: 2.909,
+                            60: 1.4,
+                            65: 2.461,
+                            70: 2.285,
+                        },
+                        gas: {
+                            requirement: 2870,
+                            pressure: 2.75,
+                        }
+                    },
+                    15: {
+                        heaters: 15,
+                        widthMM: 5900,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 6.75,
+                            30: 5.713,
+                            35: 4.5,
+                            40: 4.285,
+                            45: 3.809,
+                            50: 3.428,
+                            55: 3.116,
+                            60: 1.5,
+                            65: 2.637,
+                            70: 2.449,
+                        },
+                        gas: {
+                            requirement: 3075,
+                            pressure: 2.75,
+                        }
+                    },
+                    16: {
+                        heaters: 16,
+                        widthMM: 6250,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 7.2,
+                            30: 6.094,
+                            35: 4.8,
+                            40: 4.571,
+                            45: 4.063,
+                            50: 3.657,
+                            55: 3.324,
+                            60: 1.6,
+                            65: 2.813,
+                            70: 2.612,
+                        },
+                        gas: {
+                            requirement: 3280,
+                            pressure: 2.75,
+                        }
+                    },
+                    17: {
+                        heaters: 17,
+                        widthMM: 6600,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 7.65,
+                            30: 6.475,
+                            35: 5.1,
+                            40: 4.856,
+                            45: 4.317,
+                            50: 3.885,
+                            55: 3.532,
+                            60: 1.7,
+                            65: 2.989,
+                            70: 2.775,
+                        },
+                        gas: {
+                            requirement: 3485,
+                            pressure: 2.75,
+                        }
+                    },
+                    18: {
+                        heaters: 18,
+                        widthMM: 6950,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 8.1,
+                            30: 6.856,
+                            35: 5.4,
+                            40: 5.142,
+                            45: 4.571,
+                            50: 4.114,
+                            55: 3.740,
+                            60: 1.8,
+                            65: 3.164,
+                            70: 2.938,
+                        },
+                        gas: {
+                            requirement: 3690,
+                            pressure: 2.75,
+                        }
+                    },
+                    19: {
+                        heaters: 19,
+                        widthMM: 7300,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 8.55,
+                            30: 7.237,
+                            35: 5.7,
+                            40: 5.428,
+                            45: 4.825,
+                            50: 4.342,
+                            55: 3.948,
+                            60: 1.9,
+                            65: 3.340,
+                            70: 3.102,
+                        },
+                        gas: {
+                            requirement: 3895,
+                            pressure: 2.75,
+                        }
+                    },
+                    20: {
+                        heaters: 20,
+                        widthMM: 7650,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 9,
+                            30: 7.618,
+                            35: 6,
+                            40: 5.713,
+                            45: 5.079,
+                            50: 4.571,
+                            55: 4.155,
+                            60: 2,
+                            65: 3.516,
+                            70: 3.265,
+                        },
+                        gas: {
+                            requirement: 4100,
+                            pressure: 2.75,
+                        }
+                    },
+                    21: {
+                        heaters: 21,
+                        widthMM: 8000,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 9.45,
+                            30: 7.999,
+                            35: 6.3,
+                            40: 5.999,
+                            45: 5.333,
+                            50: 4.799,
+                            55: 4.363,
+                            60: 2.1,
+                            65: 3.692,
+                            70: 3.428,
+                        },
+                        gas: {
+                            requirement: 4305,
+                            pressure: 2.75,
+                        }
+                    },
+                    22: {
+                        heaters: 22,
+                        widthMM: 8350,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 9.9,
+                            30: 8.380,
+                            35: 6.6,
+                            40: 6.285,
+                            45: 5.587,
+                            50: 5.028,
+                            55: 4.571,
+                            60: 2.2,
+                            65: 3.868,
+                            70: 3.591,
+                        },
+                        gas: {
+                            requirement: 4510,
+                            pressure: 2.75,
+                        }
+                    },
+                    23: {
+                        heaters: 23,
+                        widthMM: 8700,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 10.35,
+                            30: 8.761,
+                            35: 6.9,
+                            40: 6.571,
+                            45: 5.840,
+                            50: 5.256,
+                            55: 4.779,
+                            60: 2.3,
+                            65: 4.043,
+                            70: 3.755,
+                        },
+                        gas: {
+                            requirement: 4715,
+                            pressure: 2.75,
+                        }
+                    },
+                    24: {
+                        heaters: 24,
+                        widthMM: 9050,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 10.8,
+                            30: 9.142,
+                            35: 7.2,
+                            40: 6.856,
+                            45: 6.094,
+                            50: 5.485,
+                            55: 4.986,
+                            60: 2.4,
+                            65: 4.219,
+                            70: 3.918,
+                        },
+                        gas: {
+                            requirement: 4920,
+                            pressure: 2.75,
+                        }
+                    },
+                    25: {
+                        heaters: 25,
+                        widthMM: 9400,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 11.25,
+                            30: 9.522,
+                            35: 7.5,
+                            40: 7.142,
+                            45: 6.348,
+                            50: 5.713,
+                            55: 5.194,
+                            60: 2.5,
+                            65: 4.395,
+                            70: 4.081,
+                        },
+                        gas: {
+                            requirement: 5125,
+                            pressure: 2.75,
+                        }
+                    },
+                    26: {
+                        heaters: 26,
+                        widthMM: 9750,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 11.7,
+                            30: 9.903,
+                            35: 7.8,
+                            40: 7.428,
+                            45: 6.602,
+                            50: 5.942,
+                            55: 5.402,
+                            60: 2.6,
+                            65: 4.571,
+                            70: 4.244,
+                        },
+                        gas: {
+                            requirement: 5330,
+                            pressure: 2.75,
+                        }
+                    },
+                    27: {
+                        heaters: 27,
+                        widthMM: 10100,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 12.15,
+                            30: 10.284,
+                            35: 8.1,
+                            40: 7.713,
+                            45: 6.856,
+                            50: 6.171,
+                            55: 5.610,
+                            60: 2.7,
+                            65: 4.747,
+                            70: 4.408,
+                        },
+                        gas: {
+                            requirement: 5535,
+                            pressure: 2.75,
+                        }
+                    },
+                    28: {
+                        heaters: 28,
+                        widthMM: 10450,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 12.6,
+                            30: 10.665,
+                            35: 8.4,
+                            40: 7.999,
+                            45: 7.110,
+                            50: 6.399,
+                            55: 5.817,
+                            60: 2.8,
+                            65: 4.922,
+                            70: 4.571,
+                        },
+                        gas: {
+                            requirement: 5740,
+                            pressure: 2.75,
+                        }
+                    },
+                    29: {
+                        heaters: 29,
+                        widthMM: 10800,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 13.05,
+                            30: 11.046,
+                            35: 8.7,
+                            40: 8.285,
+                            45: 7.364,
+                            50: 6.628,
+                            55: 6.025,
+                            60: 2.9,
+                            65: 5.098,
+                            70: 4.734,
+                        },
+                        gas: {
+                            requirement: 5945,
+                            pressure: 2.75,
+                        }
+                    },
+                    30: {
+                        heaters: 30,
+                        widthMM: 11150,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 13.5,
+                            30: 11.427,
+                            35: 9,
+                            40: 8.570,
+                            45: 7.618,
+                            50: 6.856,
+                            55: 6.233,
+                            60: 3,
+                            65: 5.274,
+                            70: 4.897,
+                        },
+                        gas: {
+                            requirement: 6150,
+                            pressure: 2.75,
+                        }
+                    },
+                    31: {
+                        heaters: 31,
+                        widthMM: 11500,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 13.95,
+                            30: 11.808,
+                            35: 9.3,
+                            40: 8.856,
+                            45: 7.872,
+                            50: 7.085,
+                            55: 6.441,
+                            60: 3.1,
+                            65: 5.450,
+                            70: 5.061,
+                        },
+                        gas: {
+                            requirement: 6355,
+                            pressure: 2.75,
+                        }
+                    },
+                    32: {
+                        heaters: 32,
+                        widthMM: 11850,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 14.4,
+                            30: 12.189,
+                            35: 9.6,
+                            40: 9.142,
+                            45: 8.126,
+                            50: 7.313,
+                            55: 6.648,
+                            60: 3.2,
+                            65: 5.626,
+                            70: 5.224,
+                        },
+                        gas: {
+                            requirement: 6560,
+                            pressure: 2.75,
+                        }
+                    },
+                    33: {
+                        heaters: 33,
+                        widthMM: 12200,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 14.85,
+                            30: 12.570,
+                            35: 9.9,
+                            40: 9.427,
+                            45: 8.380,
+                            50: 7.542,
+                            55: 6.856,
+                            60: 3.3,
+                            65: 5.801,
+                            70: 5.387,
+                        },
+                        gas: {
+                            requirement: 6765,
+                            pressure: 2.75,
+                        }
+                    },
+                    34: {
+                        heaters: 34,
+                        widthMM: 12550,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 15.3,
+                            30: 12.951,
+                            35: 10.2,
+                            40: 9.713,
+                            45: 8.634,
+                            50: 7.770,
+                            55: 7.064,
+                            60: 3.4,
+                            65: 5.977,
+                            70: 5.550,
+                        },
+                        gas: {
+                            requirement: 6970,
+                            pressure: 2.75,
+                        }
+                    },
+                    35: {
+                        heaters: 35,
+                        widthMM: 12900,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 15.75,
+                            30: 13.331,
+                            35: 10.5,
+                            40: 9.999,
+                            45: 8.888,
+                            50: 7.999,
+                            55: 7.272,
+                            60: 3.5,
+                            65: 6.153,
+                            70: 5.713,
+                        },
+                        gas: {
+                            requirement: 7175,
+                            pressure: 2.75,
+                        }
+                    },
+                    36: {
+                        heaters: 36,
+                        widthMM: 13250,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 16.2,
+                            30: 13.712,
+                            35: 10.8,
+                            40: 10.284,
+                            45: 9.142,
+                            50: 8.227,
+                            55: 7.479,
+                            60: 3.6,
+                            65: 6.329,
+                            70: 5.877,
+                        },
+                        gas: {
+                            requirement: 7380,
+                            pressure: 2.75,
+                        }
+                    },
+                    37: {
+                        heaters: 37,
+                        widthMM: 13600,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 16.65,
+                            30: 14.093,
+                            35: 11.1,
+                            40: 10.570,
+                            45: 9.396,
+                            50: 8.456,
+                            55: 7.687,
+                            60: 3.7,
+                            65: 6.505,
+                            70: 6.040,
+                        },
+                        gas: {
+                            requirement: 7585,
+                            pressure: 2.75,
+                        }
+                    },
+                    38: {
+                        heaters: 38,
+                        widthMM: 13950,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 17.1,
+                            30: 14.474,
+                            35: 11.4,
+                            40: 10.856,
+                            45: 9.649,
+                            50: 8.685,
+                            55: 7.895,
+                            60: 3.8,
+                            65: 6.680,
+                            70: 6.203,
+                        },
+                        gas: {
+                            requirement: 7790,
+                            pressure: 2.75,
+                        }
+                    },
+                    39: {
+                        heaters: 39,
+                        widthMM: 14300,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 17.55,
+                            30: 14.855,
+                            35: 11.7,
+                            40: 11.141,
+                            45: 9.903,
+                            50: 8.913,
+                            55: 8.103,
+                            60: 3.9,
+                            65: 6.856,
+                            70: 6.366,
+                        },
+                        gas: {
+                            requirement: 7995,
+                            pressure: 2.75,
+                        }
+                    },
+                    40: {
+                        heaters: 40,
+                        widthMM: 14650,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 18,
+                            30: 15.236,
+                            35: 12,
+                            40: 11.427,
+                            45: 10.157,
+                            50: 9.142,
+                            55: 8.311,
+                            60: 4,
+                            65: 7.032,
+                            70: 6.530,
+                        },
+                        gas: {
+                            requirement: 8200,
+                            pressure: 2.75,
+                        }
+                    },
+                    41: {
+                        heaters: 41,
+                        widthMM: 15000,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 18.45,
+                            30: 15.617,
+                            35: 12.3,
+                            40: 11.713,
+                            45: 10.411,
+                            50: 9.370,
+                            55: 8.518,
+                            60: 4.1,
+                            65: 7.208,
+                            70: 6.693,
+                        },
+                        gas: {
+                            requirement: 8405,
+                            pressure: 2.75,
+                        }
+                    },
+                    42: {
+                        heaters: 42,
+                        widthMM: 15350,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 18.9,
+                            30: 15.998,
+                            35: 12.6,
+                            40: 11.998,
+                            45: 10.665,
+                            50: 9.599,
+                            55: 8.726,
+                            60: 4.2,
+                            65: 7.384,
+                            70: 6.856,
+                        },
+                        gas: {
+                            requirement: 8610,
+                            pressure: 2.75,
+                        }
+                    },
+                    43: {
+                        heaters: 43,
+                        widthMM: 15700,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 19.35,
+                            30: 16.379,
+                            35: 12.9,
+                            40: 12.284,
+                            45: 10.919,
+                            50: 9.827,
+                            55: 8.934,
+                            60: 4.3,
+                            65: 7.559,
+                            70: 7.019,
+                        },
+                        gas: {
+                            requirement: 8815,
+                            pressure: 2.75,
+                        }
+                    },
+                    44: {
+                        heaters: 44,
+                        widthMM: 16050,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 19.8,
+                            30: 16.760,
+                            35: 13.2,
+                            40: 12.570,
+                            45: 11.173,
+                            50: 10.056,
+                            55: 9.142,
+                            60: 4.4,
+                            65: 7.735,
+                            70: 7.183,
+                        },
+                        gas: {
+                            requirement: 9020,
+                            pressure: 2.75,
+                        }
+                    },
+                    45: {
+                        heaters: 45,
+                        widthMM: 16400,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 20.25,
+                            30: 17.140,
+                            35: 13.5,
+                            40: 12.855,
+                            45: 11.427,
+                            50: 10.284,
+                            55: 9.349,
+                            60: 4.5,
+                            65: 7.911,
+                            70: 7.346,
+                        },
+                        gas: {
+                            requirement: 9225,
+                            pressure: 2.75,
+                        }
+                    },
+                    46: {
+                        heaters: 46,
+                        widthMM: 16750,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 20.7,
+                            30: 17.521,
+                            35: 13.8,
+                            40: 13.141,
+                            45: 11.681,
+                            50: 10.513,
+                            55: 9.557,
+                            60: 4.6,
+                            65: 8.087,
+                            70: 7.509,
+                        },
+                        gas: {
+                            requirement: 9430,
+                            pressure: 2.75,
+                        }
+                    },
+                    47: {
+                        heaters: 47,
+                        widthMM: 17100,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 21.15,
+                            30: 17.902,
+                            35: 14.1,
+                            40: 13.427,
+                            45: 11.935,
+                            50: 10.741,
+                            55: 9.765,
+                            60: 4.7,
+                            65: 8.263,
+                            70: 7.672,
+                        },
+                        gas: {
+                            requirement: 9635,
+                            pressure: 2.75,
+                        }
+                    },
+                    48: {
+                        heaters: 48,
+                        widthMM: 17450,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 21.6,
+                            30: 18.283,
+                            35: 14.4,
+                            40: 13.712,
+                            45: 12.189,
+                            50: 10.970,
+                            55: 9.973,
+                            60: 4.8,
+                            65: 8.438,
+                            70: 7.836,
+                        },
+                        gas: {
+                            requirement: 9840,
+                            pressure: 2.75,
+                        }
+                    },
+                    49: {
+                        heaters: 49,
+                        widthMM: 17800,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 22.05,
+                            30: 18.664,
+                            35: 14.7,
+                            40: 13.998,
+                            45: 12.443,
+                            50: 11.198,
+                            55: 10.180,
+                            60: 4.9,
+                            65: 8.614,
+                            70: 7.999,
+                        },
+                        gas: {
+                            requirement: 10045,
+                            pressure: 2.75,
+                        }
+                    },
+                    50: {
+                        heaters: 50,
+                        widthMM: 18150,
+                        depthMM: 1000,
+                        flowRate: {
+                            25: 22.5,
+                            30: 19.045,
+                            35: 15,
+                            40: 14.284,
+                            45: 12.697,
+                            50: 11.427,
+                            55: 10.388,
+                            60: 5,
+                            65: 8.790,
+                            70: 8.162,
+                        },
+                        gas: {
+                            requirement: 10250,
+                            pressure: 2.75,
+                        }
+                    },
+                },
+                tankpak: {
+                    1: {
+                        heaters: 1,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 1682,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 2055,
+                            30: 1781,
+                            35: 1585,
+                            40: 1438,
+                            45: 1324,
+                            50: 1233,
+                            55: 1158,
+                            60: 1096,
+                            65: 1043,
+                            70: 998,
+                        },
+                        gas: {
+                            requirement: 205,
+                            pressure: 2.75,
+                        }
+                    },
+                    2: {
+                        heaters: 2,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 2049,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 3701,
+                            30: 3152,
+                            35: 2761,
+                            40: 2467,
+                            45: 2238,
+                            50: 2055,
+                            55: 1906,
+                            60: 1781,
+                            65: 1676,
+                            70: 1585,
+                        },
+                        gas: {
+                            requirement: 410,
+                            pressure: 2.75,
+                        }
+                    },
+                    3: {
+                        heaters: 3,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 2416,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 5346,
+                            30: 4524,
+                            35: 3936,
+                            40: 3495,
+                            45: 3152,
+                            50: 2878,
+                            55: 2654,
+                            60: 2467,
+                            65: 2309,
+                            70: 2173,
+                        },
+                        gas: {
+                            requirement: 615,
+                            pressure: 2.75,
+                        }
+                    },
+                    4: {
+                        heaters: 4,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 2783,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 6992,
+                            30: 5895,
+                            35: 5111,
+                            40: 4524,
+                            45: 4067,
+                            50: 3701,
+                            55: 3402,
+                            60: 3152,
+                            65: 2942,
+                            70: 2761,
+                        },
+                        gas: {
+                            requirement: 820,
+                            pressure: 2.75,
+                        }
+                    },
+                    5: {
+                        heaters: 5,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 3150,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 8637,
+                            30: 7266,
+                            35: 6287,
+                            40: 5552,
+                            45: 4981,
+                            50: 4524,
+                            55: 4150,
+                            60: 3838,
+                            65: 3574,
+                            70: 3348,
+                        },
+                        gas: {
+                            requirement: 1025,
+                            pressure: 2.75,
+                        }
+                    },
+                    6: {
+                        heaters: 6,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 3517,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 10283,
+                            30: 8637,
+                            35: 7462,
+                            40: 6581,
+                            45: 5895,
+                            50: 5346,
+                            55: 4898,
+                            60: 4524,
+                            65: 4207,
+                            70: 3936,
+                        },
+                        gas: {
+                            requirement: 1230,
+                            pressure: 2.75,
+                        }
+                    },
+                    7: {
+                        heaters: 7,
+                        tanks: 1,
+                        tanksCategoryL: '410',
+                        widthMM: 3884,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 11928,
+                            30: 10009,
+                            35: 8637,
+                            40: 7609,
+                            45: 6809,
+                            50: 6169,
+                            55: 5646,
+                            60: 5209,
+                            65: 4840,
+                            70: 4524,
+                        },
+                        gas: {
+                            requirement: 1435,
+                            pressure: 2.75,
+                        }
+                    },
+                    8: {
+                        heaters: 8,
+                        tanks: 2,
+                        tanksCategoryL: '410',
+                        widthMM: 5301,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 13984,
+                            30: 11790,
+                            35: 10223,
+                            40: 9047,
+                            45: 8133,
+                            50: 7402,
+                            55: 6804,
+                            60: 6305,
+                            65: 5883,
+                            70: 5521,
+                        },
+                        gas: {
+                            requirement: 1640,
+                            pressure: 2.75,
+                        }
+                    },
+                    9: {
+                        heaters: 9,
+                        tanks: 2,
+                        tanksCategoryL: '410',
+                        widthMM: 5668,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 15629,
+                            30: 13161,
+                            35: 11398,
+                            40: 10076,
+                            45: 9047,
+                            50: 8225,
+                            55: 7552,
+                            60: 6991,
+                            65: 6516,
+                            70: 6109,
+                        },
+                        gas: {
+                            requirement: 1845,
+                            pressure: 2.75,
+                        }
+                    },
+                    10: {
+                        heaters: 10,
+                        tanks: 2,
+                        tanksCategoryL: '410',
+                        widthMM: 4200,
+                        depthMM: 2200,
+                        flowRate: {
+                            25: 17275,
+                            30: 14532,
+                            35: 12573,
+                            40: 11104,
+                            45: 9962,
+                            50: 9047,
+                            55: 8299,
+                            60: 7676,
+                            65: 7149,
+                            70: 6697,
+                        },
+                        gas: {
+                            requirement: 2050,
+                            pressure: 2.75,
+                        }
+                    },
+                    11: {
+                        heaters: 12,
+                        tanks: 2,
+                        tanksCategoryL: '410',
+                        widthMM: 4567,
+                        depthMM: 2200,
+                        flowRate: {
+                            25: 20566,
+                            30: 17275,
+                            35: 14924,
+                            40: 13161,
+                            45: 11790,
+                            50: 10693,
+                            55: 9795,
+                            60: 9047,
+                            65: 8415,
+                            70: 7872,
+                        },
+                        gas: {
+                            requirement: 2460,
+                            pressure: 2.75,
+                        }
+                    },
+                    12: {
+                        heaters: 14,
+                        tanks: 3,
+                        tanksCategoryL: '410',
+                        widthMM: 5984,
+                        depthMM: 2200,
+                        flowRate: {
+                            25: 24267,
+                            30: 20427,
+                            35: 17685,
+                            40: 15628,
+                            45: 14028,
+                            50: 12748,
+                            55: 11701,
+                            60: 10829,
+                            65: 10090,
+                            70: 9457,
+                        },
+                        gas: {
+                            requirement: 2870,
+                            pressure: 2.75,
+                        }
+                    },
+                    13: {
+                        heaters: 16,
+                        tanks: 3,
+                        tanksCategoryL: '410',
+                        widthMM: 6351,
+                        depthMM: 2200,
+                        flowRate: {
+                            25: 27558,
+                            30: 23170,
+                            35: 20036,
+                            40: 17685,
+                            45: 15857,
+                            50: 14394,
+                            55: 13197,
+                            60: 12200,
+                            65: 11356,
+                            70: 10633
+                        },
+                        gas: {
+                            requirement: 3280,
+                            pressure: 2.75,
+                        }
+                    },
+                    14: {
+                        heaters: 18,
+                        tanks: 3,
+                        tanksCategoryL: '410',
+                        widthMM: 6718,
+                        depthMM: 2200,
+                        flowRate: {
+                            25: 30849,
+                            30: 25912,
+                            35: 22386,
+                            40: 19742,
+                            45: 17685,
+                            50: 16039,
+                            55: 14693,
+                            60: 13571,
+                            65: 12622,
+                            70: 11808
+                        },
+                        gas: {
+                            requirement: 3690,
+                            pressure: 2.75,
+                        }
+                    },
+                    15: {
+                        heaters: 1,
+                        tanks: 1,
+                        tanksCategoryL: '325',
+                        widthMM: 1632,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 1970,
+                            30: 1696,
+                            35: 1500,
+                            40: 1353,
+                            45: 1239,
+                            50: 1148,
+                            55: 1073,
+                            60: 1011,
+                            65: 958,
+                            70: 913
+                        },
+                        gas: {
+                            requirement: 205,
+                            pressure: 2.75,
+                        }
+                    },
+                    16: {
+                        heaters: 2,
+                        tanks: 1,
+                        tanksCategoryL: '325',
+                        widthMM: 1999,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 3616,
+                            30: 3067,
+                            35: 2676,
+                            40: 2382,
+                            45: 2153,
+                            50: 1970,
+                            55: 1821,
+                            60: 1696,
+                            65: 1591,
+                            70: 1500
+                        },
+                        gas: {
+                            requirement: 410,
+                            pressure: 2.75,
+                        }
+                    },
+                    17: {
+                        heaters: 3,
+                        tanks: 1,
+                        tanksCategoryL: '325',
+                        widthMM: 2366,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 5261,
+                            30: 4439,
+                            35: 3851,
+                            40: 3410,
+                            45: 3067,
+                            50: 2793,
+                            55: 2569,
+                            60: 2382,
+                            65: 2224,
+                            70: 2088
+                        },
+                        gas: {
+                            requirement: 615,
+                            pressure: 2.75,
+                        }
+                    },
+                    18: {
+                        heaters: 4,
+                        tanks: 1,
+                        tanksCategoryL: '325',
+                        widthMM: 2733,
+                        depthMM: 1500,
+                        flowRate: {
+                            25: 6907,
+                            30: 5810,
+                            35: 5026,
+                            40: 4439,
+                            45: 3982,
+                            50: 3616,
+                            55: 3317,
+                            60: 3067,
+                            65: 2857,
+                            70: 2676
+                        },
+                        gas: {
+                            requirement: 820,
+                            pressure: 2.75,
+                        }
+                    },
+                },
+                electric: {
+                    1: {
+                        model: '1 x 613 050 (10.8kW)',
+                        minimumInitialDelivery: 50,
+                        widthMM: 800,
+                        depthMM: 1465,
+                        flowRate: {
+                            20: 510,
+                            30: 360,
+                            40: 280,
+                            50: 240,
+                            60: 200,
+                            70: 180,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    2: {
+                        model: '1 x 613 050 (14.4kW)',
+                        minimumInitialDelivery: 50,
+                        widthMM: 800,
+                        depthMM: 1465,
+                        flowRate: {
+                            20: 670,
+                            30: 460,
+                            40: 360,
+                            50: 300,
+                            60: 260,
+                            70: 230,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    3: {
+                        model: '1 x 613 315 (10.8kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 775,
+                            30: 625,
+                            40: 545,
+                            50: 505,
+                            60: 465,
+                            70: 445,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    4: {
+                        model: '1 x 613 315 (14.4kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 935,
+                            30: 725,
+                            40: 625,
+                            50: 565,
+                            60: 525,
+                            70: 495,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    5: {
+                        model: '1 x 613 315 (18.0kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1085,
+                            30: 835,
+                            40: 705,
+                            50: 625,
+                            60: 575,
+                            70: 535,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    6: {
+                        model: '2 x 613 315 (21.6kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1550,
+                            30: 1250,
+                            40: 1090,
+                            50: 1010,
+                            60: 930,
+                            70: 890,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    7: {
+                        model: '2 x 613 315 (28.8kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1870,
+                            30: 1450,
+                            40: 1250,
+                            50: 1130,
+                            60: 1050,
+                            70: 990,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    8: {
+                        model: '2 x 613 315 (36.0kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 2170,
+                            30: 1670,
+                            40: 1410,
+                            50: 1250,
+                            60: 1150,
+                            70: 1070,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    9: {
+                        model: '3 x 613 315 (32.4kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 2325,
+                            30: 1875,
+                            40: 1635,
+                            50: 1515,
+                            60: 1395,
+                            70: 1335,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    10: {
+                        model: '3 x 613 315 (43.2kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 2805,
+                            30: 2175,
+                            40: 1875,
+                            50: 1695,
+                            60: 1575,
+                            70: 1485,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    11: {
+                        model: '3 x 613 315 (54.0kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 3255,
+                            30: 2505,
+                            40: 2115,
+                            50: 1875,
+                            60: 1725,
+                            70: 1605,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    12: {
+                        model: '1 x 616 315 (21.6kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1235,
+                            30: 935,
+                            40: 775,
+                            50: 695,
+                            60: 615,
+                            70: 575,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    13: {
+                        model: '1 x 616 315 (28.8kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1555,
+                            30: 1135,
+                            40: 935,
+                            50: 815,
+                            60: 735,
+                            70: 675,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    14: {
+                        model: '1 x 616 315 (36.0kW)',
+                        minimumInitialDelivery: 315,
+                        widthMM: 1000,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 1855,
+                            30: 1355,
+                            40: 1095,
+                            50: 935,
+                            60: 835,
+                            70: 755,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    15: {
+                        model: '2 x 616 315 (43.2kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 2470,
+                            30: 1870,
+                            40: 1550,
+                            50: 1390,
+                            60: 1230,
+                            70: 1150,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    16: {
+                        model: '2 x 616 315 (57.6kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 3110,
+                            30: 2270,
+                            40: 1870,
+                            50: 1630,
+                            60: 1470,
+                            70: 1350,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    17: {
+                        model: '2 x 616 315 (72.0kW)',
+                        minimumInitialDelivery: 630,
+                        widthMM: 1900,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 3710,
+                            30: 2710,
+                            40: 2190,
+                            50: 1870,
+                            60: 1670,
+                            70: 1510,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    18: {
+                        model: '3 x 616 315 (64.8kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 3705,
+                            30: 2805,
+                            40: 2325,
+                            50: 2085,
+                            60: 1845,
+                            70: 1725,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    19: {
+                        model: '3 x 616 315 (86.4kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 4665,
+                            30: 3405,
+                            40: 2805,
+                            50: 2445,
+                            60: 2205,
+                            70: 2025,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    20: {
+                        model: '3 x 616 315 (108.0kW)',
+                        minimumInitialDelivery: 945,
+                        widthMM: 2800,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 5565,
+                            30: 4065,
+                            40: 3285,
+                            50: 2805,
+                            60: 2505,
+                            70: 2265,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    21: {
+                        model: '4 x 616 315 (86.4kW)',
+                        minimumInitialDelivery: 1260,
+                        widthMM: 3700,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 4980,
+                            30: 3720,
+                            40: 3120,
+                            50: 2760,
+                            60: 2520,
+                            70: 2340,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    22: {
+                        model: '4 x 616 315 (115.2kW)',
+                        minimumInitialDelivery: 1260,
+                        widthMM: 3700,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 6220,
+                            30: 4540,
+                            40: 3740,
+                            50: 3260,
+                            60: 2940,
+                            70: 2700,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    23: {
+                        model: '4 x 616 315 (144.0kW)',
+                        minimumInitialDelivery: 1260,
+                        widthMM: 3700,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 7420,
+                            30: 5420,
+                            40: 4380,
+                            50: 3740,
+                            60: 3340,
+                            70: 3020,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    24: {
+                        model: '5 x 616 315 (108.0kW)',
+                        minimumInitialDelivery: 1575,
+                        widthMM: 4600,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 6195,
+                            30: 4695,
+                            40: 3915,
+                            50: 3435,
+                            60: 3135,
+                            70: 2895,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    25: {
+                        model: '5 x 616 315 (144.0kW)',
+                        minimumInitialDelivery: 1575,
+                        widthMM: 4600,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 7735,
+                            30: 5735,
+                            40: 4695,
+                            50: 4055,
+                            60: 3655,
+                            70: 3335,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    26: {
+                        model: '5 x 616 315 (180.0kW)',
+                        minimumInitialDelivery: 1575,
+                        widthMM: 4600,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 9275,
+                            30: 6775,
+                            40: 5475,
+                            50: 4675,
+                            60: 4175,
+                            70: 3775,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    27: {
+                        model: '6 x 616 315 (129.6kW)',
+                        minimumInitialDelivery: 1890,
+                        widthMM: 5500,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 7410,
+                            30: 5610,
+                            40: 4650,
+                            50: 4170,
+                            60: 3690,
+                            70: 3450,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    28: {
+                        model: '6 x 616 315 (172.8kW)',
+                        minimumInitialDelivery: 1890,
+                        widthMM: 5500,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 9330,
+                            30: 6810,
+                            40: 5610,
+                            50: 4890,
+                            60: 4410,
+                            70: 4050,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    29: {
+                        model: '6 x 616 315 (216.0kW)',
+                        minimumInitialDelivery: 1890,
+                        widthMM: 5500,
+                        depthMM: 1680,
+                        flowRate: {
+                            20: 11130,
+                            30: 8130,
+                            40: 6570,
+                            50: 5610,
+                            60: 5010,
+                            70: 4530,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                },
+                heatPump: {
+                    1: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 5,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 516,
+                            25: 413,
+                            30: 344,
+                            35: 295,
+                            40: 258,
+                            45: 229,
+                            50: 206,
+                            55: 188,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    2: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 10,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 624,
+                            25: 499,
+                            30: 416,
+                            35: 356,
+                            40: 312,
+                            45: 277,
+                            50: 249,
+                            55: 227,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    3: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 15,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 705,
+                            25: 564,
+                            30: 470,
+                            35: 403,
+                            40: 353,
+                            45: 313,
+                            50: 282,
+                            55: 256,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    4: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 20,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 751,
+                            25: 601,
+                            30: 501,
+                            35: 429,
+                            40: 375,
+                            45: 334,
+                            50: 300,
+                            55: 273,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    5: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 25,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 839,
+                            25: 671,
+                            30: 559,
+                            35: 479,
+                            40: 419,
+                            45: 373,
+                            50: 335,
+                            55: 305,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    6: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 30,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 933,
+                            25: 746,
+                            30: 622,
+                            35: 533,
+                            40: 467,
+                            45: 415,
+                            50: 373,
+                            55: 339,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    7: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 35,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 968,
+                            25: 774,
+                            30: 645,
+                            35: 553,
+                            40: 484,
+                            45: 430,
+                            50: 387,
+                            55: 352,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    8: {
+                        kW: 16,
+                        model: 'A2W 16kW',
+                        roomTemperature: 40,
+                        widthMM: 2550,
+                        depthMM: 1100,
+                        flowRate: {
+                            20: 989,
+                            25: 791,
+                            30: 659,
+                            35: 565,
+                            40: 495,
+                            45: 440,
+                            50: 396,
+                            55: 360,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    9: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 5,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 1097,
+                            25: 877,
+                            30: 731,
+                            35: 627,
+                            40: 548,
+                            45: 487,
+                            50: 439,
+                            55: 399,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    10: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 10,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 1247,
+                            25: 998,
+                            30: 831,
+                            35: 713,
+                            40: 624,
+                            45: 554,
+                            50: 499,
+                            55: 453,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    11: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 15,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 1488,
+                            25: 1190,
+                            30: 992,
+                            35: 850,
+                            40: 744,
+                            45: 661,
+                            50: 595,
+                            55: 541,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    12: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 20,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 1701,
+                            25: 1361,
+                            30: 1134,
+                            35: 972,
+                            40: 850,
+                            45: 756,
+                            50: 680,
+                            55: 618,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    13: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 25,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 2004,
+                            25: 1603,
+                            30: 1336,
+                            35: 1145,
+                            40: 1002,
+                            45: 891,
+                            50: 802,
+                            55: 729,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    14: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 30,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 2146,
+                            25: 1717,
+                            30: 1430,
+                            35: 1226,
+                            40: 1073,
+                            45: 954,
+                            50: 858,
+                            55: 780,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    15: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 35,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 2279,
+                            25: 1823,
+                            30: 1519,
+                            35: 1302,
+                            40: 1140,
+                            45: 1013,
+                            50: 912,
+                            55: 829,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                    16: {
+                        kW: 35,
+                        model: 'A2W 35kW',
+                        roomTemperature: 40,
+                        widthMM: 3800,
+                        depthMM: 1800,
+                        flowRate: {
+                            20: 2326,
+                            25: 1861,
+                            30: 1551,
+                            35: 1329,
+                            40: 1163,
+                            45: 1034,
+                            50: 931,
+                            55: 846,
+                        },
+                        gas: {
+                            requirement: 0,
+                            pressure: 0,
+                        }
+                    },
+                }
+            },
+        },
+        storageTanks: {
+            325: {
+                model: '610340',
+                capacity: 325,
+                widthMM: 1000,
+                depthMM: 1640,
+            },
+            410: {
+                model: '610430',
+                capacity: 410,
+                widthMM: 1100,
+                depthMM: 1685,
+            },
+            920: {
+                model: 'RT1000',
+                capacity: 920,
+                widthMM: 1350,
+                depthMM: 2100,
+            },
+            2055: {
+                model: 'RT2000',
+                capacity: 2055,
+                widthMM: 1650,
+                depthMM: 2700,
+            },
+            2960: {
+                model: 'RT3000',
+                capacity: 2960,
+                widthMM: 1800,
+                depthMM: 3000,
+            },
+        },
     },
     greaseInterceptorTrap: {
         manufacturer: [

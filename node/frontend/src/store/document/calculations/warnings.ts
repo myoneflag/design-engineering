@@ -27,6 +27,7 @@ export enum Warning {
     NOT_ENOUGH_PRESSURE,
     PRESSURE_PRV_MORE_THAN_TARGET,
     OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT,
+    RHEEM_ADVICE,
 }
 
 export interface WarningDescription {
@@ -46,7 +47,7 @@ export interface WarningUi extends WarningDetail {
     levelUid: string;
 }
 
-export const WarningDetails: {[key: string]: WarningDescription} = {
+export const WarningDetails: { [key: string]: WarningDescription } = {
     MAX_PRESSURE_EXCEEDED_NODE: {
         title: "Maximum Pressure Exceeded ${pressure}",
         description: `The maximum inlet pressure of the node has been exceeded.<br />
@@ -210,13 +211,18 @@ export const WarningDetails: {[key: string]: WarningDescription} = {
         description: "",
         helpLink: "",
     },
+    RHEEM_ADVICE: {
+        title: "Contact Rheem for Advice",
+        description: "",
+        helpLink: "",
+    }
 }
 
 export const addWarning = (
     calculation: Calculation,
     warning: Warning,
     mode?: CalculationLayout | null,
-    params?: {[key: string]: string | number | null}
+    params?: { [key: string]: string | number | null }
 ): void => {
     let newWarningDetail = WarningDetails[Warning[warning]];
     if (params) {
@@ -246,9 +252,9 @@ export function getTreeDataOfWarnings(
     /** Filter hidden warnings & mentioning level to 'ground' */
     const visibleWarnings = warnings
         .filter((e) => (showHiddenWarnings || !hiddenUids.includes(e.uid)) &&
-        ((pressureOrDrainage === 'drainage' && e.warningLayout === 'drainage') ||
-        (pressureOrDrainage !== 'drainage' && e.warningLayout !== 'drainage')))
-        .map((e) => (e.levelUid ? e : {...e, levelUid: 'ground'}));
+            ((pressureOrDrainage === 'drainage' && e.warningLayout === 'drainage') ||
+                (pressureOrDrainage !== 'drainage' && e.warningLayout !== 'drainage')))
+        .map((e) => (e.levelUid ? e : { ...e, levelUid: 'ground' }));
     const activeWarnings = visibleWarnings.filter((warning) => warning.entityUid === activeEntityUid);
     const treeData = [];
     const warningsByLevel = _.groupBy(

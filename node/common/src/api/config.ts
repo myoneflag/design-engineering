@@ -71,7 +71,6 @@ export enum EN12056FrequencyFactor {
     FrequentUse = "FrequentUse",
     CongestedUse = "CongestedUse",
     SpecialUse = "SpecialUse",
-    
 }
 
 export function getEN_12506_FREQUENCY_FACTOR_CHOICES(catalog: Catalog): Choice[] {

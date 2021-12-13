@@ -53,7 +53,7 @@ export async function withOrganization<T>(
         }
     }
 
-    const org = await Organization.findOne({id});
+    const org = await Organization.findOne({ id });
 
     if (!org) {
         res.status(404).send({
@@ -111,7 +111,7 @@ export async function withDocument<T>(
     const user = await session.user;
     await user.reload();
 
-    const doc = await Document.findOne({id});
+    let doc = await Document.findOne({ id });
 
     if (!doc) {
         if (res) {
@@ -254,7 +254,7 @@ export async function withUser<T>(
 
     const myOrg = currUser.organization;
 
-    const user = await User.findOne({username}, {relations: ['organization']});
+    const user = await User.findOne({ username }, { relations: ['organization'] });
     if (!user) {
         res.status(404).send({
             success: false,

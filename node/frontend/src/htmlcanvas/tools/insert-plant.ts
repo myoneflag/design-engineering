@@ -1,31 +1,32 @@
-import {MainEventBus} from "../../../src/store/main-event-bus";
-import {EntityType} from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
+import { MainEventBus } from "../../../src/store/main-event-bus";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
+import { KeyCode } from "../../../src/htmlcanvas/utils";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import PlantEntity, {
+    fillPlantDefaults, PLANT_ENTITY_VERSION
+} from "../../../../common/src/api/document/entities/plants/plant-entity";
+import {
+    PlantConcrete,
+    PlantType,
+    PressureMethod,
+} from "../../../../common/src/api/document/entities/plants/plant-types";
 import {
     FlowConfiguration,
     SystemNodeEntity
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import {KeyCode} from "../../../src/htmlcanvas/utils";
-import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
-import {Coord} from "../../../../common/src/api/document/drawing";
-import {
-    PlantConcrete,
-    PlantType,
-    PressureMethod
-} from "../../../../common/src/api/document/entities/plants/plant-types";
-import {assertUnreachable, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import SnappingInsertTool from "./snapping-insert-tool";
-import { Catalog } from "../../../../common/src/api/catalog/types";
 
 export default function insertPlant(context: CanvasContext, angle: number, type: PlantType, inletSystemUid: string, outletSystemUid: string, title: string, rightToLeft: boolean = false) {
     const plantUid = uuid();
-    let newEntity: PlantEntity | null = null;
-
     const inletUid = uuid();
     const outletUid = uuid();
     const returnUid = uuid();
     const gasNodeUid = uuid();
+
+    let newEntity: PlantEntity | null = null;
 
     MainEventBus.$emit(
         "set-tool-handler",
@@ -42,38 +43,48 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
             },
             (wc: Coord) => {
                 newEntity = null;
-                // Preview
+
                 newEntity = {
-                    heightAboveFloorM: 0.75,
-                    heightMM: 300,
-                    widthMM: 500,
-                    inletSystemUid,
-                    inletUid,
-                    outletSystemUid,
-                    outletTemperatureC: null,
+                    version: PLANT_ENTITY_VERSION,
 
-                    outletUid,
                     center: wc,
-
+                    rotation: angle,
                     rightToLeft,
 
-                    parentUid: null,
-                    type: EntityType.PLANT,
                     uid: plantUid,
+                    parentUid: null,
+                    inletUid,
+                    inletSystemUid,
+                    outletUid,
+                    outletSystemUid,
 
                     name: title,
-                    rotation: angle,
+                    type: EntityType.PLANT,
 
-                    plant: createPlant(context, type, outletSystemUid, returnUid, gasNodeUid),
+                    widthMM: null,
+                    heightMM: null,
+                    heightAboveFloorM: null,
+                    outletTemperatureC: null,
+
+                    plant: createPlant(type, returnUid, gasNodeUid),
+
+                    calculation: {
+                        widthMM: null,
+                        depthMM: null,
+                    }
                 };
-
-                newEntity = resolveNewEntiy(context, newEntity);
 
                 context.$store.dispatch("document/addEntity", newEntity);
 
+                const filled = fillPlantDefaults(
+                    newEntity,
+                    context.document.drawing,
+                    context.effectiveCatalog,
+                );
+
                 const inlet: SystemNodeEntity = {
                     center: {
-                        x: (-newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
+                        x: (-filled.widthMM! / 2) * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -87,7 +98,7 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
 
                 const outlet: SystemNodeEntity = {
                     center: {
-                        x: (newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
+                        x: (filled.widthMM! / 2) * (rightToLeft ? -1 : 1),
                         y: 0
                     },
                     parentUid: plantUid,
@@ -106,8 +117,8 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
 
                     const retlet: SystemNodeEntity = {
                         center: {
-                            x: (newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
-                            y: (newEntity.heightMM / 4)
+                            x: (filled.widthMM! / 2) * (rightToLeft ? -1 : 1),
+                            y: (filled.heightMM! / 4)
                         },
                         parentUid: plantUid,
                         type: EntityType.SYSTEM_NODE,
@@ -120,8 +131,8 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
 
                     const gasOutlet: SystemNodeEntity = {
                         center: {
-                            x: (-newEntity.widthMM / 2) * (rightToLeft ? -1 : 1),
-                            y: (newEntity.heightMM / 4)
+                            x: (-filled.widthMM! / 2) * (rightToLeft ? -1 : 1),
+                            y: (filled.heightMM! / 4)
                         },
                         parentUid: plantUid,
                         type: EntityType.SYSTEM_NODE,
@@ -198,11 +209,19 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
     );
 }
 
-function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: string, returnUid: string | null, gasInUid: string | null): PlantConcrete {
-    switch (type) {
+function createPlant(
+    type: PlantType,
+    returnUid: string | null,
+    gasInUid: string | null,
+): PlantConcrete {
+    let plant = {
+        type
+    } as PlantConcrete;
+
+    switch (plant.type) {
         case PlantType.RETURN_SYSTEM:
-            return {
-                type,
+            plant = {
+                ...plant,
                 returnMinimumTemperatureC: null,
                 gasConsumptionMJH: null,
                 returnUid: returnUid!,
@@ -210,26 +229,37 @@ function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: s
                 gasPressureKPA: null,
                 returnVelocityMS: null,
                 addReturnToPSDFlowRate: true,
+                rheemVariant: null,
+                rheemPeakHourCapacity: null,
+                rheemMinimumInitialDelivery: null,
+                rheemkWRating: null,
+                rheemStorageTankSize: null,
             };
+
+            break;
         case PlantType.PUMP:
-            return {
-                type,
+            plant = {
+                ...plant,
                 pressureLoss: {
                     pressureMethod: PressureMethod.PUMP_DUTY,
                     pumpPressureKPA: null,
                 }
             };
+
+            break;
         case PlantType.TANK:
-            return {
-                type,
+            plant = {
+                ...plant,
                 pressureLoss: {
                     pressureMethod: PressureMethod.STATIC_PRESSURE,
                     staticPressureKPA: null,
                 }
             };
+
+            break;
         case PlantType.CUSTOM:
-            return {
-                type,
+            plant = {
+                ...plant,
                 pressureLoss: {
                     pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
                     pressureLossKPA: null,
@@ -237,53 +267,35 @@ function createPlant(context: CanvasContext, type: PlantType, outletSystemUid: s
                     pumpPressureKPA: null,
                 }
             };
+
+            break;
         case PlantType.DRAINAGE_PIT:
-            return {
-                type,
+            plant = {
+                ...plant,
                 pressureLoss: {
                     pressureMethod: PressureMethod.STATIC_PRESSURE,
                     staticPressureKPA: 0,
                 },
             };
-        case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
-            const capacity = selectedManufacturer === 'generic' ? '1000L' : '1000';
-            return {
-                type,
-                pressureLoss: {
-                    pressureMethod: PressureMethod.STATIC_PRESSURE,
-                    staticPressureKPA: 0,
-                },
-                location: 'nsw',
-                position: 'belowGround',
-                capacity,
-            };
-    }
-    assertUnreachable(type);
-}
 
-function resolveNewEntiy(context: CanvasContext, entity: PlantEntity): PlantEntity {
-    const catalog = context.$store.getters['catalog/default'] as Catalog;
-
-    switch(entity.plant.type) {
-        case PlantType.RETURN_SYSTEM:
-        case PlantType.PUMP:
-        case PlantType.TANK:
-        case PlantType.DRAINAGE_PIT:
-        case PlantType.CUSTOM:
             break;
         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
-            const plant = entity.plant;
-            const selectedManufacturer = context.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer || 'generic';
-            const selectedSize = catalog.greaseInterceptorTrap!.size[selectedManufacturer][plant.location][plant.position][plant.capacity];
-            entity.heightMM = selectedSize.heightMM;
-            entity.widthMM = selectedSize.widthMM;
-            entity.lengthMM = selectedSize.lengthMM;
+            plant = {
+                ...plant,
+                pressureLoss: {
+                    pressureMethod: PressureMethod.STATIC_PRESSURE,
+                    staticPressureKPA: 0,
+                },
+                lengthMM: null,
+                location: null,
+                position: null,
+                capacity: null,
+            };
+
             break;
         default:
-            assertUnreachable(entity.plant);
-            break;
+            assertUnreachable(plant);
     }
 
-    return entity;
+    return plant;
 }

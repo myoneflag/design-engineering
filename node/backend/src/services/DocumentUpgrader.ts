@@ -206,7 +206,7 @@ export class DocumentUpgrader {
                 doc.metadata = drawing.metadata.generalInfo;
                 await tx.save(Document, doc);
 
-                console.timeLog(timingLabel, 'complete', { docId, opsUpgraded, ops: ops.length } );
+                console.timeLog(timingLabel, 'complete', { docId, opsUpgraded, ops: ops.length });
             });
         } catch (error) {
             console.timeLog(timingLabel, 'error', { docId, error } );

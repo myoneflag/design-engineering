@@ -34,7 +34,6 @@ import { MainEventBus } from "../../src/store/main-event-bus";
 import { getObjectFrictionHeadLoss } from "../../src/calculations/entity-pressure-drops";
 import { DrawableEntityConcrete, isConnectableEntity } from "../../../common/src/api/document/entities/concrete-entity";
 import BigValve from "../htmlcanvas/objects/big-valve/bigValve";
-// tslint:disable-next-line:max-line-length
 import DirectedValveEntity, { makeDirectedValveFields } from "../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 import {
@@ -67,7 +66,11 @@ import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { ObjectStore } from "../htmlcanvas/lib/object-store";
 import { makeFlowSourceFields } from "../../../common/src/api/document/entities/flow-source-entity";
 import FlowSourceCalculation from "../store/document/calculations/flow-source-calculation";
-import { fillPlantDefaults, makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
+import PlantEntity, { fillPlantDefaults, makePlantEntityFields } from "../../../common/src/api/document/entities/plants/plant-entity";
+import {
+    DrainageGreaseInterceptorTrap,
+    HotWaterPlantManufacturers,
+} from './../../../common/src/api/document/entities/plants/plant-types';
 import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
@@ -77,7 +80,15 @@ import {
     SupportedDrainageMethods,
     SupportedPsdStandards
 } from "../../../common/src/api/config";
-import { Catalog, PipeSpec } from "../../../common/src/api/catalog/types";
+import {
+    Catalog,
+    PipeSpec,
+    HotWaterPlantSizePropsTankPak,
+    HotWaterPlantSizePropsElectric,
+    HotWaterPlantSizePropsHeatPump,
+    HotWaterPlantFlowRateTemperature,
+    HotWaterPlantSizePropsContinuousFlow,
+} from "../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../common/src/api/document/drawing";
 import {
     cloneSimple,
@@ -89,7 +100,7 @@ import {
     upperBoundTable
 } from "../../../common/src/lib/utils";
 import { determineConnectableSystemUid } from "../store/document/entities/lib";
-import { getPropertyByString } from "../lib/utils";
+import { getPropertyByString, setPropertyByString } from "../lib/utils";
 import { flowSystemsFlowTogether, getPlantPressureLossKPA } from "../htmlcanvas/lib/utils";
 import { RingMainCalculator } from "./ring-main-calculator";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
@@ -111,6 +122,8 @@ import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/e
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { processDrainage, sizeDrainagePipe } from "./drainage";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
+import { getNext } from '../../../common/src/lib/utils';
+import { PLANT_ENTITY_VERSION, doPlantEntityUpgrade } from '../../../common/src/api/document/entities/plants/plant-entity';
 import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
 
@@ -196,7 +209,7 @@ export default class CalculationEngine implements CalculationContext {
         objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
-        done: (success: boolean) => void,
+        done: (success: boolean) => Promise<void>,
         priceTable: PriceTable,
         nodes: NodeProps[],
     ) {
@@ -239,9 +252,9 @@ export default class CalculationEngine implements CalculationContext {
             this.ga = this.doc.drawing.metadata.calculationParams.gravitationalAcceleration;
             this.nodes = nodes;
             this.combineLUs = doc.drawing.metadata.calculationParams.combineLUs;
-    
+
             const success = this.preValidate();
-    
+
             if (!success) {
                 done(false);
                 return;
@@ -249,8 +262,8 @@ export default class CalculationEngine implements CalculationContext {
 
             this.equationEngine = new EquationEngine();
             this.doRealCalculation();
-            done(true);    
-        } catch (error) {            
+            done(true);
+        } catch (error) {
             console.error(error);
             await reportError("Calculation error", error as Error);
             done(false);
@@ -382,6 +395,7 @@ export default class CalculationEngine implements CalculationContext {
                 calculateGas(this);
 
                 this.fillPressureDropFields();
+                this.finalCompute();
                 this.createWarnings();
 
                 this.collectResults();
@@ -676,14 +690,16 @@ export default class CalculationEngine implements CalculationContext {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.demandMJH = o.entity.flowRateMJH;
             } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+                const filled = fillPlantDefaults(o.entity, this.drawing, this.catalog);
+                const plant = filled.plant as DrainageGreaseInterceptorTrap;
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 const manufacturer = this.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
                 const manufacturerName = manufacturer !== 'generic' && this.catalog.greaseInterceptorTrap!.manufacturer.find(i => i.uid === manufacturer)!.name || '';
-                const location = o.entity.plant.location;
-                const position = o.entity.plant.position;
-                const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][o.entity.plant.capacity];
+                const location = plant.location!;
+                const position = plant.position!;
+                const size = this.catalog.greaseInterceptorTrap!.size[manufacturer][location][position][plant.capacity!];
                 const capacity = manufacturer === 'generic'
-                    ? o.entity.plant.capacity
+                    ? plant.capacity
                     : '';
                 const product = size?.product || '';
 
@@ -691,6 +707,146 @@ export default class CalculationEngine implements CalculationContext {
                 c.model = `${manufacturerName.toLocaleUpperCase()} ${product}${capacity}`.trim();
             }
         });
+    }
+
+    finalCompute() {
+        this.networkObjects().forEach((o) => {
+            if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.RETURN_SYSTEM) {
+                const filled = fillPlantDefaults(o.entity, this.drawing, this.catalog);
+                const manufacturer = this.drawing.metadata.catalog.hotWaterPlant.find(
+                    i => i.uid === 'hotWaterPlant'
+                )?.manufacturer as HotWaterPlantManufacturers;
+
+                if (manufacturer === 'rheem') {
+                    this.resolveRheemCalculation(filled);
+                }
+            }
+        });
+    }
+
+    resolveRheemCalculation(entity: PlantEntity) {
+        const plant = entity.plant as ReturnSystemPlant;
+        const calc = this.globalStore.getOrCreateCalculation(entity);
+        const coldWaterTemp = this.drawing.metadata.flowSystems.find(
+            i => i.uid === 'cold-water'
+        )?.temperature;
+        const hotWaterTemp = this.drawing.metadata.flowSystems.find(
+            i => i.uid === 'hot-water'
+        )?.temperature;
+
+        if (!!coldWaterTemp && !!hotWaterTemp) {
+            const hotColdTempDiff = hotWaterTemp - coldWaterTemp;
+            const rheemVariant = plant.rheemVariant!;
+            const manufacturerSizeValue = this.catalog.hotWaterPlant.size.rheem!;
+            const tempRiseList = Object.keys(
+                manufacturerSizeValue[rheemVariant]?.[1].flowRate || {}
+            ) as unknown as Array<HotWaterPlantFlowRateTemperature>;
+            const targetTempRise = getNext(hotColdTempDiff, tempRiseList, true) as HotWaterPlantFlowRateTemperature;
+
+            let size;
+            let sizes = Object.values(manufacturerSizeValue[rheemVariant]!);
+            switch (rheemVariant) {
+                case 'continuousFlow':
+                    const pipe = this.globalStore.get(entity.outletUid)!.entity as SystemNodeEntity;
+                    const cpipe = this.globalStore.getOrCreateCalculation(pipe);
+                    const outletPipeFlowRate = cpipe.flowRateLS || 0;
+
+                    // get size by flow rate @ temperature rise/diff and outlet pipe flow rate
+                    size = getNext(outletPipeFlowRate, sizes, true, `flowRate.${targetTempRise}`) as HotWaterPlantSizePropsContinuousFlow
+                    calc.size = `${size.widthMM} (W) x ${size.depthMM} (D)`;
+                    calc.model = `${size.heaters} x Rheem Continuous Flow Heaters`;
+                    calc.widthMM = size.widthMM;
+                    calc.depthMM = size.depthMM;
+
+                    if (outletPipeFlowRate > size.flowRate[targetTempRise]!) {
+                        addWarning(calc, Warning.RHEEM_ADVICE);
+                    }
+
+                    break;
+                case 'tankpak':
+                    // get size by flow rate @ temperature rise/diff and peak hour capacity
+                    size = getNext(plant.rheemPeakHourCapacity!, sizes, false, `flowRate.${targetTempRise}`) as HotWaterPlantSizePropsTankPak;
+                    calc.size = `${size.widthMM} (W) x ${size.depthMM} (D)`;
+                    calc.model = [
+                        `${size.tanks} x Rheem ${size.tanksCategoryL}L Storage Tanks`,
+                        `${size.heaters} x Rheem Continuous Flow Heaters`,
+                    ];
+                    calc.widthMM = size.widthMM;
+                    calc.depthMM = size.depthMM;
+
+                    if (plant.rheemPeakHourCapacity! > size.flowRate[targetTempRise]!) {
+                        addWarning(calc, Warning.RHEEM_ADVICE);
+                    }
+
+                    break;
+                case 'electric':
+                    // filter sizes by selected minimumInitialDelivery
+                    const filteredSizes = (sizes as HotWaterPlantSizePropsElectric[]).filter(i =>
+                        i.minimumInitialDelivery === plant.rheemMinimumInitialDelivery
+                    );
+                    const maxFlowRateLS = Math.max.apply(Math, filteredSizes.map(i => i.flowRate[targetTempRise]!));
+
+                    // if filtered sizes max flow rate is less than/equal to peak hour capacity
+                    if (maxFlowRateLS <= plant.rheemPeakHourCapacity!) {
+                        // get size by flow rate @ temperature rise/diff and peak hour capacity
+                        size = getNext(plant.rheemPeakHourCapacity!, sizes, false, `flowRate.${targetTempRise}`) as HotWaterPlantSizePropsElectric
+                    } else {
+                        // get size from filtered sizes by flow rate @ temperature rise/diff and peak hour capacity
+                        size = getNext(plant.rheemPeakHourCapacity!, filteredSizes, false, `flowRate.${targetTempRise}`) as HotWaterPlantSizePropsElectric
+                    }
+
+                    calc.size = `${size.widthMM} (W) x ${size.depthMM} (D)`;
+                    calc.model = (size as HotWaterPlantSizePropsElectric).model!;
+                    calc.widthMM = size.widthMM;
+                    calc.depthMM = size.depthMM;
+
+                    if (plant.rheemPeakHourCapacity! > size.flowRate[targetTempRise]!) {
+                        addWarning(calc, Warning.RHEEM_ADVICE);
+                    }
+
+                    break;
+                case 'heatPump':
+                    // calculation#1
+                    const storageTank = this.catalog.hotWaterPlant.storageTanks[plant.rheemStorageTankSize!];
+                    const computeStorageTank = plant.rheemPeakHourCapacity! / plant.rheemStorageTankSize!;
+                    const roundedComputeStorageTank = Math.round(computeStorageTank);
+                    const storageTankQuantity = roundedComputeStorageTank > computeStorageTank ? roundedComputeStorageTank : roundedComputeStorageTank + 1;
+                    const storageTankModel = `${storageTankQuantity} x ${storageTank.model} Storage Tanks`;
+
+                    // calculation#2
+                    // filter sizes by rheemkWRating
+                    sizes = (sizes as HotWaterPlantSizePropsHeatPump[]).filter(i =>
+                        i.kW === plant.rheemkWRating
+                    );
+                    // get size by room temperature
+                    size = getNext(this.drawing.metadata.calculationParams.roomTemperatureC, sizes, true, 'roomTemperature') as HotWaterPlantSizePropsHeatPump;
+
+                    const computeHeatPump = (plant.rheemPeakHourCapacity! / 4) / size.flowRate[targetTempRise]!;
+                    const roundedComputeHeatPump = Math.round(computeHeatPump);
+                    const heatPumpQuantity = roundedComputeHeatPump > computeHeatPump ? roundedComputeHeatPump : roundedComputeHeatPump + 1;
+                    const heatPumpModel = `${heatPumpQuantity} x ${size.model} Heat Pumps`;
+
+                    calc.size = `${Math.max(size.widthMM, storageTank.widthMM)} (W) x ${(size.depthMM * 4) + (storageTank.depthMM * 3)} (D)`;
+                    calc.model = [storageTankModel, heatPumpModel];
+                    calc.widthMM = Math.max(size.widthMM, storageTank.widthMM);
+                    calc.depthMM = (size.depthMM * 4) + (storageTank.depthMM * 3);
+                    break;
+            }
+
+            // apply results to its props
+            const plantEntity = this.globalStore.get(entity.uid.replace('.calculation', ''))!.entity as PlantEntity;
+            if (plantEntity.version === undefined || plantEntity.version < PLANT_ENTITY_VERSION) {
+                if (plantEntity.version === undefined) {
+                    setPropertyByString(plantEntity, 'version', 0);
+                }
+
+                doPlantEntityUpgrade(plantEntity);
+            }
+            setPropertyByString(plantEntity, 'calculation.widthMM', size.widthMM);
+            setPropertyByString(plantEntity, 'calculation.depthMM', size.depthMM);
+            setPropertyByString(plantEntity, 'plant.gasConsumptionMJH', size.gas.requirement);
+            setPropertyByString(plantEntity, 'plant.gasPressureKPA', size.gas.pressure);
+        }
     }
 
     calculateAllPointPressures() {
@@ -1576,7 +1732,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.PLANT: {
                     switch (parentEntity.plant.type) {
                         case PlantType.RETURN_SYSTEM:
-                            const filled = fillPlantDefaults(parentEntity, this.drawing).plant as ReturnSystemPlant;
+                            const filled = fillPlantDefaults(parentEntity, this.drawing, this.catalog).plant as ReturnSystemPlant;
                             if (filled.gasConsumptionMJH !== null && node.uid === filled.gasNodeUid) {
                                 units.push({
                                     units: 0,
@@ -2700,7 +2856,7 @@ export default class CalculationEngine implements CalculationContext {
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     const inlet = this.globalStore.get(o.entity.inletUid)!.entity as SystemNodeEntity;
                     const inletCalc = this.globalStore.getOrCreateCalculation(inlet);
-                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, this.drawing, inletCalc.pressureKPA);
+                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, this.drawing, this.catalog, inletCalc.pressureKPA);
                     break;
                 }
                 case EntityType.FIXTURE:

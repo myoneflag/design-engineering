@@ -396,23 +396,6 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
             order: 12,
             name: I18N.balancingValve[locale],
         },
-        hotWaterPlant: {
-            order: 13,
-            name: "Heated Water Circulating Pumps",
-            table: {
-                primaryName: "Grundfos Settings",
-                columns: [],
-                link: {
-                    grundfosPressureDrop: {
-                        order: 1,
-                        name: "Pressure Loss by Flow Rate",
-                        table: {
-                            primaryName: 'Q (l/s)',
-                            columns: [[null, "H (kPa)"]]
-                        }
-                    }
-                }
-            }
-        }
+        hotWaterPlant: null,
     };
 }

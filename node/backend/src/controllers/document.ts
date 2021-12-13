@@ -46,7 +46,7 @@ export class DocumentController {
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
         const user = await session.user;
         const createExampleDoc = parseInt(req.query.templateId, 10) === 1;
-        const userWithOrg = await User.findOne({username: user.username}, {relations: ['organization']});
+        const userWithOrg = await User.findOne({ username: user.username }, { relations: ['organization'] });
         const org = userWithOrg.organization;
         if (user.accessLevel >= AccessLevel.MANAGER) {
             if (!org) {
@@ -72,7 +72,7 @@ export class DocumentController {
         doc.shareDocument = sd;
         await doc.save();
 
-        if ( createExampleDoc ) {
+        if (createExampleDoc) {
             // save the first document operation
             const now = new Date();
             const op1 = Operation.create();
@@ -88,7 +88,7 @@ export class DocumentController {
             op2.document = Promise.resolve(doc);
             op2.dateTime = now;
             op2.blame = null;
-            op2.operation = { type : OPERATION_NAMES.COMMITTED_OPERATION, id : 1};
+            op2.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: 1 };
             op2.orderIndex = 0;
             await op2.save();
 
@@ -221,8 +221,8 @@ export class DocumentController {
 
     @ApiHandleError()
     public async findOneShared(req: Request, res: Response, next: NextFunction, session: Session) {
-        const sd = await ShareDocument.findOne({token: req.params.sharedId});
-        const doc = sd && await Document.findOne({where: {shareDocument: {id: sd.id}}});
+        const sd = await ShareDocument.findOne({ token: req.params.sharedId });
+        const doc = sd && await Document.findOne({ where: { shareDocument: { id: sd.id } } });
 
         if (!doc) {
             return res.status(404).send({
@@ -339,11 +339,11 @@ export class DocumentController {
                         deletedAt: IsNull(),
                     },
                 });
-                customEntities.forEach( (custEnt) => {
+                customEntities.forEach((custEnt) => {
                     custEnt.document_id = doc.id;
                     custEnt.created_by = session.user.name;
                 });
-                CustomEntity.insert(customEntities, {reload: false});
+                CustomEntity.insert(customEntities, { reload: false });
 
                 doc.state = DocumentStatus.ACTIVE;
                 await doc.save();

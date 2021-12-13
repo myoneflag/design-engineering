@@ -203,7 +203,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
             }
             case EntityType.PLANT:
                 if (o.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                    const filled = fillPlantDefaults(o.entity, engine.drawing);
+                    const filled = fillPlantDefaults(o.entity, engine.drawing, engine.catalog);
                     const calc = engine.globalStore.getOrCreateCalculation(o.entity);
                     calc.gasPressureKPA = (filled.plant as ReturnSystemPlant).gasPressureKPA;
                     calc.gasFlowRateMJH = (filled.plant as ReturnSystemPlant).gasConsumptionMJH;
@@ -257,7 +257,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                         } else if (parent.entity.type === EntityType.PLANT) {
                             console.log('in parent');
                             if (parent.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                                const filled = fillPlantDefaults(parent.entity, engine.drawing);
+                                const filled = fillPlantDefaults(parent.entity, engine.drawing, engine.catalog);
                                 mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
                                 maxPressureRequiredKPA = Math.max(
                                     maxPressureRequiredKPA,

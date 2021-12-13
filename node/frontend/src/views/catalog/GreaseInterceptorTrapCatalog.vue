@@ -225,7 +225,7 @@ export default class GreaseInterceptorTrapCatalog extends Vue {
     }
 }
 </script>
-<style>
+<style lang="less" scoped>
     .manufacturer-item-btn {
         display: block;
         width: 100%;
