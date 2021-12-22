@@ -126,5 +126,13 @@
     {
         "ParameterKey": "FeedbackEmail", 
         "ParameterValue": "${FeedbackEmail}"
+    },
+    {
+        "ParameterKey": "WebAppSSLCert",
+        "ParameterValue": "${WEB_APP_SSL_CERT_ARN}"
+    },
+    {
+        "ParameterKey": "CDNLogBucket",
+        "ParameterValue": "${CDN_LOG_BUCKET}"
     }
 ]

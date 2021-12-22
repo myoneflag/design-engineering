@@ -61,7 +61,7 @@ class App {
         MqClient.activate();
     }
 
-    private setMiddlewares(): void {
+    private setMiddlewares(): void {                
         this.express.use(cors());
         this.express.use(morgan("dev"));
         this.express.use(bodyParser.json({limit: '20mb'}));

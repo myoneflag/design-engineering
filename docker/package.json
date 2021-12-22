@@ -25,6 +25,7 @@
     "stop:all": "docker-compose --profile dev stop",
     "build:all": "docker-compose --profile $npm_config_target build",
     "rebuild:all": "docker-compose --profile $npm_config_target build --no-cache",
+    "copy-web-assets": ". ../config/build.env && mkdir -p ${FRONT_END_DIST} && docker create -ti --name prod-web-assets-${GIT_COMMIT} h2x-prod-web:latest bash && docker cp prod-web-assets-${GIT_COMMIT}:/usr/src/app/frontend/dist ${FRONT_END_DIST}/ && docker rm -f prod-web-assets-${GIT_COMMIT}",
     "clean": "rm -r dist/**",
     "login:aws": ". ../config/build.env && aws ecr get-login-password --region ${AWSRegion} --profile ${AWS_PROFILE} | docker login --username AWS --password-stdin ${ECR_REPOSITORY_URL}",
     "login:dockerhub": "docker login --username h2xbuildtest --password dockerhub101",
