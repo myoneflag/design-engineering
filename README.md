@@ -6,6 +6,7 @@ First, check out the [documentation](./docs/README.md).
 - [H2X WEB APP](#h2x-web-app)
   - [Documentation](#documentation)
   - [Clone source](#clone-source)
+  - [Commit workflow](#commit-workflow)
   - [Project structure](#project-structure)
     - [`node`](#node)
     - [`docker`](#docker)
@@ -45,6 +46,28 @@ git clone git@gitlab.com:info892/H2X.git
 cd H2X
 git submodule update --init
 ```
+
+## Commit workflow
+
+Workflow is fully described in [Contributing](CONTRIBUTING.md) doc.
+
+**TL;DR**
+
+1. Create branch based on `master`, and name it using Jira task code (e.g. `DEV-123` or `DEV-123-a-short-name`)
+2. Commit to branch, and add `DEV-123` to commit messages (e.g. `DEV-123 did this and that`)
+3. Open a Merge Request from your branch to `master`, and add `DEV-123` to the name
+* All these things will make the Jira task, commits and MR nicely linked and tied together with links.
+* When you push to your branch, with MR open, build will be run and you can see failures in slack `#build-notifications`. If build fails, fix it.
+4. From your local clone, merge your branch changes into branch `test`.
+Use Git UI or commands 
+   ```
+   git pull
+   git checkout test
+   git merge DEV-123
+   git push
+   ```
+* Pushed changes will get automatically deployed to `app-test.h2xtesting.com`
+5. When all feedback and testing is done, Calin or Jonny will merge the MR into `master`.
 
 ## Project structure
 
