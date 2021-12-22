@@ -140,6 +140,14 @@
       "FeedbackEmail": {
         "Description": "Environment variable", 
         "Type": "String"
+      },
+      "WebAppSSLCert": {
+        "Description": "Environment variable for web app ssl cert ARN", 
+        "Type": "String"
+      },
+      "CDNLogBucket":{
+        "Description": "Environment variable for CDN logs bucket name", 
+        "Type": "String"
       }
     },
     "Conditions" : {
@@ -890,6 +898,144 @@
           }
         },
 
+        "WebAppBucket": {
+          "Type": "AWS::S3::Bucket",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "AccessControl": "PublicRead",
+            "BucketName": { "Fn::Sub": "h2x-s3-webapp-${EnvName}" },
+            "CorsConfiguration": {
+              "CorsRules": [
+                  {
+                      "AllowedHeaders": [
+                          "*"
+                      ],
+                      "AllowedMethods": [
+                          "GET",
+                          "POST",
+                          "HEAD"
+                      ],
+                      "AllowedOrigins": [
+                          "*"
+                      ],
+                      "ExposedHeaders": []
+                  }
+                ]
+              },
+            "WebsiteConfiguration":{
+              "IndexDocument": "index.html",
+              "ErrorDocument": "index.html"
+            },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-webapp-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
+           //WebApp bucket policy to grant access to cloud front
+           "WebAppBucketPolicy":{
+            "Type": "AWS::S3::BucketPolicy",            
+            "Properties":{
+              "Bucket":{"Ref":"WebAppBucket"},
+              "PolicyDocument": {              
+                "Version": "2012-10-17",
+                "Statement": [ 
+                  {
+                    "Sid": "S3WebAppBucketAccess",
+                    "Action": ["s3:GetObject"],
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Join": [ "", [ { "Fn::GetAtt": [ "WebAppBucket", "Arn" ] }, "/*" ] ] },
+                    "Principal": "*"
+                  }
+                ]
+              }
+            }
+          },
+  
+
+        //CloudFront Distribution
+        "WebAppCloudFrontDistribution":{
+          "Type": "AWS::CloudFront::Distribution",
+          "DependsOn": [ "WebAppBucket" ],
+          "Properties":{
+            "DistributionConfig":{
+              "Origins":[
+                {
+                "Id": { "Fn::Sub": "h2x-s3-webapp-${EnvName}-origin"},
+                "DomainName":{ "Fn::Select": [ "2", { "Fn::Split": [ "/", { "Fn::GetAtt": [ "WebAppBucket", "WebsiteURL" ] } ] } ] },                
+                "CustomOriginConfig":{
+                  "OriginProtocolPolicy": "http-only"
+                }
+              },{
+                "Id": { "Fn::Sub": "h2x-api-${EnvName}-origin"},
+                "DomainName":{ "Fn::GetAtt": ["WebEnvironment", "EndpointURL"]},                
+                "CustomOriginConfig":{
+                  "OriginProtocolPolicy": "https-only"
+                }
+              }],
+              "Logging": {
+                "Bucket": { "Ref": "CDNLogBucket"},
+                "IncludeCookies": true,
+                "Prefix": "cloudfront"
+              },
+              "Enabled":true,
+              "DefaultRootObject": "index.html",
+              "Aliases": [{ "Fn::Sub": "app-${EnvName}.${DnsZoneName}" }],
+              "ViewerCertificate":{
+                "AcmCertificateArn": { "Ref": "WebAppSSLCert"},
+                "SslSupportMethod":"sni-only",
+                "MinimumProtocolVersion":"TLSv1"
+              },              
+              "HttpVersion":"http2",
+              "CacheBehaviors": [
+                {
+                  "TargetOriginId": {
+                    "Fn::Sub": "h2x-api-${EnvName}-origin"
+                  },
+                  "AllowedMethods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS",
+                    "PUT",
+                    "PATCH",
+                    "POST",
+                    "DELETE"
+                  ],
+                  "ForwardedValues": {
+                    "Headers":["*"],
+                    "QueryString": "true",
+                    "Cookies": {
+                      "Forward": "all"
+                    }
+                  },
+                  "Compress": true,
+                  "PathPattern": "/api/*",
+                  "ViewerProtocolPolicy": "allow-all"
+                }
+              ],
+              "DefaultCacheBehavior":{
+                "AllowedMethods":["GET","HEAD","OPTIONS"],
+                "CachedMethods":["GET","HEAD","OPTIONS"],
+                "Compress":true,
+                "TargetOriginId": { "Fn::Sub": "h2x-s3-webapp-${EnvName}-origin"},
+                "ViewerProtocolPolicy":"allow-all",
+                "ForwardedValues" : {
+                  "QueryString" : "true",
+                  "Cookies" : { "Forward" : "all" }
+                }
+              }
+            },
+            "Tags": [ 
+              { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-webapp-cloudfront-${EnvName}"} },
+              { "Key": "AppName", "Value": "H2X" },
+              { "Key": "Environment", "Value": { "Ref": "EnvName" } }
+            ]
+          }
+        },
+
         // DNS record
         "DnsRecord": {
           "Type": "AWS::Route53::RecordSet",
@@ -898,9 +1044,9 @@
             "Type": "CNAME",
             "TTL": "900",
             "HostedZoneId": { "Ref": "DnsZoneId" },
-            "ResourceRecords": [ { "Fn::GetAtt": [ "WebEnvironment", "EndpointURL" ]} ]
+            "ResourceRecords": [ { "Fn::GetAtt": [ "WebAppCloudFrontDistribution", "DomainName" ]} ]
           }
-        }, 
+        },
 
         //SSL certificate
         "SSLCertificate":{
@@ -944,5 +1090,15 @@
         }
    },
    "Outputs": {
-   }
+    "WebAppCloudFrontDistribution": {
+      "Value": {
+        "Ref": "WebAppCloudFrontDistribution"
+      }
+    },
+    "WebAppBucket": {
+      "Value": {
+        "Ref": "WebAppBucket"
+      }
+    }
+  }
 }
