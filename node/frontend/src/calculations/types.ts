@@ -2,7 +2,7 @@ import { DocumentState } from "../../src/store/document/types";
 import { GlobalStore } from "../htmlcanvas/lib/global-store";
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { DrawingState } from "../../../common/src/api/document/drawing";
-import {PriceTable} from "../../../common/src/api/catalog/price-table";
+import { PriceTable } from "../../../common/src/api/catalog/price-table";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
 
 export interface CalculationContext {
@@ -18,4 +18,11 @@ export enum PressurePushMode {
     PSD,
     CirculationFlowOnly,
     Static,
+}
+
+export interface ResolvePlantEntityProps {
+    widthMM: number;
+    depthMM: number;
+    gasRequirement: number;
+    gasPressure: number;
 }

@@ -18,6 +18,7 @@ import {
     GreaseInterceptorTrapManufacturers,
     PressureMethod,
     ReturnSystemPlant,
+    RheemVariantValues,
 } from "./plant-types";
 import {
     assertUnreachable,
@@ -339,12 +340,14 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
         }
     }
 
+    const hasDefault = filled.plant.type === PlantType.RETURN_SYSTEM && drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === 'hotWaterPlant')?.manufacturer === 'rheem';
+
     if (filled.plant.type !== PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
         res.push(
             {
                 property: "widthMM",
                 title: "Width",
-                hasDefault: true,
+                hasDefault,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -355,7 +358,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             {
                 property: "heightMM",
                 title: "Height",
-                hasDefault: true,
+                hasDefault,
                 isCalculated: false,
                 type: FieldType.Number,
                 params: { min: 0, max: null },
@@ -435,7 +438,7 @@ export function fillPlantDefaults(
 
             if (manufacturer === 'rheem') {
                 if (result.plant.rheemVariant === undefined || result.plant.rheemVariant === null) {
-                    result.plant.rheemVariant = 'continuousFlow';
+                    result.plant.rheemVariant = RheemVariantValues.continuousFlow;
                 }
                 if (result.plant.rheemPeakHourCapacity === undefined || result.plant.rheemPeakHourCapacity === null) {
                     result.plant.rheemPeakHourCapacity = 0;
@@ -680,7 +683,8 @@ function resolvePlantReturnSystemFields(
             multiFieldId: "plant.gasPressureKPA",
             units: Units.KiloPascals,
             readonly: manufacturer === 'rheem',
-        }];
+        },
+    ];
 
     fields.push(...otherFields);
 
@@ -712,36 +716,29 @@ function isReadonly(drawing: DrawingState, entity: PlantEntity) {
 export const doPlantEntityUpgrade = (entity: Complete<PlantEntity>) => {
     switch (entity.version) {
         case 0:
+            setPropertyByString(entity, 'version', 0);
+            upgrade0to1(entity);
+            break;
+        default:
+            setPropertyByString(entity, 'version', 0);
             upgrade0to1(entity);
             break;
     }
 }
 
 const upgrade0to1 = (entity: Complete<PlantEntity>) => {
-    if (entity.calculation === undefined) {
-        setPropertyByString(entity, 'calculation', {
-            widthMM: null,
-            depthMM: null,
-        });
-    }
+    setPropertyByString(entity, 'version', ++entity.version);
+
+    setPropertyByString(entity, 'calculation', {
+        widthMM: null,
+        depthMM: null,
+    });
 
     if (entity.plant.type === PlantType.RETURN_SYSTEM) {
-        if (entity.plant.rheemVariant === undefined) {
-            setPropertyByString(entity, 'plant.rheemVariant', null);
-        }
-        if (entity.plant.rheemPeakHourCapacity === undefined) {
-            setPropertyByString(entity, 'plant.rheemPeakHourCapacity', null);
-        }
-        if (entity.plant.rheemMinimumInitialDelivery === undefined) {
-            setPropertyByString(entity, 'plant.rheemMinimumInitialDelivery', null);
-        }
-        if (entity.plant.rheemkWRating === undefined) {
-            setPropertyByString(entity, 'plant.rheemkWRating', null);
-        }
-        if (entity.plant.rheemStorageTankSize === undefined) {
-            setPropertyByString(entity, 'plant.rheemStorageTankSize', null);
-        }
+        setPropertyByString(entity, 'plant.rheemVariant', null);
+        setPropertyByString(entity, 'plant.rheemPeakHourCapacity', null);
+        setPropertyByString(entity, 'plant.rheemMinimumInitialDelivery', null);
+        setPropertyByString(entity, 'plant.rheemkWRating', null);
+        setPropertyByString(entity, 'plant.rheemStorageTankSize', null);
     }
-
-    setPropertyByString(entity, 'version', ++entity.version);
 }

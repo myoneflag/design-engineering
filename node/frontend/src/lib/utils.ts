@@ -97,13 +97,16 @@ export function getPropertyByString(obj: any, s: string, existential: boolean = 
     return obj;
 }
 
-export function setPropertyByString(obj: any, s: string, val: any, existential: boolean = false) {
+export function setPropertyByString(obj: any, s: string, val: any, existential: boolean = false): boolean {
+    let hasChanged = true;
+
     s = s.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
     s = s.replace(/^\./, ""); // strip a leading dot
     const a = s.split(".");
     for (let i = 0, n = a.length; i < n; ++i) {
         const k = a[i];
         if (i === a.length - 1) {
+            hasChanged = (obj[k] !== val);
             obj[k] = val;
         } else {
             obj = obj[k];
@@ -114,6 +117,8 @@ export function setPropertyByString(obj: any, s: string, val: any, existential: 
             }
         }
     }
+
+    return hasChanged;
 }
 
 export function setPropertyByStringVue(obj: any, s: string, val: any) {

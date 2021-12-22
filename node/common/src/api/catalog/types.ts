@@ -109,7 +109,7 @@ export type HotWaterPlantSize = Partial<Record<
 >>;
 
 export type HotWaterPlantSizeManufacturerProps = Record<
-    keyof typeof RheemVariant,
+    RheemVariantValues,
     HotWaterPlantSizeManufacturerVariantProps
 >;
 

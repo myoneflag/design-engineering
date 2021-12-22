@@ -1883,6 +1883,8 @@
         }
 
         considerCalculating() {
+            this.$store.dispatch("document/reCalculate", false);
+            
             if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
                     if (!this.document.uiState.isCalculating) {
                         this.calculationLayer.calculate(this, () => {

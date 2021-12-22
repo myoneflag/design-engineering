@@ -17,7 +17,7 @@ import FixtureEntity, {
     fillFixtureFields,
     makeFixtureFields
 } from "../../../common/src/api/document/entities/fixtures/fixture-entity";
-import { CalculationContext, PressurePushMode } from "../../src/calculations/types";
+import { CalculationContext, PressurePushMode, ResolvePlantEntityProps } from "../../src/calculations/types";
 import Graph, { Edge } from "../../src/calculations/graph";
 import EquationEngine from "../../src/calculations/equation-engine";
 import BaseBackedObject from "../../src/htmlcanvas/lib/base-backed-object";
@@ -123,9 +123,9 @@ import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { processDrainage, sizeDrainagePipe } from "./drainage";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
 import { getNext } from '../../../common/src/lib/utils';
-import { PLANT_ENTITY_VERSION, doPlantEntityUpgrade } from '../../../common/src/api/document/entities/plants/plant-entity';
 import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
+import { checkEntityUpdates } from '../api/upgrader';
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -197,6 +197,8 @@ export default class CalculationEngine implements CalculationContext {
     priceTable: PriceTable;
     combineLUs: boolean;
 
+    commit = false;
+
     networkObjects(): BaseBackedObject[] {
         return this.networkObjectUids.map((u) => this.globalStore.get(u)!);
     }
@@ -205,11 +207,11 @@ export default class CalculationEngine implements CalculationContext {
         return this.drawableObjectUids.map((u) => this.globalStore.get(u)!);
     }
 
-    async calculate(
+    calculate(
         objectStore: GlobalStore,
         doc: DocumentState,
         catalog: Catalog,
-        done: (success: boolean) => Promise<void>,
+        done: (success: boolean, commit?: boolean) => void,
         priceTable: PriceTable,
         nodes: NodeProps[],
     ) {
@@ -262,10 +264,10 @@ export default class CalculationEngine implements CalculationContext {
 
             this.equationEngine = new EquationEngine();
             this.doRealCalculation();
-            done(true);
+            done(true, this.commit);
         } catch (error) {
             console.error(error);
-            await reportError("Calculation error", error as Error);
+            reportError("Calculation error", error as Error);
             done(false);
         }
     }
@@ -758,7 +760,7 @@ export default class CalculationEngine implements CalculationContext {
                     calc.widthMM = size.widthMM;
                     calc.depthMM = size.depthMM;
 
-                    if (outletPipeFlowRate > size.flowRate[targetTempRise]!) {
+                    if (outletPipeFlowRate > size.flowRate[targetTempRise]! || size.heaters! > 18) {
                         addWarning(calc, Warning.RHEEM_ADVICE);
                     }
 
@@ -807,6 +809,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case 'heatPump':
                     // calculation#1
+                    const ambientTemp = this.drawing.metadata.calculationParams.roomTemperatureC;
                     const storageTank = this.catalog.hotWaterPlant.storageTanks[plant.rheemStorageTankSize!];
                     const computeStorageTank = plant.rheemPeakHourCapacity! / plant.rheemStorageTankSize!;
                     const roundedComputeStorageTank = Math.round(computeStorageTank);
@@ -819,33 +822,75 @@ export default class CalculationEngine implements CalculationContext {
                         i.kW === plant.rheemkWRating
                     );
                     // get size by room temperature
-                    size = getNext(this.drawing.metadata.calculationParams.roomTemperatureC, sizes, true, 'roomTemperature') as HotWaterPlantSizePropsHeatPump;
+                    size = getNext(ambientTemp, sizes, true, 'roomTemperature') as HotWaterPlantSizePropsHeatPump;
 
                     const computeHeatPump = (plant.rheemPeakHourCapacity! / 4) / size.flowRate[targetTempRise]!;
                     const roundedComputeHeatPump = Math.round(computeHeatPump);
                     const heatPumpQuantity = roundedComputeHeatPump > computeHeatPump ? roundedComputeHeatPump : roundedComputeHeatPump + 1;
                     const heatPumpModel = `${heatPumpQuantity} x ${size.model} Heat Pumps`;
 
-                    calc.size = `${Math.max(size.widthMM, storageTank.widthMM)} (W) x ${(size.depthMM * 4) + (storageTank.depthMM * 3)} (D)`;
+                    calc.size = `${Math.max(size.widthMM, storageTank.widthMM)} (W) x ${(size.depthMM * heatPumpQuantity) + (storageTank.depthMM * storageTankQuantity)} (D)`;
                     calc.model = [storageTankModel, heatPumpModel];
                     calc.widthMM = Math.max(size.widthMM, storageTank.widthMM);
-                    calc.depthMM = (size.depthMM * 4) + (storageTank.depthMM * 3);
+                    calc.depthMM = (size.depthMM * heatPumpQuantity) + (storageTank.depthMM * storageTankQuantity);
+
+                    if (ambientTemp <= 10) {
+                        addWarning(calc, Warning.RHEEM_ADVICE);
+                    }
+
                     break;
             }
 
-            // apply results to its props
-            const plantEntity = this.globalStore.get(entity.uid.replace('.calculation', ''))!.entity as PlantEntity;
-            if (plantEntity.version === undefined || plantEntity.version < PLANT_ENTITY_VERSION) {
-                if (plantEntity.version === undefined) {
-                    setPropertyByString(plantEntity, 'version', 0);
-                }
-
-                doPlantEntityUpgrade(plantEntity);
+            if (!!size) {
+                this.resolveEntity({
+                    entity,
+                    plantProps: {
+                        widthMM: calc.widthMM!,
+                        depthMM: calc.depthMM!,
+                        gasRequirement: size.gas.requirement,
+                        gasPressure: size.gas.pressure,
+                    },
+                });
             }
-            setPropertyByString(plantEntity, 'calculation.widthMM', size.widthMM);
-            setPropertyByString(plantEntity, 'calculation.depthMM', size.depthMM);
-            setPropertyByString(plantEntity, 'plant.gasConsumptionMJH', size.gas.requirement);
-            setPropertyByString(plantEntity, 'plant.gasPressureKPA', size.gas.pressure);
+        }
+    }
+
+    // Call this function if you want to update entity with the calculated values
+    // This function checks updates before doing some changes to the entity
+    // And then it will trigger document/commit to save updated entity to backend
+    resolveEntity(props: {
+        entity: DrawableEntityConcrete,
+        plantProps?: ResolvePlantEntityProps,
+    }) {
+        const { entity, plantProps } = props;
+        const baseObj = this.globalStore.get(entity.uid.split('.')[0]) as BaseBackedObject;
+
+        checkEntityUpdates(baseObj.entity);
+
+        switch (baseObj.entity.type) {
+            case EntityType.PLANT:
+                const plantEntity = baseObj.entity;
+
+                setPropertyByString(plantEntity, 'calculation.widthMM', plantProps?.widthMM) && (this.commit = true);
+                setPropertyByString(plantEntity, 'calculation.depthMM', plantProps?.depthMM) && (this.commit = true);
+                setPropertyByString(plantEntity, 'plant.gasConsumptionMJH', plantProps?.gasRequirement) && (this.commit = true);
+                setPropertyByString(plantEntity, 'plant.gasPressureKPA', plantProps?.gasPressure) && (this.commit = true);
+
+                break;
+            case EntityType.BACKGROUND_IMAGE:
+            case EntityType.BIG_VALVE:
+            case EntityType.DIRECTED_VALVE:
+            case EntityType.FITTING:
+            case EntityType.FIXTURE:
+            case EntityType.FLOW_SOURCE:
+            case EntityType.GAS_APPLIANCE:
+            case EntityType.LOAD_NODE:
+            case EntityType.PIPE:
+            case EntityType.RISER:
+            case EntityType.SYSTEM_NODE:
+                break;
+            default:
+                assertUnreachable(baseObj.entity);
         }
     }
 

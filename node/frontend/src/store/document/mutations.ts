@@ -131,11 +131,11 @@ function beforeEvent(event: string, args: any, state: DocumentState) {
         onDeleteLevel(args, state);
     }
 }
-function  onSetPreviewMode(state: DocumentState,value:boolean){
-    state.isPreview=value;
+function onSetPreviewMode(state: DocumentState, value: boolean) {
+    state.isPreview = value;
 }
-function onSetActiveFlowSystem(state: DocumentState,value:number){
-    state.activeflowSystemId=value;
+function onSetActiveFlowSystem(state: DocumentState, value: number) {
+    state.activeflowSystemId = value;
 }
 function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
     if (levelUid === null) {
@@ -240,6 +240,10 @@ function applyDiff(state: DocumentState, diff: any) {
 }
 
 export const mutations: MutationTree<DocumentState> = {
+    setReCalculate(state, payload) {
+        state.uiState.reCalculate = payload;
+    },
+
     /**
      * Here we apply an operation to the current document.
      * This includes executing the effect of the operation, and
@@ -387,11 +391,11 @@ export const mutations: MutationTree<DocumentState> = {
             addEntityOn(state, { entity, levelUid: state.uiState.levelUid! });
         }
     },
-    setPreviewMode(state,value:boolean){
-        onSetPreviewMode(state,value);
+    setPreviewMode(state, value: boolean) {
+        onSetPreviewMode(state, value);
     },
-    setActiveFlowSystem(state,value:number){
-        onSetActiveFlowSystem(state,value);
+    setActiveFlowSystem(state, value: number) {
+        onSetActiveFlowSystem(state, value);
     },
     setId(state, id: number) {
         state.documentId = id;
@@ -435,7 +439,7 @@ export const mutations: MutationTree<DocumentState> = {
 
     setCurrentLevelUid(state, levelUid) {
         state.uiState.levelUid = levelUid;
-        state.uiState.warningFilter.collapsedLevelType.push({ levelUid, visible: true, types: []});
+        state.uiState.warningFilter.collapsedLevelType.push({ levelUid, visible: true, types: [] });
         MainEventBus.$emit("current-level-changed");
     },
 
