@@ -377,7 +377,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         const res = emptyRiserCalculations();
         const IAmDrainage = isDrainage(this.entity.systemUid);
 
-        const tower = this.getCalculationTower(context);
+        const tower = this.getCalculationTower(context, true);
 
         const levels = context.doc.drawing.levels;
         const levelUidsByHeight = Object.keys(context.doc.drawing.levels).sort((a, b) => {
