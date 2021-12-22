@@ -5,18 +5,18 @@ import { Level } from "../../../../common/src/api/document/drawing";
 import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../../common/src/models/Operation";
 import { assertUnreachable } from "../../../../common/src/api/config";
-import {cloneSimple} from "../../../../common/src/lib/utils";
-import {defaultPriceTable} from "../../../../common/src/api/catalog/default-price-table";
-import {applyDiffNative} from "../../../../common/src/api/document/state-ot-apply";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { defaultPriceTable } from "../../../../common/src/api/catalog/default-price-table";
+import { applyDiffNative } from "../../../../common/src/api/document/state-ot-apply";
 
 export const getters: GetterTree<DocumentState, RootState> = {
     title(state): string {
         return state.drawing.metadata.generalInfo.title;
     },
-    isPreview(state):boolean {
+    isPreview(state): boolean {
         return state.isPreview || false;
     },
-    activeFlowSystem(state):number {
+    activeFlowSystem(state): number {
         return state.activeflowSystemId;
     },
     document(state): DocumentState {
@@ -102,5 +102,9 @@ export const getters: GetterTree<DocumentState, RootState> = {
 
         const newPriceTable = applyDiffNative(initialPriceTable, state.drawing.metadata.priceTable);
         return newPriceTable;
-    }
+    },
+
+    reCalculate(state): boolean {
+        return state.uiState.reCalculate;
+    },
 };

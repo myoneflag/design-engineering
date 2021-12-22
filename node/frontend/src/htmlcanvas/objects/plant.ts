@@ -327,24 +327,23 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {
         return [
-            ...this.getInletsOutlets().map((o) => o.prepareDelete(context)).flat(),
+            ...this.getInletsOutlets(true).map((o) => o.prepareDelete(context)).flat(),
             this
         ];
     }
 
-    getInletsOutlets(): SystemNode[] {
+    getInletsOutlets(all: boolean = false): SystemNode[] {
         const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
         const result: string[] = [filled.inletUid, filled.outletUid];
+
+        let manufacturer = 'generic';
         switch (filled.plant.type) {
             case PlantType.RETURN_SYSTEM:
-                const hotWaterPlantManufacturer: HotWaterPlantManufacturers = this.document.drawing.metadata.catalog.hotWaterPlant?.find(i => i.uid === 'hotWaterPlant')?.manufacturer as HotWaterPlantManufacturers || "generic";
+                manufacturer = this.document.drawing.metadata.catalog.hotWaterPlant?.find(i => i.uid === 'hotWaterPlant')?.manufacturer || manufacturer;
 
                 result.push(filled.plant.returnUid);
 
-                if (hotWaterPlantManufacturer === 'generic'
-                    || (hotWaterPlantManufacturer === 'rheem'
-                        && this.withGas.includes(filled.plant.rheemVariant))) {
-
+                if (manufacturer === 'generic' || (manufacturer === 'rheem' && this.withGas.includes(filled.plant.rheemVariant)) || !!all) {
                     result.push(filled.plant.gasNodeUid);
                 }
 
@@ -403,10 +402,17 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
         e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
 
+        let manufacturer = 'generic';
         switch (e.plant.type) {
             case PlantType.RETURN_SYSTEM:
+                manufacturer = context.drawing.metadata.catalog.hotWaterPlant.find(i => i.uid === 'hotWaterPlant')?.manufacturer || manufacturer;
+
                 e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode).getCalculationNode(context, this.uid).uid;
-                e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+
+                if (manufacturer === 'generic' || (manufacturer === 'rheem' && this.withGas.includes(e.plant.rheemVariant!))) {
+                    e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                }
+
                 break;
             case PlantType.TANK:
             case PlantType.CUSTOM:
@@ -578,7 +584,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     getCopiedObjects(): BaseBackedObject[] {
-        return [this, ...this.getInletsOutlets()];
+        return [this, ...this.getInletsOutlets(true)];
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {

@@ -302,7 +302,7 @@ export default class CalculationLayer extends LayerImplementation {
             context.globalStore,
             context.document,
             context.effectiveCatalog,
-            async (success) => {
+            (success, commit) => {
                 if (success) {
                     context.document.uiState.lastCalculationId = context.document.nextId;
                     context.document.uiState.lastCalculationUiSettings = {
@@ -310,10 +310,13 @@ export default class CalculationLayer extends LayerImplementation {
                     context.document.uiState.lastCalculationSuccess = true;
 
                     const calculationReport = createCalculationReport(context);
-                    updateCalculationReport(context.document.documentId, calculationReport)
-                }
+                    updateCalculationReport(context.document.documentId, calculationReport);
 
-                await context.$store.dispatch("document/commit", { skipUndo: false });
+                    if (!!commit) {
+                        context.$store.dispatch("document/commit", { skipUndo: true });
+                        context.$store.dispatch("document/reCalculate", true);
+                    }
+                }
 
                 context.document.uiState.isCalculating = false;
 

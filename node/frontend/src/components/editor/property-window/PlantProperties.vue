@@ -41,7 +41,7 @@
               :max="field.params.max || undefined"
               type="number"
               :placeholder="'Enter ' + field.title"
-              :disabled="isDisabled(field)"
+              :disabled="readonly"
               :value="getPropertyByString(defaultData, field.property)"
               @input="setPropertyByString(reactiveData, field.property, $event)"
             ></b-form-input>
@@ -75,12 +75,11 @@
 </template>
 
 <script lang="ts">
+import uuid from "uuid";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
-import uuid from "uuid";
 import PropertiesFieldBuilder from "../../../components/editor/lib/PropertiesFieldBuilder.vue";
-import { MainEventBus } from "../../../store/main-event-bus";
 import { DocumentState } from "../../../store/document/types";
 import { DrawingMode } from "../../../htmlcanvas/types";
 import { DrawingContext } from "../../../htmlcanvas/lib/types";
@@ -88,9 +87,7 @@ import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
 import PlantEntity, {
   fillPlantDefaults,
-  makePlantEntityFields,
-  PLANT_ENTITY_VERSION,
-  doPlantEntityUpgrade
+  makePlantEntityFields
 } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { Choice } from "../../../../../common/src/lib/utils";
@@ -105,6 +102,7 @@ import PipeEntity from "../../../../../common/src/api/document/entities/pipe-ent
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
+import { checkEntityUpdates } from "../../../api/upgrader";
 
 @Component({
   components: { PropertiesFieldBuilder }
@@ -133,7 +131,7 @@ export default class PlantProperties extends Vue {
   }
 
   get readonly() {
-    return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
+    return this.document.uiState.viewOnly;
   }
 
   get fields() {
@@ -166,25 +164,13 @@ export default class PlantProperties extends Vue {
   }
 
   mounted() {
-    MainEventBus.$on("redraw", this.$props.scheduleDraw);
-
-    if (this.reactiveData.version === undefined || this.reactiveData.version < PLANT_ENTITY_VERSION) {
-      if (this.reactiveData.version === undefined) {
-        setPropertyByString(this.reactiveData, "version", 0);
-      }
-
-      doPlantEntityUpgrade(this.reactiveData);
-
-      this.onCommit();
-    }
+    // Check for update before applying some changes
+    // This should be called inside builder component but lets keep this here for now
+    checkEntityUpdates(this.reactiveData) && this.onCommit();
   }
 
-  destroyed() {
-    MainEventBus.$off("redraw", this.$props.scheduleDraw);
-  }
-
-  async onCommit() {
-    await this.$store.dispatch("document/validateAndCommit");
+  onCommit() {
+    this.$store.dispatch("document/validateAndCommit");
   }
 
   choiceName(key: string, choices: Choice[]): string {
@@ -196,18 +182,12 @@ export default class PlantProperties extends Vue {
   }
 
   isDisabled(field: PropertyField) {
-    if (this.readonly) {
-      return true;
-    }
-    if (field.readonly) {
-      return true;
-    }
-    if (field.requiresInput) {
-      return false;
-    }
-
     return (
-      (field.isCalculated || field.hasDefault) && getPropertyByString(this.reactiveData, field.property, true) === null
+      this.readonly ||
+      field.readonly ||
+      !field.requiresInput ||
+      ((field.isCalculated || field.hasDefault) &&
+        getPropertyByString(this.reactiveData, field.property, true) === null)
     );
   }
 
@@ -229,16 +209,16 @@ export default class PlantProperties extends Vue {
   }
 
   @Watch("reactiveData.plant.rheemVariant")
-  handleRheemVariantUpdate(newVal: keyof typeof RheemVariantValues, oldVal: keyof typeof RheemVariantValues) {
+  handleRheemVariantUpdate(newVal: RheemVariantValues, oldVal: RheemVariantValues) {
     if (oldVal === RheemVariantValues.tankpak) {
-      this.cleaTankpakValues();
+      this.clearTankpakValues();
     } else if (oldVal === RheemVariantValues.electric) {
       this.clearElectricValues();
     } else if (oldVal === RheemVariantValues.heatPump) {
       this.clearHeatPumpValues();
     }
 
-    if (([RheemVariantValues.electric, RheemVariantValues.heatPump] as any[]).includes(newVal)) {
+    if ([RheemVariantValues.electric, RheemVariantValues.heatPump].includes(newVal)) {
       this.disconnectGasPipe();
     }
 
@@ -279,7 +259,7 @@ export default class PlantProperties extends Vue {
     }
   }
 
-  private cleaTankpakValues() {
+  private clearTankpakValues() {
     setPropertyByString(this.reactiveData, "plant.rheemPeakHourCapacity", null);
   }
 

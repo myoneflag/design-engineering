@@ -56,6 +56,8 @@ export interface UIState {
     costAndLUTableOpen: boolean;
 
     pressureOrDrainage: "pressure" | "drainage";
+
+    reCalculate: boolean;
 }
 
 
@@ -106,7 +108,7 @@ export interface LevelTypeKey {
  */
 export interface DocumentState {
     isPreview: boolean | undefined;
-    activeflowSystemId:number | 0;
+    activeflowSystemId: number | 0;
     // This is the drawing that we last received or last sent to the server.
     committedDrawing: DrawingState;
     diffFilter: DiffFilter;
@@ -189,6 +191,7 @@ export const initialUIState: UIState = {
 
     costAndLUTableOpen: true,
     pressureOrDrainage: "pressure",
+    reCalculate: false,
 };
 
 export function blankDiffFilter() {
@@ -215,8 +218,8 @@ export const initialDocumentState: DocumentState = {
     shareToken: '',
     isLoading: false,
     locale: SupportedLocales.AU,
-    isPreview:false,
-    activeflowSystemId:0
+    isPreview: false,
+    activeflowSystemId: 0
 };
 
 export interface EntityParam {

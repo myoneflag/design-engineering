@@ -373,14 +373,14 @@ export default class HotWaterPlantCatalog extends Vue {
         4,
         10,
         ...[
-          { key: "flowRate.20", label: "Recovery Rate @ 20°C Rise (L)" },
-          { key: "flowRate.25", label: "Recovery Rate @ 25°C Rise (L)" },
-          { key: "flowRate.30", label: "Recovery Rate @ 30°C Rise (L)" },
-          { key: "flowRate.35", label: "Recovery Rate @ 35°C Rise (L)" },
-          { key: "flowRate.40", label: "Recovery Rate @ 40°C Rise (L)" },
-          { key: "flowRate.45", label: "Recovery Rate @ 45°C Rise (L)" },
-          { key: "flowRate.50", label: "Recovery Rate @ 50°C Rise (L)" },
-          { key: "flowRate.55", label: "Recovery Rate @ 55°C Rise (L)" }
+          { key: "flowRate.20", label: "Recovery Rate @ 20°C Rise (L/hour)" },
+          { key: "flowRate.25", label: "Recovery Rate @ 25°C Rise (L/hour)" },
+          { key: "flowRate.30", label: "Recovery Rate @ 30°C Rise (L/hour)" },
+          { key: "flowRate.35", label: "Recovery Rate @ 35°C Rise (L/hour)" },
+          { key: "flowRate.40", label: "Recovery Rate @ 40°C Rise (L/hour)" },
+          { key: "flowRate.45", label: "Recovery Rate @ 45°C Rise (L/hour)" },
+          { key: "flowRate.50", label: "Recovery Rate @ 50°C Rise (L/hour)" },
+          { key: "flowRate.55", label: "Recovery Rate @ 55°C Rise (L/hour)" }
         ]
       );
     }

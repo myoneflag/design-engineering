@@ -12,18 +12,20 @@ import { MainEventBus } from "../main-event-bus";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { DrawingMode } from "../../htmlcanvas/types";
-import { Operation } from "../../../../common/src/models/Operation";
 
 export const actions: ActionTree<DocumentState, RootState> = {
+    reCalculate({ commit }, payload) {
+        commit("setReCalculate", payload);
+    },
     applyRemoteOperation({ commit, state }, op) {
         commit("applyRemoteOperation", op);
     },
-    setPreviewMode({commit},value){
+    setPreviewMode({ commit }, value) {
         commit("setPreviewMode", value);
-    },  
-    setActiveFlowSystem({commit},value){
+    },
+    setActiveFlowSystem({ commit }, value) {
         commit("setActiveFlowSystem", value);
-    },  
+    },
     addEntity({ commit, state }, entity) {
         commit("addEntity", entity);
     },
@@ -57,7 +59,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
 
     // Call this action to commit the current operation transforms. TODO: make that atomic.
-    commit({ commit, state }, {skipUndo, diffAll}: {skipUndo?: boolean, diffAll?: boolean} = {skipUndo: false, diffAll: false}) {
+    commit({ commit, state }, { skipUndo, diffAll }: { skipUndo?: boolean, diffAll?: boolean } = { skipUndo: false, diffAll: false }) {
         diffAll = true; // we are disabling diffing until it is correct.
 
         if (state.uiState.drawingMode === DrawingMode.History) {
@@ -72,7 +74,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
         // We need to wait for entity mutation watchers to fire and update the filter.
 
         if (!_.isEqual(state.drawing.metadata.generalInfo, state.committedDrawing.metadata.generalInfo)) {
-            updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo,undefined);
+            updateDocument(state.documentId, undefined, state.drawing.metadata.generalInfo, undefined);
         }
 
         // We have to clone to stop reactivity affecting the async post values later.
@@ -110,9 +112,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
             this.dispatch("document/revert");
             window.alert(
                 "Unable to Save: There is a connection issue with the server. Please refresh. \n" +
-                    e.message +
-                    "\n" +
-                    e.trace
+                e.message +
+                "\n" +
+                e.trace
             );
         });
 
@@ -159,7 +161,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             }
         }
 
-        dispatch("commit", {skipUndo: true});
+        dispatch("commit", { skipUndo: true });
     },
 
     redo(args) {
@@ -181,7 +183,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             state.undoIndex++;
         }
 
-        dispatch("commit", {skipUndo: true});
+        dispatch("commit", { skipUndo: true });
     },
 
     setId({ commit, state }, payload) {

@@ -85,7 +85,7 @@ export interface ReturnSystemPlant extends Plant {
     gasConsumptionMJH: number | null;
     gasPressureKPA: number | null;
     gasNodeUid: string;
-    rheemVariant: keyof typeof RheemVariantValues | null;
+    rheemVariant: RheemVariantValues | null;
     rheemPeakHourCapacity: number | null;
     rheemMinimumInitialDelivery: number | null;
     rheemkWRating: number | null;
