@@ -104,7 +104,7 @@ export function resolveProperty(prop: string, obj: any): any {
     );
 }
 
-export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: CalculationContext): number {
+export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: CalculationContext, forRiser = false): number {
     switch (entity.type) {
         case EntityType.FIXTURE:
             const fe = fillFixtureFields(context.drawing, context.catalog, entity);
@@ -112,7 +112,11 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
         case EntityType.GAS_APPLIANCE:
             return entity.outletAboveFloorM;
         case EntityType.BIG_VALVE:
+            return entity.heightAboveFloorM;
         case EntityType.PIPE:
+            if (forRiser && isDrainage(entity.systemUid)) {
+               return Math.max(entity.heightAboveFloorM, 1);
+            }
             return entity.heightAboveFloorM;
         case EntityType.PLANT:
             const filled = fillPlantDefaults(entity, context.drawing, context.catalog,);
@@ -121,8 +125,8 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
     assertUnreachable(entity);
 }
 
-export function getEdgeLikeHeightAboveGroundM(entity: EdgeLikeEntity, context: CalculationContext): number {
-    return getEdgeLikeHeightAboveFloorM(entity, context) + getFloorHeight(context.globalStore, context.doc, entity);
+export function getEdgeLikeHeightAboveGroundM(entity: EdgeLikeEntity, context: CalculationContext, forRiser = false): number {
+    return getEdgeLikeHeightAboveFloorM(entity, context, forRiser) + getFloorHeight(context.globalStore, context.doc, entity);
 }
 
 export function getFloorHeight(globalStore: GlobalStore, doc: DocumentState, entity: DrawableEntityConcrete) {

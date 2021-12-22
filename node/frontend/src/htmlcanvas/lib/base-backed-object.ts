@@ -176,7 +176,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
      */
     abstract getCalculationEntities(context: CalculationContext): DrawableEntityConcrete[];
 
-    getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
+    getCalculationTower(context: CalculationContext, forRiser = false): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 

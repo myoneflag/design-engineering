@@ -114,7 +114,7 @@ export function leadPipe(
         maximumVelocityMS: null,
         parentUid: null,
         systemUid,
-        network: NetworkType.CONNECTIONS,
+        network: NetworkType.RETICULATIONS,
         type: EntityType.PIPE,
         gradePCT: null,
         uid: uuid()

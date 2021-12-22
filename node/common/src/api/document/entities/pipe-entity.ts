@@ -1,10 +1,10 @@
-import {FieldType, PropertyField} from "./property-field";
-import {EntityType} from "./types";
-import {Color, COLORS, DrawableEntity, DrawingState, NetworkType, SelectedMaterialManufacturer} from "../drawing";
-import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
-import {Catalog} from "../../catalog/types";
-import {convertMeasurementSystem, convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
-import {isDrainage, StandardFlowSystemUids} from "../../config";
+import { FieldType, PropertyField } from "./property-field";
+import { EntityType } from "./types";
+import { Color, COLORS, DrawableEntity, DrawingState, NetworkType } from "../drawing";
+import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
+import { Catalog } from "../../catalog/types";
+import { convertMeasurementSystem, convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
+import { isDrainage, StandardFlowSystemUids } from "../../config";
 import { getPipeManufacturer, getEntityNetwork, getEntitySystem } from "./utils";
 
 export default interface PipeEntity extends DrawableEntity {
@@ -61,7 +61,7 @@ export function makePipeFields(
             return c;
         })
         .filter((d) => Number(d.key) >= flowSystemSettings.networks[result.network].minimumPipeSize);
-        
+
     const fields: PropertyField[] = [];
     const iAmDrainage = isDrainage(entity.systemUid);
 
@@ -134,7 +134,7 @@ export function makePipeFields(
                 highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
-                params: {min: 0, max: null},
+                params: { min: 0, max: null },
                 multiFieldId: "maximumVelocityMS",
                 units: Units.MetersPerSecond
             },
@@ -149,14 +149,14 @@ export function makePipeFields(
                     isCalculated: true,
                     highlightOnOverride: COLORS.YELLOW,
                     type: FieldType.Number,
-                    params: {min: 0, max: null, initialValue: 0},
+                    params: { min: 0, max: null, initialValue: 0 },
                     multiFieldId: "gradePCT",
                     units: Units.None
                 },
             );
         }
     }
-    
+
     const height = convertMeasurementSystem(drawing.metadata.units, Units.Meters, floorHeight + entity.heightAboveFloorM);
 
     fields.push(
@@ -178,7 +178,6 @@ export function makePipeFields(
             title: "Height Above Floor",
             hasDefault: false,
             isCalculated: false,
-            readonly: iAmDrainage,
             type: FieldType.Number,
             params: { min: null, max: null },
             multiFieldId: "heightAboveFloorM",

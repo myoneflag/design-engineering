@@ -668,7 +668,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
              *           |
              *         uid.0--------puid-uid--
              */
-            getCalculationTower(context: CalculationContext): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
+            getCalculationTower(context: CalculationContext, forRiser = false): Array<[FittingEntity, PipeEntity] | [FittingEntity]> {
                 const groups = this.getCalculationConnectionGroups(context);
 
                 if (groups.length === 0) {
@@ -684,8 +684,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
 
                 let i = 0;
                 groups.forEach((g) => {
-                    const minHeight = getEdgeLikeHeightAboveGroundM(g[0], context);
-                    const maxHeight = getEdgeLikeHeightAboveGroundM(g[g.length - 1], context);
+                    const minHeight = getEdgeLikeHeightAboveGroundM(g[0], context, forRiser);
+                    const maxHeight = getEdgeLikeHeightAboveGroundM(g[g.length - 1], context, forRiser);
 
                     let systemUid = mySystemUid;
                     if (g[0].type === EntityType.PIPE) {
