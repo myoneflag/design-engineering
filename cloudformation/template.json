@@ -818,7 +818,7 @@
         //S3 buckets
         "PdfBucket": {
           "Type": "AWS::S3::Bucket",
-          "DeletionPolicy": "Retain",
+          "DeletionPolicy": "Delete",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
@@ -832,7 +832,7 @@
         },
         "PdfRendersBucket": {
           "Type": "AWS::S3::Bucket",
-          "DeletionPolicy": "Retain",
+          "DeletionPolicy": "Delete",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
@@ -864,14 +864,11 @@
         }, 
         "DataBucket": {
           "Type": "AWS::S3::Bucket",
-          "DeletionPolicy": "Retain",
+          "DeletionPolicy": "Delete",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
-            "BucketName": { "Fn::Sub": "h2x-s3-data-${EnvName}" },
-            "VersioningConfiguration": {
-              "Status": "Enabled"
-            },            
+            "BucketName": { "Fn::Sub": "h2x-s3-data-${EnvName}" },                       
             "Tags": [ 
               { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-data-${EnvName}"} },
               { "Key": "AppName", "Value": "H2X" },
@@ -882,14 +879,11 @@
 
         "ReportsBucket": {
           "Type": "AWS::S3::Bucket",
-          "DeletionPolicy": "Retain",
+          "DeletionPolicy": "Delete",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "Private",
-            "BucketName": { "Fn::Sub": "h2x-s3-reports-${EnvName}" },
-            "VersioningConfiguration": {
-              "Status": "Enabled"
-            },            
+            "BucketName": { "Fn::Sub": "h2x-s3-reports-${EnvName}" },            
             "Tags": [ 
               { "Key": "Name", "Value": { "Fn::Sub": "h2x-s3-reports-${EnvName}"} },
               { "Key": "AppName", "Value": "H2X" },
@@ -900,7 +894,7 @@
 
         "WebAppBucket": {
           "Type": "AWS::S3::Bucket",
-          "DeletionPolicy": "Retain",
+          "DeletionPolicy": "Delete",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
             "AccessControl": "PublicRead",
@@ -936,7 +930,7 @@
         },
 
            //WebApp bucket policy to grant access to cloud front
-           "WebAppBucketPolicy":{
+        "WebAppBucketPolicy":{
             "Type": "AWS::S3::BucketPolicy",            
             "Properties":{
               "Bucket":{"Ref":"WebAppBucket"},
@@ -1098,6 +1092,26 @@
     "WebAppBucket": {
       "Value": {
         "Ref": "WebAppBucket"
+      }
+    },
+    "PdfBucket": {
+      "Value": {
+        "Ref": "PdfBucket"
+      }
+    },
+    "PdfRendersBucket": {
+      "Value": {
+        "Ref": "PdfRendersBucket"
+      }
+    },
+    "DataBucket": {
+      "Value": {
+        "Ref": "DataBucket"
+      }
+    },
+    "ReportsBucket": {
+      "Value": {
+        "Ref": "ReportsBucket"
       }
     }
   }
