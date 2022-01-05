@@ -233,4 +233,7 @@ services:
       - ./nginx_local.conf:/etc/nginx/nginx.conf
     ports:
       - 8010:8010
+    # For Ubuntu
+    # extra_hosts:
+    #  - "host.docker.internal:host-gateway"
 

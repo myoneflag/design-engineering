@@ -35,6 +35,7 @@ First, check out the [documentation](./docs/README.md).
     - [Deployment scripts (advanced)](#deployment-scripts-advanced)
       - [Deploy](#deploy)
       - [Delete](#delete)
+  - [Troubleshooting](#troubleshooting)
 
 ## Clone source
 
@@ -58,11 +59,14 @@ Workflow is fully described in [Contributing](CONTRIBUTING.md) doc.
 3. Open a Merge Request from your branch to `master`, and add `DEV-123` to the name
 * All these things will make the Jira task, commits and MR nicely linked and tied together with links.
 * When you push to your branch, with MR open, build will be run and you can see failures in slack `#build-notifications`. If build fails, fix it.
-4. From your local clone, merge your branch changes into branch `test`.
-Use Git UI or commands 
+4. Merge your branch changes into branch `app-test`.  
+    **Option 1**  
+    In the Gitlab MR page, you can manually start the optional `merge-to-app-test` deploy step.  
+    **Option 2**  
+    (or in case of conflict) Use Git UI or commands 
    ```
    git pull
-   git checkout test
+   git checkout app-test
    git merge DEV-123
    git push
    ```
@@ -459,3 +463,12 @@ export env=gone
 export AWS_PROFILE=_awsprofile_
 ./delete.sh
 ```
+
+## Troubleshooting
+
+1. `localhost:8010` does not work
+   Might return a 502 or not connect at all.
+   Check that the `nginx_local`, or respectively `nginx_dev|minimal` containers are up.
+   For Ubuntu, uncomment lines  
+   ```# extra_hosts```  
+   in `docker-compose.yml`.

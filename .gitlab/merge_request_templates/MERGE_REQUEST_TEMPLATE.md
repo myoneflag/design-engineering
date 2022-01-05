@@ -3,7 +3,7 @@
 
 # Checklist
 
-- [ ] Is it merged in `test` and deployed on `app-test` ?  
+- [ ] Is it merged in branch `app-test` and deployed on `app-test.h2xtesting.com` ?  
 - [ ] Have you reviewed all comments and feedback in the MR ?  
 - [ ] Have you reviewed all comments and feedback on the Jira ticket ?  
 - [ ] Have you updated the Jira ticket with the latest screenshots / videos ?  
