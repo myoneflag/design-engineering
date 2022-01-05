@@ -8,6 +8,7 @@
     - [Install Docker](#install-docker)
     - [Install Docker Compose](#install-docker-compose)
     - [Allow sudo permissions for gitlab-runner user](#allow-sudo-permissions-for-gitlab-runner-user)
+    - [Configure Gitlab write access](#configure-gitlab-write-access)
   - [Configure credentials for AWS deployments](#configure-credentials-for-aws-deployments)
   - [Logging into deploy server](#logging-into-deploy-server)
   - [Troubleshooting](#troubleshooting)
@@ -65,10 +66,20 @@ sudo visudo
 # %gitlab-runner ALL=(ALL) NOPASSWD:SETENV: ALL
 ```
 
+### Configure Gitlab write access
+
+* generate private key
+* add key as deploy key in Gitlab
+* log in to build server
+* `sudo su gitlab-runner`
+* add private key to `.ssh/id_rsa`
+* `chmod 400 .ssh/id_rsa`
+* test connect to gitlab with `ssh -T git@gitlab.com`
+
 ## Configure credentials for AWS deployments
 
 If the gitlab-runner instance performs only build tasks, AWS credentials are not needed.  
-For AWS deployments to `test` \ `stage` or `prod` environment, AWS credentials configures are required.  
+For AWS deployments to `app-test` \ `app-stage` or `prod` environment, AWS credentials configures are required.  
 
 1. Create AWS IAM user  
 Allow `Administrator` permissions.

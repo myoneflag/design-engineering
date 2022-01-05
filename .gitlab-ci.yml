@@ -30,39 +30,20 @@ build:backend:
         - npm install
         - npm run build
 
-deploy_test:
-  stage: deploy
-  variables:  
-    AWS_PROFILE: h2x-gitlab-runner-test-profile
-    env: test
-  script:
-    - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
-    - sudo -E ./cloudformation/deploy.sh
-  after_script:
-    - sudo -E ./cloudformation/clean.sh
-  environment:
-    name: test
-    url: https://app-test.h2xtesting.com
-    deployment_tier: testing
-  only:
-    - test
-
-deploy_feature:
-  stage: deploy
-  environment:
-    name: $CI_COMMIT_REF_SLUG
-    url: https://app-FEATURE.h2xtesting.com
-    deployment_tier: development
-  variables:
-    AWS_PROFILE: h2x-gitlab-runner-test-profile
-  script:
-    - export env=${CI_COMMIT_REF_SLUG/feature-/}
-    - echo "Deploy env $env for $CI_COMMIT_BRANCH"
-    - sudo -E ./cloudformation/deploy.sh
-  after_script:
-    - sudo -E ./cloudformation/clean.sh
-  only:
-    - /^feature-.*$/
+merge-to-app-test:
+    stage: deploy
+    only:
+        - merge_requests
+    when: manual
+    allow_failure: true
+    script:
+        - git config --global user.email "$GITLAB_USER_EMAIL"
+        - git config --global user.name "$GITLAB_USER_ID"
+        - git remote set-url origin git@gitlab.com:info892/H2X.git
+        - git fetch origin
+        - git checkout -b app-test origin/app-test
+        - git merge origin/$CI_COMMIT_REF_NAME
+        - git push origin app-test
 
 deploy-app:
   stage: deploy
@@ -99,7 +80,6 @@ stop-deploy-app:
     action: stop
   only:
     - /^app-((?!test|stage|prod).*)$/
-
 
 deploy_stage:
   stage: deploy

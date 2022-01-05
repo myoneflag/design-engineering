@@ -2,7 +2,7 @@
 
 ## Commit workflow
 
-When a task is assigned to you, all details are in teh Jira card. Use the Jira task code for creating branches and commit messages.
+When a task is assigned to you, all details are in the Jira card. Use the Jira task code for creating branches and commit messages.
 
 1. Create branch based on `master`, and name it using Jira task code (e.g. `DEV-123` or `DEV-123-a-short-name`)
 2. Commit to branch, and add `DEV-123` to commit messages (e.g. `DEV-123 did this and that`)
@@ -11,9 +11,9 @@ When a task is assigned to you, all details are in teh Jira card. Use the Jira t
 * All these things will make the Jira task, commits and MR nicely linked and tied together with links.
 * When you push to your branch, with MR open, build will be run and you can see failures in slack `#build-notifications`. If build fails, fix it.
   
-4. From your local clone, merge your branch changes into branch `test` and push the changes.
+4. From your local clone, merge your branch changes into branch `app-test` and push the changes.
 Use Git UI 
-  * Switch to branch `test`
+  * Switch to branch `app-test`
   * Use `Branch > Merge into current branch ...` command on MacOS Git UI
   
 or git commands 
@@ -24,17 +24,33 @@ or git commands
    git push
    ```
 * Pushed changes will get automatically deployed to `app-test.h2xtesting.com`
-  
-If the feature is big, risky or takes long, and might endanger the testing on `app-test`, you can create a new branch called `app-feature` and that will create a new environment automatically `app-feature.h2xtesting.com`.  
-Same commands as above, just use `app-feature` instead of `test`. E.g. `app-heating`, `app-revit`, `app-manufacturers`, etc.
 
-5. When all feedback and testing is done, Calin or Jonny will merge the MR into `master`.
+* DO NOT merge back from **app-test** into your branch.  
+  Changes in branch `app-test` might not make it in `master`. If other MRs have been merged, update from `master`.
+
+* If you have conflicts when merging from your `DEV-` branch to `app-test`, fix the conflicts in `app-test`, not in your branch.
+> * check out `app-test`
+> * merge your branch in in
+> * fix conflicts
+> * commit and push to `app-test`
+! DO NOT merge `app-test` in your `DEV-` branch and commits the conflict fix there.
+
+* If the feature is big, risky or takes long, and might endanger the testing on `app-test`, you can create a new branch called `app-feature` and that will create a new environment automatically `app-feature.h2xtesting.com`.  
+Same commands as above, just use `app-feature` instead of `app-test`. E.g. `app-heating`, `app-revit`, `app-manufacturers`, etc.
+
+1. When all feedback and testing is done, Calin or Jonny will merge the MR into `master`.
 
 ## Branch workflow
 
+### Overview
+
+![H2X Branching Workflow](./docs/assets/H2X%20Branch%20Workflow.png)  
+[Source](https://lucid.app/lucidchart/0e0a3f01-3e66-4437-9544-23ba83f2e2d6/edit?invitationId=inv_981a9ecf-57f9-423f-9545-fadf0a4a57b9)
+
 * We develop features in `DEV-` branches
 * We open MR from `DEV-` branch to `master`
-* We manually merge the changes in `test` (or `app-`) branch for testing
+* We merge the changes in `app-test` (or `app-`) branch for deployment to testing environment
+> ! DO NOT merge `app-test` back into your `DEV-` branch
 * When done, MR gets merged in `master`
 * When ready to release, a new `release-` branch gets created based on `master`
 * `release-` branch gets deploed automatically to `app-stage.hextesting.com`
@@ -80,9 +96,7 @@ Same commands as above, just use `app-feature` instead of `test`. E.g. `app-heat
   Details in comments in Jira, comments to MRs, details of how it looks and how it works. Read the Jira card, address all comments adfded to the card and MRs.
 
 ## Deployment
-* If you want your changes deployed, merge your branch to `test`, and it will be automatically deployed to `app-test`.
-* DO NOT merge back from **test** into your branch.  
-  Changes in `test` might not make it in `master`. If other MRs have been merged, update from `master`.
+* If you want your changes deployed, merge your branchmanually  to `app-test`, and it will be automatically deployed to environment `app-test`.
 
 * If your work has to be on a different environment because it's risky or it will take long, create a new branch called `app-NAME`, merge your `DEV-NNN` branch to `APP-NAME`, and it will be automatically deployed to `app-NAME.h2xtesting.com`. e.g. `app-revit`, `app-infra`, `app-super`, etc. NAME has to be single word no special chars all lowercase.
 

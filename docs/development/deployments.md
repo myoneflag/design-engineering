@@ -3,11 +3,11 @@
 ## Overview
 
 H2X uses three major environments:   
-`test` `stage` and `production`
+`app-test` `app-stage` and `production`
 
 | Environment | URL                              | Deployed when                             | Notes                                                                                                 |
 | ----------- | -------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| test        | https://app-test.h2xtesting.com  | on every `test` branch update             | create users with `test+something@h2xtesting.com`                                                     |
+| test        | https://app-test.h2xtesting.com  | on every `app-test` branch update             | create users with `test+something@h2xtesting.com`                                                     |
 | stage       | https://app-stage.h2xtesting.com | on every `release-*` branch update or tag | create users with `test+something@h2xtesting.com`.   Database backup restored from prod occasionally. |
 | prod        | https://app.h2xengineering.com   | manually triggered on tag `release-*`     | Live system!                                                                                          |
 
@@ -25,7 +25,7 @@ Deployment plan:
 * all merge requests will build the frontend and backend - no deployment
 * all pushes to branches called `app-name` > automatically deployed to `app-name.h2xtesting.com`
   * when deleting the branch `app-name`, it's corressponding environment will be deleted
-* pushes to branch `test` > automatically deployed to app-test
+* pushes to branch `app-test` > automatically deployed to app-test
   * nothign happens with `app-test.h2xtesting.com` when you delete the test branch
 * pushes to branches `release-*` > automatically deployed to app-stage
 * **tags** of branches `release-*` > automatically deployed to app-stage
