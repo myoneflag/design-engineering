@@ -54,24 +54,12 @@ Workflow is fully described in [Contributing](CONTRIBUTING.md) doc.
 
 **TL;DR**
 
-1. Create branch based on `master`, and name it using Jira task code (e.g. `DEV-123` or `DEV-123-a-short-name`)
+1. Create `DEV-123` branch based on `master`
 2. Commit to branch, and add `DEV-123` to commit messages (e.g. `DEV-123 did this and that`)
 3. Open a Merge Request from your branch to `master`, and add `DEV-123` to the name
-* All these things will make the Jira task, commits and MR nicely linked and tied together with links.
-* When you push to your branch, with MR open, build will be run and you can see failures in slack `#build-notifications`. If build fails, fix it.
-4. Merge your branch changes into branch `app-test`.  
-    **Option 1**  
-    In the Gitlab MR page, you can manually start the optional `merge-to-app-test` deploy step.  
-    **Option 2**  
-    (or in case of conflict) Use Git UI or commands 
-   ```
-   git pull
-   git checkout app-test
-   git merge DEV-123
-   git push
-   ```
-* Pushed changes will get automatically deployed to `app-test.h2xtesting.com`
-5. When all feedback and testing is done, Calin or Jonny will merge the MR into `master`.
+4. Merge `DEV-123` branch changes in branch `app-test` from Gitlab MR UI deploy step `merge-to-app-test`. 
+5. It will be deployed to `app-test.h2xtesting.com`.
+6. When all feedback and testing is done, Calin or Jonny will merge the MR into `master`
 
 ## Project structure
 
