@@ -11,16 +11,31 @@ When a task is assigned to you, all details are in the Jira card. Use the Jira t
 * All these things will make the Jira task, commits and MR nicely linked and tied together with links.
 * When you push to your branch, with MR open, build will be run and you can see failures in slack `#build-notifications`. If build fails, fix it.
   
-4. From your local clone, merge your branch changes into branch `app-test` and push the changes.
-Use Git UI 
+4. Merge your branch changes into branch `app-test` and push the changes.
+
+#### Option 1
+In the Gitlab MR page, you can manually start the optional `merge-to-app-test` deploy step.  
+
+If this fails:
+
+#### Option 2
+
+In case the are merge conflicts in `app-test`, you will have to resolve the conflict anf push from local.  
+Always resolve the conflict by committing to `app-test`!  
+
+**Use Git UI locally**
   * Switch to branch `app-test`
-  * Use `Branch > Merge into current branch ...` command on MacOS Git UI
+  * Use `Branch > Merge into current branch ...` command on MacOS Git UI or similar
+  * Commit merge conflicts
+  * Push `app-test`
   
-or git commands 
-   ```
+**or git commands **
+
+   ```bash
    git pull
-   git checkout test
+   git checkout app-test
    git merge DEV-123
+   # fix conflicts
    git push
    ```
 * Pushed changes will get automatically deployed to `app-test.h2xtesting.com`

@@ -2,19 +2,18 @@ stages:
     - build
     - deploy
 
-cache:
-    paths:
-        - node/frontend/node_modules/
-        - node/backend/node_modules/
-
 build:frontend:
     stage: build
     only:
         - merge_requests
+    cache:
+        paths:
+            - node/node_modules/        
+            - node/frontend/node_modules/
     script:
-        - cd node/common/
+        - cd node
         - npm install
-        - cd ../../node/frontend/
+        - cd frontend
         - npm install
         - npm run build
         
@@ -22,10 +21,14 @@ build:backend:
     stage: build
     only:
         - merge_requests
+    cache:
+        paths:
+            - node/node_modules/        
+            - node/backend/node_modules/
     script:
-        - cd node/common/
+        - cd node
         - npm install
-        - cd ../../node/backend/
+        - cd backend
         - npm install
         - npm run build
 
@@ -43,7 +46,7 @@ merge-to-app-test:
         - git fetch origin
         - git reset --hard app-test
         - git checkout -B app-test origin/app-test
-        - git merge origin/$CI_COMMIT_REF_NAME || curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch $CI_COMMIT_REF_NAME to app-test by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage
+        - git merge origin/$CI_COMMIT_REF_NAME || ( curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch $CI_COMMIT_REF_NAME to app-test by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage && exit 1 )
         - git push origin app-test
 
 update-from-master:
@@ -60,7 +63,7 @@ update-from-master:
         - git fetch origin
         - git reset --hard $CI_COMMIT_REF_NAME || echo reset
         - git checkout -B $CI_COMMIT_REF_NAME origin/$CI_COMMIT_REF_NAME
-        - git merge origin/master || curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch master to $CI_COMMIT_REF_NAME by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage
+        - git merge origin/master || ( curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch master to $CI_COMMIT_REF_NAME by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage && exit 1 )
         - git push origin $CI_COMMIT_REF_NAME
 
 deploy-app:
