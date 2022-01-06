@@ -6,7 +6,6 @@ cache:
     paths:
         - node/frontend/node_modules/
         - node/backend/node_modules/
-        - node/common/node_modules/
 
 build:frontend:
     stage: build
@@ -39,13 +38,30 @@ merge-to-app-test:
     cache: []
     script:
         - git config --global user.email "$GITLAB_USER_EMAIL"
-        - git config --global user.name "$GITLAB_USER_ID"
+        - git config --global user.name "$GITLAB_USER_NAME"
         - git remote set-url origin git@gitlab.com:info892/H2X.git
         - git fetch origin
         - git reset --hard app-test
         - git checkout -B app-test origin/app-test
         - git merge origin/$CI_COMMIT_REF_NAME || curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch $CI_COMMIT_REF_NAME to app-test by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage
         - git push origin app-test
+
+update-from-master:
+    stage: deploy
+    only:
+        - merge_requests
+    when: manual
+    allow_failure: true
+    cache: []
+    script:
+        - git config --global user.email "$GITLAB_USER_EMAIL"
+        - git config --global user.name "$GITLAB_USER_NAME"
+        - git remote set-url origin git@gitlab.com:info892/H2X.git
+        - git fetch origin
+        - git reset --hard $CI_COMMIT_REF_NAME || echo reset
+        - git checkout -B $CI_COMMIT_REF_NAME origin/$CI_COMMIT_REF_NAME
+        - git merge origin/master || curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch master to $CI_COMMIT_REF_NAME by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage
+        - git push origin $CI_COMMIT_REF_NAME
 
 deploy-app:
   stage: deploy
@@ -56,6 +72,7 @@ deploy-app:
     on_stop: stop-deploy-app
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile
+  cache: []    
   script:
     - export env=${CI_COMMIT_BRANCH/app-/}
     - echo "Deploy env $env for $CI_COMMIT_BRANCH"
@@ -71,6 +88,7 @@ stop-deploy-app:
   variables:
     GIT_STRATEGY: none
     AWS_PROFILE: h2x-gitlab-runner-test-profile
+  cache: []    
   script:
     - export env=${CI_COMMIT_BRANCH/app-/}
     - echo "Delete env $env for $CI_COMMIT_BRANCH"
@@ -88,6 +106,7 @@ deploy_stage:
   variables:  
     AWS_PROFILE: h2x-gitlab-runner-test-profile
     env: stage
+  cache: []    
   script:
     - echo "Deploy $CI_COMMIT_BRANCH branch to $env"
     - sudo -E ./cloudformation/deploy.sh
@@ -106,6 +125,7 @@ deploy_prod:
   variables:
     AWS_PROFILE: h2x-gitlab-runner-prod-profile
     env: prod
+  cache: []    
   script:    
     - echo "Deploy $CI_COMMIT_TAG branch to PRODUCTION. Initiated manually."
     - sudo -E ./cloudformation/deploy.sh

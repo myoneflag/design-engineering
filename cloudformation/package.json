@@ -27,7 +27,7 @@
     "wait-create-stack": "aws cloudformation wait stack-create-complete --stack-name $CFStackName --region ${AWSRegion}",
     "update-stack": "aws cloudformation update-stack --stack-name $CFStackName --template-body file://dist/${GIT_COMMIT}/template.cfn.json --parameters file://dist/${GIT_COMMIT}/parameters.cfn.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion}",
     "wait-update-stack": "aws cloudformation wait stack-update-complete --stack-name $CFStackName --region ${AWSRegion}",
-    "describe-stack": "aws cloudformation describe-stacks --stack-name $CFStackName --output text --region ${AWSRegion} --query 'Stacks[0].Outputs' > dist/${GIT_COMMIT}/outputs.txt && sed -e \"s#^#export #\" -e \"s#\t#=#\" dist/${GIT_COMMIT}/outputs.txt > dist/${GIT_COMMIT}/outputs.env",
+    "describe-stack": "mkdir -p dist/${GIT_COMMIT} && aws cloudformation describe-stacks --stack-name $CFStackName --output text --region ${AWSRegion} --query 'Stacks[0].Outputs' > dist/${GIT_COMMIT}/outputs.txt && sed -e \"s#^#export #\" -e \"s#\t#=#\" dist/${GIT_COMMIT}/outputs.txt > dist/${GIT_COMMIT}/outputs.env",
     "delete-stack": "aws cloudformation delete-stack --stack-name $CFStackName --region ${AWSRegion}",
     "wait-delete-stack": "aws cloudformation wait stack-delete-complete --stack-name $CFStackName --region ${AWSRegion}",
     "clear-buckets": ". dist/${GIT_COMMIT}/outputs.env && aws s3 rm --recursive s3://${PdfBucket} && aws s3 rm --recursive s3://${PdfRendersBucket} && aws s3 rm --recursive s3://${DataBucket} && aws s3 rm --recursive s3://${ReportsBucket} && aws s3 rm --recursive s3://${WebAppBucket}"
