@@ -1,6 +1,6 @@
 set -e
 
-if [ $env == "prod" ] || [ $env == "stage" ] || [ $env == "test" ]
+if [ "$env" == "prod" ] || [ "$env" == "stage" ] || [ "$env" == "test" ]
 then    
     echo $env "environment cannot be delete"
 else
