@@ -32,9 +32,9 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
     prepareDeleteConnection(uid: string, context: CanvasContext): BaseBackedObject[] {
         // Remove 0 Way Fittings and Tee from Deleted Pipes
-        if (
-            !this.globalStore.getConnections(this.entity.uid).length ||
-            (this.globalStore.getConnections(this.entity.uid).length == 2 && this.isStraight(1))
+        if (this.type === EntityType.FITTING && 
+            (!this.globalStore.getConnections(this.entity.uid).length ||
+            (this.globalStore.getConnections(this.entity.uid).length == 2 && this.isStraight(1)))
         ) {
             return this.prepareDelete(context);
         } else {
