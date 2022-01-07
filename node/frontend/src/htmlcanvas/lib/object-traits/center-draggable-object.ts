@@ -21,6 +21,7 @@ export default function CenterDraggableObject<
         // @ts-ignore abstract class expression limitation in the language. In practice this is fine.
         class extends constructor implements Draggable {
             toDelete: BaseBackedObject | null = null;
+            originCenter: Coord | null = null;
 
             onDrag(
                 event: MouseEvent,
@@ -80,6 +81,15 @@ export default function CenterDraggableObject<
                             throw new Error("Somehow trying to move onto an incompatible entity");
                         }
                     }
+
+                    // Ignore Tees when moving and move based on elbows
+                    const connectionUids = this.globalStore.getConnections(this.uid)!;
+                    connectionUids.forEach((uid) => {
+                        const conn = this.globalStore.get(uid)!;
+                        if (conn instanceof Pipe && this.originCenter) {
+                            conn.dragConnectableEntity(context, this.uid, this.entity.center, this.originCenter);
+                        }
+                    });
                 }
                 if (!isMulti) {
                     this.onRedrawNeeded();
@@ -87,11 +97,13 @@ export default function CenterDraggableObject<
             }
 
             onDragFinish(event: MouseEvent, context: CanvasContext): void {
+                this.originCenter = null;
                 context.activeLayer.releaseDrag(context);
                 this.onInteractionComplete(event);
             }
 
             onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext): any {
+                this.originCenter = {...this.entity.center};
                 context.activeLayer.dragObjects([this], context);
                 return null;
             }

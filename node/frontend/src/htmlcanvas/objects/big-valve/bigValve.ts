@@ -509,7 +509,9 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     getNeighbours(): BaseBackedObject[] {
         const res: BaseBackedObject[] = [];
         for (const sn of this.getInletsOutlets()) {
-            res.push(...sn.getNeighbours());
+            if (sn) {
+                res.push(...sn.getNeighbours());
+            }
         }
         return res;
     }

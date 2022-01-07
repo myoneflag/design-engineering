@@ -14,3 +14,8 @@ export const UNHANDLED: MouseMoveResult = {
     handled: false,
     cursor: null
 };
+
+export enum Direction {
+    Horizontal = 'horizontal',
+    Vertical = 'vertical'
+}
