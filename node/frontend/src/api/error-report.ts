@@ -131,8 +131,8 @@ export async function reportError(message: string, error: Error) {
                         "If you experience problems with the page from now on, please refresh.\n" +
                         "Thank you for your patience!",
                     {
-                        title: "An exception occurred: " + message.toString(),
-                        variant: "warning"
+                        title: "An error has occured: " + message.toString(),
+                        variant: "danger"
                     }
                 );
             } else {
@@ -140,14 +140,10 @@ export async function reportError(message: string, error: Error) {
             }
         } else {
             const msgstr =
-                "An error occurred, but we couldn't even report the error! D'oh! If this is not a " +
-                "network issue, please contact the developers. Message: " +
-                message.toString() +
-                " and why we " +
-                "couldn't report it: " +
-                res.message.toString();
+                "An error occurred, but we couldn't report the error!\n" +
+                message.toString();
             if (vue) {
-                vue.$bvModal.msgBoxOk(msgstr);
+                vue.$bvModal.msgBoxOk(msgstr, {title: "Error"} );
             } else {
                 window.alert(msgstr);
             }

@@ -12,6 +12,7 @@ import { MainEventBus } from "../main-event-bus";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { DrawingMode } from "../../htmlcanvas/types";
+import { reportError } from "../../../src/api/error-report";
 
 export const actions: ActionTree<DocumentState, RootState> = {
     reCalculate({ commit }, payload) {
@@ -110,12 +111,7 @@ export const actions: ActionTree<DocumentState, RootState> = {
             state.uiState.viewOnly = true;
             state.uiState.viewOnlyReason = "Lost connection to the server - please refresh";
             this.dispatch("document/revert");
-            window.alert(
-                "Unable to Save: There is a connection issue with the server. Please refresh. \n" +
-                e.message +
-                "\n" +
-                e.trace
-            );
+            reportError("Unable to Save: There is a connection issue with the server. Please refresh.", e);
         });
 
         setTimeout(() => {
@@ -124,9 +120,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
                 // didn't update successfully
                 state.uiState.viewOnly = true;
                 state.uiState.viewOnlyReason = "Having trouble saving, please refresh";
-                window.alert("Having trouble saving for the last 10 seconds, please refresh");
+                reportError("Having trouble saving for the last 10 seconds, please refresh", new Error("connection issues"));
             }
-        }, 100000);
+        }, 10000);
 
         MainEventBus.$emit("committed", true);
     },

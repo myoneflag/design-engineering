@@ -1061,6 +1061,42 @@
               ]  
             }
         },
+
+        // CloudWatch insights logs queries
+        "LogQueryWebErrors": {
+          "Type" : "AWS::Logs::QueryDefinition",
+          "Properties" : {
+              "LogGroupNames" : [ { "Fn::Sub": "/aws/elasticbeanstalk/H2X-web-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
+              "Name" : { "Fn::Sub": "${EnvName}/Web Errors" },
+              "QueryString" : "fields @timestamp, @message | filter @message like /(?i)exception|error|fail|fatal/ | sort @timestamp desc"
+            }
+        },
+        "LogQueryWorkerErrors": {
+          "Type" : "AWS::Logs::QueryDefinition",
+          "Properties" : {
+              "LogGroupNames" : [ { "Fn::Sub": "/aws/elasticbeanstalk/H2X-worker-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
+              "Name" : { "Fn::Sub": "${EnvName}/Worker Errors" },
+              "QueryString" : "fields @timestamp, @message | filter @message like /(?i)exception|error|fail|fatal/ | sort @timestamp desc"
+            }
+        },
+        "LogQueryWorkerUpgrades": {
+          "Type" : "AWS::Logs::QueryDefinition",
+          "Properties" : {
+              "LogGroupNames" : [ { "Fn::Sub": "/aws/elasticbeanstalk/H2X-worker-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
+              "Name" : { "Fn::Sub": "${EnvName}/Worker Upgrade Activity" },
+              "QueryString" : "fields @timestamp, @message | filter @message like /(?i)documentUpgrade/ | sort @timestamp desc"
+            }
+        },
+        "LogQueryWebPerformance": {
+          "Type" : "AWS::Logs::QueryDefinition",
+          "Properties" : {
+              "LogGroupNames" : [ { "Fn::Sub": "/aws/elasticbeanstalk/H2X-web-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
+              "Name" : { "Fn::Sub": "${EnvName}/Web Errors" },
+              "QueryString" : "fields @timestamp, @message | filter @message like /(?i)timer:/ | sort @timestamp desc"
+            }
+        },
+
+      
         "ResourceGroup": {
             "Type": "AWS::ResourceGroups::Group",
             "Properties": {

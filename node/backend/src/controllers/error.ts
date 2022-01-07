@@ -5,7 +5,6 @@ import {AccessLevel} from "../../../common/src/models/User";
 import {Session} from "../../../common/src/models/Session";
 import {ErrorReport, ErrorStatus} from "../../../common/src/models/Error";
 import {CreateErrorRequest} from "../models/Error";
-import { getRepository } from "typeorm";
 
 export class ErrorController {
     @ApiHandleError()
@@ -33,6 +32,9 @@ export class ErrorController {
             err.status = ErrorStatus.NEW;
 
             await err.save();
+
+            console.error(JSON.stringify(err));
+
             return err;
         }
 
