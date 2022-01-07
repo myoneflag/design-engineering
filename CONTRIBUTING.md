@@ -1,5 +1,19 @@
 # H2X Development Guidelines
 
+- [H2X Development Guidelines](#h2x-development-guidelines)
+  - [Commit workflow](#commit-workflow)
+      - [Option 1](#option-1)
+      - [Option 2](#option-2)
+  - [Branch workflow](#branch-workflow)
+    - [Overview](#overview)
+  - [Merge requests](#merge-requests)
+  - [Principles](#principles)
+  - [Deployment](#deployment)
+  - [Jira updates](#jira-updates)
+  - [Merge Request comments](#merge-request-comments)
+  - [Common development operations](#common-development-operations)
+    - [Copy commits from one branch to another](#copy-commits-from-one-branch-to-another)
+
 ## Commit workflow
 
 When a task is assigned to you, all details are in the Jira card. Use the Jira task code for creating branches and commit messages.
@@ -123,3 +137,9 @@ Same commands as above, just use `app-feature` instead of `app-test`. E.g. `app-
 ## Merge Request comments
 * Always address merge request comments seriously, and make sure all threads have been answered before being ready to merge.  
   And not added to the Jira comments. Code comments go in MRs, so that devs can follow.
+
+## Common development operations
+
+### Copy commits from one branch to another
+ in case you have committed to the wrong branch or part of a work in progress branch is needed in another branch you can use get a cherry picking to copy comments from one branch to an other.
+https://www.loom.com/share/5684be270da8483d83e7e2f289045937
