@@ -21,6 +21,7 @@ import LoadingScreen from "../views/LoadingScreen.vue";
 import { customEntityData } from "../api/custom-entity";
 import { EntityType } from "../../../common/src/api/document/entities/types";
 import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { reportError } from '../api/error-report';
 
 @Component({
     components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
@@ -79,16 +80,10 @@ export default class Document extends Vue {
                     },
                     (msg) => {
                         if (!this.closeExpected) {
-                            this.$bvToast.toast(
+                            reportError(
                                 "The connection to the server was lost, please refresh. " +
-                                "Changes from now will not be saved.\n" +
-                                "reason: " +
-                                msg,
-                                {
-                                    variant: "danger",
-                                    title: "Connection Error"
-                                }
-                            );
+                                "Changes from now will not be saved.\n", 
+                                new Error(msg))
 
                             this.document.uiState.viewOnly = true;
                             this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";

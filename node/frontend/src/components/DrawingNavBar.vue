@@ -113,6 +113,7 @@ import { DrawingMode } from "../htmlcanvas/types";
 import { Operation } from "../../../common/src/models/Operation";
 import OnboardingState, { ONBOARDING_SCREEN } from "../store/onboarding/types";
 import { DocumentStep } from "../store/onboarding/steps";
+import { reportError } from '../../src/api/error-report';
 
 @Component({
     components: { ProfileMenuItem },
@@ -223,10 +224,7 @@ export default class DrawingNavBar extends Vue {
 
                 this.document.uiState.drawingMode = DrawingMode.History;
             } else {
-                this.$bvToast.toast(ops.message, {
-                    variant: "danger",
-                    title: "Couldn't Load Document History"
-                });
+                reportError("Couldn't Load Document History", new Error());
             }
         } finally {
             this.historyLoading = false;
