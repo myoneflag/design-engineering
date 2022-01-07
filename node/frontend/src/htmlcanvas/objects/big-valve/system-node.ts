@@ -32,6 +32,7 @@ import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
 import { flowSystemsCompatible } from "../../lib/utils";
 import { CalculationType } from "src/store/document/calculations/types";
+import { Direction } from "../../types";
 
 @CalculatedObject
 @ConnectableObject({ customCopyObjects: true })

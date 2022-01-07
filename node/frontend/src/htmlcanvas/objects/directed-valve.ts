@@ -44,6 +44,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { lowerBoundNumberTable } from "../utils";
 import { decomposeMatrix } from "../utils";
 import { DEFAULT_FONT_NAME } from "../../config";
+import { Direction } from "../types";
 
 
 @CalculatedObject
@@ -1170,5 +1171,36 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 assertUnreachable(this.entity.valve);
         }
         return null;
+    }
+
+    getConnetectedSidePipe(pipeUid: string): Pipe[] {
+        const connectionUids = this.globalStore.getConnections(this.uid)!;
+        const sidePipeUids = connectionUids.filter((uid) => uid !== pipeUid);
+        return sidePipeUids.map((uid) => this.globalStore.get(uid)! as Pipe);
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+        const sidePipes = this.getConnetectedSidePipe(pipeUid);
+        if (skip) {
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter);
+            });
+            return;
+        }
+        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+            this.debase(context);
+            this.entity.center.x = point.x;
+            this.rebase(context);
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Horizontal);
+            });
+        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+            this.debase(context);
+            this.entity.center.y = point.y;
+            this.rebase(context);
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Vertical);
+            });
+        }
     }
 }

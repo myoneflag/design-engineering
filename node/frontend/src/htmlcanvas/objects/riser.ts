@@ -31,6 +31,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
 import { I18N } from "../../../../common/src/api/locale/values";
 import { addWarning, Warning } from "../../../src/store/document/calculations/warnings";
+import { Direction } from "../types";
 
 @CalculatedObject
 @SelectableObject
@@ -241,14 +242,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     rememberToRegister(): void {
         //
-    }
-
-    debase(): void {
-        // nada
-    }
-
-    rebase(context: CanvasContext): void {
-        // nada
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
@@ -519,5 +512,20 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     costBreakdown(context: CalculationContext): CostBreakdown | null {
         // TODO: Riser cost for a level.
         return { cost: 0, breakdown: [] };
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+        if (skip) {
+            return;
+        }
+        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+            this.debase(context);
+            this.entity.center.x = point.x;
+            this.rebase(context);
+        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+            this.debase(context);
+            this.entity.center.y = point.y;
+            this.rebase(context);
+        }
     }
 }

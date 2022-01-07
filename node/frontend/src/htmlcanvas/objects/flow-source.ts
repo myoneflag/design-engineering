@@ -32,6 +32,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 import useColors = Mocha.reporters.Base.useColors;
 import { getHighlightColor } from "../lib/utils";
 import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
+import { Direction } from "../types";
 
 @CalculatedObject
 @SelectableObject
@@ -383,5 +384,20 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
         return { cost: 0, breakdown: [] };
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+        if (skip) {
+            return;
+        }
+        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+            this.debase(context);
+            this.entity.center.x = point.x;
+            this.rebase(context);
+        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+            this.debase(context);
+            this.entity.center.y = point.y;
+            this.rebase(context);
+        }
     }
 }

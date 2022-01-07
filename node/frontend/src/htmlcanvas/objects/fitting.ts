@@ -42,6 +42,8 @@ import { getHighlightColor } from "../lib/utils";
 import { PipesTable } from "../../../../common/src/api/catalog/price-table";
 import { fillValveDefaultFields } from "../../store/document/entities/fillDefaultEntityFields";
 import { fittingFrictionLossMH } from "../../../src/calculations/pressure-drops";
+import { Direction } from "../types";
+import CanvasContext from "../lib/canvas-context";
 
 @CalculatedObject
 @SelectableObject
@@ -521,5 +523,36 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         // otherwise no info.
         return null;
+    }
+
+    getConnetectedSidePipe(pipeUid: string): Pipe[] {
+        const connectionUids = this.globalStore.getConnections(this.uid)!;
+        const sidePipeUids = connectionUids.filter((uid) => uid !== pipeUid);
+        return sidePipeUids.map((uid) => this.globalStore.get(uid)! as Pipe);
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+        const sidePipes = this.getConnetectedSidePipe(pipeUid);
+        if (skip) {
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter);
+            });
+            return;
+        }
+        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+            this.debase(context);
+            this.entity.center.x = point.x;
+            this.rebase(context);
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Horizontal);
+            });
+        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+            this.debase(context);
+            this.entity.center.y = point.y;
+            this.rebase(context);
+            sidePipes.forEach((sidePipe) => {
+                sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Vertical);
+            });
+        }
     }
 }

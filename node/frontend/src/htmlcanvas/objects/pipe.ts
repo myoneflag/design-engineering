@@ -7,7 +7,7 @@ import { CalculationFilters, DocumentState } from "../../../src/store/document/t
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import { canonizeAngleRad } from "../../../src/lib/trigonometry";
+import { canonizeAngleRad, isStraightRad } from "../../../src/lib/trigonometry";
 import { lighten, rgb2style } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
@@ -58,6 +58,8 @@ import Fixture from "./fixture";
 import Fitting from "./fitting";
 import SystemNode from "./big-valve/system-node";
 import FlowSource from "./flow-source";
+import { Direction } from "../types";
+import LoadNode from "./load-node";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -71,6 +73,7 @@ let lastDrawnScale: number = 1;
 @SnappableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
     connectedWCs: number;
+    isStraight: boolean;
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
         // location is determined by other objects.
@@ -403,16 +406,6 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return fillPipeDefaultFields(doc.drawing, this.computedLengthM, this.entity);
     }
 
-    onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext, isMultiDrag: boolean): PipeDragState {
-        const eps = this.worldEndpoints();
-        const a = Flatten.point(eps[0].x, eps[0].y);
-        const b = Flatten.point(eps[1].x, eps[1].y);
-        return {
-            a2b: Flatten.vector(a, b),
-            normal: Flatten.vector(a, b).rotate90CCW(),
-            pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
-        };
-    }
     getConnectedPipes(exclude: string): Pipe[] {
         const pipes: Pipe[] = [];
         const connectedPipes = this.getConnectedPipesByUid(this.entity.uid, this.entity.systemUid);
@@ -500,6 +493,23 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return fixtures;
     }
 
+    getConnetectableSideEntity(connectUid: string): BackedConnectable<ConnectableEntityConcrete> | null {
+        const sideEndpointUid = this.entity.endpointUid[0] === connectUid ? this.entity.endpointUid[1] : this.entity.endpointUid[0];
+        const sideEndpoint = this.globalStore.get(sideEndpointUid)!;
+        if (sideEndpoint instanceof BackedConnectable) {
+            return sideEndpoint;
+        } else {
+            return null;
+        }
+    }
+
+    dragConnectableEntity(context: CanvasContext, connectUid: string, point: Coord, originCenter: Coord, direction?: Direction) {
+        const sideEndpoint = this.getConnetectableSideEntity(connectUid)!;
+        if (sideEndpoint) {
+            sideEndpoint.dragByBackConnectableEntity(context, this.uid, point, originCenter, direction);
+        }
+    }
+
     projectEndpoint(
         pointWc: Coord,
         epUid: string,
@@ -518,8 +528,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         if (isStraight) {
+            return false;
             // Create pipe instead of extend it.
-            const newValveUid = uuid();
+            /* const newValveUid = uuid();
             const pipe: PipeEntity = {
                 color: this.entity.color,
                 diameterMM: this.entity.diameterMM,
@@ -569,7 +580,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             context.$store.dispatch("document/addEntity", pipe);
             context.$store.dispatch("document/addEntity", valve);
 
-            return valve;
+            return valve; */
         } else {
             // extend existing pipe
             // find other pipe
@@ -618,6 +629,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     x: grabState.pointOnPipe.x + eventObjectCoord.x - grabbedObjectCoord.x,
                     y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y
                 };
+
                 const res = this.projectEndpoint(newProjection, o.uid, grabState.a2b, straights[i], context);
                 if (!res) {
                     // Cannot project for whatever reason, so move it normally plz.
@@ -649,19 +661,37 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 if (needToReposition[0] === this.entity.endpointUid[0]) {
                     newCenter = Flatten.point(center.x, center.y).translate(grabState.a2b.multiply(-1));
                 }
-
+                const originCenter = {...e.entity.center};
                 e.entity.center = newCenter;
                 e.rebase(context);
+
+                e.dragByBackConnectableEntity(context, this.uid, newCenter, originCenter, undefined, true);
             }
         } else if (needToReposition.length === 2) {
             // just drag the pipe ends like they were objects.
             this.entity.endpointUid.forEach((euid) => {
                 const o = this.globalStore.get(euid) as BackedConnectable<ConnectableEntityConcrete>;
                 if (o.type !== EntityType.SYSTEM_NODE) {
-                    o.debase(context);
+                    /* o.debase(context);
                     o.entity.center.x += eventObjectCoord.x - grabbedObjectCoord.x;
                     o.entity.center.y += eventObjectCoord.y - grabbedObjectCoord.y;
-                    o.rebase(context);
+                    o.rebase(context); */
+
+                    const originCenter = {...o.entity.center};
+                    if (this.isStraight) {
+                        const newCenter = {
+                            x: o.entity.center.x,
+                            y: o.entity.center.y + eventObjectCoord.y - grabbedObjectCoord.y,
+                        }
+                        o.dragByBackConnectableEntity(context, this.uid, newCenter, originCenter, Direction.Vertical);
+                    } else {
+                        const newCenter = {
+                            x: o.entity.center.x + eventObjectCoord.x - grabbedObjectCoord.x,
+                            y: o.entity.center.y,
+                        }
+                        o.dragByBackConnectableEntity(context, this.uid, newCenter, originCenter, Direction.Horizontal);
+                    }
+
                 }
             });
         }
@@ -669,6 +699,23 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             this.onRedrawNeeded();
         }
     }
+
+    onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext, isMultiDrag: boolean): PipeDragState {
+        const eps = this.worldEndpoints();
+        const a = Flatten.point(eps[0].x, eps[0].y);
+        const b = Flatten.point(eps[1].x, eps[1].y);
+        const shape = this.shape();
+        if (shape instanceof Flatten.Segment) {
+            let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
+            this.isStraight = isStraightRad(angle);
+        }
+        return {
+            a2b: Flatten.vector(a, b),
+            normal: Flatten.vector(a, b).rotate90CCW(),
+            pointOnPipe: _.cloneDeep(this.worldEndpoints()[0])
+        };
+    }
+
     onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void {
         //
         if (!isMultiDrag) {

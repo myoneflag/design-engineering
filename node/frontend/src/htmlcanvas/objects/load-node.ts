@@ -36,6 +36,7 @@ import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Interaction, InteractionType } from "../lib/interaction";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import Pipe from "./pipe";
+import { Direction } from "../types";
 
 @SelectableObject
 @CenterDraggableObject
@@ -401,5 +402,20 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
                 }
         }
         assertUnreachable(filled.node);
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+        if (skip) {
+            return;
+        }
+        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+            this.debase(context);
+            this.entity.center.x = point.x;
+            this.rebase(context);
+        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+            this.debase(context);
+            this.entity.center.y = point.y;
+            this.rebase(context);
+        }
     }
 }

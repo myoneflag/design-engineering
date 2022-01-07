@@ -16,6 +16,7 @@ import { Coord } from "../../../../common/src/api/document/drawing";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { flowSystemsCompatible } from "./utils";
+import { Direction } from "../types";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -203,6 +204,10 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     }
 
     disconnect(uid: string) {
+        //
+    }
+
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
         //
     }
 
