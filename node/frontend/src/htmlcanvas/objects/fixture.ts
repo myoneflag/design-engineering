@@ -7,7 +7,7 @@ import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
 import Connectable from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
@@ -35,7 +35,7 @@ import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { isDrainage, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { rgb2style } from "../../lib/utils";
-import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
+import { flowSystemsCompatible, getHighlightColor } from "../lib/utils";
 import Pipe from "./pipe";
 import { drawPipeCap } from "../helpers/draw-helper";
 import { Side } from "../helpers/side";
@@ -175,19 +175,19 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
                         FS.uid === StandardFlowSystemUids.WarmWater || FS.uid === StandardFlowSystemUids.HotWater
                             ? { top: y0, left: x2 }
                             : FS.uid === StandardFlowSystemUids.ColdWater
-                            ? { top: y0, left: x6 }
-                            : FS.uid === StandardFlowSystemUids.SewerDrainage
-                            ? { top: y0, left: x4 }
-                            : { top: 0, left: 0 };
+                                ? { top: y0, left: x6 }
+                                : FS.uid === StandardFlowSystemUids.SewerDrainage
+                                    ? { top: y0, left: x4 }
+                                    : { top: 0, left: 0 };
                 } else {
                     startPoint =
                         FS.uid === StandardFlowSystemUids.WarmWater || FS.uid === StandardFlowSystemUids.HotWater
                             ? { top: y0, left: x4 }
                             : FS.uid === StandardFlowSystemUids.ColdWater
-                            ? { top: y0, left: x4 }
-                            : FS.uid === StandardFlowSystemUids.SewerDrainage
-                            ? { top: y0, left: x4 }
-                            : { top: 0, left: 0 };
+                                ? { top: y0, left: x4 }
+                                : FS.uid === StandardFlowSystemUids.SewerDrainage
+                                    ? { top: y0, left: x4 }
+                                    : { top: 0, left: 0 };
                 }
                 if (this.isFlowSystemActive(FS)) {
                     drawPipeCap(
@@ -216,13 +216,13 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
     }
 
     getConnectedPipe(connectionUid: string, flowSystemUid: string | null): Pipe | undefined {
-        for (const itemId of this.globalStore.getConnections(connectionUid) ) {
+        for (const itemId of this.globalStore.getConnections(connectionUid)) {
             const item = this.globalStore.get(itemId);
-            if ( item && item.entityBacked &&
+            if (item && item.entityBacked &&
                 item.entityBacked.type === EntityType.PIPE &&
-                ( !flowSystemUid || ((item as Pipe).entity.systemUid === flowSystemUid)) ) {
-                    return item as Pipe;
-                }
+                (!flowSystemUid || ((item as Pipe).entity.systemUid === flowSystemUid))) {
+                return item as Pipe;
+            }
         }
     }
     validateConnectionPoints(): boolean {
@@ -238,9 +238,9 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
         return true;
     }
 
-    isFlowSystemActive( FS: FlowSystemParameters): boolean {
-        return (this.document.uiState.pressureOrDrainage === "drainage" && isDrainage(FS.uid)) ||
-               (this.document.uiState.pressureOrDrainage === "pressure" && !isDrainage(FS.uid) );
+    isFlowSystemActive(FS: FlowSystemParameters): boolean {
+        return (this.document.uiState.pressureOrDrainage === "drainage" && isDrainage(FS.uid, this.document.drawing.metadata.flowSystems)) ||
+            (this.document.uiState.pressureOrDrainage === "pressure" && !isDrainage(FS.uid, this.document.drawing.metadata.flowSystems));
     }
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
@@ -329,7 +329,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
     offerJoiningInteraction(systemUid: string, interaction: Interaction) {
         for (const systemUidIter of Object.keys(this.entity.roughIns)) {
-            if (flowSystemsCompatible(systemUid, systemUidIter)) {
+            if (flowSystemsCompatible(systemUid, systemUidIter, this.document.drawing)) {
                 const obj = this.globalStore.get(this.entity.roughIns[systemUidIter].uid);
                 if (obj && obj.offerInteraction(interaction)) {
                     return [obj.entity, this.entity];

@@ -247,7 +247,7 @@ export interface FlowSystemParameters extends WithID {
 
     drainageProperties: DrainageProperties;
 
-    networks: { [key in keyof typeof NetworkType]: NetworkParams };
+    networks: { [key in NetworkType]: NetworkParams };
 }
 
 export interface CalculationParameters {
@@ -654,7 +654,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 fireHoseReel.networks.CONNECTIONS.velocityMS = ft2M(8);
             fireHoseReel.temperature = f2C(70)
 
-            const sewageAll = result.metadata.flowSystems.filter((item) => isDrainage(item.uid));
+            const sewageAll = result.metadata.flowSystems.filter((item) => isDrainage(item.uid, result.metadata.flowSystems));
             for (const sewage of sewageAll) {
                 sewage.temperature = f2C(70)
             }

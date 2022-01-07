@@ -1,18 +1,18 @@
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import {EntityType} from "../../../../../common/src/api/document/entities/types";
-import {getConnectedFlowComponent} from "../../../../src/htmlcanvas/lib/black-magic/utils";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import { getConnectedFlowComponent } from "../../../../src/htmlcanvas/lib/black-magic/utils";
 import UnionFind from "../../../../src/calculations/union-find";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../../common/src/api/document/entities/concrete-entity";
-import {fillFixtureFields} from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
-import {getFloorHeight, maxHeightOfConnection, minHeightOfConnection} from "../../../../src/htmlcanvas/lib/utils";
+import { fillFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import { getFloorHeight, maxHeightOfConnection, minHeightOfConnection } from "../../../../src/htmlcanvas/lib/utils";
 import Flatten from "@flatten-js/core";
-import {InteractionType} from "../../../../src/htmlcanvas/lib/interaction";
-import {addValveAndSplitPipe} from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
+import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
+import { addValveAndSplitPipe } from "../../../../src/htmlcanvas/lib/black-magic/split-pipe";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import uuid from "uuid";
@@ -22,16 +22,16 @@ import {
     FlowConfiguration
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import assert from "assert";
-import {MainEventBus} from "../../../../src/store/main-event-bus";
-import {EntityParam} from "../../../../src/store/document/types";
+import { MainEventBus } from "../../../../src/store/main-event-bus";
+import { EntityParam } from "../../../../src/store/document/types";
 import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
-import RiserEntity, {fillRiserDefaults} from "../../../../../common/src/api/document/entities/riser-entity";
-import {GroupDistCache} from "./group-dist-cache";
-import {assertUnreachable, isDrainage, StandardFlowSystemUids} from "../../../../../common/src/api/config";
-import {Coord, NetworkType} from "../../../../../common/src/api/document/drawing";
-import {fillDirectedValveFields} from "../../../store/document/entities/fillDirectedValveFields";
-import {fillDefaultLoadNodeFields} from "../../../store/document/entities/fillDefaultLoadNodeFields";
+import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
+import { GroupDistCache } from "./group-dist-cache";
+import { assertUnreachable, isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import { Coord, NetworkType } from "../../../../../common/src/api/document/drawing";
+import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
+import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import { fillPlantDefaults } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
@@ -150,10 +150,10 @@ export class AutoConnector {
                             break;
                         case EntityType.FIXTURE:
                             for (const suid of o.entity.roughInsInOrder) {
-                                
-                                    if(isDrainage(suid) && this.context.document.uiState.pressureOrDrainage === 'drainage'
-                                    || !isDrainage(suid) && this.context.document.uiState.pressureOrDrainage === 'pressure')
-                                        subs.push(o.entity.roughIns[suid].uid)
+
+                                if (isDrainage(suid, this.context.document.drawing.metadata.flowSystems) && this.context.document.uiState.pressureOrDrainage === 'drainage'
+                                    || !isDrainage(suid, this.context.document.drawing.metadata.flowSystems) && this.context.document.uiState.pressureOrDrainage === 'pressure')
+                                    subs.push(o.entity.roughIns[suid].uid)
                             }
                             break;
                         case EntityType.GAS_APPLIANCE:
@@ -277,7 +277,7 @@ export class AutoConnector {
         return (
             this.getEntityHeight(entity)[1] >
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM -
-                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         );
     }
 
@@ -286,7 +286,7 @@ export class AutoConnector {
         return (
             min <=
             this.context.document.drawing.metadata.calculationParams.ceilingPipeHeightM +
-                CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
+            CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM / 1000
         ); // && max >= 0; // leave that out 4 now
     }
 
@@ -371,7 +371,7 @@ export class AutoConnector {
                     if (me.entity.parentUid === null) {
                         throw new Error("System node has no parent");
                     }
-                    const po = this.context.globalStore.get(me.entity.parentUid)!;
+                    const po = this.context.globalStore.get(me.entity.parentUid)! as BaseBackedObject;
                     let heightM: number;
                     switch (po.entity.type) {
                         case EntityType.BIG_VALVE:
@@ -401,8 +401,6 @@ export class AutoConnector {
                                     vec = vec.multiply(BIG_VALVE_WALL_DIST_MM);
                                     heightM = po.entity.outletAboveFloorM;
                                     break;
-                                default:
-                                    assertUnreachable(po.entity);
                             }
                             break;
                         case EntityType.PLANT:
@@ -1020,7 +1018,7 @@ export class AutoConnector {
         systemUid: string
     ) {
         let network = NetworkType.CONNECTIONS;
-        if (isDrainage(systemUid)) {
+        if (isDrainage(systemUid, this.context.document.drawing.metadata.flowSystems)) {
             network = NetworkType.RETICULATIONS;
         }
 

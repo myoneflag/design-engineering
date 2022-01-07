@@ -6,7 +6,7 @@ import { matrixScale } from "../../../src/htmlcanvas/utils";
 import { color2rgb, lighten, rgb2style } from "../../../src/lib/utils";
 import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
@@ -31,7 +31,7 @@ import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import useColors = Mocha.reporters.Base.useColors;
 import { getHighlightColor } from "../lib/utils";
-import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
 
 @CalculatedObject
 @SelectableObject
@@ -62,9 +62,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const systemUid = this.entity.systemUid;
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return !isDrainage(systemUid);
+                return !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return isDrainage(systemUid);
+                return isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -158,9 +158,9 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const systemUid = this.entity.systemUid;
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return !isDrainage(systemUid);
+                return !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return isDrainage(systemUid);
+                return isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -177,7 +177,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
 
     color(doc: DocumentState) {
         if (!this.isActive()) {
-            return {hex: 'rgba(150, 150, 150, 0.65)'};
+            return { hex: 'rgba(150, 150, 150, 0.65)' };
         }
         return this.entity.color == null ? this.system(doc).color : this.entity.color;
     }
@@ -244,7 +244,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         const se = cloneSimple(this.entity);
         se.uid += ".calculation";
 
-        if (isDrainage(this.entity.systemUid)) {
+        if (isDrainage(this.entity.systemUid, context.drawing.metadata.flowSystems)) {
             // Drainage pipe has no height.
             se.heightAboveGroundM = tower[0]?.[0]?.calculationHeightM! || 0;
         }
@@ -382,6 +382,6 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        return {cost: 0, breakdown: []};
+        return { cost: 0, breakdown: [] };
     }
 }

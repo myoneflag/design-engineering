@@ -6,7 +6,7 @@ import { DocumentState } from "../../../../src/store/document/types";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { InvisibleNode } from "../../../../src/htmlcanvas/objects/invisible-node";
 import Flatten from "@flatten-js/core";
-import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../../src/htmlcanvas/lib/types";
 import { lighten } from "../../../../src/lib/utils";
 import {
     FlowConfiguration,
@@ -27,14 +27,14 @@ import * as TM from "transformation-matrix";
 import { Matrix } from "transformation-matrix";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import SystemNodeCalculation, { emptySystemNodeCalculation } from "../../../store/document/calculations/system-node-calculation";
-import {assertUnreachable, isDrainage} from "../../../../../common/src/api/config";
+import { assertUnreachable, isDrainage } from "../../../../../common/src/api/config";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../../common/src/lib/utils";
-import {flowSystemsCompatible} from "../../lib/utils";
+import { flowSystemsCompatible } from "../../lib/utils";
 import { CalculationType } from "src/store/document/calculations/types";
 
 @CalculatedObject
-@ConnectableObject({customCopyObjects: true})
+@ConnectableObject({ customCopyObjects: true })
 @CenteredObjectNoParent
 export default class SystemNode extends InvisibleNode<SystemNodeEntity> implements Centered, Calculated {
     static register(): void {
@@ -56,7 +56,7 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
                 if (this.globalStore.getConnections(this.entity.uid).length > 0) {
                     return null;
                 }
-                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) && !this.entity.allowAllSystems) {
+                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid, this.document.drawing) && !this.entity.allowAllSystems) {
                     return null;
                 }
                 break;
@@ -212,12 +212,12 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
         } else {
             throw new Error(
                 "system node shouldn't have any extra joints. " +
-                    "from: " +
-                    JSON.stringify(from) +
-                    " to " +
-                    JSON.stringify(to) +
-                    " parent: " +
-                    this.entity.parentUid
+                "from: " +
+                JSON.stringify(from) +
+                " to " +
+                JSON.stringify(to) +
+                " parent: " +
+                this.entity.parentUid
             );
         }
     }
@@ -263,6 +263,6 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        return {cost: 0, breakdown: []};
+        return { cost: 0, breakdown: [] };
     }
 }

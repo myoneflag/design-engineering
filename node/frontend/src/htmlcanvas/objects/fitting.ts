@@ -1,11 +1,11 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import * as TM from "transformation-matrix";
-import {Matrix} from "transformation-matrix";
-import {DocumentState} from "../../../src/store/document/types";
-import {lowerBoundNumberTable} from "../../../src/htmlcanvas/utils";
+import { Matrix } from "transformation-matrix";
+import { DocumentState } from "../../../src/store/document/types";
+import { lowerBoundNumberTable } from "../../../src/htmlcanvas/utils";
 import Flatten from "@flatten-js/core";
-import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import {
     canonizeAngleRad,
     isRightAngleRad,
@@ -18,29 +18,29 @@ import {
     rgb2style
 } from "../../../src/lib/utils";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import {EntityType} from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
-import {getDragPriority} from "../../../src/store/document";
+import { getDragPriority } from "../../../src/store/document";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import {CenteredObject} from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import {CalculationContext} from "../../../src/calculations/types";
-import {FLOW_SOURCE_EDGE, FlowNode} from "../../../src/calculations/calculation-engine";
-import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
-import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
-import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import FittingCalculation, {emptyFittingCalculation} from "../../store/document/calculations/fitting-calculation";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import { CenteredObject } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import { CalculationContext } from "../../../src/calculations/types";
+import { FLOW_SOURCE_EDGE, FlowNode } from "../../../src/calculations/calculation-engine";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import FittingCalculation, { emptyFittingCalculation } from "../../store/document/calculations/fitting-calculation";
 import math3d from "math3d";
-import PipeEntity, {fillPipeDefaultFields} from "../../../../common/src/api/document/entities/pipe-entity";
-import {Coord} from "../../../../common/src/api/document/drawing";
-import {EPS, parseCatalogNumberExact} from "../../../../common/src/lib/utils";
-import {assertUnreachable, ComponentPressureLossMethod, isDrainage} from "../../../../common/src/api/config";
-import {SnappableObject} from "../lib/object-traits/snappable-object";
-import {getHighlightColor} from "../lib/utils";
-import {PipesTable} from "../../../../common/src/api/catalog/price-table";
-import {fillValveDefaultFields} from "../../store/document/entities/fillDefaultEntityFields";
+import PipeEntity, { fillPipeDefaultFields } from "../../../../common/src/api/document/entities/pipe-entity";
+import { Coord } from "../../../../common/src/api/document/drawing";
+import { EPS, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
+import { assertUnreachable, ComponentPressureLossMethod, isDrainage } from "../../../../common/src/api/config";
+import { SnappableObject } from "../lib/object-traits/snappable-object";
+import { getHighlightColor } from "../lib/utils";
+import { PipesTable } from "../../../../common/src/api/catalog/price-table";
+import { fillValveDefaultFields } from "../../store/document/entities/fillDefaultEntityFields";
 import { fittingFrictionLossMH } from "../../../src/calculations/pressure-drops";
 
 @CalculatedObject
@@ -74,9 +74,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         const systemUid = this.entity.systemUid;
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return !isDrainage(systemUid);
+                return !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return isDrainage(systemUid);
+                return isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -92,7 +92,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                 return;
             }
 
-            this.withWorldScale(context, {x: 0, y: 0}, () => {
+            this.withWorldScale(context, { x: 0, y: 0 }, () => {
 
                 // asdf
                 const scale = vp.currToSurfaceScale(ctx);
@@ -138,7 +138,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                             ctx.strokeStyle = rgb2style(getHighlightColor(
                                 selected,
                                 overrideColorList,
-                                {hex: lighten(baseColorHex, 50)},
+                                { hex: lighten(baseColorHex, 50) },
                             ), 0.5);
                             ctx.moveTo(0, 0);
                             ctx.lineTo(small.x, small.y);
@@ -265,7 +265,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         let smallestDiameterMM: number | undefined;
         let largestDiameterMM: number | undefined;
         let smallestDiameterNominalMM: number | undefined;
-        const connections = [ from.connection, to.connection ];
+        const connections = [from.connection, to.connection];
         connections.forEach((p) => {
             const pipe = this.globalStore.get(p) as Pipe;
             const thisDiameter = parseCatalogNumberExact(
@@ -314,7 +314,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     kValue *= 2;
                 }
             }
-        // tees
+            // tees
         } else if (allConnections.length >= 3) {
             if (isStraightRad(angle, Math.PI / 8)) {
                 kValue = getValveK("tThruFlow", context.catalog, smallestDiameterNominalMM);
@@ -511,12 +511,12 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
         if (angles.length === 1) {
             // deadleg cap - no worries.
-            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
+            return { cost: 0, breakdown: [{ qty: 0, path: '' }] };
         }
 
         if (angles.length === 0) {
             // Invalid thingymabob.
-            return {cost: 0, breakdown: [{qty: 0, path: ''}]};
+            return { cost: 0, breakdown: [{ qty: 0, path: '' }] };
         }
 
         // otherwise no info.

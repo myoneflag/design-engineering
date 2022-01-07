@@ -43,8 +43,8 @@ import { makeDirectedValveFields } from "../../../../common/src/api/document/ent
 import { makeLoadNodesFields } from "../../../../common/src/api/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
 import { color2rgb, lighten, rgb2style } from "../../lib/utils";
-import {makeGasApplianceFields} from "../../../../common/src/api/document/entities/gas-appliance";
-import {determineConnectableSystemUid} from "../../store/document/entities/lib";
+import { makeGasApplianceFields } from "../../../../common/src/api/document/entities/gas-appliance";
+import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { prepareFill, prepareStroke } from "../helpers/draw-helper";
 import BaseBackedObject from "./base-backed-object";
 
@@ -114,8 +114,8 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
         case EntityType.BIG_VALVE:
             return entity.heightAboveFloorM;
         case EntityType.PIPE:
-            if (forRiser && isDrainage(entity.systemUid)) {
-               return Math.max(entity.heightAboveFloorM, 1);
+            if (forRiser && isDrainage(entity.systemUid, context.drawing.metadata.flowSystems)) {
+                return Math.max(entity.heightAboveFloorM, 1);
             }
             return entity.heightAboveFloorM;
         case EntityType.PLANT:
@@ -152,8 +152,8 @@ export function getSystemNodeHeightM(entity: SystemNodeEntity, context: CanvasCo
     });
 }
 
-export function flowSystemsCompatible(a: string, b: string) {
-    if (isDrainage(a) && isDrainage(b)) {
+export function flowSystemsCompatible(a: string, b: string, drawing: DrawingState) {
+    if (isDrainage(a, drawing.metadata.flowSystems) && isDrainage(b, drawing.metadata.flowSystems)) {
         return true;
     }
     return a === b;
@@ -164,14 +164,21 @@ export function flowSystemsFlowTogether(a: string, b: string, doc: DocumentState
     const systemB = doc.drawing.metadata.flowSystems.find((s) => s.uid === b);
 
     if (systemA && systemB) {
+        const categoryA = isDrainage(a, doc.drawing.metadata.flowSystems)
+            ? 'd'
+            : isGas(a, catalog.fluids, doc.drawing.metadata.flowSystems)
+                ? 'g'
+                : 'w';
+        const categoryB = isDrainage(b, doc.drawing.metadata.flowSystems)
+            ? 'd'
+            : isGas(b, catalog.fluids, doc.drawing.metadata.flowSystems)
+                ? 'g'
+                : 'w';
 
-        const categoryA = isDrainage(a) ? 'd' : isGas(systemA.fluid, catalog) ? 'g' : 'w';
-        const categoryB = isDrainage(b) ? 'd' : isGas(systemB.fluid, catalog) ? 'g' : 'w';
         return categoryA === categoryB;
-    }  else {
+    } else {
         return false;
     }
-
 }
 
 export function maxHeightOfConnection(entity: ConnectableEntityConcrete, context: CanvasContext) {
@@ -285,23 +292,23 @@ export const VALVE_LINE_WIDTH_MM = 10;
 
 export const VALVE_SIZE_MM = 98;
 
-export function drawRpzdDouble(context: DrawingContext, colors: [string, string], highlightColor?: Color,entity?:BaseBackedObject) {
+export function drawRpzdDouble(context: DrawingContext, colors: [string, string], highlightColor?: Color, entity?: BaseBackedObject) {
     const s = context.vp.currToSurfaceScale(context.ctx);
     const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / context.vp.surfaceToWorldLength(1));
     const ctx = context.ctx;
     ctx.lineWidth = baseWidth;
 
     ctx.fillStyle = "#ffffff";
-    if(entity)
-      prepareFill(entity,ctx);
+    if (entity)
+        prepareFill(entity, ctx);
     ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
 
 
     if (highlightColor) {
         ctx.fillStyle = rgb2style(color2rgb(highlightColor), 0.3);
-        if(entity)
-             prepareFill(entity,ctx);
-  
+        if (entity)
+            prepareFill(entity, ctx);
+
         ctx.fillRect(-VALVE_HEIGHT_MM * 1.5, -VALVE_HEIGHT_MM * 2.5, VALVE_HEIGHT_MM * 3, VALVE_HEIGHT_MM * 5);
     }
 
@@ -311,8 +318,8 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
 
     ctx.beginPath();
     ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 2.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 4.6);
-    if(entity)
-        prepareStroke(entity,ctx);
+    if (entity)
+        prepareStroke(entity, ctx);
 
     ctx.stroke();
 
@@ -325,15 +332,15 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
         ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + off);
         ctx.lineTo(VALVE_HEIGHT_MM, 0 + off);
         ctx.closePath();
-        if(entity)
-           prepareFill(entity,ctx);
-  
+        if (entity)
+            prepareFill(entity, ctx);
+
         ctx.fill();
     }
 }
 
 export function getPlantPressureLossKPA(
-    entity: PlantEntity, 
+    entity: PlantEntity,
     drawing: DrawingState,
     catalog: Catalog,
     pressureKPA: number | null,
@@ -348,7 +355,7 @@ export function getPlantPressureLossKPA(
             case PressureMethod.FIXED_PRESSURE_LOSS:
                 if (typeof flowLs !== 'undefined') {
                     if (flowLs === 0) {
-                        return 0; 
+                        return 0;
                     }
                 }
                 return filled.plant.pressureLoss.pressureLossKPA!;
@@ -406,6 +413,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
             return makeFlowSourceFields(
                 document.drawing.metadata.flowSystems,
                 entity,
+                catalog,
                 undefined
             ).filter((p) => p.multiFieldId);
         case EntityType.PLANT:
@@ -419,7 +427,7 @@ export function getHighlightColor(selected: boolean, overridden: Color[], theme?
     const mergeList = Array.from(overridden);
     if (selected) {
         if (!theme) {
-            theme = {hex: '#6464ff'};
+            theme = { hex: '#6464ff' };
         }
         mergeList.push(theme);
     }
@@ -430,7 +438,7 @@ export function getHighlightColor(selected: boolean, overridden: Color[], theme?
         };
     }
 
-    const tot = {r: 0, g: 0, b: 0};
+    const tot = { r: 0, g: 0, b: 0 };
     for (const c of mergeList) {
         const nxt = color2rgb(c);
         tot.r += nxt.r;

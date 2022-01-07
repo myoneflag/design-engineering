@@ -1,7 +1,7 @@
 
 import { Catalog, State } from "./catalog/types";
 import { Choice, cloneSimple, SelectField } from "../lib/utils";
-import { UnitsParameters } from "./document/drawing";
+import { DrawingState, UnitsParameters } from "./document/drawing";
 import { MeasurementSystem } from "../lib/measurements";
 
 export enum SupportedPsdStandards {
@@ -154,12 +154,21 @@ export function isLUStandard(psd: SupportedPsdStandards): psd is SupportedLUPsdS
     return false;
 }
 
-export function isGas(fluidId: string, catalog: Catalog) {
-    const fluid = catalog.fluids[fluidId];
-    return fluid.state === State.GAS;
+export function isGas(
+    systemUid: string,
+    fluids: Catalog['fluids'],
+    flowSystems: DrawingState['metadata']['flowSystems']
+) {
+    switch (systemUid as StandardFlowSystemUids) {
+        case StandardFlowSystemUids.Gas:
+            return true;
+        default:
+            const fs = flowSystems.find((i) => i.uid === systemUid);
+            return !!fs && fluids[fs.fluid].state === State.GAS;
+    }
 }
 
-export function isDrainage(systemUid: string): systemUid is DrainageSystemUid {
+export function isDrainage(systemUid: string, flowSystems: DrawingState['metadata']['flowSystems']) {
     switch (systemUid as StandardFlowSystemUids) {
         case StandardFlowSystemUids.SanitaryPlumbing:
         case StandardFlowSystemUids.SewerDrainage:
@@ -167,8 +176,10 @@ export function isDrainage(systemUid: string): systemUid is DrainageSystemUid {
         case StandardFlowSystemUids.TradeWaste:
         case StandardFlowSystemUids.GreaseWaste:
             return true;
+        default:
+            const fs = flowSystems.find((i) => i.uid === systemUid);
+            return !!fs && fs.fluid === 'sewage';
     }
-    return false;
 }
 
 //

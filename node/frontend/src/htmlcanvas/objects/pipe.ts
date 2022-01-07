@@ -1,45 +1,45 @@
 import BackedDrawableObject from "../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
-import PipeEntity, {fillPipeDefaultFields, MutablePipe} from "../../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, { fillPipeDefaultFields, MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
 import * as TM from "transformation-matrix";
-import {Matrix} from "transformation-matrix";
-import {CalculationFilters, DocumentState} from "../../../src/store/document/types";
+import { Matrix } from "transformation-matrix";
+import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
 import Flatten from "@flatten-js/core";
-import {Draggable, DraggableObject} from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
+import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import {canonizeAngleRad} from "../../../src/lib/trigonometry";
-import {lighten, rgb2style} from "../../../src/lib/utils";
-import {Interaction, InteractionType} from "../../../src/htmlcanvas/lib/interaction";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { canonizeAngleRad } from "../../../src/lib/trigonometry";
+import { lighten, rgb2style } from "../../../src/lib/utils";
+import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import {EntityType} from "../../../../common/src/api/document/entities/types";
-import BackedConnectable, {BaseBackedConnectable} from "../../../src/htmlcanvas/lib/BackedConnectable";
-import {CalculationContext, PressurePushMode} from "../../../src/calculations/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
+import BackedConnectable, { BaseBackedConnectable } from "../../../src/htmlcanvas/lib/BackedConnectable";
+import { CalculationContext, PressurePushMode } from "../../../src/calculations/types";
 import {
     ConnectableEntityConcrete,
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
 import uuid from "uuid";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import assert from "assert";
-import {PIPE_STUB_MAX_LENGTH_MM} from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
-import {getDarcyWeisbachFlatMH} from "../../../src/calculations/pressure-drops";
-import {SIGNIFICANT_FLOW_THRESHOLD} from "../../../src/htmlcanvas/layers/calculation-layer";
-import {FlowNode} from "../../../src/calculations/calculation-engine";
-import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
-import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
+import { PIPE_STUB_MAX_LENGTH_MM } from "../../../src/htmlcanvas/lib/black-magic/auto-connect";
+import { getDarcyWeisbachFlatMH } from "../../../src/calculations/pressure-drops";
+import { SIGNIFICANT_FLOW_THRESHOLD } from "../../../src/htmlcanvas/layers/calculation-layer";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeCalculation, {
     Configuration,
     NoFlowAvailableReason
 } from "../../../src/store/document/calculations/pipe-calculation";
-import {Calculated, CalculatedObject, FIELD_HEIGHT} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { Calculated, CalculatedObject, FIELD_HEIGHT } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import Cached from "../lib/cached";
-import {GlobalStore} from "../lib/global-store";
-import {PipeMaterial, PipeSpec} from "../../../../common/src/api/catalog/types";
-import {Coord, Coord3D, FlowSystemParameters} from "../../../../common/src/api/document/drawing";
+import { GlobalStore } from "../lib/global-store";
+import { PipeMaterial, PipeSpec } from "../../../../common/src/api/catalog/types";
+import { Coord, Coord3D, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import {
     cloneSimple,
     interpolateTable,
@@ -53,7 +53,7 @@ import {
     StandardFlowSystemUids
 } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import {flowSystemsCompatible, getHighlightColor} from "../lib/utils";
+import { flowSystemsCompatible, getHighlightColor } from "../lib/utils";
 import Fixture from "./fixture";
 import Fitting from "./fitting";
 import SystemNode from "./big-valve/system-node";
@@ -209,9 +209,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const systemUid = this.entity.systemUid;
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return !isDrainage(systemUid);
+                return !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return isDrainage(systemUid);
+                return isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -274,7 +274,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     const orth = vec.rotate90CCW();
 
                     for (let dist = gap; dist < this.computedLengthM * 1000; dist += gap) {
-                        const base = {x: endpoints[0].x, y: endpoints[0].y};
+                        const base = { x: endpoints[0].x, y: endpoints[0].y };
                         base.x += vec.x * dist;
                         base.y += vec.y * dist;
 
@@ -298,14 +298,14 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
 
         ctx.lineCap = "round";
-        if (selected || overrideColorList.length ) {
+        if (selected || overrideColorList.length) {
             ctx.beginPath();
             ctx.lineWidth = baseWidth + 6.0 / s;
             // this.lastDrawnWidth = baseWidth + 6.0 / s;
             ctx.strokeStyle = rgb2style(getHighlightColor(
                 selected,
                 overrideColorList,
-                {hex: lighten(baseColor, 0)},
+                { hex: lighten(baseColor, 0) },
             ), 0.5);
 
             ctx.moveTo(ao.x, ao.y);
@@ -356,9 +356,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             if ((ao.entity.calculationHeightM === null) !== (bo.entity.calculationHeightM === null)) {
                 throw new Error(
                     "We are working with a 3d object and a 2d object - not allowed \n" +
-                        JSON.stringify(ao.entity) +
-                        "\n" +
-                        JSON.stringify(bo.entity)
+                    JSON.stringify(ao.entity) +
+                    "\n" +
+                    JSON.stringify(bo.entity)
                 );
             }
             if (ao.uid !== excludeUid) {
@@ -416,86 +416,86 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     getConnectedPipes(exclude: string): Pipe[] {
         const pipes: Pipe[] = [];
         const connectedPipes = this.getConnectedPipesByUid(this.entity.uid, this.entity.systemUid);
-        pipes.push.apply(pipes, connectedPipes.filter( (item: Pipe ) => { return exclude.indexOf(item.entity.uid)===-1 }));
+        pipes.push.apply(pipes, connectedPipes.filter((item: Pipe) => { return exclude.indexOf(item.entity.uid) === -1 }));
         let fittings = this.getConnectedFittingsByUid(this.entity.uid, this.entity.systemUid);
-        fittings.map((fit:Fitting)=>{
-             let fittingPipes= this.getConnectedPipesByUid(fit.entity.uid.substr(0,36),this.entity.systemUid)
-                pipes.push.apply(pipes,
-                    fittingPipes.filter((item:Pipe)=>{ return exclude.indexOf(item.entity.uid)===-1})
-                ) ;
-        })       
+        fittings.map((fit: Fitting) => {
+            let fittingPipes = this.getConnectedPipesByUid(fit.entity.uid.substr(0, 36), this.entity.systemUid)
+            pipes.push.apply(pipes,
+                fittingPipes.filter((item: Pipe) => { return exclude.indexOf(item.entity.uid) === -1 })
+            );
+        })
         return pipes;
     }
 
-    getConnectedPipesByUid( uid: string, systemUid: string ) {
+    getConnectedPipesByUid(uid: string, systemUid: string) {
         const pipes: Pipe[] = [];
         for (const itemUid of this.globalStore.getConnections(uid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item && item.entityBacked &&
+            if (item && item.entityBacked &&
                 item.entityBacked.type === EntityType.PIPE &&
-                (item as Pipe).entity.systemUid === systemUid ) {
-                    pipes.push(item as Pipe);
-                }
+                (item as Pipe).entity.systemUid === systemUid) {
+                pipes.push(item as Pipe);
+            }
         }
         return pipes;
     }
 
-    getConnectedFittingsByUid( uid: string, systemUid: string ) {
+    getConnectedFittingsByUid(uid: string, systemUid: string) {
         const fittings: Fitting[] = [];
         for (const itemUid of this.globalStore.getConnections(uid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item && item.entityBacked && 
+            if (item && item.entityBacked &&
                 item.entityBacked.type === EntityType.FITTING &&
-                 (item as Pipe).entity.systemUid === systemUid ) {
-                    fittings.push(item as Fitting);
-                }
+                (item as Pipe).entity.systemUid === systemUid) {
+                fittings.push(item as Fitting);
+            }
         }
         return fittings;
     }
 
-    getConnectedNodes(): SystemNode[] {  
+    getConnectedNodes(): SystemNode[] {
         const nodes: SystemNode[] = [];
-        for ( const itemUid in this.globalStore.getConnections(this.entity.uid)) {
+        for (const itemUid in this.globalStore.getConnections(this.entity.uid)) {
             const item = this.globalStore.get(itemUid)
-            if ( item && item.entityBacked &&
+            if (item && item.entityBacked &&
                 item.entityBacked.type == EntityType.SYSTEM_NODE &&
-                ((item as SystemNode).entity.systemUid == this.entity.systemUid) ) {
-                    nodes.push(item as SystemNode)
-                }
+                ((item as SystemNode).entity.systemUid == this.entity.systemUid)) {
+                nodes.push(item as SystemNode)
+            }
         }
         return nodes;
     }
 
-    getConnectedFixtures(abbreviation:string): Fixture[] {
-        let fixtures:Fixture[]=[]
-        fixtures.push.apply( fixtures,(this.getConnectedFixturesByUid(this.entity.uid,this.entity.systemUid,abbreviation)));
-        let connectedNodes=this.getConnectedNodes();
-        connectedNodes.map( (node:SystemNode) =>{
-            let fittingPipes= this.getConnectedFixturesByUid(node.entity.uid,node.entity.systemUid,abbreviation)
-                fixtures.push.apply(fixtures,fittingPipes) ;
-            })  
+    getConnectedFixtures(abbreviation: string): Fixture[] {
+        let fixtures: Fixture[] = []
+        fixtures.push.apply(fixtures, (this.getConnectedFixturesByUid(this.entity.uid, this.entity.systemUid, abbreviation)));
+        let connectedNodes = this.getConnectedNodes();
+        connectedNodes.map((node: SystemNode) => {
+            let fittingPipes = this.getConnectedFixturesByUid(node.entity.uid, node.entity.systemUid, abbreviation)
+            fixtures.push.apply(fixtures, fittingPipes);
+        })
         return fixtures;
     }
 
     getConnectedFlowSource(): FlowSource | undefined {
-        for ( const itemUid of this.globalStore.getConnections(this.entity.uid)) {
+        for (const itemUid of this.globalStore.getConnections(this.entity.uid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item && item.entityBacked && 
+            if (item && item.entityBacked &&
                 item.entityBacked.type == EntityType.FLOW_SOURCE &&
-                (item as FlowSource).entity.systemUid==this.entity.systemUid ) {
-                    return item as FlowSource
-                }
+                (item as FlowSource).entity.systemUid == this.entity.systemUid) {
+                return item as FlowSource
+            }
         }
     }
-    getConnectedFixturesByUid( uid: string, systemUid: string, abbreviation: string): Fixture[] {
+    getConnectedFixturesByUid(uid: string, systemUid: string, abbreviation: string): Fixture[] {
         const fixtures: Fixture[] = []
         for (const itemUid in this.globalStore.getConnections(uid)) {
             const item = this.globalStore.get(itemUid);
-            if ( item && item.entityBacked && 
-                item.entityBacked.type == EntityType.FIXTURE && 
-                uid === (item as Fixture).entity.roughIns[systemUid].uid ) {
-                    fixtures.push(item as Fixture)
-                }
+            if (item && item.entityBacked &&
+                item.entityBacked.type == EntityType.FIXTURE &&
+                uid === (item as Fixture).entity.roughIns[systemUid].uid) {
+                fixtures.push(item as Fixture)
+            }
         }
         return fixtures;
     }
@@ -691,13 +691,13 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                 } else {
                     throw new Error(
                         "endpoint non existent on pipe. non existing is " +
-                            JSON.stringify(a) +
-                            " " +
-                            JSON.stringify(origEndpoints) +
-                            " entity is " +
-                            JSON.stringify(this.entity) +
-                            " " +
-                            JSON.stringify(a ? a.entity : undefined)
+                        JSON.stringify(a) +
+                        " " +
+                        JSON.stringify(origEndpoints) +
+                        " entity is " +
+                        JSON.stringify(this.entity) +
+                        " " +
+                        JSON.stringify(a ? a.entity : undefined)
                     );
                 }
             }
@@ -714,7 +714,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         switch (interaction.type) {
             case InteractionType.INSERT:
-                if (interaction.systemUid && !flowSystemsCompatible(interaction.systemUid, this.entity.systemUid)) {
+                if (interaction.systemUid && !flowSystemsCompatible(interaction.systemUid, this.entity.systemUid, this.document.drawing)) {
                     return null;
                 }
                 return [this.entity];
@@ -728,7 +728,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         interaction.src.type !== EntityType.DIRECTED_VALVE &&
                         interaction.src.type !== EntityType.LOAD_NODE
                     ) {
-                        if (!flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid) ) {
+                        if (!flowSystemsCompatible(interaction.src.systemUid, this.entity.systemUid, this.document.drawing)) {
                             return null;
                         }
                     }
@@ -739,7 +739,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
             case InteractionType.CONTINUING_PIPE:
             case InteractionType.STARTING_PIPE:
-                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid) ) {
+                if (!flowSystemsCompatible(interaction.system.uid, this.entity.systemUid, this.document.drawing)) {
                     return null;
                 }
                 return [this.entity];
@@ -755,7 +755,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                         return null;
                     }
                 }
-                if (interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, this.entity.systemUid) ) {
+                if (interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, this.entity.systemUid, this.document.drawing)) {
                     return [this.entity];
                 } else {
                     return null;
@@ -794,12 +794,12 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const page = catalog.pipes[computed.material];
         const manufacturer = drawing.metadata.catalog.pipes.find((m) => m.uid === computed.material)?.manufacturer || 'generic';
         const minimumPipeSize = drawing.metadata.flowSystems.find(s => s.uid === computed.systemUid)!.networks[computed.network].minimumPipeSize;
-        
+
         let pipeSize: { [key: string]: PipeSpec } = {};
         for (var i = 0; i < Object.entries(page.pipesBySize[manufacturer]).length; i++) {
             const [key, pipe] = Object.entries(page.pipesBySize[manufacturer])[i];
             if (Number(pipe.diameterNominalMM) >= minimumPipeSize) {
-                pipeSize = {...pipeSize, [key]: pipe};
+                pipeSize = { ...pipeSize, [key]: pipe };
             }
         }
 
@@ -808,7 +808,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
     getCatalogBySizePage(context: CalculationContext): PipeSpec | null {
         const calculation = context.globalStore.getCalculation(this.entity);
-        
+
         if (!calculation || !calculation.realNominalPipeDiameterMM) {
             return null;
         }
@@ -816,7 +816,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         if (!material) {
             return null;
         }
- 
+
         const tableVal = lowerBoundTable(this.getManufacturerCatalogPage(context)!, calculation.realNominalPipeDiameterMM);
 
         return tableVal;
@@ -862,7 +862,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         pressureKPA: number | null,
         pressurePushMode: PressurePushMode,
     ): number | null {
-        if (isDrainage(this.entity.systemUid)) {
+        if (isDrainage(this.entity.systemUid, context.drawing.metadata.flowSystems)) {
             return 0;
         }
 
@@ -880,8 +880,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             }
         }
 
-        const pipeIsGas = isGas(context.doc.drawing.metadata.flowSystems
-            .find((f) => f.uid === this.entity.systemUid)?.fluid!, context.catalog);
+        const pipeIsGas = isGas(this.entity.systemUid!, context.catalog.fluids, context.drawing.metadata.flowSystems);
 
         const system = drawing.metadata.flowSystems.find((s) => s.uid === entity.systemUid)!;
         const fluid = catalog.fluids[system.fluid];
@@ -923,15 +922,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         } else {
 
             retval = sign *
-            getDarcyWeisbachFlatMH(
-                parseCatalogNumberExact(page.diameterInternalMM)!,
-                parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
-                parseCatalogNumberExact(fluid.densityKGM3)!,
-                dynamicViscosity!,
-                pipeLength,
-                velocityMS,
-                ga
-            );
+                getDarcyWeisbachFlatMH(
+                    parseCatalogNumberExact(page.diameterInternalMM)!,
+                    parseCatalogNumberExact(page.colebrookWhiteCoefficient)!,
+                    parseCatalogNumberExact(fluid.densityKGM3)!,
+                    dynamicViscosity!,
+                    pipeLength,
+                    velocityMS,
+                    ga
+                );
         }
 
         const calc = context.globalStore.getOrCreateCalculation(this.entity);

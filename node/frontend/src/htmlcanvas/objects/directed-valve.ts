@@ -1,7 +1,7 @@
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
 // tslint:disable-next-line:max-line-length
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
-import {CostBreakdown, DrawingContext} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
@@ -32,7 +32,7 @@ import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/ent
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
 import uuid from "uuid";
-import {assertUnreachable, ComponentPressureLossMethod, isDrainage, isGas} from "../../../../common/src/api/config";
+import { assertUnreachable, ComponentPressureLossMethod, isDrainage, isGas } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../../common/src/lib/utils";
@@ -41,9 +41,9 @@ import { determineConnectableSystemUid } from "../../store/document/entities/lib
 import { fittingFrictionLossMH, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
 import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import {lowerBoundNumberTable} from "../utils";
-import {decomposeMatrix} from "../utils";
-import {DEFAULT_FONT_NAME} from "../../config";
+import { lowerBoundNumberTable } from "../utils";
+import { decomposeMatrix } from "../utils";
+import { DEFAULT_FONT_NAME } from "../../config";
 
 
 @CalculatedObject
@@ -106,9 +106,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return systemUid === undefined || !isDrainage(systemUid);
+                return systemUid === undefined || !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return systemUid === undefined || isDrainage(systemUid);
+                return systemUid === undefined || isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -124,7 +124,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
         let color = e.color!;
         if (!this.isActive()) {
-            color = {hex: 'rgba(150, 150, 150, 0.65)'};
+            color = { hex: 'rgba(150, 150, 150, 0.65)' };
         }
 
         const baseWidth = Math.max(2.0 / s, VALVE_LINE_WIDTH_MM / this.toWorldLength(1));
@@ -188,9 +188,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawFloorWaste(context: DrawingContext) {
-        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+        this.withWorldAngle(context, { x: 0, y: 0 }, () => {
             const ctx = context.ctx;
-            ctx.fillStyle='#ffffff';
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
             ctx.fill();
@@ -217,9 +217,9 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     }
 
     drawInspectionOpening(context: DrawingContext) {
-        this.withWorldAngle(context, {x: 0, y: 0}, () => {
+        this.withWorldAngle(context, { x: 0, y: 0 }, () => {
             const ctx = context.ctx;
-            ctx.fillStyle='#ffffff';
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
             ctx.fill();
@@ -789,8 +789,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         switch (this.entity.valve.type) {
             case ValveType.ISOLATION_VALVE:
                 const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
-                const fluid = this.document.drawing.metadata.flowSystems.find((f) => f.uid === systemUid)?.fluid;
-                if (fluid && isGas(fluid, catalog)) {
+                if (isGas(systemUid!, catalog.fluids, this.document.drawing.metadata.flowSystems)) {
                     return 'Isolation Valve';
                 }
             // noinspection FallThroughInSwitchStatementJS
@@ -1003,7 +1002,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 break;
             case ValveType.WATER_METER: {
                 const system = determineConnectableSystemUid(context.globalStore, this.entity);
-                if (system && isGas(context.doc.drawing.metadata.flowSystems.find((f) => f.uid === system)?.fluid!, context.catalog)) {
+                if (isGas(system!, context.catalog.fluids, context.drawing.metadata.flowSystems)) {
                     return {
                         cost: context.priceTable.Equipment["Gas Meter"],
                         breakdown: [{

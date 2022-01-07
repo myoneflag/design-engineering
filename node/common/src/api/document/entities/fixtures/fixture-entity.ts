@@ -1,6 +1,6 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
-import { isDrainage, isLUStandard, SupportedPsdStandards, SupportedDrainageMethods} from "../../../config";
+import { isDrainage, isLUStandard, SupportedPsdStandards, SupportedDrainageMethods } from "../../../config";
 import { Catalog } from "../../../catalog/types";
 import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
@@ -131,10 +131,9 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
         : SupportedPsdStandards.as35002018LoadingUnits;
 
     for (const suid of Object.keys(entity.roughIns)) {
-        if (!isDrainage(suid)) {
-           
-        
+        if (!isDrainage(suid, drawing.metadata.flowSystems)) {
             const system = drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
+
             res.push(
                 {
                     property: suid + ".title",
@@ -166,7 +165,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
                     params: { min: 0, max: null },
                     multiFieldId: suid + "-designFlowRateLS",
                     units: Units.LitersPerSecond,
-                    hideFromPropertyWindow:  isLUStandard(psdStrategy)
+                    hideFromPropertyWindow: isLUStandard(psdStrategy)
                 },
 
                 {
@@ -189,7 +188,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
                     type: FieldType.Number,
                     params: { min: 0, max: null },
                     multiFieldId: suid + "-loadingUnits",
-                    hideFromPropertyWindow:  !isLUStandard(psdStrategy)
+                    hideFromPropertyWindow: !isLUStandard(psdStrategy)
                 },
                 {
                     property: "roughIns." + suid + ".minPressureKPA",
@@ -218,7 +217,7 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
     }
 
     if (psdStrategy === SupportedPsdStandards.cibseGuideG) {
-        res.splice(0, 0,  {
+        res.splice(0, 0, {
             property: "loadingUnitVariant",
             title: "Loading Unit Variant",
             hasDefault: true,
@@ -257,12 +256,12 @@ export function fillFixtureFields(
     arr.forEach((field) => {
         if (result[field] === null) {
             result[field] = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name][field]);
-            
+
             if (field === 'enDischargeUnits') {
                 if (!!drawing && drawing.metadata.calculationParams.drainageMethod === SupportedDrainageMethods.EN1205622000DischargeUnits) {
                     result[field] = parseCatalogNumberOrMin(defaultCatalog.fixtures[result.name]['enDrainageSystem'][drawing.metadata.calculationParams.drainageSystem]);
                 }
-            }            
+            }
         }
     });
 
@@ -277,7 +276,7 @@ export function fillFixtureFields(
     }
 
     for (const systemUid of Object.keys(result.roughIns)) {
-        if (!isDrainage(systemUid)) {
+        if (!isDrainage(systemUid, drawing?.metadata.flowSystems || [])) {
             const target = result.roughIns[systemUid];
             if (target.minPressureKPA === null) {
                 target.minPressureKPA = parseCatalogNumberExact(defaultCatalog.fixtures[result.name].minInletPressureKPA);
@@ -295,7 +294,7 @@ export function fillFixtureFields(
             }
 
             if (isLUStandard(psdStrategy)) {
-                if (target.loadingUnits === null) {                    
+                if (target.loadingUnits === null) {
                     if (psdStrategy === SupportedPsdStandards.cibseGuideG) {
                         target.loadingUnits = parseCatalogNumberOrMin(
                             defaultCatalog.fixtures[result.name].loadingUnits[psdStrategy][result.loadingUnitVariant!]
@@ -306,7 +305,7 @@ export function fillFixtureFields(
                         );
                     }
                 }
-            } 
+            }
 
             if (continuousFlowLS) {
                 if (target.continuousFlowLS == null) {

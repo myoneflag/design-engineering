@@ -99,10 +99,10 @@ export class DocumentReportGenerator {
         };
         const catalog = CatalogsByLocale[doc.locale];
 
-        Object.values(drawing.shared).forEach( (e) => this.addEntityToReport(e, report, drawing, calculation, catalog));
+        Object.values(drawing.shared).forEach((e) => this.addEntityToReport(e, report, drawing, calculation, catalog));
 
-        Object.values(drawing.levels).forEach( (l) => {
-            Object.values(l.entities).forEach( (e) => this.addEntityToReport(e, report, drawing, calculation, catalog));
+        Object.values(drawing.levels).forEach((l) => {
+            Object.values(l.entities).forEach((e) => this.addEntityToReport(e, report, drawing, calculation, catalog));
         });
         return report;
     }
@@ -110,36 +110,36 @@ export class DocumentReportGenerator {
     static aggregateDataByComponent(
         totalsData: DocumentManufacturerReport[], totalsName: string,
         manufacturerDocumentsData: DocumentManufacturerReport[], manufacturer: string) {
-            for (const document of manufacturerDocumentsData) {
+        for (const document of manufacturerDocumentsData) {
 
-                let documentTotal: DocumentManufacturerReport =
-                    totalsData.find( (totalDoc) => totalDoc.info.id === document.info.id);
-                if (!documentTotal) {
-                    documentTotal = { info: document.info, stats: document.stats, data: {} };
-                    totalsData.push(documentTotal);
-                }
+            let documentTotal: DocumentManufacturerReport =
+                totalsData.find((totalDoc) => totalDoc.info.id === document.info.id);
+            if (!documentTotal) {
+                documentTotal = { info: document.info, stats: document.stats, data: {} };
+                totalsData.push(documentTotal);
+            }
 
-                const components = document.data[manufacturer];
+            const components = document.data[manufacturer];
+            // tslint:disable-next-line:forin
+            for (const component in components) {
                 // tslint:disable-next-line:forin
-                for (const component in components) {
+                for (const material in components[component]) {
                     // tslint:disable-next-line:forin
-                    for (const material in components[component]) {
-                        // tslint:disable-next-line:forin
-                        for (const size in components[component][material]) {
-                            const entry = components[component][material][size];
-                            const node: ReportNode = {
-                                manufacturer: totalsName,
-                                component,
-                                material,
-                                size,
-                                count: entry.count,
-                                length: entry.length,
-                            };
-                            this.incrementReportNodes(documentTotal.data, [node]);
-                        }
+                    for (const size in components[component][material]) {
+                        const entry = components[component][material][size];
+                        const node: ReportNode = {
+                            manufacturer: totalsName,
+                            component,
+                            material,
+                            size,
+                            count: entry.count,
+                            length: entry.length,
+                        };
+                        this.incrementReportNodes(documentTotal.data, [node]);
                     }
                 }
             }
+        }
     }
 
     private static incrementReportNodes(
@@ -184,7 +184,7 @@ export class DocumentReportGenerator {
 
         const reportEntries: ReportNode[] = [];
 
-        let component = getEntityName(e);
+        let component = getEntityName(e, drawing);
         let manufacturer = "generic";
         let material = null;
         let size = null;
@@ -230,7 +230,7 @@ export class DocumentReportGenerator {
                     const riserCalcEntry = calculation[e.uid] as RiserCalculationReportEntry;
                     if (riserCalcEntry) {
                         for (const pipeSeg of riserCalcEntry.expandedEntities) {
-                            reportEntries.push( {
+                            reportEntries.push({
                                 material,
                                 manufacturer,
                                 component,
@@ -267,17 +267,17 @@ export class DocumentReportGenerator {
                 }
                 if (catId === "rpzd") {
                     const manObject = drawing.metadata.catalog.backflowValves.find(
-                    (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
+                        (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
                     manufacturer = manObject ? manObject.manufacturer : 'generic';
                 }
                 if (catId === "balancing") {
                     const manObject = drawing.metadata.catalog.balancingValves.find(
-                    (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
+                        (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
                     manufacturer = manObject ? manObject.manufacturer : 'generic';
                 }
                 if (catId === "prv") {
                     const manObject = drawing.metadata.catalog.prv.find(
-                    (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
+                        (mat: SelectedMaterialManufacturer) => mat.uid === eV.valve.catalogId);
                     manufacturer = manObject ? manObject.manufacturer : 'generic';
                 }
                 material = null;
@@ -311,7 +311,7 @@ export class DocumentReportGenerator {
         if (!reportEntries.length) {
             reportEntries.push({ manufacturer, component, material, size, length, count: 1 });
         }
-        reportEntries.forEach( (re) => re.manufacturer = cleanseName(re.manufacturer));
+        reportEntries.forEach((re) => re.manufacturer = cleanseName(re.manufacturer));
 
         return reportEntries;
     }

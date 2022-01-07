@@ -31,11 +31,12 @@ import { Coord } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import SystemNode from "./big-valve/system-node";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import { StandardFlowSystemUids } from "../../../../common/src/api/config";
+import { isGas, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { rgb2style } from "../../lib/utils";
 import { getHighlightColor } from "../lib/utils";
 import GasApplianceEntity from "../../../../common/src/api/document/entities/gas-appliance";
 import GasApplianceCalculation from "../../store/document/calculations/gas-appliance-calculation";
+import store from "../../../src/store/store";
 
 @CalculatedObject
 @SelectableObject
@@ -197,7 +198,7 @@ export default class GasAppliance extends BackedDrawableObject<GasApplianceEntit
     }
 
     offerJoiningInteraction(systemUid: string, interaction: Interaction) {
-        if (systemUid === StandardFlowSystemUids.Gas) {
+        if (isGas(systemUid, store.getters['catalog/default']['fluids'], this.document.drawing.metadata.flowSystems)) {
             const obj = this.globalStore.get(this.entity.inletUid);
             if (obj && obj.offerInteraction(interaction)) {
                 return [obj.entity, this.entity];

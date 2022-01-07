@@ -41,7 +41,6 @@ import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import {
     fillFlowSourceDefaults,
-    makeFlowSourceFields
 } from "../../../../../common/src/api/document/entities/flow-source-entity";
 import {
     fillFixtureFields,

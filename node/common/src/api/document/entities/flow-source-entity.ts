@@ -3,8 +3,9 @@ import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
-import {isDrainage, StandardFlowSystemUids} from "../../config";
+import { isDrainage, isGas, StandardFlowSystemUids } from "../../config";
 import { SupportedLocales } from "../../locale";
+import { Catalog } from "../../catalog/types";
 
 export interface FlowSourceEntityV11 extends ConnectableEntity {
     type: EntityType.FLOW_SOURCE;
@@ -27,7 +28,7 @@ export default interface FlowSourceEntity extends ConnectableEntity {
     maxPressureKPA: number | null;
 }
 
-export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity,locale:SupportedLocales | undefined): PropertyField[] {
+export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity, catalog: Catalog, locale: SupportedLocales | undefined): PropertyField[] {
 
     const res: PropertyField[] = [
         {
@@ -37,26 +38,23 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
             params: { systems },
-
             multiFieldId: "systemUid"
         },
     ];
 
-    if (entity.systemUid === StandardFlowSystemUids.Gas) {
-        res.push(
-            {
-                property: "minPressureKPA",
-                title: "Pressure",
-                hasDefault: false,
-                isCalculated: false,
-                requiresInput: true,
-                type: FieldType.Number,
-                params: {min: 0, max: null},
-                multiFieldId: "minPressureKPA",
-                units: Units.KiloPascals,
-            },
-        );
-    } else if (!isDrainage(entity.systemUid)) {
+    if (isGas(entity.systemUid, catalog.fluids, systems)) {
+        res.push({
+            property: "minPressureKPA",
+            title: "Pressure",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "minPressureKPA",
+            units: Units.KiloPascals,
+        });
+    } else if (!isDrainage(entity.systemUid, systems)) {
         res.push(
             {
                 property: "minPressureKPA",
@@ -65,12 +63,10 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                 isCalculated: false,
                 requiresInput: true,
                 type: FieldType.Number,
-                params: {min: 0, max: null},
+                params: { min: 0, max: null },
                 multiFieldId: "minPressureKPA",
                 units: Units.KiloPascals,
             },
-
-
             {
                 property: "maxPressureKPA",
                 title: "Static Pressure",
@@ -78,58 +74,54 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
                 isCalculated: false,
                 requiresInput: true,
                 type: FieldType.Number,
-                params: {min: 0, max: null},
+                params: { min: 0, max: null },
                 multiFieldId: "maxPressureKPA",
                 units: Units.KiloPascals,
             },
         );
     }
 
-    if (!isDrainage(entity.systemUid)) {
-        res.push(
-            {
-                property: "heightAboveGroundM",
-                title: "Height",
-                hasDefault: false,
-                isCalculated: false,
-                requiresInput: true,
-                type: FieldType.Number,
-                params: { min: null, max: null },
-                multiFieldId: "heightAboveGroundM",
-                units: Units.Meters
-            });
-    }
-    if (entity.systemUid !== StandardFlowSystemUids.Gas &&
-        !isDrainage(entity.systemUid) &&
-        locale === SupportedLocales.AU) {
-        res.unshift(
-            {
-                type: FieldType.Advert,
-                title: "HTC Group",
-                hasDefault: false,
-                isCalculated: false,
-                multiFieldId: "",
-                property: "",
-                params: {
-                    url: "https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E",
-                    titleHtml: "<p style=\"font-size: small; margin:3px auto;\">Request a <b>Flow & Pressure Test</b></p>",
-                    subtitleHtml: "",
-                    imagePath: "/img/3rdparty/htctestinglogo.png"
-                }
-            });
+    if (!isDrainage(entity.systemUid, systems)) {
+        res.push({
+            property: "heightAboveGroundM",
+            title: "Height",
+            hasDefault: false,
+            isCalculated: false,
+            requiresInput: true,
+            type: FieldType.Number,
+            params: { min: null, max: null },
+            multiFieldId: "heightAboveGroundM",
+            units: Units.Meters
+        });
     }
 
-    res.push(
-        {
-            property: "color",
-            title: "Color",
-            hasDefault: true,
+    if (!isGas(entity.systemUid, catalog.fluids, systems) && !isDrainage(entity.systemUid, systems) && locale === SupportedLocales.AU) {
+        res.unshift({
+            type: FieldType.Advert,
+            title: "HTC Group",
+            hasDefault: false,
             isCalculated: false,
-            type: FieldType.Color,
-            params: null,
-            multiFieldId: "color"
-        }
-    );
+            multiFieldId: "",
+            property: "",
+            params: {
+                url: "https://docs.google.com/forms/d/11-yiFK2VZhiz7zIBNINtHNXqPTUw86GqfsJ76Cz8e7E",
+                titleHtml: "<p style=\"font-size: small; margin:3px auto;\">Request a <b>Flow & Pressure Test</b></p>",
+                subtitleHtml: "",
+                imagePath: "/img/3rdparty/htctestinglogo.png"
+            }
+        });
+    }
+
+    res.push({
+        property: "color",
+        title: "Color",
+        hasDefault: true,
+        isCalculated: false,
+        type: FieldType.Color,
+        params: null,
+        multiFieldId: "color"
+    });
+
     return res;
 }
 

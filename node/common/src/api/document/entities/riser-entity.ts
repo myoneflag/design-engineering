@@ -1,17 +1,18 @@
-import {FieldType, PropertyField} from "./property-field";
-import {EntityType} from "./types";
+import { FieldType, PropertyField } from "./property-field";
+import { EntityType } from "./types";
 import {
     Color,
     COLORS,
     ConnectableEntity,
     Coord,
     DrawingState,
-    NetworkType} from "../drawing";
-import {Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
-import {isDrainage, LEVEL_HEIGHT_DIFF_M} from "../../config";
-import {Catalog} from "../../catalog/types";
-import {getDrainageMaterials, getWaterDrainageMaterials} from "./pipe-entity";
-import {convertPipeDiameterFromMetric, Units} from "../../../lib/measurements";
+    NetworkType
+} from "../drawing";
+import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
+import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../config";
+import { Catalog } from "../../catalog/types";
+import { getDrainageMaterials, getWaterDrainageMaterials } from "./pipe-entity";
+import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import { getPipeManufacturer } from "./utils";
 
 export default interface RiserEntity extends ConnectableEntity {
@@ -51,7 +52,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
         };
         return c;
     });
-    const iAmDrainage = isDrainage(entity.systemUid);
+    const iAmDrainage = isDrainage(entity.systemUid, drawing.metadata.flowSystems);
 
     if (entity.isVent) {
 
@@ -122,7 +123,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 hasDefault: false,
                 isCalculated: false,
                 type: FieldType.FlowSystemChoice,
-                params: {systems: drawing.metadata.flowSystems},
+                params: { systems: drawing.metadata.flowSystems },
                 multiFieldId: "systemUid"
             },
 
@@ -132,7 +133,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
-                params: {min: null, max: null},
+                params: { min: null, max: null },
                 multiFieldId: "bottomHeightM",
                 units: Units.Meters,
                 slot: true,
@@ -145,7 +146,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
-                params: {min: null, max: null},
+                params: { min: null, max: null },
                 multiFieldId: "topHeightM",
                 units: Units.Meters,
                 slot: true,
@@ -159,7 +160,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
-                params: {min: 0, max: null},
+                params: { min: 0, max: null },
                 multiFieldId: "maximumVelocityMS",
                 units: Units.MetersPerSecond,
             },
@@ -185,7 +186,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Choice,
-                params: {choices: iAmDrainage ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials)},
+                params: { choices: iAmDrainage ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
                 multiFieldId: "material"
             },
 
@@ -206,7 +207,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 highlightOnOverride: COLORS.YELLOW,
                 isCalculated: false,
                 type: FieldType.Number,
-                params: {min: 0, max: 100},
+                params: { min: 0, max: 100 },
                 multiFieldId: "temperatureC"
             }
         ];

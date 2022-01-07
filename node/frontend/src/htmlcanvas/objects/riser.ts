@@ -1,24 +1,24 @@
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 import * as TM from "transformation-matrix";
-import {DocumentState} from "../../../src/store/document/types";
-import {lighten, rgb2style} from "../../../src/lib/utils";
-import Connectable, {ConnectableObject} from "../../../src/htmlcanvas/lib/object-traits/connectable";
+import { DocumentState } from "../../../src/store/document/types";
+import { lighten, rgb2style } from "../../../src/lib/utils";
+import Connectable, { ConnectableObject } from "../../../src/htmlcanvas/lib/object-traits/connectable";
 import CenterDraggableObject from "../../../src/htmlcanvas/lib/object-traits/center-draggable-object";
-import {CostBreakdown, DrawingContext, ValidationResult} from "../../../src/htmlcanvas/lib/types";
+import { CostBreakdown, DrawingContext, ValidationResult } from "../../../src/htmlcanvas/lib/types";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
-import {EntityType} from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
-import {getDragPriority} from "../../../src/store/document";
-import {SelectableObject} from "../../../src/htmlcanvas/lib/object-traits/selectable";
-import {CenteredObjectNoParent} from "../../../src/htmlcanvas/lib/object-traits/centered-object";
-import {CalculationContext, PressurePushMode} from "../../../src/calculations/types";
-import {FlowNode} from "../../../src/calculations/calculation-engine";
-import {EntityDrawingArgs} from "../../../src/htmlcanvas/lib/drawable-object";
-import {Calculated, CalculatedObject} from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
-import {CalculationData} from "../../../src/store/document/calculations/calculation-field";
+import { getDragPriority } from "../../../src/store/document";
+import { SelectableObject } from "../../../src/htmlcanvas/lib/object-traits/selectable";
+import { CenteredObjectNoParent } from "../../../src/htmlcanvas/lib/object-traits/centered-object";
+import { CalculationContext, PressurePushMode } from "../../../src/calculations/types";
+import { FlowNode } from "../../../src/calculations/calculation-engine";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
+import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import CanvasContext from "../lib/canvas-context";
-import {DrawableEntityConcrete, EdgeLikeEntity} from "../../../../common/src/api/document/entities/concrete-entity";
+import { DrawableEntityConcrete, EdgeLikeEntity } from "../../../../common/src/api/document/entities/concrete-entity";
 import RiserCalculation, { emptyRiserCalculations } from "../../store/document/calculations/riser-calculation";
 import Pipe from "./pipe";
 import { getFluidDensityOfSystem, head2kpa } from "../../calculations/pressure-drops";
@@ -28,7 +28,7 @@ import { GlobalStore } from "../lib/global-store";
 import { APIResult } from "../../../../common/src/api/document/types";
 import { Interaction, InteractionType } from "../lib/interaction";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
-import {assertUnreachable, isDrainage} from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
 import { I18N } from "../../../../common/src/api/locale/values";
 import { addWarning, Warning } from "../../../src/store/document/calculations/warnings";
 
@@ -61,9 +61,9 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         const systemUid = this.entity.systemUid;
         switch (this.document.uiState.pressureOrDrainage) {
             case "pressure":
-                return !isDrainage(systemUid);
+                return !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
             case "drainage":
-                return isDrainage(systemUid);
+                return isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
         }
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
@@ -89,7 +89,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ctx.fillStyle = rgb2style(getHighlightColor(
                 selected,
                 overrideColorList,
-                {hex: lighten(this.color(doc).hex, 50)},
+                { hex: lighten(this.color(doc).hex, 50) },
             ), 0.5);
 
             if (!this.isActive()) {
@@ -136,7 +136,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         ctx.beginPath();
         ctx.fillStyle = "#000000";
 
-        if (isDrainage(this.entity.systemUid) && !this.entity.isVent) {
+        if (isDrainage(this.entity.systemUid, doc.drawing.metadata.flowSystems) && !this.entity.isVent) {
             // stack. Draw upside down traingle.
             ctx.moveTo(0, this.lastDrawnDiameterW * 0.45);
             ctx.lineTo(this.lastDrawnDiameterW * 0.38, -this.lastDrawnDiameterW * 0.25);
@@ -160,7 +160,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
                     const ventRadius = this.lastDrawnDiameterW / 4;
                     const ventDiameter = ventRadius * 2;
-                    ctx.arc(this.lastDrawnDiameterW , 0, ventRadius, 0, Math.PI * 2);
+                    ctx.arc(this.lastDrawnDiameterW, 0, ventRadius, 0, Math.PI * 2);
                     ctx.fill();
 
 
@@ -375,7 +375,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
 
     collectCalculations(context: CalculationContext): RiserCalculation {
         const res = emptyRiserCalculations();
-        const IAmDrainage = isDrainage(this.entity.systemUid);
+        const IAmDrainage = isDrainage(this.entity.systemUid, context.drawing.metadata.flowSystems);
 
         const tower = this.getCalculationTower(context, true);
 
@@ -392,7 +392,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 if (pipe) {
                     const pcalc = context.globalStore.getOrCreateCalculation(pipe);
                     if (pcalc.stackDedicatedVentSize !== null &&
-                        (biggestDedicatedVentSize === null || pcalc.stackDedicatedVentSize > biggestDedicatedVentSize) ) {
+                        (biggestDedicatedVentSize === null || pcalc.stackDedicatedVentSize > biggestDedicatedVentSize)) {
                         biggestDedicatedVentSize = pcalc.stackDedicatedVentSize;
                     }
                 }
@@ -448,7 +448,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                         partialHL,
                         getFluidDensityOfSystem(pipe.entity.systemUid, context.doc, context.catalog)!,
                         context.doc.drawing.metadata.calculationParams.gravitationalAcceleration
-                        );
+                    );
 
                     res.heights[lvlUid] = {
                         flowRateLS: calc.totalPeakFlowRateLS,
@@ -506,7 +506,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 }
 
                 if (overFlowedLevels.length > 0) {
-                    addWarning(res, Warning.MAX_PER_LEVEL_EXCEEDED, 'drainage', {value: I18N.loadingUnits[context.doc.locale], level: overFlowedLevels.join(", ")});
+                    addWarning(res, Warning.MAX_PER_LEVEL_EXCEEDED, 'drainage', { value: I18N.loadingUnits[context.doc.locale], level: overFlowedLevels.join(", ") });
                 }
             }
         }
@@ -518,6 +518,6 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
     // Here, risers are turned into normal pipes for calculations, and so this function shouldn't be called.
     costBreakdown(context: CalculationContext): CostBreakdown | null {
         // TODO: Riser cost for a level.
-        return {cost: 0, breakdown: []};
+        return { cost: 0, breakdown: [] };
     }
 }

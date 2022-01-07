@@ -384,7 +384,7 @@ export function CalculatedObject<
         }
 
         getCalculationFields(context: DrawingContext, filters: CalculationFilters): CalculationData[] {
-            const eName = getEntityName(this.entity);
+            const eName = getEntityName(this.entity, context.doc.drawing);
             const filter = filters[eName].filters;
             const calculation = context.globalStore.getCalculation(this.entity);
 

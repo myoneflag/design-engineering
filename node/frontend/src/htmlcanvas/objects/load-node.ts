@@ -4,7 +4,7 @@ import LoadNodeEntity, { NodeType } from "../../../../common/src/api/document/en
 import { Calculated, CalculatedObject } from "../lib/object-traits/calculated-object";
 import Connectable, { ConnectableObject } from "../lib/object-traits/connectable";
 import { CenteredObject } from "../lib/object-traits/centered-object";
-import {CostBreakdown, DrawingContext} from "../lib/types";
+import { CostBreakdown, DrawingContext } from "../lib/types";
 import { DrawingArgs, EntityDrawingArgs } from "../lib/drawable-object";
 import { CalculationContext } from "../../calculations/types";
 import { FlowNode } from "../../calculations/calculation-engine";
@@ -31,16 +31,16 @@ import {
 } from "../../../../common/src/api/document/entities/concrete-entity";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { getHighlightColor } from "../lib/utils";
-import {assertUnreachable, isDrainage, isGas, StandardFlowSystemUids} from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage, isGas, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
-import {Interaction, InteractionType} from "../lib/interaction";
-import {determineConnectableSystemUid} from "../../store/document/entities/lib";
+import { Interaction, InteractionType } from "../lib/interaction";
+import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import Pipe from "./pipe";
 
 @SelectableObject
 @CenterDraggableObject
 @CalculatedObject
-@ConnectableObject({customCopyObjects: true})
+@ConnectableObject({ customCopyObjects: true })
 @CenteredObject
 @SnappableObject
 export default class LoadNode extends BackedConnectable<LoadNodeEntity> implements Calculated, Connectable {
@@ -79,8 +79,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
         const filled = fillDefaultLoadNodeFields(context.doc, this.globalStore, this.entity, context.catalog, context.nodes);
 
-        const system = context.doc.drawing.metadata.flowSystems.find((f) => f.uid === filled.systemUidOption);
-        const thisIsGas = isGas(system ? system.fluid : 'water', context.catalog);
+        const thisIsGas = isGas(filled.systemUidOption!, context.catalog.fluids, context.doc.drawing.metadata.flowSystems);
 
         if (args.selected || args.overrideColorList.length) {
             const sr = Math.max(baseRadius + 20, vp.surfaceToWorldLength(baseRadius / 50 + 2));
@@ -88,7 +87,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             ctx.fillStyle = rgb2style(getHighlightColor(
                 args.selected,
                 args.overrideColorList,
-                {hex: lighten(filled.color!.hex, 50)},
+                { hex: lighten(filled.color!.hex, 50) },
             ));
 
             ctx.beginPath();
@@ -244,7 +243,7 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         if (a === b) {
             return true;
         }
-        if (isDrainage(a)) {
+        if (isDrainage(a, this.document.drawing.metadata.flowSystems)) {
             return true;
         }
         return false;
@@ -288,9 +287,9 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
 
                 }
 
-                if ((system2 && isDrainage(system2)) && !isDrainage(system1)) {
+                if ((system2 && isDrainage(system2, this.document.drawing.metadata.flowSystems)) && !isDrainage(system1, this.document.drawing.metadata.flowSystems)) {
                     return result;
-                } else if (isDrainage(system1) && !(system2 && isDrainage(system2))) {
+                } else if (isDrainage(system1, this.document.drawing.metadata.flowSystems) && !(system2 && isDrainage(system2, this.document.drawing.metadata.flowSystems))) {
                     return result;
                 } else {
                     return null;

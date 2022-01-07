@@ -1,4 +1,4 @@
-import { CalculationField, FieldCategory} from "../../../../src/store/document/calculations/calculation-field";
+import { CalculationField, FieldCategory } from "../../../../src/store/document/calculations/calculation-field";
 import DirectedValveEntity from "../../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import {
     addPressureCalculationFields,
@@ -7,7 +7,7 @@ import {
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
-import {assertUnreachable, isGas} from "../../../../../common/src/api/config";
+import { assertUnreachable, isGas } from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
@@ -30,8 +30,7 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
 export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
     const systemUid = determineConnectableSystemUid(globalStore, entity);
 
-    const valveIsGas = catalog && systemUid && isGas(drawing.metadata.flowSystems
-        .find((f) => f.uid === systemUid)?.fluid || 'water', catalog);
+    const valveIsGas = catalog && systemUid && isGas(systemUid!, catalog.fluids, drawing.metadata.flowSystems);
 
 
     let fields: CalculationField[] = [];
@@ -75,7 +74,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
     }
 
     if (!valveIsGas) {
-        addPressureCalculationFields(fields, systemUid, "", {short: "In"});
+        addPressureCalculationFields(fields, systemUid, "", { short: "In" });
     }
 
     if (entity.systemUidOption) {
@@ -85,7 +84,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
-    
+
 
     switch (entity.valve.type) {
         case ValveType.GAS_REGULATOR:
