@@ -15,7 +15,7 @@ import { Matrix } from "transformation-matrix";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { SystemNodeEntity } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import {flowSystemsCompatible} from "./utils";
+import { flowSystemsCompatible } from "./utils";
 
 // TODO: this entire abstract class is obsolete and should be encapsulated in the ConnectableObject
 // decorator.
@@ -42,7 +42,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
     }
 
     flowSystemsCompatible(a: string, b: string) {
-        return flowSystemsCompatible(a, b);
+        return flowSystemsCompatible(a, b, this.document.drawing);
     }
 
     offerInteraction(interaction: Interaction): DrawableEntityConcrete[] | null {
@@ -121,7 +121,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
                         )
                     ) {
                         if (hasExplicitSystemUid(this.entity) && hasExplicitSystemUid(interaction.dest)) {
-                            if (!this.flowSystemsCompatible(interaction.dest.systemUid, this.entity.systemUid)  && !allowAllSystemUid) {
+                            if (!this.flowSystemsCompatible(interaction.dest.systemUid, this.entity.systemUid) && !allowAllSystemUid) {
                                 return null;
                             }
                         }
@@ -144,12 +144,12 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
 
                 if (entity.type === EntityType.DIRECTED_VALVE || entity.type === EntityType.LOAD_NODE) {
                     const suid = determineConnectableSystemUid(this.globalStore, entity);
-                    isSystemCorrect = interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, suid!) ;
+                    isSystemCorrect = interaction.systemUid === null || flowSystemsCompatible(interaction.systemUid, suid!, this.document.drawing);
                 } else {
                     isSystemCorrect =
                         allowAllSystemUid ||
                         interaction.systemUid === null ||
-                        this.flowSystemsCompatible(interaction.systemUid, entity.systemUid) ;
+                        this.flowSystemsCompatible(interaction.systemUid, entity.systemUid);
                 }
 
                 if (isSystemCorrect) {

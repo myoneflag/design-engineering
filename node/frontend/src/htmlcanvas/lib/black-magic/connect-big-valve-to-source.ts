@@ -114,7 +114,7 @@ export function leadPipe(
         maximumVelocityMS: null,
         parentUid: null,
         systemUid,
-        network: NetworkType.RETICULATIONS,
+        network: context.document.uiState.pressureOrDrainage === 'drainage' ? NetworkType.RETICULATIONS : NetworkType.CONNECTIONS,
         type: EntityType.PIPE,
         gradePCT: null,
         uid: uuid()

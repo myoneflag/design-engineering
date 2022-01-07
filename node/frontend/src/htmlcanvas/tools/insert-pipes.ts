@@ -114,7 +114,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     context.globalStore.get(valveEntity.uid)!.rebase(context);
                 }
 
-                if (isDrainage(system.uid)) {
+                if (isDrainage(system.uid, context.document.drawing.metadata.flowSystems)) {
                     heightM = -1;
                 }
 
@@ -253,7 +253,7 @@ function insertPipeChain(
             },
 
             "Set Pipe",
-            isDrainage(system.uid) ? [] : [
+            isDrainage(system.uid, context.document.drawing.metadata.flowSystems) ? [] : [
                 [
                     KeyCode.UP,
                     {

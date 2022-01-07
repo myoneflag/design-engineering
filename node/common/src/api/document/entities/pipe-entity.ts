@@ -4,7 +4,7 @@ import { Color, COLORS, DrawableEntity, DrawingState, NetworkType } from "../dra
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { Catalog } from "../../catalog/types";
 import { convertMeasurementSystem, convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
-import { isDrainage, StandardFlowSystemUids } from "../../config";
+import { isDrainage, isGas, StandardFlowSystemUids } from "../../config";
 import { getPipeManufacturer, getEntityNetwork, getEntitySystem } from "./utils";
 
 export default interface PipeEntity extends DrawableEntity {
@@ -63,7 +63,7 @@ export function makePipeFields(
         .filter((d) => Number(d.key) >= flowSystemSettings.networks[result.network].minimumPipeSize);
 
     const fields: PropertyField[] = [];
-    const iAmDrainage = isDrainage(entity.systemUid);
+    const iAmDrainage = isDrainage(entity.systemUid, drawing.metadata.flowSystems);
 
     fields.push(
         {
@@ -86,7 +86,7 @@ export function makePipeFields(
                 choices: [
                     { name: "Riser", key: NetworkType.RISERS, disabled: true },
                     { name: "Reticulation", key: NetworkType.RETICULATIONS, disabled: false },
-                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: result.systemUid !== StandardFlowSystemUids.Gas }
+                    { name: "Connection", key: NetworkType.CONNECTIONS, disabled: isGas(result.systemUid, catalog.fluids, drawing.metadata.flowSystems) }
                 ]
             }
         },
@@ -98,7 +98,7 @@ export function makePipeFields(
             highlightOnOverride: COLORS.YELLOW,
             isCalculated: false,
             type: FieldType.Choice,
-            params: { choices: isDrainage(flowSystemSettings.uid) ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
+            params: { choices: isDrainage(flowSystemSettings.uid, drawing.metadata.flowSystems) ? getDrainageMaterials(materials) : getWaterDrainageMaterials(materials) },
             multiFieldId: "material"
         },
 
@@ -210,7 +210,7 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
         }
         if (result.color == null) {
             result.color = system.color;
-            if (isDrainage(system.uid)) {
+            if (isDrainage(system.uid, drawing.metadata.flowSystems)) {
                 if (value.network === NetworkType.CONNECTIONS) {
                     result.color = system.drainageProperties.ventColor;
                 }

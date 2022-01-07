@@ -61,7 +61,7 @@ export default interface PlantEntity extends CenteredEntity {
 
 export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
     const filled = fillPlantDefaults(entity, drawing, catalog);
-    const iAmDrainage = isDrainage(filled.outletSystemUid) || isDrainage(filled.inletSystemUid);
+    const iAmDrainage = isDrainage(filled.outletSystemUid, drawing.metadata.flowSystems) || isDrainage(filled.inletSystemUid, drawing.metadata.flowSystems);
 
     const res: PropertyField[] = [
         {

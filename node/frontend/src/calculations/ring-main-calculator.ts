@@ -1,5 +1,5 @@
 import CalculationEngine, { EdgeType, FlowEdge, FlowNode } from "./calculation-engine";
-import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity from "../../../common/src/api/document/entities/pipe-entity";
 import { Edge } from "./graph";
 import { FlowAssignment } from "./flow-assignment";
 import {
@@ -15,9 +15,9 @@ import { EPS, lowerBoundTable, parseCatalogNumberExact } from "../../../common/s
 import { adjustPathHardyCross } from "./flow-solver";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
-import {assertUnreachable, isDrainage, RingMainCalculationMethod} from "../../../common/src/api/config";
+import { assertUnreachable, isDrainage, RingMainCalculationMethod } from "../../../common/src/api/config";
 import { Configuration, NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
-import {EntityType} from "../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../common/src/api/document/entities/types";
 
 export class RingMainCalculator {
     engine: CalculationEngine;
@@ -52,7 +52,7 @@ export class RingMainCalculator {
                                 const p = this.engine.globalStore.get(e.value.uid);
                                 let iAmDrainage = false;
                                 if (p && p.entity.type === EntityType.PIPE) {
-                                    iAmDrainage = isDrainage(p.entity.systemUid);
+                                    iAmDrainage = isDrainage(p.entity.systemUid, this.engine.drawing.metadata.flowSystems);
                                 }
                                 return !iAmDrainage;
                             case EdgeType.FITTING_FLOW:

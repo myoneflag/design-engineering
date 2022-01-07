@@ -114,7 +114,7 @@ export function countPsdUnits(
 
                     result[suid].continuousFlowLS += mainFixture.roughIns[suid].continuousFlowLS!;
 
-                    if (isDrainage(suid)) {
+                    if (isDrainage(suid, doc.drawing.metadata.flowSystems)) {
                         let drainageUnits: number | null = 0;
                         switch (doc.drawing.metadata.calculationParams.drainageMethod) {
                             case SupportedDrainageMethods.AS2018FixtureUnits:

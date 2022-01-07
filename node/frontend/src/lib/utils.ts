@@ -167,7 +167,7 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
                 assertUnreachable(document.uiState.pressureOrDrainage);
         }
 
-        const eName = getEntityName(o.entity);
+        const eName = getEntityName(o.entity, document.drawing);
 
         if (!(eName in build)) {
             Vue.set(build, eName, {

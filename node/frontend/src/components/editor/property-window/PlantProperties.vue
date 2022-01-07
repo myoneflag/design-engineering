@@ -144,7 +144,7 @@ export default class PlantProperties extends Vue {
   }
 
   get name() {
-    return getEntityName(this.$props.selectedEntity);
+    return getEntityName(this.$props.selectedEntity, this.document.drawing);
   }
 
   get document(): DocumentState {

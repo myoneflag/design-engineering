@@ -1,5 +1,6 @@
+import { DrawingState } from './../drawing';
 import { DrawableEntityConcrete } from "./concrete-entity";
-import {assertUnreachable, isDrainage} from "../../config";
+import { assertUnreachable, isDrainage } from "../../config";
 import { BigValveType } from "./big-valve/big-valve-entity";
 import { PlantType } from "./plants/plant-types";
 
@@ -23,12 +24,12 @@ export enum EntityType {
     GAS_APPLIANCE = "GAS_APPLIANCE",
 }
 
-export function getEntityName(entity: DrawableEntityConcrete): string {
+export function getEntityName(entity: DrawableEntityConcrete, drawing: DrawingState): string {
     switch (entity.type) {
         case EntityType.BACKGROUND_IMAGE:
             return "Background";
         case EntityType.RISER:
-            if (isDrainage(entity.systemUid)) {
+            if (isDrainage(entity.systemUid, drawing.metadata.flowSystems)) {
                 if (entity.isVent) {
                     return "Vertical vent";
                 } else {
@@ -67,7 +68,7 @@ export function getEntityName(entity: DrawableEntityConcrete): string {
         case EntityType.LOAD_NODE:
             return "Load Node";
         case EntityType.FLOW_SOURCE:
-            if (isDrainage(entity.systemUid)) {
+            if (isDrainage(entity.systemUid, drawing.metadata.flowSystems)) {
                 return "Sewer Connection";
             } else {
                 return "Flow Source";

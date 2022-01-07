@@ -1,9 +1,9 @@
-import {FieldType, PropertyField} from "./property-field";
-import {EntityType} from "./types";
-import {CenteredEntity, Color, COLORS, DrawableEntity, DrawingState} from "../drawing";
-import {Units} from "../../../lib/measurements";
-import {isGas, isLUStandard, SupportedPsdStandards} from "../../config";
-import {Catalog} from "../../catalog/types";
+import { FieldType, PropertyField } from "./property-field";
+import { EntityType } from "./types";
+import { CenteredEntity, Color, COLORS, DrawableEntity, DrawingState } from "../drawing";
+import { Units } from "../../../lib/measurements";
+import { isGas, isLUStandard, SupportedPsdStandards } from "../../config";
+import { Catalog } from "../../catalog/types";
 import { I18N } from "../../locale/values";
 import { SupportedLocales } from "../../locale";
 
@@ -93,9 +93,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
         multiFieldId: "name",
     };
 
-    const system = drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-
-    const nodeIsGas = isGas(system ? system.fluid : 'water', catalog);
+    const nodeIsGas = isGas(systemUid!, catalog.fluids, drawing.metadata.flowSystems);
 
     switch (value.node.type) {
         case NodeType.LOAD_NODE:
@@ -106,9 +104,9 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     case NodeVariant.FIXTURE:
                         fields.unshift(nameField);
                         const psdStrategy = drawing
-                        ? drawing.metadata.calculationParams.psdMethod
-                        : SupportedPsdStandards.as35002018LoadingUnits;
-                    
+                            ? drawing.metadata.calculationParams.psdMethod
+                            : SupportedPsdStandards.as35002018LoadingUnits;
+
                         fields.push(
                             {
                                 property: "node.loadingUnits",
@@ -118,7 +116,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 type: FieldType.Number,
                                 params: { min: 0, max: null },
                                 multiFieldId: "loadingUnits",
-                                hideFromPropertyWindow:  !isLUStandard(psdStrategy)
+                                hideFromPropertyWindow: !isLUStandard(psdStrategy)
                             },
                             {
                                 property: "node.designFlowRateLS",
@@ -129,7 +127,7 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                                 params: { min: 0, max: null },
                                 multiFieldId: "designFlowRateLS",
                                 units: Units.LitersPerSecond,
-                                hideFromPropertyWindow:  isLUStandard(psdStrategy)
+                                hideFromPropertyWindow: isLUStandard(psdStrategy)
                             },
                             {
                                 property: "node.asnzFixtureUnits",
@@ -273,8 +271,8 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                         );
                         break;
                     default:
-                        // Do not assert unreachable.
-                        //assertUnreachable(value.node.variant);
+                    // Do not assert unreachable.
+                    //assertUnreachable(value.node.variant);
                 }
             }
             break;
@@ -439,7 +437,7 @@ export function drawingContainsCustomNode(drawing: DrawingState, customNodeId: n
     let found = false;
     for (const level of Object.values(drawing.levels)) {
         for (const entity of Object.values(level.entities)) {
-            if ( entity.type === EntityType.LOAD_NODE && entity.customNodeId === customNodeId ) {
+            if (entity.type === EntityType.LOAD_NODE && entity.customNodeId === customNodeId) {
                 found = true;
                 break;
             }

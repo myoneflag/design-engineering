@@ -12,7 +12,7 @@ import {
 } from "../../../../src/store/document/calculations/types";
 import { DocumentState } from "../../../../src/store/document/types";
 import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
-import {getDrainageUnitName, getPsdUnitName} from "../../../calculations/utils";
+import { getDrainageUnitName, getPsdUnitName } from "../../../calculations/utils";
 import { Units } from "../../../../../common/src/lib/measurements";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../../../../common/src/api/config";
@@ -65,7 +65,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     //     short: "at floor" 
     // });
 
-    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
+    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
 
     if (extendsToBottom) {
 
@@ -89,11 +89,11 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
-                format: (v) => "" + Number((v?v:0).toFixed(5))
+                format: (v) => "" + Number((v ? v : 0).toFixed(5))
             });
         }
 
-        if (isDrainage(entity.systemUid)) {
+        if (isDrainage(entity.systemUid, drawing.metadata.flowSystems)) {
             result.push({
                 property: "heights." + lvlUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Below",
@@ -102,10 +102,10 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: layoutOptionDrainage,
-                format: (v) => "" + Number((v?v:0).toFixed(5))
+                format: (v) => "" + Number((v ? v : 0).toFixed(5))
             });
         }
-        if(doc.uiState.pressureOrDrainage==="pressure"){
+        if (doc.uiState.pressureOrDrainage === "pressure") {
             result.push({
                 property: "heights." + lvlUid + ".sizeMM",
                 title: "Size To Below",
@@ -166,11 +166,11 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
-                format: (v) => "" + Number((v?v:0).toFixed(5)),
+                format: (v) => "" + Number((v ? v : 0).toFixed(5)),
             });
         }
 
-        if (isDrainage(entity.systemUid)) {
+        if (isDrainage(entity.systemUid, drawing.metadata.flowSystems)) {
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Above",
@@ -179,7 +179,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
                 layouts: ['drainage'],
-                format: (v) => "" + Number((v?v:0).toFixed(5)),
+                format: (v) => "" + Number((v ? v : 0).toFixed(5)),
             });
 
             if (system && system.drainageProperties.stackDedicatedVent) {
@@ -207,7 +207,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
         }
     }
 
-    if (isDrainage(entity.systemUid)) {
+    if (isDrainage(entity.systemUid, drawing.metadata.flowSystems)) {
         if (doc.uiState.pressureOrDrainage === 'drainage') {
             return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
         } else {
@@ -221,11 +221,11 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
 export function emptyRiserCalculations(): RiserCalculation {
     return {
         type: CalculationType.RiserCalculation,
-        
+
         cost: null,
         costBreakdown: null,
         expandedEntities: null,
-        
+
         warnings: null,
         heights: {}
     };

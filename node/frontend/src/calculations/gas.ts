@@ -1,22 +1,22 @@
-import CalculationEngine, {EdgeType, FLOW_SOURCE_EDGE, FLOW_SOURCE_ROOT_NODE} from "./calculation-engine";
-import {FlowSystemParameters} from "../../../common/src/api/document/drawing";
-import {EntityType} from "../../../common/src/api/document/entities/types";
-import {assertUnreachable, isGas} from "../../../common/src/api/config";
-import {ValveType} from "../../../common/src/api/document/entities/directed-valves/valve-types";
-import {determineConnectableSystemUid} from "../store/document/entities/lib";
+import CalculationEngine, { EdgeType, FLOW_SOURCE_EDGE, FLOW_SOURCE_ROOT_NODE } from "./calculation-engine";
+import { FlowSystemParameters } from "../../../common/src/api/document/drawing";
+import { EntityType } from "../../../common/src/api/document/entities/types";
+import { assertUnreachable, isGas } from "../../../common/src/api/config";
+import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
+import { determineConnectableSystemUid } from "../store/document/entities/lib";
 import Pipe from "../htmlcanvas/objects/pipe";
-import PipeEntity, {fillPipeDefaultFields} from "../../../common/src/api/document/entities/pipe-entity";
+import PipeEntity, { fillPipeDefaultFields } from "../../../common/src/api/document/entities/pipe-entity";
 import {
     lowerBoundTable,
     parseCatalogNumberExact,
     parseCatalogNumberOrMin,
     upperBoundTable
 } from "../../../common/src/lib/utils";
-import {NoFlowAvailableReason} from "../store/document/calculations/pipe-calculation";
+import { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import DirectedValve from "../htmlcanvas/objects/directed-valve";
-import {NodeType} from "../../../common/src/api/document/entities/load-node-entity";
-import {PlantType, ReturnSystemPlant} from "../../../common/src/api/document/entities/plants/plant-types";
-import {fillPlantDefaults} from "../../../common/src/api/document/entities/plants/plant-entity";
+import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
+import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
+import { fillPlantDefaults } from "../../../common/src/api/document/entities/plants/plant-entity";
 
 export interface GasComponent {
     pipes: Set<string>;
@@ -113,8 +113,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
         switch (o.entity.type) {
             case EntityType.FLOW_SOURCE: {
                 const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
-                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+                const thisIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
 
                 if (thisIsGas) {
                     isRoot = true;
@@ -127,8 +126,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
             case EntityType.DIRECTED_VALVE: {
                 const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
                 const connections = engine.globalStore.getConnections(o.entity.uid);
-                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+                const thisIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
                 if (o.entity.valve.type === ValveType.GAS_REGULATOR && thisIsGas && connections.length === 2) {
                     const p0 = engine.globalStore.get(connections[0]) as Pipe;
                     const p0Calc = engine.globalStore.getOrCreateCalculation(p0.entity);
@@ -140,10 +138,10 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                     pressureKPA = o.entity.valve.outletPressureKPA!;
                     if (p0Calc.flowFrom === o.entity.uid) {
                         connection = p0.uid;
-                        block.add(engine.serializeNode({connectable: o.entity.uid, connection: p1.uid}));
+                        block.add(engine.serializeNode({ connectable: o.entity.uid, connection: p1.uid }));
                     } else if (p1Calc.flowFrom === o.entity.uid) {
                         connection = p1.uid;
-                        block.add(engine.serializeNode({connectable: o.entity.uid, connection: p0.uid}));
+                        block.add(engine.serializeNode({ connectable: o.entity.uid, connection: p0.uid }));
                     } else {
                         isRoot = false;
                     }
@@ -181,7 +179,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
             case EntityType.LOAD_NODE: {
                 const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
                 const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-                const thisIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
+                const thisIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
 
                 if (thisIsGas) {
                     const calc = engine.globalStore.getOrCreateCalculation(o.entity);
@@ -267,9 +265,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                         }
                     } else if (no.entity.type === EntityType.LOAD_NODE) {
                         const systemUid = determineConnectableSystemUid(engine.globalStore, no.entity);
-                        const system = engine.doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-                        const nodeIsGas = isGas(system ? system.fluid : 'water', engine.catalog);
-
+                        const nodeIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
                         if (nodeIsGas) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
                             maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.node.gasPressureKPA + prevDrop!);
@@ -346,7 +342,7 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                 block,
             );
 
-            result.push({pipes, mainRunLengthM, supplyPressureKPA, maxPressureRequiredKPA, regulatorUid});
+            result.push({ pipes, mainRunLengthM, supplyPressureKPA, maxPressureRequiredKPA, regulatorUid });
         }
     }
     return result;
@@ -396,7 +392,7 @@ export function sizeGasPipeInside(inputRateMJH: number, pipeLengthM: number, sta
 }
 
 
-function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type: GasType): {mjh: number, ms: number} | undefined {
+function getGasVelocityRealMs(context: CalculationEngine, pipe: PipeEntity, type: GasType): { mjh: number, ms: number } | undefined {
     const calculation = context.globalStore.getOrCreateCalculation(pipe);
     if (calculation.psdUnits) {
         if (calculation.psdUnits.gasMJH) {

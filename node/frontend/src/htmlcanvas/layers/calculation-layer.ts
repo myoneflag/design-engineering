@@ -135,7 +135,7 @@ export default class CalculationLayer extends LayerImplementation {
 
         this.uidsInOrder.forEach((uid) => {
             const o = this.context.globalStore.get(uid)!;
-            const eName = getEntityName(o.entity);
+            const eName = getEntityName(o.entity, context.doc.drawing);
             if (
                 isCalculated(o.entity) &&
                 eName in calculationFilters &&

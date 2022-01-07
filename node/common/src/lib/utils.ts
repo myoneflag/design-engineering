@@ -343,3 +343,11 @@ export function setPropertyByString(obj: any, s: string, val: any, existential: 
 export type Complete<T> = {
     [P in keyof Required<T>]: Complete<T[P]>;
 }
+
+export function arrayToMap<T, K extends keyof T>(arg: T[], key: K): Map<string, T> {
+    return arg.reduce((map, obj) => map.set(obj[key], obj), new Map());
+}
+
+export function mapToArray<T>(arg: Map<string, T>): T[] {
+    return Array.from(arg, (v) => v[1]);
+}

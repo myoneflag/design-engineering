@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -9,16 +9,16 @@ import {
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
-import {isGas} from "../../../../../common/src/api/config";
-import {Catalog} from "../../../../../common/src/api/catalog/types";
-import {DocumentState} from "../types";
+import { isGas } from "../../../../../common/src/api/config";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
+import { DocumentState } from "../types";
 
 export default interface FittingCalculation extends
     Calculation,
     PressureCalculation {
     flowRateLS: number | null;
     pressureDropKPA: number | [number, number] | null;
-    pressureByEndpointKPA: {[key: string]: number | null};
+    pressureByEndpointKPA: { [key: string]: number | null };
 }
 
 export function makeFittingCalculationFields(entity: FittingEntity, globalStore: GlobalStore, document: DocumentState, catalog: Catalog): CalculationField[] {
@@ -26,11 +26,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
         return [];
     }
     const result: CalculationField[] = [];
-    const fittingIsGas = catalog && isGas(document.drawing.metadata.flowSystems
-        .find((f) => f.uid === entity.systemUid)!.fluid, catalog);
-
-
-
+    const fittingIsGas = catalog && isGas(entity.systemUid!, catalog.fluids, document.drawing.metadata.flowSystems);
 
     if (!fittingIsGas) {
         result.push(

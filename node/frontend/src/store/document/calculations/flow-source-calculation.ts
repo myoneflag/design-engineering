@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation, CalculationType, PressureCalculation,
@@ -6,10 +6,10 @@ import {
 } from "../../../../src/store/document/calculations/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
 import FlowSourceEntity from "../../../../../common/src/api/document/entities/flow-source-entity";
-import {isDrainage, isGermanStandard} from "../../../../../common/src/api/config";
+import { isDrainage, isGermanStandard } from "../../../../../common/src/api/config";
 import { DrawingState } from "../../../../../common/src/api/document/drawing";
 import { Units } from "../../../../../common/src/lib/measurements";
-import {DocumentState} from "../types";
+import { DocumentState } from "../types";
 
 export default interface FlowSourceCalculation extends
     Calculation,
@@ -18,11 +18,11 @@ export default interface FlowSourceCalculation extends
 }
 
 export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: DocumentState): CalculationField[] {
-    if (isDrainage(entity.systemUid) === (doc.uiState.pressureOrDrainage === 'drainage')) {
+    if (isDrainage(entity.systemUid, doc.drawing.metadata.flowSystems) === (doc.uiState.pressureOrDrainage === 'drainage')) {
 
         const result: CalculationField[] = [];
 
-        addPressureCalculationFields(result, entity.systemUid, "", {defaultEnabled: true}, {defaultEnabled: true});
+        addPressureCalculationFields(result, entity.systemUid, "", { defaultEnabled: true }, { defaultEnabled: true });
 
         result.push(
             {

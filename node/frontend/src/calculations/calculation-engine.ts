@@ -75,6 +75,7 @@ import Plant from "../htmlcanvas/objects/plant";
 import {
     assertUnreachable,
     isDrainage,
+    isGas,
     isGermanStandard,
     StandardFlowSystemUids,
     SupportedDrainageMethods,
@@ -311,7 +312,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
                     break;
                 case EntityType.FLOW_SOURCE:
-                    fields = makeFlowSourceFields([], obj.entity, undefined);
+                    fields = makeFlowSourceFields(this.doc.drawing.metadata.flowSystems, obj.entity, this.catalog, undefined);
                     break;
                 case EntityType.LOAD_NODE:
                     const systemUid = determineConnectableSystemUid(obj.globalStore, obj.entity);
@@ -575,7 +576,7 @@ export default class CalculationEngine implements CalculationContext {
                 // Edge case: Do not push flow, including sewer flow, through vents.
                 if (e.value.type === EdgeType.PIPE) {
                     const pipe = this.globalStore.get(e.value.uid);
-                    if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                    if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid, this.drawing.metadata.flowSystems)) {
                         if (pipe.entity.network === NetworkType.CONNECTIONS) {
                             return true;
                         }
@@ -1531,7 +1532,7 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 case EntityType.PLANT:
                     // sewer pits are reversed
-                    if (isDrainage(obj.entity.inletSystemUid)) {
+                    if (isDrainage(obj.entity.inletSystemUid, this.drawing.metadata.flowSystems)) {
 
                         this.flowGraph.addDirectedEdge(
                             {
@@ -1730,7 +1731,9 @@ export default class CalculationEngine implements CalculationContext {
                     }
 
                     for (const suid of fixture.roughInsInOrder) {
-                        if (node.uid === fixture.roughIns[suid].uid || (isDrainage(systemUid) && isDrainage(suid))) {
+                        const iAmDrainage = isDrainage(systemUid, this.drawing.metadata.flowSystems) && isDrainage(suid, this.drawing.metadata.flowSystems);
+
+                        if (node.uid === fixture.roughIns[suid].uid || iAmDrainage) {
                             if (isGermanStandard(this.doc.drawing.metadata.calculationParams.psdMethod)) {
                                 units.push({
                                     units: Number(mainFixture.roughIns[suid].designFlowRateLS),
@@ -1738,7 +1741,7 @@ export default class CalculationEngine implements CalculationContext {
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
+                                    drainageUnits: iAmDrainage ? drainageUnits! : 0,
                                     gasMJH: 0,
                                     mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
                                 });
@@ -1750,7 +1753,7 @@ export default class CalculationEngine implements CalculationContext {
                                     entity: node.entity.uid,
                                     gasMJH: 0,
                                     correlationGroup: fixture.uid,
-                                    drainageUnits: isDrainage(suid) ? drainageUnits! : 0,
+                                    drainageUnits: iAmDrainage ? drainageUnits! : 0,
                                     mixedHotCold: suid === StandardFlowSystemUids.WarmWater,
                                 });
                             }
@@ -2027,10 +2030,10 @@ export default class CalculationEngine implements CalculationContext {
                 }
                 calculation.noFlowAvailableReason = noFlowReason;
 
-                const isGas = entity.systemUid === StandardFlowSystemUids.Gas;
-                if (isGas) {
+                
+                if (isGas(entity.systemUid, this.catalog.fluids, this.drawing.metadata.flowSystems)) {
                     // Gas calculation done elsewhere
-                } else if (isDrainage(entity.systemUid)) {
+                } else if (isDrainage(entity.systemUid, this.drawing.metadata.flowSystems)) {
                     // TODO: Drainage sizing
                     sizeDrainagePipe(entity, this);
                 } else {
@@ -2924,7 +2927,7 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.FITTING:
                     break;
                 case EntityType.PIPE: {
-                    const thisIsDrainage = isDrainage(o.entity.systemUid);
+                    const thisIsDrainage = isDrainage(o.entity.systemUid, this.drawing.metadata.flowSystems);
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     if (!thisIsDrainage) {
                         const filled = fillPipeDefaultFields(this.doc.drawing, (o as Pipe).computedLengthM, o.entity);
@@ -2948,7 +2951,7 @@ export default class CalculationEngine implements CalculationContext {
                             }
                         }
                     }
-                    if (!calc || (o.entity.systemUid === StandardFlowSystemUids.Gas && calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
+                    if (!calc || (isGas(o.entity.systemUid, this.catalog.fluids, this.drawing.metadata.flowSystems) && calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
                         addWarning(calc, Warning.PRESSURE_AT_UPSTREAM_NEEDS_HIGHER_THAN_DOWNSTREAM);
                     }
 
@@ -2995,7 +2998,7 @@ export default class CalculationEngine implements CalculationContext {
 
                     for (const suid of e.roughInsInOrder) {
                         if (calculation.inlets[suid].pressureKPA === null) {
-                            if (!isDrainage(suid)) {
+                            if (!isDrainage(suid, this.drawing.metadata.flowSystems)) {
                                 if (!calculation.warnings) {
                                     calculation.warnings = [];
                                 }
@@ -3140,7 +3143,7 @@ export default class CalculationEngine implements CalculationContext {
                     // Edge case: Do not push flow, including sewer flow, through vents.
                     if (edge.value.type === EdgeType.PIPE) {
                         const pipe = this.globalStore.get(edge.value.uid);
-                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid, this.drawing.metadata.flowSystems)) {
                             if (pipe.entity.network === NetworkType.CONNECTIONS) {
                                 return true;
                             }
@@ -3196,7 +3199,7 @@ export default class CalculationEngine implements CalculationContext {
                     // Edge case: Do not push flow, including sewer flow, through vents.
                     if (e.value.type === EdgeType.PIPE) {
                         const pipe = this.globalStore.get(e.value.uid);
-                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid, this.drawing.metadata.flowSystems)) {
                             if (pipe.entity.network === NetworkType.CONNECTIONS) {
                                 return true;
                             }
@@ -3269,7 +3272,7 @@ export default class CalculationEngine implements CalculationContext {
                     // Edge case: Do not push flow, including sewer flow, through vents.
                     if (e.value.type === EdgeType.PIPE) {
                         const pipe = this.globalStore.get(e.value.uid);
-                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid)) {
+                        if (pipe && pipe.entity.type === EntityType.PIPE && isDrainage(pipe.entity.systemUid, this.drawing.metadata.flowSystems)) {
                             if (pipe.entity.network === NetworkType.CONNECTIONS) {
                                 return true;
                             }

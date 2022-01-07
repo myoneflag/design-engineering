@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -11,8 +11,8 @@ import { DrawingState } from "../../../../../common/src/api/document/drawing";
 import { getPsdUnitName } from "../../../calculations/utils";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
-import {isGas} from "../../../../../common/src/api/config";
-import {Catalog} from "../../../../../common/src/api/catalog/types";
+import { isGas } from "../../../../../common/src/api/config";
+import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DocumentState } from "../types";
 
 export default interface LoadNodeCalculation extends Calculation, PressureCalculation, PsdCalculation {
@@ -23,11 +23,10 @@ export default interface LoadNodeCalculation extends Calculation, PressureCalcul
 export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, doc: DocumentState, catalog: Catalog, globalStore: GlobalStore): CalculationField[] {
     const result: CalculationField[] = [];
 
-    const systemUid =  determineConnectableSystemUid(globalStore, entity);
-    addPressureCalculationFields(result, entity.systemUidOption || undefined, "", {defaultEnabled: true}, {defaultEnabled: true});
+    const systemUid = determineConnectableSystemUid(globalStore, entity);
+    addPressureCalculationFields(result, entity.systemUidOption || undefined, "", { defaultEnabled: true }, { defaultEnabled: true });
 
-    const system = doc.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
-    const thisIsGas = isGas(system ? system.fluid : 'water', catalog);
+    const thisIsGas = isGas(systemUid!, catalog.fluids, doc.drawing.metadata.flowSystems);
 
     if (thisIsGas) {
         result.push(

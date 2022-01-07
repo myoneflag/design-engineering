@@ -1,4 +1,4 @@
-import { FieldCategory, CalculationField} from "../../../../src/store/document/calculations/calculation-field";
+import { FieldCategory, CalculationField } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
     Calculation,
@@ -9,7 +9,7 @@ import FixtureEntity from "../../../../../common/src/api/document/entities/fixtu
 import { DocumentState } from "../types";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
-import {isDrainage, StandardFlowSystemUids} from "../../../../../common/src/api/config";
+import { isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 
 export default interface FixtureCalculation extends Calculation {
     inlets: {
@@ -23,7 +23,7 @@ export default interface FixtureCalculation extends Calculation {
 export function makeFixtureCalculationFields(doc: DocumentState, entity: FixtureEntity, globalStore: GlobalStore): CalculationField[] {
     const fCalc = globalStore.getOrCreateCalculation(entity);
     return entity.roughInsInOrder.map((suid) => {
-        if (isDrainage(suid)) {
+        if (isDrainage(suid, doc.drawing.metadata.flowSystems)) {
             return [];
         }
 
@@ -33,7 +33,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
         }
 
         const ret: CalculationField[] = [];
-        addPressureCalculationFields(ret, suid, "inlets." + suid + ".", {defaultEnabled: true}, {defaultEnabled: true});
+        addPressureCalculationFields(ret, suid, "inlets." + suid + ".", { defaultEnabled: true }, { defaultEnabled: true });
 
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegVolumeL !== null) {
             ret.push({

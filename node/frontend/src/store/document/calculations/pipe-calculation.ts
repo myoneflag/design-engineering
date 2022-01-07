@@ -1,18 +1,18 @@
-import {NetworkType, SelectedMaterialManufacturer} from './../../../../../common/src/api/document/drawing';
+import { NetworkType, SelectedMaterialManufacturer } from './../../../../../common/src/api/document/drawing';
 import {
     CalculationField,
     CalculationLayout,
     FieldCategory
 } from "../../../../src/store/document/calculations/calculation-field";
-import {Calculation, CalculationType, PsdCalculation} from "../../../../src/store/document/calculations/types";
-import PipeEntity, {fillPipeDefaultFields} from "../../../../../common/src/api/document/entities/pipe-entity";
-import {getDrainageUnitName, getPsdUnitName, PsdProfile} from "../../../calculations/utils";
-import {assertUnreachable, isDrainage, isGas} from "../../../../../common/src/api/config";
-import {Catalog, PipeManufacturer} from "../../../../../common/src/api/catalog/types";
-import {UnitsParameters} from "../../../../../common/src/api/document/drawing";
-import {GlobalStore} from "../../../htmlcanvas/lib/global-store";
+import { Calculation, CalculationType, PsdCalculation } from "../../../../src/store/document/calculations/types";
+import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
+import { getDrainageUnitName, getPsdUnitName, PsdProfile } from "../../../calculations/utils";
+import { assertUnreachable, isDrainage, isGas } from "../../../../../common/src/api/config";
+import { Catalog, PipeManufacturer } from "../../../../../common/src/api/catalog/types";
+import { UnitsParameters } from "../../../../../common/src/api/document/drawing";
+import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { convertPipeDiameterFromMetric, MeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
-import {DocumentState} from "../types";
+import { DocumentState } from "../types";
 
 export enum NoFlowAvailableReason {
     NO_SOURCE = "NO_SOURCE",
@@ -79,8 +79,8 @@ export function makePipeCalculationFields(
     const psdUnit = getPsdUnitName(document.drawing.metadata.calculationParams.psdMethod, document.locale);
     const drainageUnits = getDrainageUnitName(document.drawing.metadata.calculationParams.drainageMethod, document.drawing.metadata.units.volumeMeasurementSystem);
 
-    const pipeIsGas = catalog && isGas(document.drawing.metadata.flowSystems.find((f) => f.uid === entity.systemUid)!.fluid, catalog);
-    const pipeIsDrainage = isDrainage(entity.systemUid);
+    const pipeIsGas = catalog && isGas(entity.systemUid!, catalog.fluids, document.drawing.metadata.flowSystems);
+    const pipeIsDrainage = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems);
 
     let materialName = "";
     if (catalog) {
@@ -96,8 +96,8 @@ export function makePipeCalculationFields(
 
     const result: CalculationField[] = [];
 
-    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid) ? ['pressure', 'drainage'] : [];
-    const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid) ? ['drainage'] : ['pressure'];
+    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
+    const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['drainage'] : ['pressure'];
 
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
@@ -267,7 +267,7 @@ export function makePipeCalculationFields(
             });
         }
 
-        if (isDrainage(entity.systemUid)) {
+        if (isDrainage(entity.systemUid, document.drawing.metadata.flowSystems)) {
 
             result.push(
                 {
@@ -285,15 +285,15 @@ export function makePipeCalculationFields(
             if (entity.network === NetworkType.RETICULATIONS) {
                 result.push(
                     {
-                    property: "gradePCT",
-                    title: 'Grade (%)',
-                    short: '%',
-                    units: Units.None,
-                    category: FieldCategory.Location,
-                    systemUid: entity.systemUid,
-                    defaultEnabled: true,
-                    layouts: ['drainage'],
-                },
+                        property: "gradePCT",
+                        title: 'Grade (%)',
+                        short: '%',
+                        units: Units.None,
+                        category: FieldCategory.Location,
+                        systemUid: entity.systemUid,
+                        defaultEnabled: true,
+                        layouts: ['drainage'],
+                    },
 
                     {
                         property: "fallM",
@@ -310,7 +310,7 @@ export function makePipeCalculationFields(
         }
     }
 
-    if (isDrainage(entity.systemUid)) {
+    if (isDrainage(entity.systemUid, document.drawing.metadata.flowSystems)) {
         if (document.uiState.pressureOrDrainage === 'drainage') {
             return result.filter((f) => f.layouts && f.layouts.includes('drainage'));
         } else {
