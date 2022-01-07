@@ -36,7 +36,8 @@ export type PipeMaterials =
     | 'Stainless Steel (Sewer)'
     | 'uPVC (Sewer)'
     | 'HDPE (Sewer)'
-    | 'Cast Iron (Sewer)';
+    | 'Cast Iron (Sewer)'
+    | 'PPR';
 
 export type ValveByPipe = {
     [key in PipeMaterials]: PipesBySize;
