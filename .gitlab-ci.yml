@@ -29,8 +29,8 @@ build:docker:
     script:
         - cd docker
         - npm install        
-        - npm run login:dockerhub
-        - npm run build:all --target=prod
+        - sudo npm run login:dockerhub
+        - sudo npm run build:all --target=prod
 
 build:frontend:
     stage: build
