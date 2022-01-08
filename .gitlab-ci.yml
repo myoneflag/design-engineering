@@ -12,6 +12,7 @@ build:cloudformation:
           - merge_requests
         changes:
           - cloudformation/**/*
+          - config/**/*
     cache: []
     script:
         - cd cloudformation
@@ -24,11 +25,11 @@ build:docker:
         refs:
           - merge_requests
         changes:
-          - docker/**/*
+          - docker/**/*          
     cache: []
     script:
         - cd docker
-        - npm install        
+        - npm install
         - sudo npm run login:dockerhub
         - sudo npm run build:all --target=prod
 
