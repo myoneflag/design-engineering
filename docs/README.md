@@ -14,6 +14,7 @@
 
 * [Build server](infrastructure/build-server.md)
 * [Connecting to Bastion host](infrastructure/connect-to-bastion-host.md)
+* [Emergency procedures](infrastructure/emergency-procedures.md)
   
 ### Create new environments
 * [Create a new environment](infrastructure/create-new-environment.md)
