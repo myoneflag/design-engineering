@@ -15,6 +15,7 @@ build:cloudformation:
     cache: []
     script:
         - cd cloudformation
+        - npm install
         - npm run validate
 
 build:docker:
@@ -27,6 +28,7 @@ build:docker:
     cache: []
     script:
         - cd docker
+        - npm install        
         - npm run login:dockerhub
         - npm run build:all --target=prod
 
