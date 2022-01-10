@@ -11,3 +11,4 @@ docker/dist
 docker/temp/*
 scripts/reports/temp/*
 scripts/worker/.lastreportid
+.idea
