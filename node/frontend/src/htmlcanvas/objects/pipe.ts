@@ -7,7 +7,7 @@ import { CalculationFilters, DocumentState } from "../../../src/store/document/t
 import Flatten from "@flatten-js/core";
 import { Draggable, DraggableObject } from "../../../src/htmlcanvas/lib/object-traits/draggable-object";
 import * as _ from "lodash";
-import { canonizeAngleRad, isStraightRad } from "../../../src/lib/trigonometry";
+import { canonizeAngleRad, isHorizontalRad } from "../../../src/lib/trigonometry";
 import { lighten, rgb2style } from "../../../src/lib/utils";
 import { Interaction, InteractionType } from "../../../src/htmlcanvas/lib/interaction";
 import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
@@ -73,7 +73,7 @@ let lastDrawnScale: number = 1;
 @SnappableObject
 export default class Pipe extends BackedDrawableObject<PipeEntity> implements Draggable, Calculated {
     connectedWCs: number;
-    isStraight: boolean;
+    isHorizontal: boolean;
     get position(): Matrix {
         // We don't draw by object location because the object doesn't really have an own location. Instead, its
         // location is determined by other objects.
@@ -630,7 +630,9 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     y: grabState.pointOnPipe.y + eventObjectCoord.y - grabbedObjectCoord.y
                 };
 
-                const res = this.projectEndpoint(newProjection, o.uid, grabState.a2b, straights[i], context);
+                // const res = this.projectEndpoint(newProjection, o.uid, grabState.a2b, straights[i], context);
+                // TODO: Confirm to ignore projectEndPoint, Remove
+                const res = false;
                 if (!res) {
                     // Cannot project for whatever reason, so move it normally plz.
                     needToReposition.push(o.uid);
@@ -678,7 +680,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
                     o.rebase(context); */
 
                     const originCenter = {...o.entity.center};
-                    if (this.isStraight) {
+                    if (this.isHorizontal) {
                         const newCenter = {
                             x: o.entity.center.x,
                             y: o.entity.center.y + eventObjectCoord.y - grabbedObjectCoord.y,
@@ -707,7 +709,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         const shape = this.shape();
         if (shape instanceof Flatten.Segment) {
             let angle = Flatten.vector(shape.start, shape.end).angleTo(Flatten.vector([1, 0]));
-            this.isStraight = isStraightRad(angle);
+            this.isHorizontal = isHorizontalRad(angle);
         }
         return {
             a2b: Flatten.vector(a, b),
