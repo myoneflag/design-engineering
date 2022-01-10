@@ -37,6 +37,7 @@ import { Interaction, InteractionType } from "../lib/interaction";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import Pipe from "./pipe";
 import { Direction } from "../types";
+import { isSameWorldPX } from "../on-screen-items";
 
 @SelectableObject
 @CenterDraggableObject
@@ -408,13 +409,13 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         if (skip) {
             return;
         }
-        if ((!direction || direction == Direction.Horizontal) && this.entity.center.x === originCenter.x) {
+        if ((!direction || direction == Direction.Horizontal) && isSameWorldPX(this.entity.center.x, originCenter.x)) {
             this.debase(context);
-            this.entity.center.x = point.x;
+            this.entity.center.x += point.x - originCenter.x;
             this.rebase(context);
-        } else if ((!direction || direction == Direction.Vertical) && this.entity.center.y === originCenter.y) {
+        } else if ((!direction || direction == Direction.Vertical) && isSameWorldPX(this.entity.center.y, originCenter.y)) {
             this.debase(context);
-            this.entity.center.y = point.y;
+            this.entity.center.y += point.y - originCenter.y;
             this.rebase(context);
         }
     }

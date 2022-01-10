@@ -460,3 +460,9 @@ export function drawLoadingUnits(
     ctx.fillText("Inc. Continuous Flow", 20, y + 50);
     ctx.fillText("Inc. Reticulation Spare Capacity", 20, y + 60);
 }
+
+const MAX_WORLD_PX_DEVIATION = 1;
+
+export function isSameWorldPX(a: number, b: number): boolean {
+    return Math.abs(a - b) < MAX_WORLD_PX_DEVIATION;
+}

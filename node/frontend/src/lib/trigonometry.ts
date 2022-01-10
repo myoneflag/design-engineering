@@ -29,3 +29,13 @@ export function is45AngleRad(a: number, tolerance: number = EPS) {
 export function isStraightRad(a: number, tolerance: number = EPS) {
     return angleDiffRad(Math.PI, canonizeAngleRad(a)) <= tolerance;
 }
+
+export function isHorizontalRad(a: number, tolerance: number = EPS) {
+    if (a < Math.PI / 4 || a > Math.PI * 7 / 4) {
+        return true;
+    }
+    if (a > Math.PI * 3 / 4 && a < Math.PI * 5 / 4) {
+        return true;
+    }
+    return false;
+}
