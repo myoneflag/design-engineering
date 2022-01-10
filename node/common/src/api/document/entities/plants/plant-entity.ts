@@ -29,7 +29,7 @@ import { Catalog, HotWaterPlant, HotWaterPlantSizePropsElectric, HotWaterPlantSi
 import { Units } from "../../../../lib/measurements";
 import { cloneSimple, Complete, setPropertyByString } from "../../../../lib/utils";
 
-export const PLANT_ENTITY_VERSION = 1;
+export const PLANT_ENTITY_VERSION = 2;
 
 export default interface PlantEntity extends CenteredEntity {
     version: number;
@@ -437,10 +437,10 @@ export function fillPlantDefaults(
             }
 
             if (manufacturer === 'rheem') {
-                if (result.plant.rheemVariant === undefined || result.plant.rheemVariant === null) {
+                if (result.plant.rheemVariant === null) {
                     result.plant.rheemVariant = RheemVariantValues.continuousFlow;
                 }
-                if (result.plant.rheemPeakHourCapacity === undefined || result.plant.rheemPeakHourCapacity === null) {
+                if (result.plant.rheemPeakHourCapacity === null) {
                     result.plant.rheemPeakHourCapacity = 0;
                 }
                 if (!result.plant.rheemMinimumInitialDelivery) {
@@ -719,6 +719,9 @@ export const doPlantEntityUpgrade = (entity: Complete<PlantEntity>) => {
             setPropertyByString(entity, 'version', 0);
             upgrade0to1(entity);
             break;
+        case 1:
+            upgrade1to2(entity);
+            break;
         default:
             setPropertyByString(entity, 'version', 0);
             upgrade0to1(entity);
@@ -740,5 +743,13 @@ const upgrade0to1 = (entity: Complete<PlantEntity>) => {
         setPropertyByString(entity, 'plant.rheemMinimumInitialDelivery', null);
         setPropertyByString(entity, 'plant.rheemkWRating', null);
         setPropertyByString(entity, 'plant.rheemStorageTankSize', null);
+    }
+}
+
+const upgrade1to2 = (entity: Complete<PlantEntity>) => {
+    setPropertyByString(entity, 'version', ++entity.version);
+
+    if (entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+        setPropertyByString(entity, 'plant.lengthMM', null);
     }
 }

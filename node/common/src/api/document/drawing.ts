@@ -30,6 +30,7 @@ import {
     VolumeMeasurementSystem
 } from "../../lib/measurements";
 import { ReportingStatus } from "../../reporting/ReportingFilter";
+import { Document } from "../../models/Document";
 
 export interface Coord {
     x: number;
@@ -540,6 +541,29 @@ export const DRAINAGE_FLOW_SYSTEMS: FlowSystemParameters[] = [
     }
 ];
 
+export function setNewDocumentInitialValues(drawing: DrawingState, locale: SupportedLocales) {
+    switch(locale) {
+        case SupportedLocales.AU:
+            drawing.metadata.catalog = {
+                ...drawing.metadata.catalog,
+                hotWaterPlant: [{
+                    uid: 'circulatingPumps',
+                    manufacturer: 'grundfos',
+                    selected: null,
+                }, {
+                    uid: 'hotWaterPlant',
+                    manufacturer: 'rheem',
+                    selected: null,
+                }]
+            }
+            break;
+        case SupportedLocales.UK:
+            break;
+        case SupportedLocales.US:
+            break;
+    }
+}
+
 export function initialDrawing(locale: SupportedLocales): DrawingState {
     const result = cloneSimple(initialAustralianDrawing);
     switch (locale) {
@@ -551,15 +575,6 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                     manufacturer: 'viking',
                     selected: null,
                 }],
-                hotWaterPlant: [{
-                    uid: 'circulatingPumps',
-                    manufacturer: 'grundfos',
-                    selected: null,
-                }, {
-                    uid: 'hotWaterPlant',
-                    manufacturer: 'rheem',
-                    selected: null,
-                }]
             }
             break;
         case SupportedLocales.UK:
@@ -582,18 +597,6 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.catalog.pipes[1].manufacturer = "enIso15875pex"
             result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
 
-            result.metadata.catalog = {
-                ...result.metadata.catalog,
-                hotWaterPlant: [{
-                    uid: 'circulatingPumps',
-                    manufacturer: 'grundfos',
-                    selected: null,
-                }, {
-                    uid: 'hotWaterPlant',
-                    manufacturer: 'rheem',
-                    selected: null,
-                }]
-            }
             break;
         case SupportedLocales.US:
             result.metadata.units = {
@@ -659,10 +662,6 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
                 sewage.temperature = f2C(70)
             }
 
-            result.metadata.catalog.hotWaterPlant = [
-                { uid: "circulatingPumps", manufacturer: "generic", selected: null, },
-                { uid: 'hotWaterPlant', manufacturer: 'generic', selected: null },
-            ]
             result.metadata.catalog.mixingValves = [
                 { manufacturer: "caleffi", uid: "temperingValve", selected: null, },
                 { manufacturer: "caleffi", uid: "tmv", selected: null, }
@@ -699,7 +698,6 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
 
     return result;
 }
-
 
 export const initialAustralianDrawing: DrawingState = {
     metadata: {
@@ -984,7 +982,10 @@ export const initialAustralianDrawing: DrawingState = {
             balancingValves: [
                 { manufacturer: "cimberio", uid: "balancingValves", selected: null, },
             ],
-            hotWaterPlant: [],
+            hotWaterPlant: [
+                { uid: 'circulatingPumps', manufacturer: 'generic', selected: null, },
+                { uid: 'hotWaterPlant', manufacturer: 'generic', selected: null, }
+            ],
             fixtures: [],
         },
         priceTable: {},
