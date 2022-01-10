@@ -1,7 +1,7 @@
-import { Brackets, Entity, IsNull, SaveOptions } from "typeorm";
+import { IsNull } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
 import { OPERATION_NAMES } from "../../../common/src/api/document/operation-transforms";
-import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { initialDrawing, setNewDocumentInitialValues } from "../../../common/src/api/document/drawing";
 import { diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
@@ -18,8 +18,6 @@ import ConcurrentDocument from "../services/concurrentDocument";
 import { toSupportedLocale } from "../../../common/src/api/locale";
 import { handleWebSocket } from "./document/handlers";
 import { EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION, EXAMPLE_META } from "../../../common/src/api/constants/example-drawing";
-import { DocumentUpgrader } from "../services/DocumentUpgrader";
-import { Organization } from "../../../common/src/models/Organization";
 import { CustomEntity } from "../../../common/src/models/CustomEntity";
 import { EntityType } from "../../../common/src/api/document/entities/types";
 
@@ -44,6 +42,7 @@ export class DocumentController {
     @ApiHandleError()
     @AuthRequired()
     public async create(req: Request, res: Response, next: NextFunction, session: Session) {
+
         const user = await session.user;
         const createExampleDoc = parseInt(req.query.templateId, 10) === 1;
         const userWithOrg = await User.findOne({ username: user.username }, { relations: ['organization'] });
@@ -66,20 +65,31 @@ export class DocumentController {
         doc.createdBy = user;
         doc.createdOn = new Date();
         doc.locale = toSupportedLocale(req.body.locale);
-        doc.metadata = createExampleDoc ? EXAMPLE_META : cloneSimple(initialDrawing(doc.locale).metadata.generalInfo);
-        doc.version = createExampleDoc ? EXAMPLE_DRAWING_VERSION : CURRENT_VERSION;
+        const initialDrawingState = cloneSimple(initialDrawing(doc.locale));
+        let newDocumentState;
+        if (createExampleDoc) {
+            doc.metadata = EXAMPLE_META;
+            doc.version = EXAMPLE_DRAWING_VERSION;
+            newDocumentState = cloneSimple(EXAMPLE_DRAWING);
+        } else {
+            doc.metadata = initialDrawingState.metadata.generalInfo;
+            doc.version = CURRENT_VERSION;
+            newDocumentState = cloneSimple(initialDrawingState);
+        }
+        setNewDocumentInitialValues(newDocumentState, doc.locale);
         doc.state = DocumentStatus.ACTIVE;
         doc.shareDocument = sd;
         await doc.save();
 
-        if (createExampleDoc) {
+        let firstOperation = diffState(initialDrawingState, newDocumentState, undefined)[0];
+        if (firstOperation) {
             // save the first document operation
             const now = new Date();
             const op1 = Operation.create();
             op1.document = Promise.resolve(doc);
             op1.dateTime = now;
             op1.blame = null;
-            op1.operation = diffState(initialDrawing(doc.locale), EXAMPLE_DRAWING, undefined)[0];
+            op1.operation = firstOperation;
             op1.orderIndex = 0;
             await op1.save();
 
@@ -91,11 +101,8 @@ export class DocumentController {
             op2.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: 1 };
             op2.orderIndex = 0;
             await op2.save();
-
-            // In case the document is upgraded in development without updating the example document,
-            // the example document needs to be upgraded.
-            await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
         }
+
         res.status(200).send({
             success: true,
             data: doc,

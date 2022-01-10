@@ -6,20 +6,12 @@ import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessE
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel, User } from "../../../common/src/models/User";
 import { VideoView } from "../../../common/src/models/VideoView";
-import { Document, DocumentStatus } from "../../../common/src/models/Document";
+import { Document } from "../../../common/src/models/Document";
 import { FeedbackMessage } from "../../../common/src/models/FeedbackMessage";
 import { Organization } from './../../../common/src/models/Organization';
 import { Onboarding } from '../../../common/src/models/Onboarding';
-import { ShareDocument } from '../../../common/src/models/ShareDocument';
-import { Operation } from '../../../common/src/models/Operation';
 import { ApiHandleError } from "../helpers/apiWrapper";
 import { AuthRequired } from "../helpers/withAuth";
-import random from '../helpers/random';
-import {initialDrawing} from '../../../common/src/api/document/drawing';
-import { OPERATION_NAMES } from '../../../common/src/api/document/operation-transforms';
-import {EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION} from "../../../common/src/api/constants/example-drawing";
-import {DocumentUpgrader} from "../services/DocumentUpgrader";
-import {diffState} from "../../../common/src/api/document/state-differ";
 
 export async function registerUser(data: {
     username: string
