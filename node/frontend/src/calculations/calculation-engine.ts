@@ -2955,7 +2955,15 @@ export default class CalculationEngine implements CalculationContext {
                         addWarning(calc, Warning.PRESSURE_AT_UPSTREAM_NEEDS_HIGHER_THAN_DOWNSTREAM);
                     }
 
-                    if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806 && calc.psdUnits?.units! > 5000) {
+                    if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806 && calc.psdUnits?.units! > 5000 && calc.psdUnits?.units! < 10001) {
+                        addWarning(calc, Warning.EXTRAPOLATED);
+                    }
+
+                    if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.as35002018LoadingUnits && calc.psdUnits?.units! > 60 && calc.psdUnits?.units! < 5001) {
+                        addWarning(calc, Warning.EXTRAPOLATED);
+                    }
+
+                    if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.barriesBookLoadingUnits && calc.psdUnits?.units! > 4000 && calc.psdUnits?.units! < 10001) {
                         addWarning(calc, Warning.EXTRAPOLATED);
                     }
 
