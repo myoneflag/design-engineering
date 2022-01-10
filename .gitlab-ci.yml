@@ -2,10 +2,44 @@ stages:
     - build
     - deploy
 
+build:cloudformation:
+    stage: build
+    variables:
+      AWS_PROFILE: h2x-gitlab-runner-test-profile
+      env: build
+    only:
+        refs:
+          - merge_requests
+        changes:
+          - cloudformation/**/*
+          - config/**/*
+    cache: []
+    script:
+        - cd cloudformation
+        - npm install
+        - npm run validate
+
+build:docker:
+    stage: build
+    only:
+        refs:
+          - merge_requests
+        changes:
+          - docker/**/*          
+    cache: []
+    script:
+        - cd docker
+        - npm install
+        - sudo npm run login:dockerhub
+        - sudo npm run build:all --target=prod
+
 build:frontend:
     stage: build
     only:
-        - merge_requests
+        refs:
+          - merge_requests
+        changes:
+          - node/**/*
     cache:
         paths:
             - node/node_modules/        
@@ -20,7 +54,10 @@ build:frontend:
 build:backend:
     stage: build
     only:
-        - merge_requests
+        refs:
+          - merge_requests
+        changes:
+          - node/**/*
     cache:
         paths:
             - node/node_modules/        
