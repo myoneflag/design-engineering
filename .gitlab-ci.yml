@@ -1,5 +1,6 @@
 stages:
     - build
+    - git
     - deploy
 
 build:cloudformation:
@@ -70,7 +71,7 @@ build:backend:
         - npm run build
 
 merge-to-app-test:
-    stage: deploy
+    stage: git
     only:
         - merge_requests
     when: manual
@@ -81,13 +82,13 @@ merge-to-app-test:
         - git config --global user.name "$GITLAB_USER_NAME"
         - git remote set-url origin git@gitlab.com:info892/H2X.git
         - git fetch origin
-        - git reset --hard app-test
+        - git reset --hard app-test || echo skipping reset
         - git checkout -B app-test origin/app-test
         - git merge origin/$CI_COMMIT_REF_NAME || ( curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch $CI_COMMIT_REF_NAME to app-test by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage && exit 1 )
         - git push origin app-test
 
 update-from-master:
-    stage: deploy
+    stage: git
     only:
         - merge_requests
     when: manual
@@ -110,6 +111,7 @@ deploy-app:
     url: https://$CI_COMMIT_REF_SLUG.h2xtesting.com
     deployment_tier: development    
     on_stop: stop-deploy-app
+  resource_group: $CI_COMMIT_REF_SLUG
   variables:
     AWS_PROFILE: h2x-gitlab-runner-test-profile
   cache: []    
@@ -156,6 +158,7 @@ deploy_stage:
     name: stage
     url: https://app-stage.h2xtesting.com
     deployment_tier: staging
+  resource_group: stage    
   only:
     - tags
     - /^release-.*$/
@@ -174,7 +177,8 @@ deploy_prod:
   environment:
     name: prod
     url: https://app.h2xengineering.com
-    deployment_tier: production    
+    deployment_tier: production
+  resource_group: prod
   only:
     - tags
   when: manual
