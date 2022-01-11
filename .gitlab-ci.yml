@@ -82,7 +82,7 @@ merge-to-app-test:
         - git config --global user.name "$GITLAB_USER_NAME"
         - git remote set-url origin git@gitlab.com:info892/H2X.git
         - git fetch origin
-        - git reset --hard app-test
+        - git reset --hard app-test || echo skipping reset
         - git checkout -B app-test origin/app-test
         - git merge origin/$CI_COMMIT_REF_NAME || ( curl -d "token=$SLACK_BUILD_BOT_TOKEN" -d "text=> Merge conflict when merging branch $CI_COMMIT_REF_NAME to app-test by $GITLAB_USER_EMAIL. More details at https://gitlab.com/info892/H2X/-/jobs/$CI_JOB_ID" -d "channel=$SLACK_BUILD_CHANNEL_ID" -X POST https://slack.com/api/chat.postMessage && exit 1 )
         - git push origin app-test
