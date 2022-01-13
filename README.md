@@ -332,8 +332,10 @@ npm run start --service=sqsd
 
 ### Worker commands
 
-On AWS, the Worker is being invoked by the SQSD Elastic Beanstalk daemon When messages are received in the SQS queue.  
+On AWS, the Worker is being invoked by the SQSD Elastic Beanstalk daemon when messages are received in the SQS queue.  
 Locally we can invoke the worker by placing messages in the local SQS instance.  
+
+To view info about the local SQS instance, use `http://localhost:9325/`.  
 
 The worker is a Node.JS express server,with a separate router and acepting API calls on the `/workermessages` endpoint.
 Code: 
@@ -341,6 +343,8 @@ Code:
 * handler: `node/backend/src/controllers/worker.ts`
 
 To issue worker commands locally, use the commands described in the `scripts/worker` [readme](scripts/worker/README.md).
+
+
 
 ## VSCode configuration
 

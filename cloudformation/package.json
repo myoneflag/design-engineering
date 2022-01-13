@@ -10,8 +10,8 @@
     "clean": "rm -r dist/**",
     "prep": ". ../config/build.env && run-s prep-dist prep-template prep-params prep-artifacts upload-artifacts",
     "validate": ". ../config/build.env && run-s prep-dist prep-template prep-params validate-template",
-    "create": ". ../config/build.env && run-s prep create-stack wait-create-stack describe-stack upload-web-artifacts",
-    "update": ". ../config/build.env && run-s prep update-stack wait-update-stack describe-stack upload-web-artifacts",
+    "create": ". ../config/build.env && run-s prep create-stack wait-create-stack describe-stack upload-web-artifacts queue-worker-upgrade",
+    "update": ". ../config/build.env && run-s prep update-stack wait-update-stack describe-stack upload-web-artifacts queue-worker-upgrade",
     "update-local": "env=local && . ../config/build.env && aws cloudformation update-stack --stack-name ${CFStackName} --template-body file://template-local.json --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --region ${AWSRegion} && npm run wait-update-stack",
     "delete": ". ../config/build.env && npm run describe-stack && npm run clear-buckets && run-s delete-stack wait-delete-stack",
     "prep-dist": "mkdir -p ${WEB_DIST} && mkdir -p ${WORKER_DIST}",
@@ -19,7 +19,6 @@
     "prep-params": "( echo \"cat <<EOF\" ; cat parameters.json ; echo EOF ) | sh > dist/${GIT_COMMIT}/parameters.cfn.json",
     "prep-artifacts": "cp ../docker/${WEB_DIST}/* ${WEB_DIST} && cp ../docker/${WORKER_DIST}/* ${WORKER_DIST} && cp -r elasticbeanstalk/web/. ${WEB_DIST} && cp -r elasticbeanstalk/worker/. ${WORKER_DIST} && cd ${WEB_DIST} && zip ../web.zip -r * .[^.]* && cd ../worker && zip ../worker.zip -r * .[^.]*",
     "upload-artifacts": "aws s3 cp ${WEB_DIST}.zip s3://${SourceBucketName}/${SourcePathWeb} && aws s3 cp ${WORKER_DIST}.zip s3://${SourceBucketName}/${SourcePathWorker}",
-    "clear-cdn-cache": "for Id in $(aws cloudfront list-distributions --query 'DistributionList.Items[*].{id:Id,domainName:Origins.Items[0].DomainName}[?contains(domainName,`\"'${WEB_APP_BUCKET}'\"`)].id' --output text);do aws cloudfront create-invalidation --distribution-id $Id --paths '/*';done;",
     "upload-web-artifacts": ". ../config/build.env && . dist/${GIT_COMMIT}/outputs.env && aws s3 rm --recursive s3://${WebAppBucket} && aws s3 sync ../docker/${FRONT_END_DIST}/dist s3://${WebAppBucket} && aws cloudfront create-invalidation --distribution-id ${WebAppCloudFrontDistribution} --paths '/*' && aws s3 cp s3://${WebAppBucket}/index.html s3://${WebAppBucket}/index.html --metadata-directive REPLACE --cache-control max-age=0 --content-type 'text/html'",
     "validate-template": "aws cloudformation validate-template --template-body file://dist/${GIT_COMMIT}/template.cfn.json",
     "stack-exists": "(. ../config/build.env && aws cloudformation describe-stacks --region ${AWSRegion} --stack-name ${CFStackName}) > /dev/null 2>&1 && echo \"true\" || echo \"false\"",
@@ -30,7 +29,8 @@
     "describe-stack": "mkdir -p dist/${GIT_COMMIT} && aws cloudformation describe-stacks --stack-name $CFStackName --output text --region ${AWSRegion} --query 'Stacks[0].Outputs' > dist/${GIT_COMMIT}/outputs.txt && sed -e \"s#^#export #\" -e \"s#\t#=#\" dist/${GIT_COMMIT}/outputs.txt > dist/${GIT_COMMIT}/outputs.env",
     "delete-stack": "aws cloudformation delete-stack --stack-name $CFStackName --region ${AWSRegion}",
     "wait-delete-stack": "aws cloudformation wait stack-delete-complete --stack-name $CFStackName --region ${AWSRegion}",
-    "clear-buckets": ". dist/${GIT_COMMIT}/outputs.env && aws s3 rm --recursive s3://${PdfBucket} && aws s3 rm --recursive s3://${PdfRendersBucket} && aws s3 rm --recursive s3://${DataBucket} && aws s3 rm --recursive s3://${ReportsBucket} && aws s3 rm --recursive s3://${WebAppBucket}"
+    "clear-buckets": ". dist/${GIT_COMMIT}/outputs.env && aws s3 rm --recursive s3://${PdfBucket} && aws s3 rm --recursive s3://${PdfRendersBucket} && aws s3 rm --recursive s3://${DataBucket} && aws s3 rm --recursive s3://${ReportsBucket} && aws s3 rm --recursive s3://${WebAppBucket}",
+    "queue-worker-upgrade": ". dist/${GIT_COMMIT}/outputs.env && aws sqs send-message --queue-url ${WorkerQueue} --message-body \"$(cat ../scripts/worker/messages/DocumentUpgradeScan.json)\""
   },
   "dependencies": {
     "jsmin": "^1.0.1",

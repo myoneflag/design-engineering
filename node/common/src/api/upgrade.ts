@@ -1,3 +1,4 @@
+/*
 import {
     DRAINAGE_FLOW_SYSTEMS,
     DrawingState,
@@ -21,7 +22,7 @@ import { ValveType } from "./document/entities/directed-valves/valve-types";
 // upgrade 9 to 10
 // insulation jackets in flow systems
 
-export function upgrade9to10(original: DrawingState) {
+export function operations_upgrade9to10(original: DrawingState) {
     for (const fs of original.metadata.flowSystems) {
         if (fs.insulationJacket === undefined) {
             fs.insulationJacket = InsulationJackets.allServiceJacket;
@@ -29,13 +30,13 @@ export function upgrade9to10(original: DrawingState) {
     }
 }
 
-export function upgrade10to11(original: DrawingState) {
+export function operations_upgrade10to11(original: DrawingState) {
     if (original.metadata.units === undefined) {
         original.metadata.units = cloneSimple(initialAustralianDrawing.metadata.units);
     }
 }
 
-export function upgrade11to12(original: DrawingState) {
+export function operations_upgrade11to12(original: DrawingState) {
     for (const level of Object.values(original.levels)) {
         const entities = level.entities;
         for (const e of Object.values(entities)) {
@@ -51,7 +52,7 @@ export function upgrade11to12(original: DrawingState) {
 
 // add min and max pressures to load nodes.
 // rename bs6700 to cibse Guide G
-export function upgrade12to13(original: DrawingState) {
+export function operations_upgrade12to13(original: DrawingState) {
     if (original.metadata.calculationParams.psdMethod === 'bs6700' as any) {
         original.metadata.calculationParams.psdMethod = SupportedPsdStandards.cibseGuideG;
     }
@@ -71,19 +72,19 @@ export function upgrade12to13(original: DrawingState) {
     }
 }
 
-export function upgrade13to14(original: DrawingState) {
+export function operations_upgrade13to14(original: DrawingState) {
     if (original.metadata.catalog === undefined) {
         original.metadata.catalog = cloneSimple(initialAustralianDrawing.metadata.catalog);
     }
 }
 
-export function upgrade14to15(original: DrawingState) {
+export function operations_upgrade14to15(original: DrawingState) {
     if (original.metadata.priceTable === undefined) {
         original.metadata.priceTable = cloneSimple(initialAustralianDrawing.metadata.priceTable);
     }
 }
 
-export function upgrade15to16(original: DrawingState) {
+export function operations_upgrade15to16(original: DrawingState) {
     if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.Gas)) {
         original.metadata.flowSystems.push(
             {
@@ -176,7 +177,7 @@ export function upgrade15to16(original: DrawingState) {
 }
 
 // Fix issue where the gasNodeId was not set for plants that were upgraded.
-export function upgrade16to17(original: DrawingState) {
+export function operations_upgrade16to17(original: DrawingState) {
     // Step 1. Set the gas id of any orphan gas nodes
     for (const level of Object.values(original.levels)) {
         const entities = level.entities;
@@ -227,7 +228,7 @@ export function upgrade16to17(original: DrawingState) {
     }
 }
 
-export function upgrade17to18(original: DrawingState) {
+export function operations_upgrade17to18(original: DrawingState) {
     original.metadata.flowSystems.forEach(system => {
         system.networks.RISERS.minimumPipeSize = 15;
         system.networks.RETICULATIONS.minimumPipeSize = 15;
@@ -235,7 +236,7 @@ export function upgrade17to18(original: DrawingState) {
     });
 }
 
-export function upgrade18to19(original: DrawingState) {
+export function operations_upgrade18to19(original: DrawingState) {
     if (!original.metadata.flowSystems.find((f) => f.uid === StandardFlowSystemUids.FireHydrant)) {
         original.metadata.flowSystems.push(
             {
@@ -324,7 +325,7 @@ export function upgrade18to19(original: DrawingState) {
 
 const newSewerNodeOf: { [key: string]: string } = {};
 
-export function upgrade19to20and21(original: DrawingState) {
+export function operations_upgrade19to20and21(original: DrawingState) {
     if (!original.metadata.flowSystems.find((s) => s.uid === StandardFlowSystemUids.SewerDrainage)) {
         // Vent colour setting to flow systems
         for (const system of original.metadata.flowSystems) {
@@ -406,7 +407,34 @@ export function upgrade19to20and21(original: DrawingState) {
     }
 }
 
-export function upgraded21to22(original: DrawingState) {
+export function operations_upgraded21to22(original: DrawingState) {
     // no-op.
     // Just exist here to invoke the compression.
+}
+
+*/
+
+// Migration operations above are kept commented for future reference.
+// They are not used anymore in code.
+
+import { DrawingState } from "./document/drawing";
+
+// Before this version, documents are stored only as an Operation[] in the operations table.
+// Upgrades need to be performed for each operation of a document.
+
+// Starting with this version, documents are stored as:
+// * Drawing in the drawing table - the full drawingstate
+// * Operation[] in the operations table - used for history
+// Any document upgrades from now on are performed on a per-drawing basis.
+// Rules:
+// * Upgrades need to traverse the document only once and do any kind of processing they need to do on the entities in the document only once.
+// * Upgrades need to be reentrant and idempotent.
+//   After a field partial execution the second execution should continue correctly.
+//   Executing the same upgrade multiple times on a document will result the same document.
+//   Basically, Upgrade to check if a chamnge has already been done on an entity.
+// * All new data that the upgrade adds to the document needs to be added as operations as well in the database.
+
+export const DRAWING_UPGRADE_VERSION = 23;
+export function drawing_upgraded22to23(original: DrawingState) {
+    // do nothing with this migration
 }

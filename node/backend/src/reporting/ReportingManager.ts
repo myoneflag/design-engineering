@@ -1,9 +1,7 @@
-import { getManager, MoreThan } from "typeorm";
+import { MoreThan } from "typeorm";
 import { DrawingState } from "../../../common/src/api/document/drawing";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
-import { Operation } from "../../../common/src/models/Operation";
 import AbbreviatedCalculationReport from "../../../common/src/api/reports/calculation-report";
-import { composeDrawingState } from "../controllers/document/handlers";
 import { Tasks } from "../controllers/worker";
 import SqsClient from "../services/SqsClient";
 import { DocumentReportGenerator, DocumentManufacturerReport } from "./DocumentReportGenerator";
@@ -11,6 +9,7 @@ import ReportPersistence from "./ReportPersistence";
 import ReportingFilter from "../../../common/src/reporting/ReportingFilter";
 import archiver from "archiver";
 import streamBuffers from 'stream-buffers';
+import { Drawing, DrawingStatus } from "../../../common/src/models/Drawing";
 
 export class ReportingManager {
 
@@ -51,7 +50,7 @@ export class ReportingManager {
 
         const doc = await Document.findOne(docId);
 
-        const drawing: DrawingState = await ReportingManager.composeDrawingFromDB(doc);
+        const drawing: DrawingState = (await ReportingManager.getDrawingFromDb(doc)).drawing;
 
         let calculation: AbbreviatedCalculationReport;
         try {
@@ -147,13 +146,9 @@ export class ReportingManager {
 
     }
 
-    private static async composeDrawingFromDB(doc: Document) {
-        const entityManager = getManager();
-        let drawing: DrawingState;
-        let operations: Operation[];
-        let lastOpId: number;
-        ({ operations, drawing, lastOpId } = await composeDrawingState(entityManager, doc));
-        return drawing;
+    private static async getDrawingFromDb(doc: Document) {
+        return await Drawing.findOneOrFail(
+            { where: { documentId: doc.id, status: DrawingStatus.CURRENT }});
     }
 
     private static async enqueueDocument(docId: number, reportId: string) {

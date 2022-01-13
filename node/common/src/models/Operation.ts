@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne, Index, JoinColumn} from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, ManyToOne, Index, JoinColumn} from "typeorm";
 import { Document } from "./Document";
 import { User } from "./User";
 import { OperationTransformConcrete } from "../api/document/operation-transforms";
@@ -27,4 +27,7 @@ export class Operation extends BaseEntity {
 
     @ManyToOne(() => User, { nullable: true, eager: true })
     blame: User | null;
+
+    @Column()
+    version: number;
 }

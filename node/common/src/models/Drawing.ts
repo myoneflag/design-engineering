@@ -1,9 +1,10 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { User } from './User'
 import { Document } from "./Document";
+import { DrawingState } from "../api/document/drawing";
 
 export enum DrawingStatus {
-    CURRENT, 
+    CURRENT,
     SNAPSHOT
 }
 
@@ -24,11 +25,14 @@ export class Drawing extends BaseEntity {
     documentId: number;
 
     @Column({ type: "json" })
-    drawing: any;
+    drawing: DrawingState;
 
     @Column({ nullable: true })
     dateTime: Date | null;
 
     @ManyToOne(() => User, { nullable: true })
     blame: User | null;
+
+    @Column()
+    version: number;
 }

@@ -287,10 +287,6 @@ export default class CalculationLayer extends LayerImplementation {
         //
     }
 
-    resetDocument(doc: DocumentState): any {
-        //
-    }
-
     calculate(context: CanvasContext, done: () => void) {
         this.layout.clear();
 

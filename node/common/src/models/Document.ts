@@ -51,22 +51,9 @@ export class Document extends BaseEntity {
     @ManyToOne(() => User, { nullable: true, eager: true })
     lastModifiedBy: User | null;
 
-    /**
-     * This field is for keeping track of upgrade status on a distributed server system. On startup, servers would
-     * send all documents that aren't upgrading (with a 10 minute timeout) to the upgrade priority queue.
-     *
-     * When a job is received for upgrade, we use this field to check whether something else is already upgrading it or
-     * not. If we are upgrading, we update this field regularly.
-     */
-    @Column({ default: "now" })
-    upgradingLockExpires: Date;
-
     @OneToOne(() => ShareDocument, { eager: true })
     @JoinColumn()
     shareDocument: ShareDocument;
-
-    @Column({ default: new Date(2000, 0, 0) })
-    lastCompression: Date;
 
     @Column({ type: "enum", enum: SupportedLocales, default: SupportedLocales.AU })
     locale: SupportedLocales;

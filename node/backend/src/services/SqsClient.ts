@@ -1,4 +1,5 @@
 import AWS from "aws-sdk";
+import uuid from "uuid";
 import Config from '../config/config';
 
 export default class SqsClient {
@@ -23,6 +24,21 @@ export default class SqsClient {
         };
         const sendResult = await this.client.sendMessage(sendParams).promise();
         console.log("SQS Message sent " + sendResult.MessageId);
+    }
+
+    static async publishBatch(messages: any[]) {
+        const messageBodies = messages.map( (m) => (
+            {
+                Id: uuid(),
+                MessageBody: JSON.stringify(m),
+            }
+        ));
+        const sendParams = {
+            QueueUrl: Config.SQS_QUEUE_URL,
+            Entries: messageBodies,
+        };
+        const sendResult = await this.client.sendMessageBatch(sendParams).promise();
+        console.log("SQS Message batch sent " + sendResult.Successful.length);
     }
 
     static async estimateNumberOfMessages(): Promise<number> {

@@ -1043,7 +1043,7 @@
         },
 
         //SSL certificate
-        "SSLCertificate":{
+        "SSLCertificate": {
           "Type":"AWS::CertificateManager::Certificate",
           "Properties":{
             "DomainName": { "Fn::Sub": "*.${DnsZoneName}" },
@@ -1087,16 +1087,17 @@
               "QueryString" : "fields @timestamp, @message | filter @message like /(?i)documentUpgrade/ | sort @timestamp desc"
             }
         },
-        "LogQueryWebPerformance": {
+        "LogQueryPerformance": {
           "Type" : "AWS::Logs::QueryDefinition",
           "Properties" : {
-              "LogGroupNames" : [ { "Fn::Sub": "/aws/elasticbeanstalk/H2X-web-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
-              "Name" : { "Fn::Sub": "${EnvName}/Web Performance" },
+              "LogGroupNames" : [ 
+                { "Fn::Sub": "/aws/elasticbeanstalk/H2X-web-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" }, 
+                { "Fn::Sub": "/aws/elasticbeanstalk/H2X-worker-${EnvName}/var/log/eb-docker/containers/eb-current-app/stdouterr.log" } ],
+              "Name" : { "Fn::Sub": "${EnvName}/Performance" },
               "QueryString" : "fields @timestamp, @message | filter @message like /(?i)timer:/ | sort @timestamp desc"
             }
         },
 
-      
         "ResourceGroup": {
             "Type": "AWS::ResourceGroups::Group",
             "Properties": {
@@ -1148,6 +1149,11 @@
     "ReportsBucket": {
       "Value": {
         "Ref": "ReportsBucket"
+      }
+    },
+    "WorkerQueue": {
+      "Value": {
+        "Ref": "WorkerQueue"
       }
     }
   }
