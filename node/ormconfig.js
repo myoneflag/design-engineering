@@ -35,7 +35,6 @@ module.exports = {
   ],
   migrationsRun: true,
   migrationsTableName: "migrations",
-  maxQueryExecutionTime: 1000,
   subscribers: [
     "./src/subscriber/**/*.ts"
   ],

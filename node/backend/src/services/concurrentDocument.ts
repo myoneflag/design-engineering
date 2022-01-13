@@ -1,21 +1,17 @@
-import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
+import { IMessage, StompSubscription } from "@stomp/stompjs";
 import {
     DocumentDeletedMessage,
     DocumentInternalEvent, DocumentUpdate,
-    DocumentWSMessageType,
-    OperationMessage
+    DocumentWSMessageType
 } from "../../../common/src/api/document/types";
-import { OperationTransformConcrete } from "../../../common/src/api/document/operation-transforms";
 import { assertUnreachable } from "../../../common/src/api/config";
-import { EntityManager, getManager } from "typeorm";
+import { EntityManager } from "typeorm";
 import { Document } from "../../../common/src/models/Document";
 
 export const OPERATION_ID_QUEUE = '/queue/document/operation/id';
 export const OPERATION_PUSH_TOPIC = '/topic/document/operation';
-import retry from 'retry';
-import CONFIG from '../config/config';
 import MqClient from "./MqClient";
-import {withRepeatableReadTransaction, withSerializableTransaction, withReadUncommittedTransaction} from "../helpers/database";
+import {withSerializableTransaction} from "../helpers/database";
 
 /**
  * This class handles the management of a concurrent document.
@@ -50,28 +46,14 @@ export default class ConcurrentDocument {
         });
     }
 
-    static async withDocumentLockRepeatableRead<T>(docId: number, transaction: (tx: EntityManager, doc: Document) => Promise<T>) {
-        return await withRepeatableReadTransaction(async (tx) => {
-            const doc = await tx.findOne(Document, {id: docId});
-            return await transaction(tx, doc);
-        });
-    }
-
-    static async withDocumentLockReadUncommitted<T>(docId: number, transaction: (tx: EntityManager, doc: Document) => Promise<T>) {
-        return await withReadUncommittedTransaction(async (tx) => {
-            const doc = await tx.findOne(Document, {id: docId});
-            return await transaction(tx, doc);
-        });
-    }
-
     operationPushTopic: string;
     operationPushSub: StompSubscription;
     documentId: number;
 
-    onDocumentUpdate: (nextOpId: number) => any;
+    onDocumentUpdate: () => any;
     onDocumentDeleted: () => any;
 
-    constructor(documentId: number, onDocumentUpdate: (nextOpId: number) => any, onDocumentDeleted: () => any) {
+    constructor(documentId: number, onDocumentUpdate: () => any, onDocumentDeleted: () => any) {
         this.operationPushTopic = OPERATION_PUSH_TOPIC + '/' + documentId;
         this.documentId = documentId;
 
@@ -80,12 +62,11 @@ export default class ConcurrentDocument {
         this.operationPushSub = MqClient.subscribe(this.operationPushTopic, this.onOperationEvent.bind(this));
     }
 
-
     onOperationEvent(msg: IMessage) {
         const op: DocumentInternalEvent = JSON.parse(msg.body);
         switch (op.type) {
-            case 'UPDATE':
-                this.onDocumentUpdate(op.nextOpId);
+            case DocumentWSMessageType.UPDATE:
+                this.onDocumentUpdate();
                 break;
             case DocumentWSMessageType.DOCUMENT_DELETED:
                 this.onDocumentDeleted();
@@ -102,7 +83,7 @@ export default class ConcurrentDocument {
 
     async notifyUpdate(nextOpId: number) {
         const msg: DocumentUpdate = {
-            type: "UPDATE",
+            type: DocumentWSMessageType.UPDATE,
             nextOpId,
         };
         // no need for the async version - this is merely used as an update notification.

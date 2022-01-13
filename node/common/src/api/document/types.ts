@@ -3,6 +3,7 @@ import * as OT from "./operation-transforms";
 import { Coord } from "./drawing";
 
 export enum DocumentWSMessageType {
+    UPDATE = "UPDATE",
     OPERATION = "OPERATION",
     DOCUMENT_DELETED = "DOCUMENT_DELETED",
     DOCUMENT_LOADED = "DOCUMENT_LOADED",
@@ -30,7 +31,7 @@ export interface DocumentUpdateMessage extends DocumentMessage {
 }
 
 export interface DocumentUpdate {
-    type: 'UPDATE';
+    type: DocumentWSMessageType.UPDATE;
     nextOpId: number;
 }
 
@@ -43,7 +44,7 @@ export interface DocumentLoadedMessage extends DocumentMessage {
 }
 
 export type DocumentClientMessageSingle = OperationMessage | DocumentDeletedMessage | DocumentLoadedMessage | DocumentErrorMessage | DocumentUpdateMessage;
-export type DocumentClientMessage = Array<DocumentClientMessageSingle>;
+export type DocumentClientMessage = DocumentClientMessageSingle[];
 export type DocumentInternalEvent = DocumentUpdate | DocumentDeletedMessage;
 
 export interface Success<T> {

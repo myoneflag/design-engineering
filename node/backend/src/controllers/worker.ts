@@ -28,7 +28,8 @@ export class WorkerController {
                     break;
                 case Tasks.DocumentUpgradeExecute:
                     docId = req.body.params.docId;
-                    result = await DocumentUpgrader.onDocumentUpgradeRequest(docId);
+                    const overwrite = req.body.params.overwrite;
+                    result = await DocumentUpgrader.onDocumentUpgradeRequest(docId, overwrite);
                     break;
                 case Tasks.DocumentsReportsScan:
                     reportId = req.body.params.reportId;

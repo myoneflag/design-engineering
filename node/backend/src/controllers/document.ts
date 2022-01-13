@@ -1,6 +1,5 @@
 import { IsNull } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
-import { OPERATION_NAMES } from "../../../common/src/api/document/operation-transforms";
 import { initialDrawing, setNewDocumentInitialValues } from "../../../common/src/api/document/drawing";
 import { diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
@@ -16,28 +15,16 @@ import random from '../helpers/random';
 import { cloneSimple } from "../../../common/src/lib/utils";
 import ConcurrentDocument from "../services/concurrentDocument";
 import { toSupportedLocale } from "../../../common/src/api/locale";
-import { handleWebSocket } from "./document/handlers";
+import { handleWebSocket, sendErrorMessage } from "./document/handlers";
 import { EXAMPLE_DRAWING, EXAMPLE_DRAWING_VERSION, EXAMPLE_META } from "../../../common/src/api/constants/example-drawing";
 import { CustomEntity } from "../../../common/src/models/CustomEntity";
 import { EntityType } from "../../../common/src/api/document/entities/types";
+import ws from "ws";
+import { Drawing, DrawingStatus } from "../../../common/src/models/Drawing";
+import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
+import { DiffOperation } from "../../../common/src/api/document/operation-transforms";
 
 export class DocumentController {
-    @ApiHandleError()
-    @AuthRequired()
-    public async reset(req: Request, res: Response, next: NextFunction, session: Session) {
-        await withDocument(Number(req.params.id), res, session, AccessType.DELETE, async (doc) => {
-            await ConcurrentDocument.broadcastDelete(Number(req.params.id));
-
-            await Promise.all((await doc.operations).map((o) => {
-                return o.remove();
-            }));
-
-            res.status(200).send({
-                success: true,
-                data: null,
-            });
-        });
-    }
 
     @ApiHandleError()
     @AuthRequired()
@@ -81,28 +68,17 @@ export class DocumentController {
         doc.shareDocument = sd;
         await doc.save();
 
-        let firstOperation = diffState(initialDrawingState, newDocumentState, undefined)[0];
-        if (firstOperation) {
-            // save the first document operation
-            const now = new Date();
-            const op1 = Operation.create();
-            op1.document = Promise.resolve(doc);
-            op1.dateTime = now;
-            op1.blame = null;
-            op1.operation = firstOperation;
-            op1.orderIndex = 0;
-            await op1.save();
+        const drawingData = Drawing.create();
+        drawingData.dateTime = new Date();
+        drawingData.documentId = doc.id;
+        drawingData.status = DrawingStatus.CURRENT;
+        drawingData.drawing = initialDrawingState;
 
-            // save the first document operation
-            const op2 = Operation.create();
-            op2.document = Promise.resolve(doc);
-            op2.dateTime = now;
-            op2.blame = null;
-            op2.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: 1 };
-            op2.orderIndex = 0;
-            await op2.save();
+        if (createExampleDoc) {
+            const exampleDiff = diffState(initialDrawingState, newDocumentState, undefined)[0];
+            applyDiffNative(drawingData.drawing, (exampleDiff as DiffOperation).diff);
         }
-
+        await drawingData.save();
         res.status(200).send({
             success: true,
             data: doc,
@@ -248,7 +224,7 @@ export class DocumentController {
     public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
         await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
             const after = req.query.after === undefined ? -1 : Number(req.query.after);
-            const ops = await Operation
+            const operations = await Operation
                 .createQueryBuilder("operation")
                 .leftJoinAndSelect("operation.blame", "user")
                 .where("operation.document = :document", { document: doc.id })
@@ -258,7 +234,7 @@ export class DocumentController {
 
             res.status(200).send({
                 success: true,
-                data: ops,
+                data: operations,
             });
         });
     }
@@ -286,56 +262,15 @@ export class DocumentController {
                 doc.version = target.version;
                 doc.lastModifiedOn = target.lastModifiedOn;
                 doc.lastModifiedBy = target.lastModifiedBy;
-                doc.upgradingLockExpires = new Date();
                 doc.locale = target.locale;
 
                 await doc.save();
 
-                const ops = await Operation.createQueryBuilder("operation")
-                    .leftJoinAndSelect("operation.blame", "user")
-                    .where("operation.document = :document", { document: target.id })
-                    .orderBy("\"orderIndex\"", "ASC")
-                    .getMany();
-
-                let lastOrderIndex = 0;
-                for (const op of ops) {
-                    const newOp = Operation.create();
-                    newOp.operation = op.operation;
-                    newOp.dateTime = op.dateTime;
-                    newOp.blame = op.blame;
-                    newOp.orderIndex = op.orderIndex;
-                    newOp.document = Promise.resolve(doc);
-                    await newOp.save();
-                    lastOrderIndex = newOp.orderIndex;
-                }
-                doc.nextOperationIndex = lastOrderIndex + 1;
-
-                const drawing = initialDrawing(doc.locale);
-                const drawingWithTitle = initialDrawing(doc.locale);
-                drawingWithTitle.metadata.generalInfo.title = doc.metadata.title;
-
-                const titleChangeDiff = diffState(drawing, drawingWithTitle, undefined);
-
-                if (titleChangeDiff.length) {
-                    const titleChangeOp = Operation.create();
-                    titleChangeOp.orderIndex = lastOrderIndex + 1;
-                    titleChangeOp.document = Promise.resolve(doc);
-                    titleChangeOp.blame = session.user;
-                    titleChangeOp.dateTime = new Date();
-                    titleChangeOp.operation = titleChangeDiff[0];
-
-                    const commitOp = Operation.create();
-                    commitOp.orderIndex = lastOrderIndex + 2;
-                    commitOp.document = Promise.resolve(doc);
-                    commitOp.blame = session.user;
-                    commitOp.dateTime = new Date();
-                    commitOp.operation = { type: OPERATION_NAMES.COMMITTED_OPERATION, id: lastOrderIndex + 2 };
-
-                    await titleChangeOp.save();
-                    await commitOp.save();
-
-                    doc.nextOperationIndex = lastOrderIndex + 3;
-                }
+                const drawingObj = await Drawing.getRepository().findOneOrFail(
+                    {where: { documentId: targetId, status: DrawingStatus.CURRENT}});
+                drawingObj.documentId = doc.id;
+                drawingObj.drawing.metadata.generalInfo.title = doc.metadata.title;
+                await drawingObj.save();
 
                 // copy over custom entities to new document
                 const customEntities = await CustomEntity.find({
@@ -368,39 +303,36 @@ export class DocumentController {
 const router = Router();
 const controller = new DocumentController();
 
-router.ws("/:id/websocket", (ws, req) => {
+router.ws("/:id/websocket", (webSocket: ws, req) => {
     const docId = Number(req.params.id);
     withAuth(
         req,
         async (session) => {
             withDocument(docId, null, session, AccessType.UPDATE,
-                async (doc) => handleWebSocket(doc, ws, false, session));
+                async (doc) => handleWebSocket(doc, webSocket, false, session));
         },
         (msg) => {
-            ws.send("You are not authorised");
-            ws.send(msg);
+            sendErrorMessage(webSocket, "Authorization failed: " + msg);
         },
     );
 });
 
-router.ws("/share/:id/websocket", async (ws, req) => {
+router.ws("/share/:id/websocket", async (webSocket: ws, req) => {
     const token = req.params.id;
     const sd = await ShareDocument.findOne({token});
 
     if (!sd) {
-        ws.send('Invalid link!');
+        sendErrorMessage(webSocket, 'Invalid link!');
         return;
     }
 
     const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}});
     if (!doc) {
-        ws.send('Document has been deleted!');
+        sendErrorMessage(webSocket, 'Document has been deleted!');
         return;
     }
-    handleWebSocket(doc, ws, true, null);
+    handleWebSocket(doc, webSocket, true, null);
 });
-
-router.post("/:id/reset", controller.reset.bind(controller));
 
 router.post("/", controller.create.bind(controller));
 router.delete("/:id", controller.delete.bind(controller));

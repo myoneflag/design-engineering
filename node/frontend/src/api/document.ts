@@ -258,18 +258,6 @@ export async function createDocument(locale: SupportedLocales, templateId: numbe
     }
 }
 
-export async function resetDocument(id: number): Promise<APIResult<void>> {
-    try {
-        return (await axios.post("/api/documents/" + id + "/reset")).data;
-    } catch (e) {
-        if (e.response && e.response.data && e.response.data.message) {
-            return { success: false, message: e.response.data.message };
-        } else {
-            return { success: false, message: e.message };
-        }
-    }
-}
-
 export async function deleteDocument(id: number): Promise<APIResult<void>> {
     try {
         return (await axios.delete("/api/documents/" + id)).data;

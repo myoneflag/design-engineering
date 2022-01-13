@@ -1,12 +1,5 @@
 <template>
     <div>
-        <b-row>
-            <b-col>
-                <b-button size="lg" variant="primary" @click="resetDocument">
-                    <v-icon name="undo" scale="2" />&nbsp;Reset Document
-                </b-button>
-            </b-col>
-        </b-row>
 
         <b-row v-if="document" style="margin-top: 30px">
             <b-col>
@@ -27,7 +20,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { deleteDocument, getDocument, getDocuments, resetDocument } from "../../api/document";
+import { deleteDocument, getDocument } from "../../api/document";
 import { canUserDeleteDocument, Document as IDocument } from "../../../../common/src/models/Document";
 import { AccessLevel, User } from "../../../../common/src/models/User";
 
@@ -56,27 +49,6 @@ export default class Document extends Vue {
                 });
             }
         });
-    }
-
-    resetDocument() {
-        if (
-            window.confirm(
-                "Are you sure you want to reset this document? It will erase all data and turn it into a brand new document. This operation cannot be undone."
-            )
-        ) {
-            resetDocument(Number(this.$route.params.id)).then((res) => {
-                if (res.success) {
-                    this.$bvModal.msgBoxConfirm("The document has been reset.").then(() => {
-                        this.$router.push("/document/" + this.$route.params.id+"/0");
-                    });
-                } else {
-                    this.$bvToast.toast(res.message, {
-                        title: "Failed to reset document",
-                        variant: "danger"
-                    });
-                }
-            });
-        }
     }
 
     deleteDocument() {
