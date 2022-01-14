@@ -1,6 +1,7 @@
 {
     "task": "DocumentUpgradeExecute",
     "params": {
-        "docId": "${DOCID}"
+        "docId": "${DOCID}",
+        "overwrite": true
     }
 }
