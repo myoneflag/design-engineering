@@ -693,7 +693,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             case PlantType.RETURN_SYSTEM:
                 manufacturer = context.doc.drawing.metadata.catalog.hotWaterPlant.find(
                     i => i.uid === 'hotWaterPlant'
-                )!.manufacturer as HotWaterPlantManufacturers;
+                )?.manufacturer as HotWaterPlantManufacturers || manufacturer;
 
                 if (manufacturer === 'rheem') {
                     name = `${manufacturer} ${RheemVariant[entity.plant.rheemVariant!]}`.toUpperCase();

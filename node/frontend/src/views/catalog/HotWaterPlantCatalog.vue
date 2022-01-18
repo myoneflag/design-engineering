@@ -436,7 +436,8 @@ export default class HotWaterPlantCatalog extends Vue {
     manufacturer: CirculatingPumpsManufacturers | HotWaterPlantManufacturers
   ) {
     return (
-      this.document.drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === catalog)!.manufacturer === manufacturer
+      (this.document.drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === catalog)?.manufacturer ||
+        "generic") === manufacturer
     );
   }
 
@@ -444,7 +445,16 @@ export default class HotWaterPlantCatalog extends Vue {
     catalog: keyof typeof HotWaterPlantCatalogList,
     manufacturer: CirculatingPumpsManufacturers | HotWaterPlantManufacturers
   ) {
-    this.document.drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === catalog)!.manufacturer = manufacturer;
+    const hotWaterPlant = this.document.drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === catalog);
+    if (!!hotWaterPlant) {
+      hotWaterPlant.manufacturer = manufacturer;
+    } else {
+      this.document.drawing.metadata.catalog.hotWaterPlant.push({
+        uid: catalog,
+        manufacturer,
+        selected: null
+      });
+    }
 
     this.$store.dispatch("document/commit", { skipUndo: true }).then(() => {
       this.$bvToast.toast("Saved successfully!", { variant: "success", title: "Success" });

@@ -516,3 +516,11 @@ export function drawing_upgraded23to24(original: DrawingState) {
         }
     }
 }
+
+export function drawing_upgraded24to25(original: DrawingState) {
+    const target = original.metadata.catalog.hotWaterPlant.findIndex((i) => i.uid === "hotWaterPlant" && i.manufacturer === "grundfos");
+
+    if (target !== -1) {
+        original.metadata.catalog.hotWaterPlant[target].uid = 'circulatingPumps';
+    }
+}
