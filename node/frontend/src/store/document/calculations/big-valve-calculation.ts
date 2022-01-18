@@ -2,7 +2,7 @@ import { CalculationField, FieldCategory} from "../../../../src/store/document/c
 import BigValveEntity, {
     BigValveType
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
-import { Calculation, CalculationType } from "../../../../src/store/document/calculations/types";
+import { Calculation, CalculationType, NameCalculation } from "../../../../src/store/document/calculations/types";
 import { PsdCountEntry } from "../../../calculations/utils";
 import { DocumentState } from "../types";
 import { assertUnreachable, StandardFlowSystemUids } from "../../../../../common/src/api/config";
@@ -10,7 +10,7 @@ import { Units } from "../../../../../common/src/lib/measurements";
 import { SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
 import {Manufacturer, Catalog, MixingValveManufacturer} from '../../../../../common/src/api/catalog/types';
 
-export default interface BigValveCalculation extends Calculation {
+export default interface BigValveCalculation extends Calculation, NameCalculation {
     coldTemperatureC: number | null;
     coldPressureKPA: number | null;
     coldRawPeakFlowRate: number | null;
@@ -41,6 +41,16 @@ export default interface BigValveCalculation extends Calculation {
 
 export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity, catalog: Catalog | undefined): CalculationField[] {
     const result: CalculationField[] = [];
+
+    result.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+        },
+    );
 
     const suids: string[] = [];
     const attachments: string[] = [];
@@ -135,6 +145,8 @@ export function emptyBigValveCalculations(entity: BigValveEntity): BigValveCalcu
         mixingValveSizeMM: null,
         
         warnings: null,
+
+        entityName: null
     };
 
     const suids: string[] = [];

@@ -47,6 +47,8 @@ import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../..
 import { SnappableObject } from "../../lib/object-traits/snappable-object";
 import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
 import { prepareFill, prepareStroke } from "../../../../src/htmlcanvas/helpers/draw-helper";
+import { DEFAULT_FONT_NAME } from "../../../../src/config";
+
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
 @CalculatedObject
@@ -73,9 +75,28 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
                 this.drawHotColdRPZD(context, args);
                 break;
         }
+
+        // Display Entity Name
+        this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM / 2 }, () => {
+            if (this.entity.entityName && !args.withCalculation) {
+                const name = this.entity.entityName;
+                context.ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+                context.ctx.textBaseline = "top";
+                const nameWidth = context.ctx.measureText(name).width;
+                const offsetx = - nameWidth / 2;
+                context.ctx.fillStyle = "#00ff1421";
+                // the 70 represents the height of the font
+                const textHight = 70;
+                const offsetY = this.entity.pipeDistanceMM + textHight / 2;
+                context.ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+                context.ctx.fillStyle = "#000";
+                context.ctx.fillText(name, offsetx, offsetY - 4);
+                context.ctx.textBaseline = "alphabetic";
+            }
+        });
     }
 
-    drawTmv(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs) {
+    drawTmv(context: DrawingContext, { selected, overrideColorList, withCalculation }: EntityDrawingArgs) {
         const { ctx, vp } = context;
 
         const l = -this.entity.pipeDistanceMM;

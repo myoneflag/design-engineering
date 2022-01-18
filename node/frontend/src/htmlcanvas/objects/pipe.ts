@@ -58,6 +58,7 @@ import Fixture from "./fixture";
 import Fitting from "./fitting";
 import SystemNode from "./big-valve/system-node";
 import FlowSource from "./flow-source";
+import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Direction } from "../types";
 import LoadNode from "./load-node";
 
@@ -164,11 +165,11 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         return results;
     }
 
-    drawCalculations(context: DrawingContext, filters: CalculationFilters) {
+    drawCalculations(context: DrawingContext, filters: CalculationFilters, force: boolean = false) {
         const { ctx, vp } = context;
         // Manage to draw on screen first
 
-        if (!context.globalStore.getCalculation(this.entity)) {
+        if (!context.globalStore.getCalculation(this.entity) && !force) {
             return;
         }
         // Manage to draw rotated first
@@ -184,7 +185,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         const length = vp.toSurfaceLength(shape.length);
 
-        if (length < 100) {
+        if (length < 100 && !force) {
             return;
         }
 
@@ -199,13 +200,15 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         ctx.rotate(-angle);
         ctx.translate(0, -this.lastDrawnWidthInternal / 2);
 
-        const s = context.vp.currToSurfaceScale(ctx);
-        if (s > TEXT_MAX_SCALE) {
-            ctx.scale(1 / TEXT_MAX_SCALE, 1 / TEXT_MAX_SCALE);
-        } else {
-            ctx.scale(1 / s, 1 / s);
+        if (!force) {
+            const s = context.vp.currToSurfaceScale(ctx);
+            if (s > TEXT_MAX_SCALE) {
+                ctx.scale(1 / TEXT_MAX_SCALE, 1 / TEXT_MAX_SCALE);
+            } else {
+                ctx.scale(1 / s, 1 / s);
+            }
+            ctx.setTransform(oTM);
         }
-        ctx.setTransform(oTM);
     }
 
     isActive(): boolean {
@@ -330,6 +333,24 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
             this.lastDrawnLine = new Flatten.Point(ao.x, ao.y);
         } else {
             this.lastDrawnLine = new Flatten.Segment(new Flatten.Point(ao.x, ao.y), new Flatten.Point(bo.x, bo.y));
+        }
+
+        // Display Entity Name
+        this.drawCalculations(context, {}, true);
+        if (this.entity.entityName && !withCalculation) {
+            const name = this.entity.entityName;
+            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            ctx.textBaseline = "top";
+            const nameWidth = ctx.measureText(name).width;
+            const offsetx = - nameWidth / 2;
+            ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = textHight;
+            ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+            ctx.fillStyle = baseColor;
+            ctx.fillText(name, offsetx, offsetY - 4);
+            ctx.textBaseline = "alphabetic";
         }
     }
 

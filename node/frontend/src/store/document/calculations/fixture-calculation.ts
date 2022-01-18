@@ -22,7 +22,20 @@ export default interface FixtureCalculation extends Calculation {
 
 export function makeFixtureCalculationFields(doc: DocumentState, entity: FixtureEntity, globalStore: GlobalStore): CalculationField[] {
     const fCalc = globalStore.getOrCreateCalculation(entity);
-    return entity.roughInsInOrder.map((suid) => {
+
+    const result: CalculationField[] = [];
+
+    result.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+        },
+    );
+
+    entity.roughInsInOrder.forEach((suid) => {
         if (isDrainage(suid, doc.drawing.metadata.flowSystems)) {
             return [];
         }
@@ -32,11 +45,10 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             throw new Error("System not found");
         }
 
-        const ret: CalculationField[] = [];
-        addPressureCalculationFields(ret, suid, "inlets." + suid + ".", { defaultEnabled: true }, { defaultEnabled: true });
+        addPressureCalculationFields(result, suid, "inlets." + suid + ".", { defaultEnabled: true }, { defaultEnabled: true });
 
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegVolumeL !== null) {
-            ret.push({
+            result.push({
                 property: "inlets." + suid + ".deadlegVolumeL",
                 title: system.name + " Deadleg Volume",
                 short: "deadleg",
@@ -49,7 +61,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
         }
 
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegLengthM !== null) {
-            ret.push({
+            result.push({
                 property: "inlets." + suid + ".deadlegLengthM",
                 title: system.name + " Deadleg Length",
                 short: "deadleg",
@@ -60,9 +72,9 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
                 hideIfNull: true,
             });
         }
+    });
 
-        return ret;
-    }).flat();
+    return result;
 }
 
 export function emptyFixtureCalculation(entity: FixtureEntity): FixtureCalculation {

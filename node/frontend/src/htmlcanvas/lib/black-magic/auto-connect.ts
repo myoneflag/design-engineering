@@ -1038,7 +1038,8 @@ export class AutoConnector {
             parentUid: null,
             systemUid,
             type: EntityType.PIPE,
-            uid: uuid()
+            uid: uuid(),
+            entityName: null,
         };
 
         this.context.$store.dispatch("document/addEntity", p);

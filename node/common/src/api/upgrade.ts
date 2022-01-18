@@ -524,3 +524,29 @@ export function drawing_upgraded24to25(original: DrawingState) {
         original.metadata.catalog.hotWaterPlant[target].uid = 'circulatingPumps';
     }
 }
+
+export function drawing_upgraded25to26(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const entity of Object.values(entities)) {
+            if (
+                entity.type === EntityType.FLOW_SOURCE ||
+                entity.type === EntityType.PIPE ||
+                entity.type === EntityType.BIG_VALVE ||
+                entity.type === EntityType.DIRECTED_VALVE ||
+                entity.type === EntityType.FIXTURE ) {
+                    if (entity.entityName === undefined) {
+                        entity.entityName = null;
+                    }
+                }
+        }
+    }
+    for (const entity of Object.values(original.shared)) {
+        if (entity.type === EntityType.RISER) {
+            if (entity.entityName === undefined) {
+                entity.entityName = null;
+            }
+        }
+    }
+}
+

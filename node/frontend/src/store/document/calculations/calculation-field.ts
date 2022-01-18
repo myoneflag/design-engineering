@@ -15,6 +15,7 @@ export enum FieldCategory {
     Length,
     Location,
     GreaseInterceptorTrap,
+    EntityName,
 }
 
 export type CalculationLayout = 'pressure' | 'drainage';

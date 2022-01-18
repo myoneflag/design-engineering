@@ -4,6 +4,7 @@ import {
     addPressureCalculationFields,
     Calculation,
     CalculationType,
+    NameCalculation,
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
@@ -20,7 +21,7 @@ import {
     PRVManufacturer
 } from '../../../../../common/src/api/catalog/types';
 
-export default interface DirectedValveCalculation extends Calculation, PressureCalculation {
+export default interface DirectedValveCalculation extends Calculation, PressureCalculation, NameCalculation {
     flowRateLS: number | null;
     pressureDropKPA: number | null;
     kvValue: number | null;
@@ -34,6 +35,17 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
 
     let fields: CalculationField[] = [];
+
+    fields.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+            systemUid: systemUid,
+        },
+    );
 
     if (!valveIsGas) {
         fields.push(
@@ -199,6 +211,8 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         kvValue: null,
         pressureKPA: null,
         warnings: null,
-        sizeMM: null
+        sizeMM: null, 
+
+        entityName: null
     };
 }

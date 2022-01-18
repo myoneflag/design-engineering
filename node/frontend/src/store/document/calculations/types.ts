@@ -3,6 +3,7 @@ import {CalculationField, FieldCategory} from "./calculation-field";
 import {Units} from "../../../../../common/src/lib/measurements";
 import {DrawableEntityConcrete} from "../../../../../common/src/api/document/entities/concrete-entity";
 import { WarningDetail } from "./warnings"
+import { NamedEntity } from "../../../../../common/src/api/document/drawing";
 
 export enum CalculationType { 
     RiserCalculation,
@@ -20,6 +21,9 @@ export enum CalculationType {
 
 export interface PsdCalculation {
     psdUnits: PsdCountEntry | null;
+}
+
+export interface NameCalculation extends NamedEntity {
 }
 
 export interface Calculation {

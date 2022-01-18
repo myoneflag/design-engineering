@@ -5,7 +5,7 @@ import { DrawingState, initialDrawing } from "../document/drawing";
 // every time you add a upgrade step and increment the CURRENT_VERSION
 // THIS HAS TO BE DONE MANUALLY HERE TO ENSURE THE DEVELOPER IS AWARE
 // OF ANY DOCUMENT UPGRADE CHANGES THAT NEED TO BE PERFOMED
-export const EXAMPLE_DRAWING_VERSION = 24;
+export const EXAMPLE_DRAWING_VERSION = 26;
 export const EXAMPLE_META = {
     "title": "Example Project",
     "projectNumber": "0001",
@@ -2269,7 +2269,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveGroundM": 14,
                     "minPressureKPA": 400,
                     "maxPressureKPA": 600,
-                    "uid": "7c470d70-8f12-4bff-8ebb-862fc84870c2"
+                    "uid": "7c470d70-8f12-4bff-8ebb-862fc84870c2",
+                    "entityName": null
                 },
                 "f261b766-9a0f-42da-bc73-1549eff202c7": {
                     "heightAboveFloorM": 2,
@@ -2304,11 +2305,11 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "rheemMinimumInitialDelivery": null,
                         "rheemkWRating": null,
                         "rheemStorageTankSize": null,
-                        "diversity": 100,
+                        "diversity": 100
                     },
                     "calculation": {
                         "widthMM": null,
-                        "depthMM": null,
+                        "depthMM": null
                     }
                 },
                 "3b95a13b-be67-4cb1-8169-c50da9489473": {
@@ -2415,7 +2416,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e9fa6226-96fd-44cb-9227-d0a6ac813f58"
+                    "uid": "e9fa6226-96fd-44cb-9227-d0a6ac813f58",
+                    "entityName": null
                 },
                 "dc770adf-458c-43bd-86f8-bccd584987a5": {
                     "center": {
@@ -2434,7 +2436,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "f82dc441-0fe1-4133-9239-65ee0a34cdcf": {
                     "color": null,
@@ -2452,7 +2455,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f82dc441-0fe1-4133-9239-65ee0a34cdcf"
+                    "uid": "f82dc441-0fe1-4133-9239-65ee0a34cdcf",
+                    "entityName": null
                 },
                 "3e560b7c-ca24-4838-8d1a-1b9b4a7ba315": {
                     "center": {
@@ -2471,7 +2475,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "12380a89-1229-4da6-bd08-cc6df6cbc00d": {
                     "color": null,
@@ -2489,7 +2494,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "12380a89-1229-4da6-bd08-cc6df6cbc00d"
+                    "uid": "12380a89-1229-4da6-bd08-cc6df6cbc00d",
+                    "entityName": null
                 },
                 "c7d42acd-3585-433f-a466-7c4a205cb51c": {
                     "center": {
@@ -2506,7 +2512,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "catalogId": "strainer",
                         "type": "STRAINER"
-                    }
+                    },
+                    "entityName": null
                 },
                 "fc792b4b-06d4-42b5-ab2a-8075e79bc1e5": {
                     "center": {
@@ -2524,7 +2531,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "pressureDropKPA": 0.15,
                         "catalogId": "waterMeter",
                         "type": "WATER_METER"
-                    }
+                    },
+                    "entityName": null
                 },
                 "17f9fff1-96fc-4117-9cd9-9ffb771413fa": {
                     "color": null,
@@ -2542,7 +2550,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "17f9fff1-96fc-4117-9cd9-9ffb771413fa"
+                    "uid": "17f9fff1-96fc-4117-9cd9-9ffb771413fa",
+                    "entityName": null
                 },
                 "e667efcc-0acd-498e-90db-8d382787f959": {
                     "color": null,
@@ -2560,7 +2569,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e667efcc-0acd-498e-90db-8d382787f959"
+                    "uid": "e667efcc-0acd-498e-90db-8d382787f959",
+                    "entityName": null
                 },
                 "9cba9e81-3781-4d30-8f1f-34d257edb52c": {
                     "center": {
@@ -2579,7 +2589,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "RPZD",
                         "sizeMM": null,
                         "isolateOneWhenCalculatingHeadLoss": true
-                    }
+                    },
+                    "entityName": null
                 },
                 "bbec31c6-2b73-496e-820d-9511aea525c0": {
                     "color": null,
@@ -2597,7 +2608,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bbec31c6-2b73-496e-820d-9511aea525c0"
+                    "uid": "bbec31c6-2b73-496e-820d-9511aea525c0",
+                    "entityName": null
                 },
                 "ce426e18-4530-4c9e-91c7-ded4000ce863": {
                     "color": null,
@@ -2615,7 +2627,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ce426e18-4530-4c9e-91c7-ded4000ce863"
+                    "uid": "ce426e18-4530-4c9e-91c7-ded4000ce863",
+                    "entityName": null
                 },
                 "c3fc0aab-5bc4-46c4-8bac-5cea5d3515f3": {
                     "color": null,
@@ -2633,7 +2646,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c3fc0aab-5bc4-46c4-8bac-5cea5d3515f3"
+                    "uid": "c3fc0aab-5bc4-46c4-8bac-5cea5d3515f3",
+                    "entityName": null
                 },
                 "f9e70a31-4312-4147-9396-3b0d5dae570b": {
                     "center": {
@@ -2699,7 +2713,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3d0f731c-1cb3-40a2-aaec-16f9550c7ce0"
+                    "uid": "3d0f731c-1cb3-40a2-aaec-16f9550c7ce0",
+                    "entityName": null
                 },
                 "cbce59c7-3410-48d8-aee7-48b09e83825f": {
                     "center": {
@@ -2729,7 +2744,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0ef1cd13-8edd-4924-9524-172e0544adff"
+                    "uid": "0ef1cd13-8edd-4924-9524-172e0544adff",
+                    "entityName": null
                 },
                 "05508f9b-0021-42ab-925f-da2948d28bad": {
                     "center": {
@@ -2771,7 +2787,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "5fecb1dc-dbf6-426b-80e7-5689e3d130de"
+                    "uid": "5fecb1dc-dbf6-426b-80e7-5689e3d130de",
+                    "entityName": null
                 },
                 "0970f36f-37f7-4d85-a170-f2793d973220": {
                     "center": {
@@ -2897,7 +2914,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8b9f3752-7c68-4dd3-9335-6f1412cf9fa1"
+                    "uid": "8b9f3752-7c68-4dd3-9335-6f1412cf9fa1",
+                    "entityName": null
                 },
                 "1af9ade6-5d66-447a-8ce6-d306d6f81acc": {
                     "center": {
@@ -3023,7 +3041,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "5fbd1bee-c424-49be-b431-827df90213cb"
+                    "uid": "5fbd1bee-c424-49be-b431-827df90213cb",
+                    "entityName": null
                 },
                 "6da87f0b-a0d6-4ffd-9b9d-f43085a1d3cf": {
                     "color": {
@@ -3065,7 +3084,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "6da87f0b-a0d6-4ffd-9b9d-f43085a1d3cf"
+                    "uid": "6da87f0b-a0d6-4ffd-9b9d-f43085a1d3cf",
+                    "entityName": null
                 },
                 "628550de-688d-448b-84fe-2216624fd7e8": {
                     "center": {
@@ -3143,7 +3163,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a9e8520b-06e1-4980-84c1-19d24268e6fa"
+                    "uid": "a9e8520b-06e1-4980-84c1-19d24268e6fa",
+                    "entityName": null
                 },
                 "d7e506f1-a091-403d-863a-17c9d168dff1": {
                     "center": {
@@ -3221,7 +3242,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "627bc9c8-db1a-4672-b201-a721ee7dd3b2"
+                    "uid": "627bc9c8-db1a-4672-b201-a721ee7dd3b2",
+                    "entityName": null
                 },
                 "0fe31025-c2cf-4f38-8389-4fa8b77ee2b7": {
                     "center": {
@@ -3335,7 +3357,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "240a17fd-96b2-4c0b-aa0e-738bc2a7f7e7"
+                    "uid": "240a17fd-96b2-4c0b-aa0e-738bc2a7f7e7",
+                    "entityName": null
                 },
                 "a767951a-92b2-48f0-b232-636cb835c63f": {
                     "center": {
@@ -3413,7 +3436,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "665216c0-a433-482a-a342-60ecf784c607"
+                    "uid": "665216c0-a433-482a-a342-60ecf784c607",
+                    "entityName": null
                 },
                 "833c44c7-b496-47cc-86fb-0f7dd7584530": {
                     "color": {
@@ -3455,7 +3479,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "833c44c7-b496-47cc-86fb-0f7dd7584530"
+                    "uid": "833c44c7-b496-47cc-86fb-0f7dd7584530",
+                    "entityName": null
                 },
                 "37383e57-4532-43ff-926a-97d6d7d1852b": {
                     "center": {
@@ -3498,7 +3523,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "a7b98059-ba88-47ad-80b1-99ef42223a90": {
                     "color": {
@@ -3540,7 +3566,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a7b98059-ba88-47ad-80b1-99ef42223a90"
+                    "uid": "a7b98059-ba88-47ad-80b1-99ef42223a90",
+                    "entityName": null
                 },
                 "915869ff-0032-4930-b450-752514265dcc": {
                     "center": {
@@ -3583,7 +3610,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "657087b7-9d13-44b0-b588-a2367458e63e": {
                     "color": {
@@ -3625,7 +3653,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "657087b7-9d13-44b0-b588-a2367458e63e"
+                    "uid": "657087b7-9d13-44b0-b588-a2367458e63e",
+                    "entityName": null
                 },
                 "819a968e-ca9a-47af-8190-7d29cba41186": {
                     "center": {
@@ -3668,7 +3697,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "ca3191c2-30fc-4fda-ba67-593967d730f2": {
                     "color": {
@@ -3710,7 +3740,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ca3191c2-30fc-4fda-ba67-593967d730f2"
+                    "uid": "ca3191c2-30fc-4fda-ba67-593967d730f2",
+                    "entityName": null
                 },
                 "8bba8008-bdbe-43c5-b743-17c62486f82b": {
                     "center": {
@@ -3753,7 +3784,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "bfe6fd08-9f94-4e3e-a0e2-f0b826e5d7f4": {
                     "color": {
@@ -3795,7 +3827,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bfe6fd08-9f94-4e3e-a0e2-f0b826e5d7f4"
+                    "uid": "bfe6fd08-9f94-4e3e-a0e2-f0b826e5d7f4",
+                    "entityName": null
                 },
                 "3b310fc7-89df-486d-a090-2b29d992c2cd": {
                     "center": {
@@ -3836,7 +3869,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "BALANCING",
                         "catalogId": "balancing"
-                    }
+                    },
+                    "entityName": null
                 },
                 "f9cd11ca-67c2-441c-9c24-0a62b5b96553": {
                     "color": {
@@ -3878,7 +3912,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f9cd11ca-67c2-441c-9c24-0a62b5b96553"
+                    "uid": "f9cd11ca-67c2-441c-9c24-0a62b5b96553",
+                    "entityName": null
                 },
                 "7fc26b71-0c14-4c31-b16a-f273bc82806d": {
                     "color": {
@@ -3920,7 +3955,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "7fc26b71-0c14-4c31-b16a-f273bc82806d"
+                    "uid": "7fc26b71-0c14-4c31-b16a-f273bc82806d",
+                    "entityName": null
                 },
                 "dd0fc813-2b9a-42d1-b4be-cede08cf9d02": {
                     "center": {
@@ -3961,7 +3997,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "BALANCING",
                         "catalogId": "balancing"
-                    }
+                    },
+                    "entityName": null
                 },
                 "1586428e-ec42-4c44-b168-4831dad7d472": {
                     "color": {
@@ -4003,7 +4040,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1586428e-ec42-4c44-b168-4831dad7d472"
+                    "uid": "1586428e-ec42-4c44-b168-4831dad7d472",
+                    "entityName": null
                 },
                 "e7ce25ef-5ec4-43ad-bee4-bc92444d021f": {
                     "color": {
@@ -4045,7 +4083,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e7ce25ef-5ec4-43ad-bee4-bc92444d021f"
+                    "uid": "e7ce25ef-5ec4-43ad-bee4-bc92444d021f",
+                    "entityName": null
                 },
                 "f639f562-fce4-4e56-a415-126f14fccd3d": {
                     "center": {
@@ -4064,7 +4103,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "eed2f33e-9070-4bbf-87b8-9e4b16ac4c12": {
                     "color": null,
@@ -4082,7 +4122,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "eed2f33e-9070-4bbf-87b8-9e4b16ac4c12"
+                    "uid": "eed2f33e-9070-4bbf-87b8-9e4b16ac4c12",
+                    "entityName": null
                 },
                 "1eb0c5cb-0167-4708-b9e8-dbb1986555a8": {
                     "color": null,
@@ -4100,7 +4141,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1eb0c5cb-0167-4708-b9e8-dbb1986555a8"
+                    "uid": "1eb0c5cb-0167-4708-b9e8-dbb1986555a8",
+                    "entityName": null
                 },
                 "8d90950d-e57e-4b2d-93e4-9a921a99c7f9": {
                     "center": {
@@ -4119,7 +4161,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "3f35d949-5de1-480d-a943-6072911f0833": {
                     "color": null,
@@ -4137,7 +4180,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3f35d949-5de1-480d-a943-6072911f0833"
+                    "uid": "3f35d949-5de1-480d-a943-6072911f0833",
+                    "entityName": null
                 },
                 "90f4f467-720d-42bc-a100-d11ee15576f7": {
                     "color": null,
@@ -4155,7 +4199,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "90f4f467-720d-42bc-a100-d11ee15576f7"
+                    "uid": "90f4f467-720d-42bc-a100-d11ee15576f7",
+                    "entityName": null
                 },
                 "e695eb80-9fca-4d11-b0fb-693a38425156": {
                     "center": {
@@ -4174,7 +4219,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "cc48c2fa-27c4-4f40-8a8c-a8c20f14c2b7": {
                     "color": null,
@@ -4192,7 +4238,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "cc48c2fa-27c4-4f40-8a8c-a8c20f14c2b7"
+                    "uid": "cc48c2fa-27c4-4f40-8a8c-a8c20f14c2b7",
+                    "entityName": null
                 },
                 "3e0ab0bb-c812-4ad4-b45f-1587ff8ef1e5": {
                     "color": null,
@@ -4210,7 +4257,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3e0ab0bb-c812-4ad4-b45f-1587ff8ef1e5"
+                    "uid": "3e0ab0bb-c812-4ad4-b45f-1587ff8ef1e5",
+                    "entityName": null
                 },
                 "acf2bf43-fdef-47be-898c-336a94b21532": {
                     "center": {
@@ -4229,7 +4277,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "2de6de8f-7f1c-48cf-b33a-c72cb137c97a": {
                     "color": null,
@@ -4247,7 +4296,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2de6de8f-7f1c-48cf-b33a-c72cb137c97a"
+                    "uid": "2de6de8f-7f1c-48cf-b33a-c72cb137c97a",
+                    "entityName": null
                 },
                 "ed3d0b8f-807e-49e5-829a-2661a57bbe26": {
                     "color": null,
@@ -4265,7 +4315,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ed3d0b8f-807e-49e5-829a-2661a57bbe26"
+                    "uid": "ed3d0b8f-807e-49e5-829a-2661a57bbe26",
+                    "entityName": null
                 },
                 "737ebdc9-2b9d-48d8-b5b7-879f1e288807": {
                     "center": {
@@ -4284,7 +4335,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "84224f8e-1a1a-4b38-afd2-27051d823f42": {
                     "color": null,
@@ -4302,7 +4354,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "84224f8e-1a1a-4b38-afd2-27051d823f42"
+                    "uid": "84224f8e-1a1a-4b38-afd2-27051d823f42",
+                    "entityName": null
                 },
                 "e8e42631-5f02-40c8-81ec-b91263d11c65": {
                     "color": null,
@@ -4320,7 +4373,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e8e42631-5f02-40c8-81ec-b91263d11c65"
+                    "uid": "e8e42631-5f02-40c8-81ec-b91263d11c65",
+                    "entityName": null
                 },
                 "7dc77696-9eef-4b06-8055-182fe1f91ced": {
                     "center": {
@@ -4339,7 +4393,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "70114ca3-57f4-43f9-b50a-acbad407746e": {
                     "color": null,
@@ -4357,7 +4412,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "70114ca3-57f4-43f9-b50a-acbad407746e"
+                    "uid": "70114ca3-57f4-43f9-b50a-acbad407746e",
+                    "entityName": null
                 },
                 "b0aa1ed2-f912-4dfe-b38b-08373d8d289f": {
                     "color": null,
@@ -4375,7 +4431,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b0aa1ed2-f912-4dfe-b38b-08373d8d289f"
+                    "uid": "b0aa1ed2-f912-4dfe-b38b-08373d8d289f",
+                    "entityName": null
                 },
                 "6dbf712e-b559-475c-8261-3cbd3358224a": {
                     "center": {
@@ -4394,7 +4451,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "53377ac8-f78c-4b37-91fd-01f675b39306": {
                     "color": null,
@@ -4412,7 +4470,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "53377ac8-f78c-4b37-91fd-01f675b39306"
+                    "uid": "53377ac8-f78c-4b37-91fd-01f675b39306",
+                    "entityName": null
                 },
                 "9f1e2533-6df7-470c-86d9-ad430e69fea3": {
                     "color": null,
@@ -4430,7 +4489,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9f1e2533-6df7-470c-86d9-ad430e69fea3"
+                    "uid": "9f1e2533-6df7-470c-86d9-ad430e69fea3",
+                    "entityName": null
                 },
                 "bd0f4202-1611-4480-b368-bd7564c74e41": {
                     "center": {
@@ -4472,7 +4532,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "48a798b7-b385-4bcd-a46b-bc946b19acaf"
+                    "uid": "48a798b7-b385-4bcd-a46b-bc946b19acaf",
+                    "entityName": null
                 },
                 "3fad7c47-d46f-4dd1-9b27-fa23fdd4c9ab": {
                     "center": {
@@ -4502,7 +4563,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0cf9f0d7-c186-45fb-b9b7-334c96402763"
+                    "uid": "0cf9f0d7-c186-45fb-b9b7-334c96402763",
+                    "entityName": null
                 },
                 "8e7a552a-dff4-4bd2-99d1-2f91fd88efba": {
                     "center": {
@@ -4532,7 +4594,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "567e0514-e592-4118-b8a0-9014217243ce"
+                    "uid": "567e0514-e592-4118-b8a0-9014217243ce",
+                    "entityName": null
                 },
                 "cc4d406e-6e24-4f32-be60-afcd3ce32c3b": {
                     "center": {
@@ -4562,7 +4625,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "111bcdb1-cca6-4788-89d0-7e42c9ad093e"
+                    "uid": "111bcdb1-cca6-4788-89d0-7e42c9ad093e",
+                    "entityName": null
                 },
                 "a7487a8f-7c10-4e08-89cf-e09f44f5f882": {
                     "center": {
@@ -4592,7 +4656,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b31720eb-b6ea-48b9-af4f-ebe339349f57"
+                    "uid": "b31720eb-b6ea-48b9-af4f-ebe339349f57",
+                    "entityName": null
                 },
                 "efab15ca-bdff-472d-9f57-ebd207c68c0a": {
                     "center": {
@@ -4619,7 +4684,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveGroundM": 14,
                     "minPressureKPA": 210,
                     "maxPressureKPA": null,
-                    "uid": "bc781ba3-ce62-4c48-931d-a4d7d0e03a57"
+                    "uid": "bc781ba3-ce62-4c48-931d-a4d7d0e03a57",
+                    "entityName": null
                 },
                 "ba1354f1-966c-4958-9b86-c8c55c3fd153": {
                     "center": {
@@ -4638,7 +4704,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "5544178e-b56b-4539-9f51-1f75a6623216": {
                     "color": null,
@@ -4656,7 +4723,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "5544178e-b56b-4539-9f51-1f75a6623216"
+                    "uid": "5544178e-b56b-4539-9f51-1f75a6623216",
+                    "entityName": null
                 },
                 "922241b7-caf0-40b9-9470-3d98348ae2c5": {
                     "color": null,
@@ -4674,7 +4742,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "922241b7-caf0-40b9-9470-3d98348ae2c5"
+                    "uid": "922241b7-caf0-40b9-9470-3d98348ae2c5",
+                    "entityName": null
                 },
                 "0b294582-49ca-4a5a-9b41-055243261d69": {
                     "color": null,
@@ -4692,7 +4761,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0b294582-49ca-4a5a-9b41-055243261d69"
+                    "uid": "0b294582-49ca-4a5a-9b41-055243261d69",
+                    "entityName": null
                 },
                 "dba23c2f-734e-4c9b-9313-51b2f0df9cd1": {
                     "center": {
@@ -4710,8 +4780,9 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "type": "GAS_REGULATOR",
                         "catalogId": "gasRegulator",
                         "outletPressureKPA": 5,
-                        "downStreamPressureKPA": 0,
-                    }
+                        "downStreamPressureKPA": 0
+                    },
+                    "entityName": null
                 },
                 "b483f932-a45b-44b4-b5cb-60fa94eea124": {
                     "center": {
@@ -4729,7 +4800,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "type": "FILTER",
                         "catalogId": "filter",
                         "pressureDropKPA": 0.25
-                    }
+                    },
+                    "entityName": null
                 },
                 "a1f5787d-a28c-4347-bcc4-f82ae046c888": {
                     "color": null,
@@ -4747,7 +4819,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a1f5787d-a28c-4347-bcc4-f82ae046c888"
+                    "uid": "a1f5787d-a28c-4347-bcc4-f82ae046c888",
+                    "entityName": null
                 },
                 "3a1b05fa-6011-4201-ab1c-ab4470127882": {
                     "center": {
@@ -4765,7 +4838,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "pressureDropKPA": 0.25,
                         "catalogId": "waterMeter",
                         "type": "WATER_METER"
-                    }
+                    },
+                    "entityName": null
                 },
                 "64a6041b-0f91-4bbe-94bd-6ca5b05d9e4e": {
                     "color": null,
@@ -4783,7 +4857,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "64a6041b-0f91-4bbe-94bd-6ca5b05d9e4e"
+                    "uid": "64a6041b-0f91-4bbe-94bd-6ca5b05d9e4e",
+                    "entityName": null
                 },
                 "19781734-62aa-498d-b557-01ff20d8f129": {
                     "center": {
@@ -4802,7 +4877,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "gateValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "af99942d-31e7-4bf3-9f37-ff35cc7296a0": {
                     "color": null,
@@ -4820,7 +4896,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "af99942d-31e7-4bf3-9f37-ff35cc7296a0"
+                    "uid": "af99942d-31e7-4bf3-9f37-ff35cc7296a0",
+                    "entityName": null
                 },
                 "b6a80b2e-e3ec-4e35-88ae-887484b5cab3": {
                     "color": null,
@@ -4838,7 +4915,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b6a80b2e-e3ec-4e35-88ae-887484b5cab3"
+                    "uid": "b6a80b2e-e3ec-4e35-88ae-887484b5cab3",
+                    "entityName": null
                 },
                 "521109a9-16fb-4678-9790-6216499cd3c9": {
                     "center": {
@@ -4857,7 +4935,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "gateValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "c9c064bd-0f9a-45ca-b37a-70089611df31": {
                     "color": null,
@@ -4875,7 +4954,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c9c064bd-0f9a-45ca-b37a-70089611df31"
+                    "uid": "c9c064bd-0f9a-45ca-b37a-70089611df31",
+                    "entityName": null
                 },
                 "19ba80b3-d32e-45c9-b85d-73877965ed94": {
                     "color": null,
@@ -4893,7 +4973,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "19ba80b3-d32e-45c9-b85d-73877965ed94"
+                    "uid": "19ba80b3-d32e-45c9-b85d-73877965ed94",
+                    "entityName": null
                 },
                 "baaaedef-1b2e-4aec-bb7e-bfdf0d253e3a": {
                     "abbreviation": "WC",
@@ -4938,7 +5019,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "63bf0478-382f-4452-89b4-e48a1b084aeb": {
                     "center": {
@@ -5009,7 +5091,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "ca1e977c-3058-40e0-8bad-bf5d2d7f525d": {
                     "center": {
@@ -5080,7 +5163,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "40a26730-d139-464c-9f38-a131198d45bb": {
                     "center": {
@@ -5161,7 +5245,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "fb24da9c-72de-4081-801d-9cde682e47cc": {
                     "center": {
@@ -5255,7 +5340,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "a70ce7b1-b32c-40e4-9b98-a61253b7ccc8": {
                     "center": {
@@ -5349,7 +5435,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "7f84f89c-a5e6-4829-839b-73233475b8bf": {
                     "center": {
@@ -5443,7 +5530,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "e66f6c38-19bf-43dd-a2a9-f64f66f1a1e6": {
                     "center": {
@@ -5537,7 +5625,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "89880949-3d8a-4419-bd83-2cb052786f12": {
                     "center": {
@@ -5603,7 +5692,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveFloorM": 1,
                     "parentUid": "883c8bcd-a994-4c3e-82ec-748f683e2cba",
                     "outputTemperatureC": 50,
-                    "uid": "115ea465-c2a5-4c2f-b994-e620b35b1f24"
+                    "uid": "115ea465-c2a5-4c2f-b994-e620b35b1f24",
+                    "entityName": null
                 },
                 "1a4a2572-b2e9-4e6b-9024-792f37951223": {
                     "center": {
@@ -5685,7 +5775,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "627c5c28-aebb-44af-bacc-93ebf4f97b4a"
+                    "uid": "627c5c28-aebb-44af-bacc-93ebf4f97b4a",
+                    "entityName": null
                 },
                 "14c49950-87cb-4f3d-b030-ab5886978be8": {
                     "color": null,
@@ -5703,7 +5794,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "14c49950-87cb-4f3d-b030-ab5886978be8"
+                    "uid": "14c49950-87cb-4f3d-b030-ab5886978be8",
+                    "entityName": null
                 },
                 "1add8f24-28e9-4dd5-8976-22a31e8c7fd4": {
                     "center": {
@@ -5733,7 +5825,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "93a2a70e-bbb8-4ace-a108-0ba023b3fa03"
+                    "uid": "93a2a70e-bbb8-4ace-a108-0ba023b3fa03",
+                    "entityName": null
                 },
                 "134dba28-aead-4155-b22f-bcd923caaf01": {
                     "center": {
@@ -5763,7 +5856,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "09747444-adc5-43e9-92b9-3189f6c162b9"
+                    "uid": "09747444-adc5-43e9-92b9-3189f6c162b9",
+                    "entityName": null
                 },
                 "2c231c4a-47ba-49ec-9c75-8c5acf5d0d3f": {
                     "center": {
@@ -5805,7 +5899,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ac11ec5b-e372-4013-be18-0284f8bbdd86"
+                    "uid": "ac11ec5b-e372-4013-be18-0284f8bbdd86",
+                    "entityName": null
                 },
                 "00597d49-e54e-4cfd-88cb-e1101ab84a5a": {
                     "center": {
@@ -5835,7 +5930,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9a865e0f-a41c-49d4-b070-95e322ed2d32"
+                    "uid": "9a865e0f-a41c-49d4-b070-95e322ed2d32",
+                    "entityName": null
                 },
                 "255dd2b3-1bd1-466d-9606-da9e21682919": {
                     "center": {
@@ -5865,7 +5961,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "331c3b5a-429b-4ff2-8895-f69e3386d52c"
+                    "uid": "331c3b5a-429b-4ff2-8895-f69e3386d52c",
+                    "entityName": null
                 },
                 "2692ede2-caf8-49f3-b1d3-21044a3665b4": {
                     "color": null,
@@ -5883,7 +5980,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2692ede2-caf8-49f3-b1d3-21044a3665b4"
+                    "uid": "2692ede2-caf8-49f3-b1d3-21044a3665b4",
+                    "entityName": null
                 },
                 "ec497a01-b28e-4250-b71d-d7e75866e30a": {
                     "center": {
@@ -5913,7 +6011,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0282db5d-7fe4-4346-8cc6-ae442bed25f2"
+                    "uid": "0282db5d-7fe4-4346-8cc6-ae442bed25f2",
+                    "entityName": null
                 },
                 "6ff16f08-0c91-4eb3-8420-52023077f486": {
                     "color": null,
@@ -5931,7 +6030,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "6ff16f08-0c91-4eb3-8420-52023077f486"
+                    "uid": "6ff16f08-0c91-4eb3-8420-52023077f486",
+                    "entityName": null
                 },
                 "72401ade-3746-41f4-99e3-33328f6593ee": {
                     "center": {
@@ -5961,7 +6061,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "eba8b4d3-f4ff-4d05-be54-018ef7ddf399"
+                    "uid": "eba8b4d3-f4ff-4d05-be54-018ef7ddf399",
+                    "entityName": null
                 },
                 "5afb198e-ff45-4f38-beaf-46b355f38f0f": {
                     "color": null,
@@ -5979,7 +6080,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "5afb198e-ff45-4f38-beaf-46b355f38f0f"
+                    "uid": "5afb198e-ff45-4f38-beaf-46b355f38f0f",
+                    "entityName": null
                 },
                 "f2332b05-452d-427b-8097-e3064673588b": {
                     "color": null,
@@ -5997,7 +6099,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f2332b05-452d-427b-8097-e3064673588b"
+                    "uid": "f2332b05-452d-427b-8097-e3064673588b",
+                    "entityName": null
                 },
                 "085c8a13-a903-4b1c-bdb2-9d674760a01e": {
                     "center": {
@@ -6027,7 +6130,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dbb36114-cc24-493e-937b-afb7a161199f"
+                    "uid": "dbb36114-cc24-493e-937b-afb7a161199f",
+                    "entityName": null
                 },
                 "69fc92bd-8145-4ce8-ae54-e9a659a21f69": {
                     "color": null,
@@ -6045,7 +6149,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "69fc92bd-8145-4ce8-ae54-e9a659a21f69"
+                    "uid": "69fc92bd-8145-4ce8-ae54-e9a659a21f69",
+                    "entityName": null
                 },
                 "0b010ce9-c661-4f58-9be1-2794200e98f9": {
                     "center": {
@@ -6075,7 +6180,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9ca462cd-a4fc-43cd-8d07-e19acd99c64b"
+                    "uid": "9ca462cd-a4fc-43cd-8d07-e19acd99c64b",
+                    "entityName": null
                 },
                 "79bc6cb7-fb79-421d-9fd1-2eb7107bdcf3": {
                     "color": null,
@@ -6093,7 +6199,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "79bc6cb7-fb79-421d-9fd1-2eb7107bdcf3"
+                    "uid": "79bc6cb7-fb79-421d-9fd1-2eb7107bdcf3",
+                    "entityName": null
                 },
                 "90a33554-7014-4a06-ae79-99cc54662d0f": {
                     "center": {
@@ -6123,7 +6230,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9f4c6aa4-bee0-4d90-9f30-e173157157e0"
+                    "uid": "9f4c6aa4-bee0-4d90-9f30-e173157157e0",
+                    "entityName": null
                 },
                 "f2a7f764-fc6c-45f3-bea0-5fb4654b48fe": {
                     "color": null,
@@ -6141,7 +6249,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f2a7f764-fc6c-45f3-bea0-5fb4654b48fe"
+                    "uid": "f2a7f764-fc6c-45f3-bea0-5fb4654b48fe",
+                    "entityName": null
                 },
                 "0dae8258-b6c0-47c0-bed1-e76424d25d73": {
                     "center": {
@@ -6171,7 +6280,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "31d7d662-8bd9-4e4f-92c4-ab20126aad2c"
+                    "uid": "31d7d662-8bd9-4e4f-92c4-ab20126aad2c",
+                    "entityName": null
                 },
                 "e937dac1-e26c-486b-a77f-bd7847675080": {
                     "color": null,
@@ -6189,7 +6299,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e937dac1-e26c-486b-a77f-bd7847675080"
+                    "uid": "e937dac1-e26c-486b-a77f-bd7847675080",
+                    "entityName": null
                 },
                 "c5955f66-dc50-4788-8f19-f4aea5b0c8f4": {
                     "color": null,
@@ -6207,7 +6318,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c5955f66-dc50-4788-8f19-f4aea5b0c8f4"
+                    "uid": "c5955f66-dc50-4788-8f19-f4aea5b0c8f4",
+                    "entityName": null
                 },
                 "dcf69b4d-2b24-4503-8e1d-3d859cc3acf3": {
                     "center": {
@@ -6237,7 +6349,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "166cb028-2079-4e58-8ee7-ef96d7574b5b"
+                    "uid": "166cb028-2079-4e58-8ee7-ef96d7574b5b",
+                    "entityName": null
                 },
                 "ac1a7d2d-7d39-4035-bb93-b7c5eff68829": {
                     "center": {
@@ -6279,7 +6392,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c6d2999d-b180-40a3-8524-fa371c5381e7"
+                    "uid": "c6d2999d-b180-40a3-8524-fa371c5381e7",
+                    "entityName": null
                 },
                 "92c1f143-2b99-49e5-ac3f-3338a6c3fb96": {
                     "center": {
@@ -6309,7 +6423,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c710ee6a-2a33-47c8-9b33-8d4f55dd14b3"
+                    "uid": "c710ee6a-2a33-47c8-9b33-8d4f55dd14b3",
+                    "entityName": null
                 },
                 "52cd4e6a-39d4-4dd8-8861-e59b3d59764c": {
                     "color": null,
@@ -6327,7 +6442,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "52cd4e6a-39d4-4dd8-8861-e59b3d59764c"
+                    "uid": "52cd4e6a-39d4-4dd8-8861-e59b3d59764c",
+                    "entityName": null
                 },
                 "47ed2f13-757c-4583-b431-00c7f7546d57": {
                     "center": {
@@ -6346,7 +6462,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "d3e35d00-8e6d-45ca-913a-05229d842ce7": {
                     "color": null,
@@ -6364,7 +6481,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d3e35d00-8e6d-45ca-913a-05229d842ce7"
+                    "uid": "d3e35d00-8e6d-45ca-913a-05229d842ce7",
+                    "entityName": null
                 },
                 "903e5aca-6760-4490-bcaa-0d5f498fc0e0": {
                     "color": null,
@@ -6382,7 +6500,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "903e5aca-6760-4490-bcaa-0d5f498fc0e0"
+                    "uid": "903e5aca-6760-4490-bcaa-0d5f498fc0e0",
+                    "entityName": null
                 },
                 "a4604ecc-fbf5-4f7d-b915-bf55b56a9e51": {
                     "center": {
@@ -6401,7 +6520,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "1c5511e8-c716-47d6-acec-3d818d7d9845": {
                     "color": null,
@@ -6419,7 +6539,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1c5511e8-c716-47d6-acec-3d818d7d9845"
+                    "uid": "1c5511e8-c716-47d6-acec-3d818d7d9845",
+                    "entityName": null
                 },
                 "393afcb5-5da2-4d3c-a72d-64f178919da3": {
                     "color": null,
@@ -6437,7 +6558,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "393afcb5-5da2-4d3c-a72d-64f178919da3"
+                    "uid": "393afcb5-5da2-4d3c-a72d-64f178919da3",
+                    "entityName": null
                 },
                 "90b33585-43ef-4bb1-96bf-c031ed5fa76b": {
                     "abbreviation": "KS",
@@ -6492,7 +6614,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "e35b5e84-27e2-48e8-8517-2da155d8b2d0": {
                     "center": {
@@ -6561,7 +6684,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ac0e6a14-46d0-4138-a886-314cbb122864"
+                    "uid": "ac0e6a14-46d0-4138-a886-314cbb122864",
+                    "entityName": null
                 },
                 "896c9ffa-de90-4e22-9af1-6b9125c469f3": {
                     "color": {
@@ -6603,7 +6727,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "896c9ffa-de90-4e22-9af1-6b9125c469f3"
+                    "uid": "896c9ffa-de90-4e22-9af1-6b9125c469f3",
+                    "entityName": null
                 },
                 "dadb6bd8-139a-4703-ab4c-9902d5962433": {
                     "center": {
@@ -6622,7 +6747,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "9134b038-e169-4d0f-ad44-848cbf5e240a": {
                     "color": null,
@@ -6640,7 +6766,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9134b038-e169-4d0f-ad44-848cbf5e240a"
+                    "uid": "9134b038-e169-4d0f-ad44-848cbf5e240a",
+                    "entityName": null
                 },
                 "2f513a20-49ca-45e6-a772-d5984ca54cdc": {
                     "color": null,
@@ -6658,7 +6785,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2f513a20-49ca-45e6-a772-d5984ca54cdc"
+                    "uid": "2f513a20-49ca-45e6-a772-d5984ca54cdc",
+                    "entityName": null
                 },
                 "4e2b47cf-8321-422b-ba74-f68a75500843": {
                     "center": {
@@ -6677,7 +6805,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "79fdf5cb-fe9a-4912-b12b-c4b903157168": {
                     "color": null,
@@ -6695,7 +6824,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "79fdf5cb-fe9a-4912-b12b-c4b903157168"
+                    "uid": "79fdf5cb-fe9a-4912-b12b-c4b903157168",
+                    "entityName": null
                 },
                 "00e36d57-d02b-47a2-bb4c-20c390996961": {
                     "color": null,
@@ -6713,7 +6843,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "00e36d57-d02b-47a2-bb4c-20c390996961"
+                    "uid": "00e36d57-d02b-47a2-bb4c-20c390996961",
+                    "entityName": null
                 },
                 "35f3e777-c687-4c4d-8a09-6cb4e6ec66df": {
                     "abbreviation": "",
@@ -6732,7 +6863,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "widthMM": 500,
                     "heightMM": 500,
                     "flowRateMJH": 80,
-                    "diversity": 100,
+                    "diversity": 100
                 },
                 "7ed19aa4-6d4a-4d5d-b446-b99dab105fb3": {
                     "center": {
@@ -6787,7 +6918,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ef3059d2-c7e2-414b-8195-fbaedee768a3"
+                    "uid": "ef3059d2-c7e2-414b-8195-fbaedee768a3",
+                    "entityName": null
                 },
                 "034f6a6e-5056-485e-a2ff-5ddbc86307e7": {
                     "color": null,
@@ -6805,7 +6937,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "034f6a6e-5056-485e-a2ff-5ddbc86307e7"
+                    "uid": "034f6a6e-5056-485e-a2ff-5ddbc86307e7",
+                    "entityName": null
                 },
                 "1e657f8e-4da3-4f6a-9c51-95103ef2d3d7": {
                     "center": {
@@ -6824,7 +6957,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "00c1fc86-a63b-405b-aa75-6dc77134c233": {
                     "color": null,
@@ -6842,7 +6976,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "00c1fc86-a63b-405b-aa75-6dc77134c233"
+                    "uid": "00c1fc86-a63b-405b-aa75-6dc77134c233",
+                    "entityName": null
                 },
                 "22eec533-43a6-4ea0-95e3-26ef8b3370fe": {
                     "color": null,
@@ -6860,7 +6995,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "22eec533-43a6-4ea0-95e3-26ef8b3370fe"
+                    "uid": "22eec533-43a6-4ea0-95e3-26ef8b3370fe",
+                    "entityName": null
                 },
                 "2bf89f70-27c9-4351-af7b-e8a8a48b4953": {
                     "center": {
@@ -6890,7 +7026,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "32aa24aa-2e00-4df4-8cb2-8b96c8472f35"
+                    "uid": "32aa24aa-2e00-4df4-8cb2-8b96c8472f35",
+                    "entityName": null
                 },
                 "b1c0c41b-0c8a-4d93-b2d5-7e058494468f": {
                     "color": null,
@@ -6908,7 +7045,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b1c0c41b-0c8a-4d93-b2d5-7e058494468f"
+                    "uid": "b1c0c41b-0c8a-4d93-b2d5-7e058494468f",
+                    "entityName": null
                 },
                 "14ac630c-807a-4d9d-9a63-c3eab67eb41f": {
                     "center": {
@@ -6938,7 +7076,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "836c5207-78e7-4258-a47b-dbd4ff5f1b23"
+                    "uid": "836c5207-78e7-4258-a47b-dbd4ff5f1b23",
+                    "entityName": null
                 },
                 "2b308343-5268-4cb8-bfd2-c23d9e3afa96": {
                     "color": null,
@@ -6956,7 +7095,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2b308343-5268-4cb8-bfd2-c23d9e3afa96"
+                    "uid": "2b308343-5268-4cb8-bfd2-c23d9e3afa96",
+                    "entityName": null
                 },
                 "4061e185-80d9-450a-878d-e65e99f9dfa9": {
                     "center": {
@@ -6986,7 +7126,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9378f75d-b13f-481f-98d0-22f2f10f4505"
+                    "uid": "9378f75d-b13f-481f-98d0-22f2f10f4505",
+                    "entityName": null
                 },
                 "af9d36d7-94eb-404b-804c-b5534cd9fa8b": {
                     "color": null,
@@ -7004,7 +7145,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "af9d36d7-94eb-404b-804c-b5534cd9fa8b"
+                    "uid": "af9d36d7-94eb-404b-804c-b5534cd9fa8b",
+                    "entityName": null
                 },
                 "70dd8ef9-23db-4a0c-a2c9-ae74e4bdde41": {
                     "center": {
@@ -7034,7 +7176,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "868bd0ce-c56c-440f-b3b8-283ee9226a01"
+                    "uid": "868bd0ce-c56c-440f-b3b8-283ee9226a01",
+                    "entityName": null
                 },
                 "4d1df30f-2355-4c30-b321-4ec36d09a55e": {
                     "color": null,
@@ -7052,7 +7195,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "4d1df30f-2355-4c30-b321-4ec36d09a55e"
+                    "uid": "4d1df30f-2355-4c30-b321-4ec36d09a55e",
+                    "entityName": null
                 },
                 "1ab78a48-0fa3-42c0-a7cb-746f4b4def18": {
                     "color": null,
@@ -7070,7 +7214,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1ab78a48-0fa3-42c0-a7cb-746f4b4def18"
+                    "uid": "1ab78a48-0fa3-42c0-a7cb-746f4b4def18",
+                    "entityName": null
                 },
                 "c9cb6a8c-fc04-4b2e-87f8-9671bfa392a2": {
                     "center": {
@@ -7085,7 +7230,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveGroundM": 14,
                     "minPressureKPA": 400,
                     "maxPressureKPA": 600,
-                    "uid": "c9cb6a8c-fc04-4b2e-87f8-9671bfa392a2"
+                    "uid": "c9cb6a8c-fc04-4b2e-87f8-9671bfa392a2",
+                    "entityName": null
                 },
                 "1855d963-5b19-4122-ac07-6cfeaa49ed7e": {
                     "center": {
@@ -7115,7 +7261,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ca640aed-ec46-4e52-83a6-14b2c8f2776a"
+                    "uid": "ca640aed-ec46-4e52-83a6-14b2c8f2776a",
+                    "entityName": null
                 },
                 "13e0fab4-005e-4605-9730-d46455b99447": {
                     "center": {
@@ -7157,7 +7304,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "fe3707d2-1673-457c-a576-a51403721299"
+                    "uid": "fe3707d2-1673-457c-a576-a51403721299",
+                    "entityName": null
                 },
                 "1c44c5bb-4124-42e9-87a2-5d64cc16bde2": {
                     "center": {
@@ -7187,7 +7335,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "29711703-feac-4795-a4de-9e52f3102684"
+                    "uid": "29711703-feac-4795-a4de-9e52f3102684",
+                    "entityName": null
                 },
                 "9e94e5db-83ce-41da-87e9-7765080c9a6d": {
                     "center": {
@@ -7217,7 +7366,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "cd29bc53-be72-42c3-9388-fba219f0545c"
+                    "uid": "cd29bc53-be72-42c3-9388-fba219f0545c",
+                    "entityName": null
                 },
                 "ddfc6f84-d2b7-4fcb-a954-d250b97c7ca4": {
                     "color": null,
@@ -7235,7 +7385,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ddfc6f84-d2b7-4fcb-a954-d250b97c7ca4"
+                    "uid": "ddfc6f84-d2b7-4fcb-a954-d250b97c7ca4",
+                    "entityName": null
                 },
                 "37c0d877-7459-4950-b207-7fb4fdd261b0": {
                     "color": null,
@@ -7253,7 +7404,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "fire-hydrant",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "37c0d877-7459-4950-b207-7fb4fdd261b0"
+                    "uid": "37c0d877-7459-4950-b207-7fb4fdd261b0",
+                    "entityName": null
                 },
                 "b3d9041c-721a-4b23-90d1-fdd9d5ddae9b": {
                     "center": {
@@ -7297,7 +7449,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "calculation": {
                         "widthMM": null,
-                        "depthMM": null,
+                        "depthMM": null
                     }
                 },
                 "1ef30858-4e4a-42d2-98e0-07e4e2fac089": {
@@ -7354,7 +7506,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "20e12e5c-3629-43fd-95ae-da066b9dd992"
+                    "uid": "20e12e5c-3629-43fd-95ae-da066b9dd992",
+                    "entityName": null
                 },
                 "1127c7c0-0729-4320-b8c2-8ef8fe55e881": {
                     "center": {
@@ -7384,7 +7537,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f075449c-c0db-4ade-9f2d-60b9bc99316b"
+                    "uid": "f075449c-c0db-4ade-9f2d-60b9bc99316b",
+                    "entityName": null
                 },
                 "2a22eb4b-f392-49d3-b34f-9ae139aa5ee7": {
                     "color": null,
@@ -7402,7 +7556,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2a22eb4b-f392-49d3-b34f-9ae139aa5ee7"
+                    "uid": "2a22eb4b-f392-49d3-b34f-9ae139aa5ee7",
+                    "entityName": null
                 },
                 "ffb087ff-4fb6-4215-809c-927313b0dec1": {
                     "color": null,
@@ -7420,7 +7575,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ffb087ff-4fb6-4215-809c-927313b0dec1"
+                    "uid": "ffb087ff-4fb6-4215-809c-927313b0dec1",
+                    "entityName": null
                 },
                 "69b71934-c509-47e4-98db-2e845994fb15": {
                     "center": {
@@ -7435,7 +7591,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveGroundM": null,
                     "minPressureKPA": null,
                     "maxPressureKPA": null,
-                    "uid": "69b71934-c509-47e4-98db-2e845994fb15"
+                    "uid": "69b71934-c509-47e4-98db-2e845994fb15",
+                    "entityName": null
                 },
                 "4b5857bc-dbe7-4ee4-8638-53e7d3825516": {
                     "center": {
@@ -7465,7 +7622,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "2b96b70d-eba8-49b2-9da2-695cdad393d0"
+                    "uid": "2b96b70d-eba8-49b2-9da2-695cdad393d0",
+                    "entityName": null
                 },
                 "bc2b94bf-4ca6-4df9-8b84-09336426c613": {
                     "center": {
@@ -7495,7 +7653,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "ec08bb40-a1c7-4f75-b068-86ff0fc434d5"
+                    "uid": "ec08bb40-a1c7-4f75-b068-86ff0fc434d5",
+                    "entityName": null
                 },
                 "9f61793f-b1dd-4359-8a06-baf3f5aa5004": {
                     "center": {
@@ -7537,7 +7696,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "0dee797f-fe76-40a9-9f96-f8fb1c1b743f"
+                    "uid": "0dee797f-fe76-40a9-9f96-f8fb1c1b743f",
+                    "entityName": null
                 },
                 "fe2f2c58-5e20-4de0-8c81-62a6cb2e45fa": {
                     "center": {
@@ -7554,7 +7714,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "FLOOR_WASTE",
                         "catalogId": "floorWaste"
-                    }
+                    },
+                    "entityName": null
                 },
                 "abd9c7c7-5092-48db-a075-868b390992b4": {
                     "center": {
@@ -7571,7 +7732,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "INSPECTION_OPENING",
                         "catalogId": "inspectionOpening"
-                    }
+                    },
+                    "entityName": null
                 },
                 "8ea8365d-0842-4a3d-9b73-a9bada86e978": {
                     "center": {
@@ -7613,7 +7775,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "6913d396-dae4-4134-bf19-7076fa1534b1"
+                    "uid": "6913d396-dae4-4134-bf19-7076fa1534b1",
+                    "entityName": null
                 },
                 "ae35f2ad-8d1d-46a9-a053-521ef7de6c7e": {
                     "center": {
@@ -7643,7 +7806,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "eb61d3e2-21e5-498a-a193-3a1a04656693"
+                    "uid": "eb61d3e2-21e5-498a-a193-3a1a04656693",
+                    "entityName": null
                 },
                 "1ffc312b-d49d-4769-9952-0e3eb4c5e19a": {
                     "center": {
@@ -7673,7 +7837,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "26c63bd3-252e-4e6c-b233-b050b9934109"
+                    "uid": "26c63bd3-252e-4e6c-b233-b050b9934109",
+                    "entityName": null
                 },
                 "06777789-2949-4061-bf9b-c24e5ac0d2b3": {
                     "center": {
@@ -7703,7 +7868,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "33eb2ffb-0cfa-4891-80d6-440a95132b8d"
+                    "uid": "33eb2ffb-0cfa-4891-80d6-440a95132b8d",
+                    "entityName": null
                 },
                 "652895f7-ba43-4851-af32-230e186a4239": {
                     "center": {
@@ -7733,7 +7899,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f3588f07-c28f-4e0f-86a3-82761decd59c"
+                    "uid": "f3588f07-c28f-4e0f-86a3-82761decd59c",
+                    "entityName": null
                 },
                 "53b933c9-f364-4800-9b37-041d2a4fc789": {
                     "center": {
@@ -7763,7 +7930,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "ef6bc050-8953-4c7a-bf8b-fa335ab1ba01"
+                    "uid": "ef6bc050-8953-4c7a-bf8b-fa335ab1ba01",
+                    "entityName": null
                 },
                 "a989f559-2a24-4e91-abc0-f8dfe71641f1": {
                     "center": {
@@ -7793,7 +7961,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f619eb0a-54d0-41da-8e0f-03dace1cea60"
+                    "uid": "f619eb0a-54d0-41da-8e0f-03dace1cea60",
+                    "entityName": null
                 },
                 "4c359b9b-cdf9-4191-ab12-46572b2ca883": {
                     "color": null,
@@ -7811,7 +7980,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "4c359b9b-cdf9-4191-ab12-46572b2ca883"
+                    "uid": "4c359b9b-cdf9-4191-ab12-46572b2ca883",
+                    "entityName": null
                 },
                 "dd80b698-9356-4c07-821c-8de5b79528d4": {
                     "center": {
@@ -7841,7 +8011,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "6f2e3735-2484-45be-a7dc-f880413c296a"
+                    "uid": "6f2e3735-2484-45be-a7dc-f880413c296a",
+                    "entityName": null
                 },
                 "7ba6772b-4fd3-4cf5-9d26-1156747e70f5": {
                     "center": {
@@ -7871,7 +8042,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "54126f89-c03e-4dd1-aae3-59ca8816f985"
+                    "uid": "54126f89-c03e-4dd1-aae3-59ca8816f985",
+                    "entityName": null
                 },
                 "896fa43d-c5bb-4389-b8a8-7f863e479622": {
                     "color": null,
@@ -7889,7 +8061,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "896fa43d-c5bb-4389-b8a8-7f863e479622"
+                    "uid": "896fa43d-c5bb-4389-b8a8-7f863e479622",
+                    "entityName": null
                 },
                 "3997ebc9-ad9a-4c73-bf32-a12f685d7e78": {
                     "color": null,
@@ -7907,7 +8080,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "3997ebc9-ad9a-4c73-bf32-a12f685d7e78"
+                    "uid": "3997ebc9-ad9a-4c73-bf32-a12f685d7e78",
+                    "entityName": null
                 },
                 "421c42e7-0f7c-42dc-9379-b03e1b5d8eb4": {
                     "center": {
@@ -7937,7 +8111,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "dfb1e5bd-3613-4e39-be7e-2b67cd74b85c"
+                    "uid": "dfb1e5bd-3613-4e39-be7e-2b67cd74b85c",
+                    "entityName": null
                 },
                 "ea8d6558-8f9a-4293-b4f6-7a2c357ef6d5": {
                     "color": null,
@@ -7955,7 +8130,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "ea8d6558-8f9a-4293-b4f6-7a2c357ef6d5"
+                    "uid": "ea8d6558-8f9a-4293-b4f6-7a2c357ef6d5",
+                    "entityName": null
                 },
                 "6dd67d54-751a-4fb6-afc0-db70c4ba4dcc": {
                     "center": {
@@ -7985,7 +8161,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f6ca8bfe-2234-4567-9e3e-cc47fd2eae40"
+                    "uid": "f6ca8bfe-2234-4567-9e3e-cc47fd2eae40",
+                    "entityName": null
                 },
                 "a9eff827-84b3-47fa-986a-28b19d1837c1": {
                     "color": null,
@@ -8003,7 +8180,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a9eff827-84b3-47fa-986a-28b19d1837c1"
+                    "uid": "a9eff827-84b3-47fa-986a-28b19d1837c1",
+                    "entityName": null
                 },
                 "0435af4d-a4f7-47e9-9244-c8e659f3c359": {
                     "center": {
@@ -8033,7 +8211,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "0f62ecb8-013e-4365-9d1f-b0e07364bc63"
+                    "uid": "0f62ecb8-013e-4365-9d1f-b0e07364bc63",
+                    "entityName": null
                 },
                 "36e4a666-fcf9-4e92-a641-0fea8d2ad694": {
                     "color": null,
@@ -8051,7 +8230,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "36e4a666-fcf9-4e92-a641-0fea8d2ad694"
+                    "uid": "36e4a666-fcf9-4e92-a641-0fea8d2ad694",
+                    "entityName": null
                 },
                 "e5bfd9b5-c893-445b-b92c-6174b627840d": {
                     "center": {
@@ -8081,7 +8261,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "cef57e21-54ec-4978-a77c-0e4d77637c6e"
+                    "uid": "cef57e21-54ec-4978-a77c-0e4d77637c6e",
+                    "entityName": null
                 },
                 "e6e8cc37-e2b2-4d27-9d02-a3746170c227": {
                     "color": null,
@@ -8099,7 +8280,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "e6e8cc37-e2b2-4d27-9d02-a3746170c227"
+                    "uid": "e6e8cc37-e2b2-4d27-9d02-a3746170c227",
+                    "entityName": null
                 },
                 "99389ff7-f4c8-4b99-bffd-f03cd4654ff1": {
                     "center": {
@@ -8129,7 +8311,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a35fdae6-7b9e-4a7c-8de0-4b1a393e88fc"
+                    "uid": "a35fdae6-7b9e-4a7c-8de0-4b1a393e88fc",
+                    "entityName": null
                 },
                 "659dde9a-b586-4b37-84b1-603e18ad0bbc": {
                     "color": null,
@@ -8147,7 +8330,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "659dde9a-b586-4b37-84b1-603e18ad0bbc"
+                    "uid": "659dde9a-b586-4b37-84b1-603e18ad0bbc",
+                    "entityName": null
                 },
                 "2fbd0873-3bac-4efd-9587-312647467e6b": {
                     "center": {
@@ -8177,7 +8361,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "785b1262-b153-41f0-a207-1122dff45a33"
+                    "uid": "785b1262-b153-41f0-a207-1122dff45a33",
+                    "entityName": null
                 },
                 "7b4a9bea-e71c-4ca2-b878-c312a386b025": {
                     "color": null,
@@ -8195,7 +8380,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "7b4a9bea-e71c-4ca2-b878-c312a386b025"
+                    "uid": "7b4a9bea-e71c-4ca2-b878-c312a386b025",
+                    "entityName": null
                 },
                 "a7ef1a6b-0523-404c-8870-28ab8bfffe61": {
                     "center": {
@@ -8225,7 +8411,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "be57490f-0aac-4cd2-88c0-9f2fd4851050"
+                    "uid": "be57490f-0aac-4cd2-88c0-9f2fd4851050",
+                    "entityName": null
                 },
                 "fe4b3c8b-4a82-451c-a1ef-3c710eeeb37c": {
                     "color": null,
@@ -8243,7 +8430,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "fe4b3c8b-4a82-451c-a1ef-3c710eeeb37c"
+                    "uid": "fe4b3c8b-4a82-451c-a1ef-3c710eeeb37c",
+                    "entityName": null
                 },
                 "64d6f74f-800a-4e45-ac13-74e238950ba0": {
                     "color": null,
@@ -8261,7 +8449,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "64d6f74f-800a-4e45-ac13-74e238950ba0"
+                    "uid": "64d6f74f-800a-4e45-ac13-74e238950ba0",
+                    "entityName": null
                 },
                 "f5b251aa-6416-400b-b166-46c1bd99edc6": {
                     "heightAboveFloorM": 0.75,
@@ -8291,7 +8480,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "calculation": {
                         "widthMM": null,
-                        "depthMM": null,
+                        "depthMM": null
                     }
                 },
                 "d84d543c-ea98-436a-8611-9cef9c249b7f": {
@@ -8348,7 +8537,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "25d7457b-614d-4795-b0e5-940c6f148594"
+                    "uid": "25d7457b-614d-4795-b0e5-940c6f148594",
+                    "entityName": null
                 },
                 "03cad8bf-90be-4735-b844-c080c07ddcf6": {
                     "center": {
@@ -8378,7 +8568,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "2d889e86-07e9-4fe2-a49f-b72359bb50b8"
+                    "uid": "2d889e86-07e9-4fe2-a49f-b72359bb50b8",
+                    "entityName": null
                 },
                 "94e60289-1d2c-4063-86e6-8a80a5ea87c8": {
                     "color": null,
@@ -8396,7 +8587,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "94e60289-1d2c-4063-86e6-8a80a5ea87c8"
+                    "uid": "94e60289-1d2c-4063-86e6-8a80a5ea87c8",
+                    "entityName": null
                 },
                 "db4b7a05-885e-450b-b8a9-f3e747b95c60": {
                     "color": null,
@@ -8414,7 +8606,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "db4b7a05-885e-450b-b8a9-f3e747b95c60"
+                    "uid": "db4b7a05-885e-450b-b8a9-f3e747b95c60",
+                    "entityName": null
                 },
                 "857f3a29-258e-4d19-9d34-6820046fae6c": {
                     "center": {
@@ -8444,7 +8637,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "00b36398-40a5-432a-ac29-5d3731a1d14c"
+                    "uid": "00b36398-40a5-432a-ac29-5d3731a1d14c",
+                    "entityName": null
                 },
                 "90c958cc-7573-4acb-b485-0ad1b0e393a6": {
                     "center": {
@@ -8474,7 +8668,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "2b3836e5-5c9c-4921-a74c-0870696aee23"
+                    "uid": "2b3836e5-5c9c-4921-a74c-0870696aee23",
+                    "entityName": null
                 },
                 "9e5fea00-7cde-480e-98ec-64f5e656307a": {
                     "node": {
@@ -8560,7 +8755,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "049f7396-bb59-44c3-ad07-a14fed201dc6"
+                    "uid": "049f7396-bb59-44c3-ad07-a14fed201dc6",
+                    "entityName": null
                 },
                 "91634342-4ead-4ccd-9aeb-184943545f85": {
                     "color": null,
@@ -8578,7 +8774,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "91634342-4ead-4ccd-9aeb-184943545f85"
+                    "uid": "91634342-4ead-4ccd-9aeb-184943545f85",
+                    "entityName": null
                 },
                 "cc863c18-6d91-4d56-a51f-5752bb28a7a2": {
                     "center": {
@@ -8608,7 +8805,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "122b7e18-96de-4d22-8073-adf483e8dd65"
+                    "uid": "122b7e18-96de-4d22-8073-adf483e8dd65",
+                    "entityName": null
                 },
                 "84cc8729-c517-4a3d-8dd4-078389c4e56d": {
                     "center": {
@@ -8650,7 +8848,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "9816d06c-2717-49d1-bbbd-ba4ab7247f8a"
+                    "uid": "9816d06c-2717-49d1-bbbd-ba4ab7247f8a",
+                    "entityName": null
                 },
                 "97195e91-6183-4c82-aac7-cea71ca44fce": {
                     "center": {
@@ -8680,7 +8879,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "946290d2-cc2b-4fba-8860-16f127d53662"
+                    "uid": "946290d2-cc2b-4fba-8860-16f127d53662",
+                    "entityName": null
                 },
                 "7f8c24b5-5d22-4af0-a162-012f28cbfb1c": {
                     "color": null,
@@ -8698,7 +8898,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "7f8c24b5-5d22-4af0-a162-012f28cbfb1c"
+                    "uid": "7f8c24b5-5d22-4af0-a162-012f28cbfb1c",
+                    "entityName": null
                 },
                 "e5f43269-b050-4ae6-adf1-5902d7192418": {
                     "center": {
@@ -8728,7 +8929,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "881a50a1-d627-4513-a114-34cf8dbcc0d2"
+                    "uid": "881a50a1-d627-4513-a114-34cf8dbcc0d2",
+                    "entityName": null
                 },
                 "a195940d-d152-4bd5-b69c-e1e1c240f519": {
                     "color": null,
@@ -8746,7 +8948,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a195940d-d152-4bd5-b69c-e1e1c240f519"
+                    "uid": "a195940d-d152-4bd5-b69c-e1e1c240f519",
+                    "entityName": null
                 },
                 "9822dee8-bde1-4640-89ed-3679614ec645": {
                     "center": {
@@ -8776,7 +8979,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "631e300c-7a89-4517-9ed4-aa690ce5f008"
+                    "uid": "631e300c-7a89-4517-9ed4-aa690ce5f008",
+                    "entityName": null
                 },
                 "384f1704-881e-4d0b-9305-a1fa75176d78": {
                     "color": null,
@@ -8794,7 +8998,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "384f1704-881e-4d0b-9305-a1fa75176d78"
+                    "uid": "384f1704-881e-4d0b-9305-a1fa75176d78",
+                    "entityName": null
                 },
                 "ae371914-4e03-4344-bf5a-9e36e9bb3714": {
                     "center": {
@@ -8824,7 +9029,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "90891b5b-5c77-4621-8463-d3ef14014fe1"
+                    "uid": "90891b5b-5c77-4621-8463-d3ef14014fe1",
+                    "entityName": null
                 },
                 "fca8909e-8f0c-4036-9752-3a182f1780e3": {
                     "center": {
@@ -8854,7 +9060,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "2abb31e5-61c3-4ea2-b2de-356e9a7fe108"
+                    "uid": "2abb31e5-61c3-4ea2-b2de-356e9a7fe108",
+                    "entityName": null
                 },
                 "d83690c5-f36e-4dd1-962d-68e8e9bc1654": {
                     "color": null,
@@ -8872,7 +9079,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "d83690c5-f36e-4dd1-962d-68e8e9bc1654"
+                    "uid": "d83690c5-f36e-4dd1-962d-68e8e9bc1654",
+                    "entityName": null
                 },
                 "169a3182-498e-43c8-8f80-e61ce5881971": {
                     "color": null,
@@ -8890,7 +9098,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "169a3182-498e-43c8-8f80-e61ce5881971"
+                    "uid": "169a3182-498e-43c8-8f80-e61ce5881971",
+                    "entityName": null
                 }
             },
             "floorHeightM": 15,
@@ -8987,7 +9196,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "88af38a7-bfe6-4549-9e28-bee8341b7ee4": {
                     "center": {
@@ -9081,7 +9291,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "ca77bab0-7f69-4e97-a30c-951b3d852c62": {
                     "center": {
@@ -9175,7 +9386,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "67bbb11b-b24a-48e2-8df9-7df8a9b6c54c": {
                     "center": {
@@ -9269,7 +9481,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "53a93f60-5b0a-43bc-b6df-fffe4a057e25": {
                     "center": {
@@ -9363,7 +9576,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "ad70a616-36d4-41d5-9209-c54fcbfce92a": {
                     "center": {
@@ -9457,7 +9671,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "f9ff076c-deee-4908-8e55-1a4368f906bd": {
                     "center": {
@@ -9541,7 +9756,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "07585f6f-c5d2-408e-8046-680867f70400": {
                     "center": {
@@ -9612,7 +9828,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "0fa8d6d1-c290-4aa2-b1a2-c591ee7a51ab": {
                     "center": {
@@ -9683,7 +9900,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "d92ef1bf-5983-4ca5-bbff-34bdf91dd5d5": {
                     "center": {
@@ -9754,7 +9972,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "8da7eae5-b33e-498c-a01f-b9d1c6d396a8": {
                     "center": {
@@ -9825,7 +10044,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "369e575c-6fc3-4d90-bf12-3ef4ded61520": {
                     "center": {
@@ -9896,7 +10116,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "0d50967e-f4c2-43b7-bdb0-78afb862eefc": {
                     "center": {
@@ -9967,7 +10188,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "8fa2663d-39a1-409d-8e9c-65f5fe33ded8": {
                     "center": {
@@ -10038,7 +10260,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "a4bff9ab-7fc2-4329-aced-619531b6feda": {
                     "center": {
@@ -10143,7 +10366,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "adfcddc4-0e1e-4829-bfd7-5c31114560bf": {
                     "center": {
@@ -10212,7 +10436,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dceadb63-4e97-4003-83e4-98483299a567"
+                    "uid": "dceadb63-4e97-4003-83e4-98483299a567",
+                    "entityName": null
                 },
                 "cb3ee8cc-cf92-42da-9b8d-51fa718fc923": {
                     "center": {
@@ -10254,7 +10479,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "aa7c2aea-1727-4e7f-839a-912ba3497353"
+                    "uid": "aa7c2aea-1727-4e7f-839a-912ba3497353",
+                    "entityName": null
                 },
                 "d80cbf7f-e347-4be4-bda4-041d2a427faa": {
                     "center": {
@@ -10284,7 +10510,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d919a4e2-25e9-4984-b93e-011e57492e49"
+                    "uid": "d919a4e2-25e9-4984-b93e-011e57492e49",
+                    "entityName": null
                 },
                 "f306289f-579c-46aa-9aec-07541df9a791": {
                     "center": {
@@ -10314,7 +10541,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f5685d67-f3ae-45eb-b139-f1f66c3341a3"
+                    "uid": "f5685d67-f3ae-45eb-b139-f1f66c3341a3",
+                    "entityName": null
                 },
                 "0f7306dc-819f-46a1-bb1c-2e1ce8076fec": {
                     "center": {
@@ -10344,7 +10572,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f95ebb42-565a-404f-8a92-adbb2721d9a4"
+                    "uid": "f95ebb42-565a-404f-8a92-adbb2721d9a4",
+                    "entityName": null
                 },
                 "6866814d-4d28-4966-b08a-a054f2008d9c": {
                     "center": {
@@ -10374,7 +10603,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "4665d5ca-3c1e-4143-8908-32d38c5fbede"
+                    "uid": "4665d5ca-3c1e-4143-8908-32d38c5fbede",
+                    "entityName": null
                 },
                 "06d2188c-5288-47de-a594-6c69d8e3773f": {
                     "center": {
@@ -10452,7 +10682,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "046deaee-555d-4188-96b2-f504589532d3"
+                    "uid": "046deaee-555d-4188-96b2-f504589532d3",
+                    "entityName": null
                 },
                 "29270605-9008-4886-bd7b-25974ef0354a": {
                     "color": null,
@@ -10470,7 +10701,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "29270605-9008-4886-bd7b-25974ef0354a"
+                    "uid": "29270605-9008-4886-bd7b-25974ef0354a",
+                    "entityName": null
                 },
                 "7e51dbcc-213f-4064-9e7a-150ef095d2db": {
                     "center": {
@@ -10489,7 +10721,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "dc2548d3-87bf-478b-8585-7edb859bca94": {
                     "color": null,
@@ -10507,7 +10740,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dc2548d3-87bf-478b-8585-7edb859bca94"
+                    "uid": "dc2548d3-87bf-478b-8585-7edb859bca94",
+                    "entityName": null
                 },
                 "698efb2e-60e7-4073-8c1f-b0cca6b17457": {
                     "color": null,
@@ -10525,7 +10759,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "698efb2e-60e7-4073-8c1f-b0cca6b17457"
+                    "uid": "698efb2e-60e7-4073-8c1f-b0cca6b17457",
+                    "entityName": null
                 },
                 "4e53cb22-c953-445b-a59f-8871be2f4a82": {
                     "center": {
@@ -10544,7 +10779,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "71b79f59-c69f-4fa2-a0ad-c29dca1fcfca": {
                     "color": null,
@@ -10562,7 +10798,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "71b79f59-c69f-4fa2-a0ad-c29dca1fcfca"
+                    "uid": "71b79f59-c69f-4fa2-a0ad-c29dca1fcfca",
+                    "entityName": null
                 },
                 "a0cf6f2b-6eb8-4151-b08d-b07c6c3be720": {
                     "color": null,
@@ -10580,7 +10817,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a0cf6f2b-6eb8-4151-b08d-b07c6c3be720"
+                    "uid": "a0cf6f2b-6eb8-4151-b08d-b07c6c3be720",
+                    "entityName": null
                 },
                 "08aed207-e38d-4d02-8ec6-4bb78bfc2c11": {
                     "coldRoughInUid": "f13e34b6-d899-4c73-89a5-9e97562d2992",
@@ -10607,7 +10845,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveFloorM": 1,
                     "parentUid": "c4c97bf5-4bbd-4405-bc75-0bb09e46b23f",
                     "outputTemperatureC": 50,
-                    "uid": "08aed207-e38d-4d02-8ec6-4bb78bfc2c11"
+                    "uid": "08aed207-e38d-4d02-8ec6-4bb78bfc2c11",
+                    "entityName": null
                 },
                 "f13e34b6-d899-4c73-89a5-9e97562d2992": {
                     "center": {
@@ -10689,7 +10928,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "6ff30a70-380b-4f05-92c1-dfc685454e74"
+                    "uid": "6ff30a70-380b-4f05-92c1-dfc685454e74",
+                    "entityName": null
                 },
                 "22766997-e5e6-42b7-a663-30cebeff50b9": {
                     "center": {
@@ -10743,7 +10983,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "4a0bd6af-7dba-4df2-8be9-5ea77d469dc3"
+                    "uid": "4a0bd6af-7dba-4df2-8be9-5ea77d469dc3",
+                    "entityName": null
                 },
                 "afd7056c-c153-4482-8fb2-90e49723bc0a": {
                     "coldRoughInUid": "0fcad641-4dc2-45b4-9724-21c882ac3636",
@@ -10770,7 +11011,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "heightAboveFloorM": 1,
                     "parentUid": "c4c97bf5-4bbd-4405-bc75-0bb09e46b23f",
                     "outputTemperatureC": 50,
-                    "uid": "afd7056c-c153-4482-8fb2-90e49723bc0a"
+                    "uid": "afd7056c-c153-4482-8fb2-90e49723bc0a",
+                    "entityName": null
                 },
                 "0fcad641-4dc2-45b4-9724-21c882ac3636": {
                     "center": {
@@ -10852,7 +11094,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "7b1de821-748f-48f8-b5ee-1631ffa943f4"
+                    "uid": "7b1de821-748f-48f8-b5ee-1631ffa943f4",
+                    "entityName": null
                 },
                 "e6fb586d-2d3b-4ff5-9cd0-909b1511e3ad": {
                     "color": null,
@@ -10870,7 +11113,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e6fb586d-2d3b-4ff5-9cd0-909b1511e3ad"
+                    "uid": "e6fb586d-2d3b-4ff5-9cd0-909b1511e3ad",
+                    "entityName": null
                 },
                 "9b942ed6-4c67-4726-922e-368aa63ac309": {
                     "center": {
@@ -10900,7 +11144,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ae6d0f91-e4e5-497a-9d7c-b8cb3cd67f46"
+                    "uid": "ae6d0f91-e4e5-497a-9d7c-b8cb3cd67f46",
+                    "entityName": null
                 },
                 "7c33d5c3-8b7e-4b87-adfe-6a7ece6b5fcc": {
                     "color": null,
@@ -10918,7 +11163,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "7c33d5c3-8b7e-4b87-adfe-6a7ece6b5fcc"
+                    "uid": "7c33d5c3-8b7e-4b87-adfe-6a7ece6b5fcc",
+                    "entityName": null
                 },
                 "8c8e1b14-7ddd-4c5c-98a5-8f908019bb8d": {
                     "center": {
@@ -10937,7 +11183,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "b3409e40-3c7a-4981-84b5-d9ea28849963": {
                     "color": null,
@@ -10955,7 +11202,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b3409e40-3c7a-4981-84b5-d9ea28849963"
+                    "uid": "b3409e40-3c7a-4981-84b5-d9ea28849963",
+                    "entityName": null
                 },
                 "ca9581b3-bc85-46ee-8bc5-6f84ce293108": {
                     "color": null,
@@ -10973,7 +11221,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ca9581b3-bc85-46ee-8bc5-6f84ce293108"
+                    "uid": "ca9581b3-bc85-46ee-8bc5-6f84ce293108",
+                    "entityName": null
                 },
                 "f90294f0-4af1-44f2-83a9-243609c7eee9": {
                     "center": {
@@ -10992,7 +11241,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "92a8fc4f-d22d-4b48-8522-6e3a08849c34": {
                     "color": null,
@@ -11010,7 +11260,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "92a8fc4f-d22d-4b48-8522-6e3a08849c34"
+                    "uid": "92a8fc4f-d22d-4b48-8522-6e3a08849c34",
+                    "entityName": null
                 },
                 "3642763e-fa73-49d5-a387-06aa71175772": {
                     "color": null,
@@ -11028,7 +11279,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3642763e-fa73-49d5-a387-06aa71175772"
+                    "uid": "3642763e-fa73-49d5-a387-06aa71175772",
+                    "entityName": null
                 },
                 "8cfb1394-a59a-4010-842b-a6482d29957d": {
                     "center": {
@@ -11071,7 +11323,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "1a05173c-5559-47f2-bae8-f836aaa29fd5": {
                     "color": {
@@ -11113,7 +11366,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1a05173c-5559-47f2-bae8-f836aaa29fd5"
+                    "uid": "1a05173c-5559-47f2-bae8-f836aaa29fd5",
+                    "entityName": null
                 },
                 "3c3d92c9-e16f-45db-bb2a-d47c84b782e1": {
                     "color": {
@@ -11155,7 +11409,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3c3d92c9-e16f-45db-bb2a-d47c84b782e1"
+                    "uid": "3c3d92c9-e16f-45db-bb2a-d47c84b782e1",
+                    "entityName": null
                 },
                 "19d2839d-c894-4350-948e-b12454971255": {
                     "center": {
@@ -11174,7 +11429,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "55075009-226a-4f7a-ab59-ca1e15a5591d": {
                     "color": null,
@@ -11192,7 +11448,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "55075009-226a-4f7a-ab59-ca1e15a5591d"
+                    "uid": "55075009-226a-4f7a-ab59-ca1e15a5591d",
+                    "entityName": null
                 },
                 "830f86de-146c-468c-b79b-0134b1c1c2e4": {
                     "color": null,
@@ -11210,7 +11467,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "830f86de-146c-468c-b79b-0134b1c1c2e4"
+                    "uid": "830f86de-146c-468c-b79b-0134b1c1c2e4",
+                    "entityName": null
                 },
                 "ca572692-175f-4dc2-8b6a-36713307d6e9": {
                     "center": {
@@ -11229,7 +11487,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "3587da82-0888-47b8-8aa8-d844bb1d5161": {
                     "color": null,
@@ -11247,7 +11506,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3587da82-0888-47b8-8aa8-d844bb1d5161"
+                    "uid": "3587da82-0888-47b8-8aa8-d844bb1d5161",
+                    "entityName": null
                 },
                 "1b2a4008-56d4-4111-a1fa-19a69eb44ae6": {
                     "color": null,
@@ -11265,7 +11525,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1b2a4008-56d4-4111-a1fa-19a69eb44ae6"
+                    "uid": "1b2a4008-56d4-4111-a1fa-19a69eb44ae6",
+                    "entityName": null
                 },
                 "81ae6c47-3b20-4bc9-86c9-11dcb7cd246f": {
                     "center": {
@@ -11284,7 +11545,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "a0645eb1-e401-4448-89b3-77946445e7c3": {
                     "color": null,
@@ -11302,7 +11564,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a0645eb1-e401-4448-89b3-77946445e7c3"
+                    "uid": "a0645eb1-e401-4448-89b3-77946445e7c3",
+                    "entityName": null
                 },
                 "bafd37c8-3cdc-4910-aefe-48f040c26fd3": {
                     "color": null,
@@ -11320,7 +11583,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bafd37c8-3cdc-4910-aefe-48f040c26fd3"
+                    "uid": "bafd37c8-3cdc-4910-aefe-48f040c26fd3",
+                    "entityName": null
                 },
                 "c071da89-0a4c-40a2-946e-1a46a206dc2d": {
                     "center": {
@@ -11339,7 +11603,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "2eaefe3c-5976-48ef-9428-1952a2d8fea4": {
                     "color": null,
@@ -11357,7 +11622,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2eaefe3c-5976-48ef-9428-1952a2d8fea4"
+                    "uid": "2eaefe3c-5976-48ef-9428-1952a2d8fea4",
+                    "entityName": null
                 },
                 "76af9bc6-9c67-4252-94c6-fe5626f6ab7f": {
                     "color": null,
@@ -11375,7 +11641,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "76af9bc6-9c67-4252-94c6-fe5626f6ab7f"
+                    "uid": "76af9bc6-9c67-4252-94c6-fe5626f6ab7f",
+                    "entityName": null
                 },
                 "8ca591db-92cb-4298-9532-48e91a6662f1": {
                     "center": {
@@ -11405,7 +11672,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "6f81c2e5-86e7-4838-a629-d0575dff7e6f"
+                    "uid": "6f81c2e5-86e7-4838-a629-d0575dff7e6f",
+                    "entityName": null
                 },
                 "45bb0146-b780-4a98-8832-9f05289dc1d9": {
                     "center": {
@@ -11447,7 +11715,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "6b17729f-8fcb-4ee5-aa30-71e583e0177b"
+                    "uid": "6b17729f-8fcb-4ee5-aa30-71e583e0177b",
+                    "entityName": null
                 },
                 "c328f0d3-a1bf-4173-bf41-42c6e1bf00b4": {
                     "center": {
@@ -11477,7 +11746,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bcb52945-d398-4625-b451-d5e45b776cbc"
+                    "uid": "bcb52945-d398-4625-b451-d5e45b776cbc",
+                    "entityName": null
                 },
                 "ff9b46f1-3677-4d6d-a570-33fc2c3168fa": {
                     "center": {
@@ -11507,7 +11777,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d00d7e3b-ad3e-4946-bfc2-921a52e0e20a"
+                    "uid": "d00d7e3b-ad3e-4946-bfc2-921a52e0e20a",
+                    "entityName": null
                 },
                 "9e1217cd-8c60-45b3-8e9b-edbd9c4fe7ec": {
                     "color": null,
@@ -11525,7 +11796,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9e1217cd-8c60-45b3-8e9b-edbd9c4fe7ec"
+                    "uid": "9e1217cd-8c60-45b3-8e9b-edbd9c4fe7ec",
+                    "entityName": null
                 },
                 "dbf87f6e-2376-4ca4-9466-97cf2af0e2ff": {
                     "center": {
@@ -11555,7 +11827,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "4d551985-0f94-46a0-a063-f53d04d889f6"
+                    "uid": "4d551985-0f94-46a0-a063-f53d04d889f6",
+                    "entityName": null
                 },
                 "e5af62fd-7f19-4be2-968e-a05c0f84a834": {
                     "color": null,
@@ -11573,7 +11846,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e5af62fd-7f19-4be2-968e-a05c0f84a834"
+                    "uid": "e5af62fd-7f19-4be2-968e-a05c0f84a834",
+                    "entityName": null
                 },
                 "a63e3bbc-f25c-4ef0-93f8-7ae431739abf": {
                     "center": {
@@ -11603,7 +11877,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "88f2b12c-1941-498d-8556-0607951e2e59"
+                    "uid": "88f2b12c-1941-498d-8556-0607951e2e59",
+                    "entityName": null
                 },
                 "850a718f-daf2-44a4-a160-f8b6aeea9e45": {
                     "color": null,
@@ -11621,7 +11896,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "850a718f-daf2-44a4-a160-f8b6aeea9e45"
+                    "uid": "850a718f-daf2-44a4-a160-f8b6aeea9e45",
+                    "entityName": null
                 },
                 "94a2136b-90c9-4733-a822-b4ec02c0fb7c": {
                     "color": null,
@@ -11639,7 +11915,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "94a2136b-90c9-4733-a822-b4ec02c0fb7c"
+                    "uid": "94a2136b-90c9-4733-a822-b4ec02c0fb7c",
+                    "entityName": null
                 },
                 "0b32d302-5962-4c38-a4ff-52dfd4284ff0": {
                     "center": {
@@ -11669,7 +11946,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "fef55f32-4716-4a56-a23f-8929356baf20"
+                    "uid": "fef55f32-4716-4a56-a23f-8929356baf20",
+                    "entityName": null
                 },
                 "d8b10978-a251-4f31-93de-9c2bd0f3ce46": {
                     "color": null,
@@ -11687,7 +11965,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d8b10978-a251-4f31-93de-9c2bd0f3ce46"
+                    "uid": "d8b10978-a251-4f31-93de-9c2bd0f3ce46",
+                    "entityName": null
                 },
                 "2752810c-89be-4e24-96a3-22d6eaa5ee90": {
                     "center": {
@@ -11717,7 +11996,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ecdcd7d7-b5df-4e2f-8006-667c6fe48e70"
+                    "uid": "ecdcd7d7-b5df-4e2f-8006-667c6fe48e70",
+                    "entityName": null
                 },
                 "4e1d0c5c-e5c7-4ffb-af47-2f190b7078d8": {
                     "color": null,
@@ -11735,7 +12015,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "4e1d0c5c-e5c7-4ffb-af47-2f190b7078d8"
+                    "uid": "4e1d0c5c-e5c7-4ffb-af47-2f190b7078d8",
+                    "entityName": null
                 },
                 "da68795d-bf0f-4f8c-8acf-b863e34c054b": {
                     "center": {
@@ -11765,7 +12046,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bd6eb84c-d664-47bd-965e-7e46ad035cb0"
+                    "uid": "bd6eb84c-d664-47bd-965e-7e46ad035cb0",
+                    "entityName": null
                 },
                 "664a370e-1185-4f33-9fe6-6371ce858884": {
                     "color": null,
@@ -11783,7 +12065,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "664a370e-1185-4f33-9fe6-6371ce858884"
+                    "uid": "664a370e-1185-4f33-9fe6-6371ce858884",
+                    "entityName": null
                 },
                 "dea5d791-823c-4428-8284-89aaedd12e97": {
                     "color": null,
@@ -11801,7 +12084,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dea5d791-823c-4428-8284-89aaedd12e97"
+                    "uid": "dea5d791-823c-4428-8284-89aaedd12e97",
+                    "entityName": null
                 },
                 "0807e685-e8ab-4ae3-a602-3079d9eac4a1": {
                     "center": {
@@ -11831,7 +12115,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8a36eec1-dab6-4ad2-8e98-f35aee315acb"
+                    "uid": "8a36eec1-dab6-4ad2-8e98-f35aee315acb",
+                    "entityName": null
                 },
                 "7f17a016-8010-4a28-9fb4-9be88bc89d86": {
                     "center": {
@@ -11861,7 +12146,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "13c3ccbc-7beb-4285-b0d9-68da0a399e97"
+                    "uid": "13c3ccbc-7beb-4285-b0d9-68da0a399e97",
+                    "entityName": null
                 },
                 "15809c20-c406-409d-b60b-b9c94e5c9683": {
                     "center": {
@@ -11891,7 +12177,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ce10722b-5b70-430d-a5af-cd95414c13aa"
+                    "uid": "ce10722b-5b70-430d-a5af-cd95414c13aa",
+                    "entityName": null
                 },
                 "874e80e7-1184-4cc6-a715-86ced992db3b": {
                     "color": null,
@@ -11909,7 +12196,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "874e80e7-1184-4cc6-a715-86ced992db3b"
+                    "uid": "874e80e7-1184-4cc6-a715-86ced992db3b",
+                    "entityName": null
                 },
                 "87409b3c-6745-427a-84d9-b0beaf0377c6": {
                     "center": {
@@ -11939,7 +12227,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ba46c06f-0083-4831-b0d6-c7f6cfd89102"
+                    "uid": "ba46c06f-0083-4831-b0d6-c7f6cfd89102",
+                    "entityName": null
                 },
                 "2f1fcd2e-d78c-4cf2-bce0-be2bc01ff2da": {
                     "color": null,
@@ -11957,7 +12246,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2f1fcd2e-d78c-4cf2-bce0-be2bc01ff2da"
+                    "uid": "2f1fcd2e-d78c-4cf2-bce0-be2bc01ff2da",
+                    "entityName": null
                 },
                 "adc806cc-9685-4d99-8c2a-603247b13664": {
                     "color": null,
@@ -11975,7 +12265,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "adc806cc-9685-4d99-8c2a-603247b13664"
+                    "uid": "adc806cc-9685-4d99-8c2a-603247b13664",
+                    "entityName": null
                 },
                 "482e92b5-16ea-4fa4-8604-09219fa4d867": {
                     "center": {
@@ -12005,7 +12296,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d913fb8b-9a69-466b-8abc-0698c90f9d1c"
+                    "uid": "d913fb8b-9a69-466b-8abc-0698c90f9d1c",
+                    "entityName": null
                 },
                 "59502467-a86c-45a4-a418-5c23e87709a5": {
                     "center": {
@@ -12035,7 +12327,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a429f067-9a20-47ae-b145-068f747ba990"
+                    "uid": "a429f067-9a20-47ae-b145-068f747ba990",
+                    "entityName": null
                 },
                 "d30fe62d-cc28-467f-8b19-d0e17ac9fea8": {
                     "center": {
@@ -12065,7 +12358,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "70f08312-3489-47cb-9fad-ee2c4f2d24c8"
+                    "uid": "70f08312-3489-47cb-9fad-ee2c4f2d24c8",
+                    "entityName": null
                 },
                 "3bf0a35e-4152-4050-bf1f-3682f9d20c90": {
                     "color": null,
@@ -12083,7 +12377,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3bf0a35e-4152-4050-bf1f-3682f9d20c90"
+                    "uid": "3bf0a35e-4152-4050-bf1f-3682f9d20c90",
+                    "entityName": null
                 },
                 "1eb9e9ca-119a-4126-83e1-069110afd763": {
                     "center": {
@@ -12113,7 +12408,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f2ab5da5-c2c5-468b-8e5f-66657a391b64"
+                    "uid": "f2ab5da5-c2c5-468b-8e5f-66657a391b64",
+                    "entityName": null
                 },
                 "a21c6085-1bdd-48e2-811f-ce738a70cfab": {
                     "color": null,
@@ -12131,7 +12427,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a21c6085-1bdd-48e2-811f-ce738a70cfab"
+                    "uid": "a21c6085-1bdd-48e2-811f-ce738a70cfab",
+                    "entityName": null
                 },
                 "89654d17-b0e2-477c-a80d-451559949797": {
                     "color": null,
@@ -12149,7 +12446,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "89654d17-b0e2-477c-a80d-451559949797"
+                    "uid": "89654d17-b0e2-477c-a80d-451559949797",
+                    "entityName": null
                 },
                 "535bb450-7d29-4b8f-af56-ddeff61ed370": {
                     "center": {
@@ -12179,7 +12477,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2fc4af1f-c490-4651-9686-42e3102d4db5"
+                    "uid": "2fc4af1f-c490-4651-9686-42e3102d4db5",
+                    "entityName": null
                 },
                 "a920e5b6-9941-4e9b-a905-fe6f59075d73": {
                     "center": {
@@ -12221,7 +12520,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "5d740ae5-afde-4be0-be36-52881ea52fa7"
+                    "uid": "5d740ae5-afde-4be0-be36-52881ea52fa7",
+                    "entityName": null
                 },
                 "cd735a03-af99-4341-aef9-afe2cb8834be": {
                     "center": {
@@ -12251,7 +12551,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "23e4b00b-f9ba-4fb0-b5ec-424cc0459e4a"
+                    "uid": "23e4b00b-f9ba-4fb0-b5ec-424cc0459e4a",
+                    "entityName": null
                 },
                 "00e433e2-78a1-4042-acd3-99a708f54d26": {
                     "center": {
@@ -12281,7 +12582,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "766598c2-c359-4b25-9c61-c2349c120182"
+                    "uid": "766598c2-c359-4b25-9c61-c2349c120182",
+                    "entityName": null
                 },
                 "aad50cf3-bd6e-415a-a3ab-5835a0d0b8a4": {
                     "color": null,
@@ -12299,7 +12601,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "aad50cf3-bd6e-415a-a3ab-5835a0d0b8a4"
+                    "uid": "aad50cf3-bd6e-415a-a3ab-5835a0d0b8a4",
+                    "entityName": null
                 },
                 "284d58b5-291b-4007-9baa-9b05511d6c5b": {
                     "center": {
@@ -12329,7 +12632,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f8398cf8-291c-4fd4-a6b5-7c73c862c796"
+                    "uid": "f8398cf8-291c-4fd4-a6b5-7c73c862c796",
+                    "entityName": null
                 },
                 "cea7f06f-4835-45dd-8ece-f83ca564e6c4": {
                     "color": null,
@@ -12347,7 +12651,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "cea7f06f-4835-45dd-8ece-f83ca564e6c4"
+                    "uid": "cea7f06f-4835-45dd-8ece-f83ca564e6c4",
+                    "entityName": null
                 },
                 "10418acc-6097-4ad8-bb66-813e0d0ee9b2": {
                     "center": {
@@ -12377,7 +12682,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "ece626e6-c7c6-4601-af47-8171f3973cc0"
+                    "uid": "ece626e6-c7c6-4601-af47-8171f3973cc0",
+                    "entityName": null
                 },
                 "dae363f6-c1c8-4344-a226-75d9d6334f76": {
                     "color": null,
@@ -12395,7 +12701,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dae363f6-c1c8-4344-a226-75d9d6334f76"
+                    "uid": "dae363f6-c1c8-4344-a226-75d9d6334f76",
+                    "entityName": null
                 },
                 "8fd3c75d-a358-466b-8ce5-e29cd1e75691": {
                     "color": null,
@@ -12413,7 +12720,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8fd3c75d-a358-466b-8ce5-e29cd1e75691"
+                    "uid": "8fd3c75d-a358-466b-8ce5-e29cd1e75691",
+                    "entityName": null
                 },
                 "d163537a-328f-4b0d-aa09-fe202d40c6ed": {
                     "center": {
@@ -12443,7 +12751,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e46fd22c-b48d-45b6-beb8-4618dfc32307"
+                    "uid": "e46fd22c-b48d-45b6-beb8-4618dfc32307",
+                    "entityName": null
                 },
                 "8c6a2ae6-254e-4c5d-a978-1ce85ccd0711": {
                     "color": null,
@@ -12461,7 +12770,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8c6a2ae6-254e-4c5d-a978-1ce85ccd0711"
+                    "uid": "8c6a2ae6-254e-4c5d-a978-1ce85ccd0711",
+                    "entityName": null
                 },
                 "bef8b50d-da16-4ed3-9f0b-4744c1b56337": {
                     "center": {
@@ -12491,7 +12801,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "edaac992-7927-40e1-9f0c-3c0aab075f73"
+                    "uid": "edaac992-7927-40e1-9f0c-3c0aab075f73",
+                    "entityName": null
                 },
                 "fedd8d5e-8db2-4d9a-90c2-4753a967c92c": {
                     "color": null,
@@ -12509,7 +12820,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "fedd8d5e-8db2-4d9a-90c2-4753a967c92c"
+                    "uid": "fedd8d5e-8db2-4d9a-90c2-4753a967c92c",
+                    "entityName": null
                 },
                 "5730063e-c59d-4773-a4af-5d5f4bbc6022": {
                     "center": {
@@ -12539,7 +12851,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "e58d533d-6e90-4679-aadb-d492a1944674"
+                    "uid": "e58d533d-6e90-4679-aadb-d492a1944674",
+                    "entityName": null
                 },
                 "0c03f9eb-9f9e-4998-ba2a-bfe8d558845b": {
                     "color": null,
@@ -12557,7 +12870,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0c03f9eb-9f9e-4998-ba2a-bfe8d558845b"
+                    "uid": "0c03f9eb-9f9e-4998-ba2a-bfe8d558845b",
+                    "entityName": null
                 },
                 "8f0b7948-4f11-4f75-86b1-220f39146fd9": {
                     "color": null,
@@ -12575,7 +12889,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8f0b7948-4f11-4f75-86b1-220f39146fd9"
+                    "uid": "8f0b7948-4f11-4f75-86b1-220f39146fd9",
+                    "entityName": null
                 },
                 "31850c65-20cf-45e3-8594-75345c787314": {
                     "center": {
@@ -12641,7 +12956,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "c9b64c2e-08f3-4bfc-8a50-b8ba059fedb5"
+                    "uid": "c9b64c2e-08f3-4bfc-8a50-b8ba059fedb5",
+                    "entityName": null
                 },
                 "553e118d-931c-460e-9009-25d830e77605": {
                     "center": {
@@ -12658,7 +12974,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "INSPECTION_OPENING",
                         "catalogId": "inspectionOpening"
-                    }
+                    },
+                    "entityName": null
                 },
                 "afa9835e-f9d9-4a14-b872-25276d47bf56": {
                     "center": {
@@ -12688,7 +13005,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "b117e721-aa42-42ed-b4a9-f33d16db6bbb"
+                    "uid": "b117e721-aa42-42ed-b4a9-f33d16db6bbb",
+                    "entityName": null
                 },
                 "e04fb533-0983-457a-821d-7249cd79c24f": {
                     "color": null,
@@ -12706,7 +13024,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "e04fb533-0983-457a-821d-7249cd79c24f"
+                    "uid": "e04fb533-0983-457a-821d-7249cd79c24f",
+                    "entityName": null
                 },
                 "db0f85a9-d844-401f-b912-5dbcb2744cc8": {
                     "center": {
@@ -12736,7 +13055,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "b2edda64-f83f-408d-83ec-fbf4fabaf3cb"
+                    "uid": "b2edda64-f83f-408d-83ec-fbf4fabaf3cb",
+                    "entityName": null
                 },
                 "6d87f043-a78a-4700-b6d0-dfae4f5125e9": {
                     "center": {
@@ -12766,7 +13086,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "1a087956-35f6-45ad-9eab-4cf8f013294e"
+                    "uid": "1a087956-35f6-45ad-9eab-4cf8f013294e",
+                    "entityName": null
                 },
                 "9ae2e92b-5389-4423-a120-d9942439f4b8": {
                     "center": {
@@ -12796,7 +13117,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "0202c586-418a-4e15-9f16-010ae6ba8084"
+                    "uid": "0202c586-418a-4e15-9f16-010ae6ba8084",
+                    "entityName": null
                 },
                 "180d37c7-4140-4684-9aa5-1f3576915c25": {
                     "center": {
@@ -12826,7 +13148,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a6068447-bda7-44f1-9ea9-b079954e36d5"
+                    "uid": "a6068447-bda7-44f1-9ea9-b079954e36d5",
+                    "entityName": null
                 },
                 "27edaa6f-d9ad-47b9-a838-d346646b0582": {
                     "center": {
@@ -12856,7 +13179,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a3c3d8a8-c210-46b7-aa60-84e8b0bcc2e5"
+                    "uid": "a3c3d8a8-c210-46b7-aa60-84e8b0bcc2e5",
+                    "entityName": null
                 },
                 "1fd73f20-e4af-4a26-99e5-c361fb76c651": {
                     "center": {
@@ -12886,7 +13210,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "3b9445b8-34a4-4396-8438-0b4dfb6d1fa8"
+                    "uid": "3b9445b8-34a4-4396-8438-0b4dfb6d1fa8",
+                    "entityName": null
                 },
                 "bfbd5162-9510-4c9a-a40b-9c9db114ed91": {
                     "center": {
@@ -12916,7 +13241,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "62b2b862-90e4-4d46-bb8a-bededd845169"
+                    "uid": "62b2b862-90e4-4d46-bb8a-bededd845169",
+                    "entityName": null
                 },
                 "57831c89-f0e3-4960-9c71-73a87c8b0d05": {
                     "center": {
@@ -12946,7 +13272,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f5cc0dc6-c10b-46e6-bf64-f5d38f9c7722"
+                    "uid": "f5cc0dc6-c10b-46e6-bf64-f5d38f9c7722",
+                    "entityName": null
                 },
                 "a0723d1c-4088-4009-8827-99f250079d20": {
                     "center": {
@@ -12976,7 +13303,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "e6ae97f9-736f-4e5d-9a3e-d4095f04a4d3"
+                    "uid": "e6ae97f9-736f-4e5d-9a3e-d4095f04a4d3",
+                    "entityName": null
                 },
                 "fa70b28f-b986-4be1-80d0-1ae719818f57": {
                     "center": {
@@ -13006,7 +13334,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "b4f331cd-47a7-4d65-b240-195497e4c4d1"
+                    "uid": "b4f331cd-47a7-4d65-b240-195497e4c4d1",
+                    "entityName": null
                 },
                 "ac806a66-3e09-4093-bc42-e0d3ae1bb5ff": {
                     "center": {
@@ -13036,7 +13365,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "bf2a60fd-9b54-407f-82cf-02731904a7e6"
+                    "uid": "bf2a60fd-9b54-407f-82cf-02731904a7e6",
+                    "entityName": null
                 },
                 "d867d35f-b997-4123-b4c8-83c68e361a18": {
                     "center": {
@@ -13066,7 +13396,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "26223f50-218f-4036-897a-8360dfc74939"
+                    "uid": "26223f50-218f-4036-897a-8360dfc74939",
+                    "entityName": null
                 },
                 "3e2191ea-373c-4ca5-9e20-2e6a9d18214d": {
                     "center": {
@@ -13096,7 +13427,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "c2048dc0-bd84-460f-839d-45a50742d4ae"
+                    "uid": "c2048dc0-bd84-460f-839d-45a50742d4ae",
+                    "entityName": null
                 },
                 "19aaf52d-0bf6-44ed-9bb7-3f2a2f9c651c": {
                     "center": {
@@ -13126,7 +13458,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "19831a67-6836-4df8-9b37-766fa2adddcd"
+                    "uid": "19831a67-6836-4df8-9b37-766fa2adddcd",
+                    "entityName": null
                 },
                 "26c57aee-fe20-467a-8f62-ded35ca88081": {
                     "color": null,
@@ -13144,7 +13477,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "26c57aee-fe20-467a-8f62-ded35ca88081"
+                    "uid": "26c57aee-fe20-467a-8f62-ded35ca88081",
+                    "entityName": null
                 },
                 "6c30dd97-9df8-4a53-a032-a0c554352961": {
                     "center": {
@@ -13174,7 +13508,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "7bd8b589-89df-44e3-a6f2-2e14bd2e0dfd"
+                    "uid": "7bd8b589-89df-44e3-a6f2-2e14bd2e0dfd",
+                    "entityName": null
                 },
                 "7c529727-f063-4a79-9ee1-4125f645285b": {
                     "center": {
@@ -13204,7 +13539,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "65e08548-64c9-4721-92f7-025b9f1952f9"
+                    "uid": "65e08548-64c9-4721-92f7-025b9f1952f9",
+                    "entityName": null
                 },
                 "42eaa816-c77c-4704-bafc-ce097c40eb6c": {
                     "color": null,
@@ -13222,7 +13558,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "42eaa816-c77c-4704-bafc-ce097c40eb6c"
+                    "uid": "42eaa816-c77c-4704-bafc-ce097c40eb6c",
+                    "entityName": null
                 },
                 "8abda935-2d69-4e0f-841d-c9451889b5dd": {
                     "color": null,
@@ -13240,7 +13577,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "8abda935-2d69-4e0f-841d-c9451889b5dd"
+                    "uid": "8abda935-2d69-4e0f-841d-c9451889b5dd",
+                    "entityName": null
                 },
                 "b427688b-88a4-4189-a6b3-357d2a08ac23": {
                     "center": {
@@ -13270,7 +13608,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "92d3823b-d6c2-4787-b8c3-141d82c13cbb"
+                    "uid": "92d3823b-d6c2-4787-b8c3-141d82c13cbb",
+                    "entityName": null
                 },
                 "2f738381-58fc-4d93-8097-c27bfc0f1ab2": {
                     "color": null,
@@ -13288,7 +13627,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "2f738381-58fc-4d93-8097-c27bfc0f1ab2"
+                    "uid": "2f738381-58fc-4d93-8097-c27bfc0f1ab2",
+                    "entityName": null
                 },
                 "ce959e8a-8877-4a94-bc5b-f9cd0c659f00": {
                     "center": {
@@ -13318,7 +13658,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "dacc7737-c509-4012-ba99-e663f938d182"
+                    "uid": "dacc7737-c509-4012-ba99-e663f938d182",
+                    "entityName": null
                 },
                 "95ebaea3-e9ea-4b12-a03c-b70b3a82f1e6": {
                     "color": null,
@@ -13336,7 +13677,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "95ebaea3-e9ea-4b12-a03c-b70b3a82f1e6"
+                    "uid": "95ebaea3-e9ea-4b12-a03c-b70b3a82f1e6",
+                    "entityName": null
                 },
                 "35fd245f-5676-4d8f-9f63-dd875da9410e": {
                     "center": {
@@ -13366,7 +13708,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "7f339a99-6f12-4075-ada6-d949dbb607de"
+                    "uid": "7f339a99-6f12-4075-ada6-d949dbb607de",
+                    "entityName": null
                 },
                 "c0177d18-aa11-451a-8a58-9e40b1acb406": {
                     "color": null,
@@ -13384,7 +13727,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "c0177d18-aa11-451a-8a58-9e40b1acb406"
+                    "uid": "c0177d18-aa11-451a-8a58-9e40b1acb406",
+                    "entityName": null
                 },
                 "5e5c0b70-2867-4765-9d79-c325c88a207c": {
                     "center": {
@@ -13414,7 +13758,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "feb267e4-ee6d-419b-adba-5eaaa2d8f5b9"
+                    "uid": "feb267e4-ee6d-419b-adba-5eaaa2d8f5b9",
+                    "entityName": null
                 },
                 "f50126a6-5e85-45ee-9cf0-285155b48d2f": {
                     "color": null,
@@ -13432,7 +13777,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f50126a6-5e85-45ee-9cf0-285155b48d2f"
+                    "uid": "f50126a6-5e85-45ee-9cf0-285155b48d2f",
+                    "entityName": null
                 },
                 "5c73a186-5581-4f5b-858e-932339f54da4": {
                     "center": {
@@ -13462,7 +13808,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "6fa021f0-e27f-4c8a-bae8-071015848a28"
+                    "uid": "6fa021f0-e27f-4c8a-bae8-071015848a28",
+                    "entityName": null
                 },
                 "d04c19a7-04cc-4370-a866-a05131c394a3": {
                     "color": null,
@@ -13480,7 +13827,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "d04c19a7-04cc-4370-a866-a05131c394a3"
+                    "uid": "d04c19a7-04cc-4370-a866-a05131c394a3",
+                    "entityName": null
                 },
                 "5fadca1d-0624-4fd9-9434-5e5827eefe0d": {
                     "center": {
@@ -13510,7 +13858,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a6d739e2-a227-466d-9fc0-76d459d568d3"
+                    "uid": "a6d739e2-a227-466d-9fc0-76d459d568d3",
+                    "entityName": null
                 },
                 "209f937c-675d-4541-a6ce-fe5c47008b24": {
                     "color": null,
@@ -13528,7 +13877,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "209f937c-675d-4541-a6ce-fe5c47008b24"
+                    "uid": "209f937c-675d-4541-a6ce-fe5c47008b24",
+                    "entityName": null
                 },
                 "ca33b1dc-d1f4-44be-bbee-a04bd94481a1": {
                     "center": {
@@ -13545,7 +13895,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "FLOOR_WASTE",
                         "catalogId": "floorWaste"
-                    }
+                    },
+                    "entityName": null
                 },
                 "71d3b759-b0bf-4597-b93a-bd23f675e9e9": {
                     "center": {
@@ -13562,7 +13913,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "FLOOR_WASTE",
                         "catalogId": "floorWaste"
-                    }
+                    },
+                    "entityName": null
                 },
                 "c1c1fb4a-fe43-4f26-9efa-2e4336cfcd1e": {
                     "color": null,
@@ -13580,7 +13932,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "c1c1fb4a-fe43-4f26-9efa-2e4336cfcd1e"
+                    "uid": "c1c1fb4a-fe43-4f26-9efa-2e4336cfcd1e",
+                    "entityName": null
                 },
                 "6202416f-b793-4966-ab37-942c206f47db": {
                     "center": {
@@ -13610,7 +13963,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "8cb94542-2617-47d5-a937-ae8a5cb307b3"
+                    "uid": "8cb94542-2617-47d5-a937-ae8a5cb307b3",
+                    "entityName": null
                 },
                 "bba1d656-2669-4ccb-87c0-e6976dc03a2d": {
                     "center": {
@@ -13640,7 +13994,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a9132827-e13b-489e-a26d-2c9eba927acc"
+                    "uid": "a9132827-e13b-489e-a26d-2c9eba927acc",
+                    "entityName": null
                 },
                 "102a4fba-f214-4604-9859-53a5bbd0a20e": {
                     "color": null,
@@ -13658,7 +14013,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "102a4fba-f214-4604-9859-53a5bbd0a20e"
+                    "uid": "102a4fba-f214-4604-9859-53a5bbd0a20e",
+                    "entityName": null
                 },
                 "221efda6-55b3-4ee3-871d-bc4552cefb4c": {
                     "color": null,
@@ -13676,7 +14032,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "221efda6-55b3-4ee3-871d-bc4552cefb4c"
+                    "uid": "221efda6-55b3-4ee3-871d-bc4552cefb4c",
+                    "entityName": null
                 },
                 "d5526e37-8d24-445c-aa62-d0a1aff4ad68": {
                     "color": null,
@@ -13694,7 +14051,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "d5526e37-8d24-445c-aa62-d0a1aff4ad68"
+                    "uid": "d5526e37-8d24-445c-aa62-d0a1aff4ad68",
+                    "entityName": null
                 },
                 "332dc579-8b99-426c-8d2a-3fd9b9c23f87": {
                     "center": {
@@ -13724,7 +14082,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "ff4eb633-346d-4d38-b8d0-f736fece28a9"
+                    "uid": "ff4eb633-346d-4d38-b8d0-f736fece28a9",
+                    "entityName": null
                 },
                 "600fb01b-0824-41dd-93c1-e0c3fc0707c1": {
                     "color": null,
@@ -13742,7 +14101,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "600fb01b-0824-41dd-93c1-e0c3fc0707c1"
+                    "uid": "600fb01b-0824-41dd-93c1-e0c3fc0707c1",
+                    "entityName": null
                 },
                 "d941cce8-220a-4dac-906d-f40ea1d0ac82": {
                     "center": {
@@ -13772,7 +14132,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "24019430-8346-4cb9-9d1d-9ee654bf82b4"
+                    "uid": "24019430-8346-4cb9-9d1d-9ee654bf82b4",
+                    "entityName": null
                 },
                 "3486e584-352e-4ba8-89bb-799698aad976": {
                     "color": null,
@@ -13790,7 +14151,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "3486e584-352e-4ba8-89bb-799698aad976"
+                    "uid": "3486e584-352e-4ba8-89bb-799698aad976",
+                    "entityName": null
                 },
                 "63f0bb1c-0aec-417e-ad77-3a4855d3e2b1": {
                     "center": {
@@ -13820,7 +14182,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "e91168d5-ab93-4da9-848b-fc92a3840420"
+                    "uid": "e91168d5-ab93-4da9-848b-fc92a3840420",
+                    "entityName": null
                 },
                 "95cbc06f-0459-415f-832a-39fdb5adb780": {
                     "color": null,
@@ -13838,7 +14201,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "95cbc06f-0459-415f-832a-39fdb5adb780"
+                    "uid": "95cbc06f-0459-415f-832a-39fdb5adb780",
+                    "entityName": null
                 },
                 "e6ead707-00c4-4b87-a3b0-70547f5e601a": {
                     "center": {
@@ -13868,7 +14232,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "2593d16d-b025-46ee-bea6-a3e7cc31c39e"
+                    "uid": "2593d16d-b025-46ee-bea6-a3e7cc31c39e",
+                    "entityName": null
                 },
                 "536fdc70-6dfc-4bc3-9a52-1055458fd6d8": {
                     "color": null,
@@ -13886,7 +14251,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "536fdc70-6dfc-4bc3-9a52-1055458fd6d8"
+                    "uid": "536fdc70-6dfc-4bc3-9a52-1055458fd6d8",
+                    "entityName": null
                 },
                 "8dca124a-920f-4c89-b1b5-c02c887a5856": {
                     "center": {
@@ -13916,7 +14282,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "439e68e4-6d2b-4a2b-8a8b-a81eb6b990d5"
+                    "uid": "439e68e4-6d2b-4a2b-8a8b-a81eb6b990d5",
+                    "entityName": null
                 },
                 "c087c022-0905-45f9-b9b0-19f357b82ce8": {
                     "center": {
@@ -13946,7 +14313,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "f2945c4a-abf4-4e3a-ae6b-1defd5401b0e"
+                    "uid": "f2945c4a-abf4-4e3a-ae6b-1defd5401b0e",
+                    "entityName": null
                 },
                 "fdc324bd-cbe0-4347-9154-fb1034c8e8ae": {
                     "color": null,
@@ -13964,7 +14332,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "fdc324bd-cbe0-4347-9154-fb1034c8e8ae"
+                    "uid": "fdc324bd-cbe0-4347-9154-fb1034c8e8ae",
+                    "entityName": null
                 },
                 "2f816921-53a1-4214-ac5d-2101ee124904": {
                     "center": {
@@ -13994,7 +14363,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "278b74b4-5eb2-4426-9014-0fe0f04ff3ef"
+                    "uid": "278b74b4-5eb2-4426-9014-0fe0f04ff3ef",
+                    "entityName": null
                 },
                 "69ca5ff0-749b-49da-971f-8a36c809f4b5": {
                     "center": {
@@ -14024,7 +14394,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "79c1bbdb-ba16-4943-87ff-803fa7362694"
+                    "uid": "79c1bbdb-ba16-4943-87ff-803fa7362694",
+                    "entityName": null
                 },
                 "3bb3d0c8-005b-4493-9059-0ae100eafa51": {
                     "center": {
@@ -14054,7 +14425,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "09c11159-a2dd-444e-8cd5-2d1ef12436ce"
+                    "uid": "09c11159-a2dd-444e-8cd5-2d1ef12436ce",
+                    "entityName": null
                 },
                 "5f86567d-adee-468a-8d59-3fe4b566a782": {
                     "color": null,
@@ -14072,7 +14444,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "5f86567d-adee-468a-8d59-3fe4b566a782"
+                    "uid": "5f86567d-adee-468a-8d59-3fe4b566a782",
+                    "entityName": null
                 },
                 "11aee990-803e-4159-8de0-8f9f6fcf5ae7": {
                     "center": {
@@ -14114,7 +14487,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "a8be06b4-2b36-4910-926d-bea5bb911686"
+                    "uid": "a8be06b4-2b36-4910-926d-bea5bb911686",
+                    "entityName": null
                 },
                 "b83b654b-aa3e-4ffc-bb86-a8933d83a4f8": {
                     "color": null,
@@ -14132,7 +14506,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "b83b654b-aa3e-4ffc-bb86-a8933d83a4f8"
+                    "uid": "b83b654b-aa3e-4ffc-bb86-a8933d83a4f8",
+                    "entityName": null
                 },
                 "bff9bcf4-7b51-4b12-9026-6c67728e7ec1": {
                     "color": null,
@@ -14150,7 +14525,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "bff9bcf4-7b51-4b12-9026-6c67728e7ec1"
+                    "uid": "bff9bcf4-7b51-4b12-9026-6c67728e7ec1",
+                    "entityName": null
                 }
             },
             "floorHeightM": 19,
@@ -14221,7 +14597,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "calculation": {
                         "widthMM": null,
-                        "depthMM": null,
+                        "depthMM": null
                     }
                 },
                 "7dc7ed3e-1ce2-4b19-b255-547b5a914f36": {
@@ -14278,7 +14654,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "calculation": {
                         "widthMM": null,
-                        "depthMM": null,
+                        "depthMM": null
                     }
                 },
                 "1ec0ea04-13c5-44c6-a16b-2e51ce4dc4b3": {
@@ -14323,7 +14699,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "013d1441-9622-4a5a-bf85-4fa7b7b29390"
+                    "uid": "013d1441-9622-4a5a-bf85-4fa7b7b29390",
+                    "entityName": null
                 },
                 "03376c42-12f6-42dc-820d-a7cfc489936f": {
                     "center": {
@@ -14353,7 +14730,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "aeae45e2-74a7-4d93-b08e-edfed304a612"
+                    "uid": "aeae45e2-74a7-4d93-b08e-edfed304a612",
+                    "entityName": null
                 },
                 "d4de5960-3d52-41bb-bf8e-2a88bcb3b1e6": {
                     "center": {
@@ -14383,7 +14761,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c6f685b7-d0f1-4eab-b95f-43bd3f4f6646"
+                    "uid": "c6f685b7-d0f1-4eab-b95f-43bd3f4f6646",
+                    "entityName": null
                 },
                 "8f4192ac-3226-452d-b8fe-52c183201932": {
                     "color": null,
@@ -14401,7 +14780,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8f4192ac-3226-452d-b8fe-52c183201932"
+                    "uid": "8f4192ac-3226-452d-b8fe-52c183201932",
+                    "entityName": null
                 },
                 "5ff71d44-5350-44b0-8406-f67b1ad496c8": {
                     "center": {
@@ -14431,7 +14811,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "451495fc-4243-4acf-b269-9e0808a3f1f2"
+                    "uid": "451495fc-4243-4acf-b269-9e0808a3f1f2",
+                    "entityName": null
                 },
                 "36e80a31-19e1-4c1b-89b2-f3b4ff6e7f05": {
                     "center": {
@@ -14461,7 +14842,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "293335e6-4309-4051-b984-605cffadf1b4"
+                    "uid": "293335e6-4309-4051-b984-605cffadf1b4",
+                    "entityName": null
                 },
                 "45602dd2-25a3-4fd1-8cd4-8d0c2eaf1ee2": {
                     "center": {
@@ -14503,7 +14885,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "9f538144-4082-4697-bf66-98742aa5fc45"
+                    "uid": "9f538144-4082-4697-bf66-98742aa5fc45",
+                    "entityName": null
                 },
                 "29a75c2a-035f-4d2e-a9c2-776135d8f4e0": {
                     "color": null,
@@ -14521,7 +14904,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "29a75c2a-035f-4d2e-a9c2-776135d8f4e0"
+                    "uid": "29a75c2a-035f-4d2e-a9c2-776135d8f4e0",
+                    "entityName": null
                 },
                 "15189a30-a0c1-47d4-a83f-1fc3de7e0b68": {
                     "center": {
@@ -14551,7 +14935,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "bde08082-f2fd-4295-b198-7366bdf95b57"
+                    "uid": "bde08082-f2fd-4295-b198-7366bdf95b57",
+                    "entityName": null
                 },
                 "cef179d9-1814-4798-9cd3-52bab30a749a": {
                     "color": null,
@@ -14569,7 +14954,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "cef179d9-1814-4798-9cd3-52bab30a749a"
+                    "uid": "cef179d9-1814-4798-9cd3-52bab30a749a",
+                    "entityName": null
                 },
                 "56c975b5-dd15-4982-a888-52a2749f6620": {
                     "center": {
@@ -14666,7 +15052,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "f330aa97-b46f-402f-8d1d-53c1cfd074c0": {
                     "center": {
@@ -14711,7 +15098,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "b16b76a5-f9fe-4813-875a-37e3648cc509": {
                     "color": null,
@@ -14729,7 +15117,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "b16b76a5-f9fe-4813-875a-37e3648cc509"
+                    "uid": "b16b76a5-f9fe-4813-875a-37e3648cc509",
+                    "entityName": null
                 },
                 "fcb93af1-1ced-4210-a2ea-4d137b557dae": {
                     "center": {
@@ -14748,7 +15137,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "8a4d698c-6c75-42e5-ab73-a46d3ee6da61": {
                     "color": null,
@@ -14766,7 +15156,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "8a4d698c-6c75-42e5-ab73-a46d3ee6da61"
+                    "uid": "8a4d698c-6c75-42e5-ab73-a46d3ee6da61",
+                    "entityName": null
                 },
                 "257c5a66-5d91-407b-917f-ed57484de340": {
                     "color": null,
@@ -14784,7 +15175,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "257c5a66-5d91-407b-917f-ed57484de340"
+                    "uid": "257c5a66-5d91-407b-917f-ed57484de340",
+                    "entityName": null
                 },
                 "6b93c705-f8f2-42c5-84b3-da28e99cc1e0": {
                     "center": {
@@ -14803,7 +15195,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "effa6fef-a59b-47e1-8c12-1b2156637dc9": {
                     "color": null,
@@ -14821,7 +15214,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "effa6fef-a59b-47e1-8c12-1b2156637dc9"
+                    "uid": "effa6fef-a59b-47e1-8c12-1b2156637dc9",
+                    "entityName": null
                 },
                 "c1511141-b612-41a5-b98d-e0becb258af0": {
                     "center": {
@@ -14840,7 +15234,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "a5f040c6-8daa-48e8-abfd-50d41ffeef73": {
                     "color": null,
@@ -14858,7 +15253,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "a5f040c6-8daa-48e8-abfd-50d41ffeef73"
+                    "uid": "a5f040c6-8daa-48e8-abfd-50d41ffeef73",
+                    "entityName": null
                 },
                 "64b30da6-16b5-41f5-b12b-6f02bfadcd52": {
                     "center": {
@@ -14875,7 +15271,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "catalogId": "strainer",
                         "type": "STRAINER"
-                    }
+                    },
+                    "entityName": null
                 },
                 "422896e7-514e-45e7-b7c5-eb1a4de2d9d9": {
                     "color": null,
@@ -14893,7 +15290,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "422896e7-514e-45e7-b7c5-eb1a4de2d9d9"
+                    "uid": "422896e7-514e-45e7-b7c5-eb1a4de2d9d9",
+                    "entityName": null
                 },
                 "378bcf35-7764-4980-9687-1d2e7e206f3f": {
                     "center": {
@@ -14912,7 +15310,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "RPZD",
                         "sizeMM": null,
                         "isolateOneWhenCalculatingHeadLoss": true
-                    }
+                    },
+                    "entityName": null
                 },
                 "0f9a8335-c8da-4ebb-a202-59be9f5673a1": {
                     "color": null,
@@ -14930,7 +15329,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "0f9a8335-c8da-4ebb-a202-59be9f5673a1"
+                    "uid": "0f9a8335-c8da-4ebb-a202-59be9f5673a1",
+                    "entityName": null
                 },
                 "2276821c-b9de-4b73-a990-891931598428": {
                     "color": null,
@@ -14948,7 +15348,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "2276821c-b9de-4b73-a990-891931598428"
+                    "uid": "2276821c-b9de-4b73-a990-891931598428",
+                    "entityName": null
                 },
                 "7c71a267-4763-4f5f-b3c8-ce3bd178943a": {
                     "center": {
@@ -14966,7 +15367,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "pressureDropKPA": 0.15,
                         "catalogId": "waterMeter",
                         "type": "WATER_METER"
-                    }
+                    },
+                    "entityName": null
                 },
                 "00935715-2940-425d-a921-b62713838065": {
                     "color": null,
@@ -14984,7 +15386,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "00935715-2940-425d-a921-b62713838065"
+                    "uid": "00935715-2940-425d-a921-b62713838065",
+                    "entityName": null
                 },
                 "0285f100-b49e-4767-a710-98a2413c7679": {
                     "center": {
@@ -15003,7 +15406,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "3345701c-8e17-4acb-adc7-cba2948fcb6b": {
                     "color": null,
@@ -15021,7 +15425,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "3345701c-8e17-4acb-adc7-cba2948fcb6b"
+                    "uid": "3345701c-8e17-4acb-adc7-cba2948fcb6b",
+                    "entityName": null
                 },
                 "c3c161f8-11d3-420d-91c3-368429af1692": {
                     "color": null,
@@ -15039,7 +15444,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "c3c161f8-11d3-420d-91c3-368429af1692"
+                    "uid": "c3c161f8-11d3-420d-91c3-368429af1692",
+                    "entityName": null
                 },
                 "d4f20d83-ab1b-4b22-8392-8f1e45a5d5c2": {
                     "center": {
@@ -15058,7 +15464,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "a102f823-fefa-4c7f-84b3-ecef21e31d33": {
                     "abbreviation": "H",
@@ -15103,7 +15510,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     },
                     "upcFixtureUnits": null,
                     "asnzFixtureUnits": null,
-                    "enDischargeUnits": null
+                    "enDischargeUnits": null,
+                    "entityName": null
                 },
                 "e0b2b4bc-01e6-483b-a2c4-b3bd428b64f3": {
                     "center": {
@@ -15159,7 +15567,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "908eecb3-81d1-4fa5-9f81-b68df4c23683"
+                    "uid": "908eecb3-81d1-4fa5-9f81-b68df4c23683",
+                    "entityName": null
                 },
                 "b9a6551e-6f10-4686-8a85-3d4572309038": {
                     "center": {
@@ -15189,7 +15598,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "1e939ac4-f928-46e3-83c6-5bc41a88a82a"
+                    "uid": "1e939ac4-f928-46e3-83c6-5bc41a88a82a",
+                    "entityName": null
                 },
                 "55e61388-702b-4198-bfe4-a3f6da0a51f1": {
                     "color": null,
@@ -15207,7 +15617,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "55e61388-702b-4198-bfe4-a3f6da0a51f1"
+                    "uid": "55e61388-702b-4198-bfe4-a3f6da0a51f1",
+                    "entityName": null
                 },
                 "dc7a8462-26a3-4e03-a410-26595e0fdb44": {
                     "color": null,
@@ -15225,7 +15636,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "dc7a8462-26a3-4e03-a410-26595e0fdb44"
+                    "uid": "dc7a8462-26a3-4e03-a410-26595e0fdb44",
+                    "entityName": null
                 },
                 "1fd2f761-3e48-4287-9fd5-4bb5511cf8e6": {
                     "node": {
@@ -15283,7 +15695,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "f00ea431-0bf8-44cd-98bc-80f4f93d620c"
+                    "uid": "f00ea431-0bf8-44cd-98bc-80f4f93d620c",
+                    "entityName": null
                 },
                 "77bfe2f6-8af6-4685-92bb-f55b6f37e8b5": {
                     "color": null,
@@ -15301,7 +15714,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "77bfe2f6-8af6-4685-92bb-f55b6f37e8b5"
+                    "uid": "77bfe2f6-8af6-4685-92bb-f55b6f37e8b5",
+                    "entityName": null
                 },
                 "e901791d-bf8c-43be-98ec-b2f2c6202013": {
                     "center": {
@@ -15320,7 +15734,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "catalogId": "ballValve",
                         "makeIsolationCaseOnRingMains": true,
                         "type": "ISOLATION_VALVE"
-                    }
+                    },
+                    "entityName": null
                 },
                 "d5a32b55-a118-4fcd-8486-bf0ea510478d": {
                     "color": null,
@@ -15338,7 +15753,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "d5a32b55-a118-4fcd-8486-bf0ea510478d"
+                    "uid": "d5a32b55-a118-4fcd-8486-bf0ea510478d",
+                    "entityName": null
                 },
                 "37553116-8f6a-489f-b2ec-f462da982fff": {
                     "color": null,
@@ -15356,7 +15772,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "RETICULATIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "37553116-8f6a-489f-b2ec-f462da982fff"
+                    "uid": "37553116-8f6a-489f-b2ec-f462da982fff",
+                    "entityName": null
                 },
                 "513c5868-f528-419f-a2ca-56b539fbdc0a": {
                     "calculationHeightM": null,
@@ -15414,7 +15831,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "network": "CONNECTIONS",
                     "type": "PIPE",
                     "gradePCT": null,
-                    "uid": "58b5e7a4-bbb3-49bf-b44f-3fe4b7069517"
+                    "uid": "58b5e7a4-bbb3-49bf-b44f-3fe4b7069517",
+                    "entityName": null
                 },
                 "210d63a3-e456-49bd-a4ea-e751786a24e9": {
                     "center": {
@@ -15456,7 +15874,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "3a377985-637d-4041-9fd3-c231a44851a4"
+                    "uid": "3a377985-637d-4041-9fd3-c231a44851a4",
+                    "entityName": null
                 },
                 "9068aa9d-e64b-48a7-ba7b-78a7933f84f6": {
                     "color": null,
@@ -15474,7 +15893,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "9068aa9d-e64b-48a7-ba7b-78a7933f84f6"
+                    "uid": "9068aa9d-e64b-48a7-ba7b-78a7933f84f6",
+                    "entityName": null
                 },
                 "46d2de05-bbc1-4438-a5b7-5e9d0c2457f5": {
                     "center": {
@@ -15516,7 +15936,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "69c23cf3-a909-41c3-b404-9835826f2ee8"
+                    "uid": "69c23cf3-a909-41c3-b404-9835826f2ee8",
+                    "entityName": null
                 },
                 "b1231500-db9c-4a46-8e25-7aaeafbcca3f": {
                     "color": null,
@@ -15534,7 +15955,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "b1231500-db9c-4a46-8e25-7aaeafbcca3f"
+                    "uid": "b1231500-db9c-4a46-8e25-7aaeafbcca3f",
+                    "entityName": null
                 },
                 "e621e2ab-43ec-4db1-9607-eb9d44eee5c4": {
                     "center": {
@@ -15564,7 +15986,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "20561679-93ac-4a87-97af-3b9f6685561a"
+                    "uid": "20561679-93ac-4a87-97af-3b9f6685561a",
+                    "entityName": null
                 },
                 "d6e53f57-04a1-4ed7-9b91-88585b579f2b": {
                     "color": null,
@@ -15582,7 +16005,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "RETICULATIONS",
                     "type": "PIPE",
-                    "uid": "d6e53f57-04a1-4ed7-9b91-88585b579f2b"
+                    "uid": "d6e53f57-04a1-4ed7-9b91-88585b579f2b",
+                    "entityName": null
                 },
                 "c951cd8e-5830-47fc-83a2-050ffd2c48e7": {
                     "center": {
@@ -15612,7 +16036,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "b1350495-d9a9-40b1-986f-fd6856511700"
+                    "uid": "b1350495-d9a9-40b1-986f-fd6856511700",
+                    "entityName": null
                 },
                 "2364f6c9-837f-4238-8195-a83e07e4cf75": {
                     "color": null,
@@ -15630,7 +16055,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "network": "CONNECTIONS",
                     "type": "PIPE",
-                    "uid": "2364f6c9-837f-4238-8195-a83e07e4cf75"
+                    "uid": "2364f6c9-837f-4238-8195-a83e07e4cf75",
+                    "entityName": null
                 }
             },
             "floorHeightM": 22,
@@ -15656,7 +16082,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "2edbc5b5-ad0a-4672-873b-00f6cfaf637d"
+            "uid": "2edbc5b5-ad0a-4672-873b-00f6cfaf637d",
+            "entityName": null
         },
         "924c02c5-e487-453b-b84b-35ef0bc57533": {
             "bottomHeightM": null,
@@ -15675,7 +16102,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "924c02c5-e487-453b-b84b-35ef0bc57533"
+            "uid": "924c02c5-e487-453b-b84b-35ef0bc57533",
+            "entityName": null
         },
         "e4d947f4-572c-4b64-974c-834ccd734e8b": {
             "bottomHeightM": null,
@@ -15718,7 +16146,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "e4d947f4-572c-4b64-974c-834ccd734e8b"
+            "uid": "e4d947f4-572c-4b64-974c-834ccd734e8b",
+            "entityName": null
         },
         "99a0b1d3-6376-412c-b5d0-f0e2df4d7a3d": {
             "bottomHeightM": null,
@@ -15737,7 +16166,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "99a0b1d3-6376-412c-b5d0-f0e2df4d7a3d"
+            "uid": "99a0b1d3-6376-412c-b5d0-f0e2df4d7a3d",
+            "entityName": null
         },
         "ff868cde-03df-486e-8f7b-6779378386aa": {
             "bottomHeightM": null,
@@ -15756,7 +16186,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "ff868cde-03df-486e-8f7b-6779378386aa"
+            "uid": "ff868cde-03df-486e-8f7b-6779378386aa",
+            "entityName": null
         },
         "ff13e6ed-2447-4369-ab2e-afe8fa583c97": {
             "bottomHeightM": null,
@@ -15775,7 +16206,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "ff13e6ed-2447-4369-ab2e-afe8fa583c97"
+            "uid": "ff13e6ed-2447-4369-ab2e-afe8fa583c97",
+            "entityName": null
         },
         "33afa72a-3eee-4977-b742-b184e6e9db4f": {
             "bottomHeightM": null,
@@ -15794,7 +16226,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "33afa72a-3eee-4977-b742-b184e6e9db4f"
+            "uid": "33afa72a-3eee-4977-b742-b184e6e9db4f",
+            "entityName": null
         },
         "3eb96c69-48d4-4e17-8aee-9381dd5ac088": {
             "bottomHeightM": null,
@@ -15813,7 +16246,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": true,
-            "uid": "3eb96c69-48d4-4e17-8aee-9381dd5ac088"
+            "uid": "3eb96c69-48d4-4e17-8aee-9381dd5ac088",
+            "entityName": null
         },
         "d3e2abb7-3342-443f-abe3-a5ed0af649e0": {
             "bottomHeightM": null,
@@ -15832,7 +16266,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": true,
-            "uid": "d3e2abb7-3342-443f-abe3-a5ed0af649e0"
+            "uid": "d3e2abb7-3342-443f-abe3-a5ed0af649e0",
+            "entityName": null
         },
         "77e76434-ebc6-4e2d-a17d-11f2968b8984": {
             "bottomHeightM": null,
@@ -15851,7 +16286,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": true,
-            "uid": "77e76434-ebc6-4e2d-a17d-11f2968b8984"
+            "uid": "77e76434-ebc6-4e2d-a17d-11f2968b8984",
+            "entityName": null
         },
         "0e5e409c-dada-4f02-805a-beb8b4749773": {
             "bottomHeightM": 18,
@@ -15870,7 +16306,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": false,
-            "uid": "0e5e409c-dada-4f02-805a-beb8b4749773"
+            "uid": "0e5e409c-dada-4f02-805a-beb8b4749773",
+            "entityName": null
         },
         "b2ea6885-b4f0-485f-9613-378dc906a225": {
             "bottomHeightM": null,
@@ -15889,7 +16326,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "temperatureC": null,
             "type": "RISER",
             "isVent": true,
-            "uid": "b2ea6885-b4f0-485f-9613-378dc906a225"
+            "uid": "b2ea6885-b4f0-485f-9613-378dc906a225",
+            "entityName": null
         }
     }
 } as DrawingState;

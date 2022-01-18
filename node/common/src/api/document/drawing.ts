@@ -53,6 +53,10 @@ export interface WithID {
     uid: string;
 }
 
+export interface NamedEntity {
+    entityName: string | null;
+}
+
 export interface DrawableEntity extends WithID {
     parentUid: string | null;
     type: EntityType;

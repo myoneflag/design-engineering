@@ -230,7 +230,8 @@ function insertPipeChain(
                     systemUid: system.uid,
                     network,
                     type: EntityType.PIPE,
-                    uid: pipeUid
+                    uid: pipeUid,
+                    entityName: null
                 };
                 newPipe = pipe;
 

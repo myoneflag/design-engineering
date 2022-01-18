@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { isDrainage, isLUStandard, SupportedPsdStandards, SupportedDrainageMethods } from "../../../config";
 import { Catalog } from "../../../catalog/types";
-import { COLORS, Coord, DrawableEntity, DrawingState } from "../../drawing";
+import { COLORS, Coord, DrawableEntity, DrawingState, NamedEntity } from "../../drawing";
 import { cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 import { I18N } from "../../../locale/values";
@@ -19,7 +19,7 @@ export interface RoughInRecord {
     allowAllSystems: boolean;
 }
 
-export default interface FixtureEntity extends DrawableEntity {
+export default interface FixtureEntity extends DrawableEntity, NamedEntity {
     center: Coord;
     type: EntityType.FIXTURE;
     name: string;
@@ -46,6 +46,15 @@ export default interface FixtureEntity extends DrawableEntity {
 
 export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, locale: SupportedLocales): PropertyField[] {
     const res: PropertyField[] = [
+        {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
         {
             property: "rotation",
             title: "Rotation: (Degrees)",

@@ -124,7 +124,8 @@ export function leadPipe(
         network,
         type: EntityType.PIPE,
         gradePCT: null,
-        uid: uuid()
+        uid: uuid(),
+        entityName: null
     };
 
     context.$store.dispatch("document/addEntity", newPipe);

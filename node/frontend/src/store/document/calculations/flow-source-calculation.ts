@@ -1,7 +1,7 @@
 import { FieldCategory, CalculationField } from "../../../../src/store/document/calculations/calculation-field";
 import {
     addPressureCalculationFields,
-    Calculation, CalculationType, PressureCalculation,
+    Calculation, CalculationType, NameCalculation, PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
 import RiserEntity from "../../../../../common/src/api/document/entities/riser-entity";
@@ -13,7 +13,8 @@ import { DocumentState } from "../types";
 
 export default interface FlowSourceCalculation extends
     Calculation,
-    PressureCalculation {
+    PressureCalculation,
+    NameCalculation {
     flowRateLS: number | null;
 }
 
@@ -21,6 +22,17 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: D
     if (isDrainage(entity.systemUid, doc.drawing.metadata.flowSystems) === (doc.uiState.pressureOrDrainage === 'drainage')) {
 
         const result: CalculationField[] = [];
+
+        result.push(
+            {
+                property: "entityName",
+                title: "Name",
+                short: "",
+                units: Units.None,
+                category: FieldCategory.EntityName,
+                systemUid: entity.systemUid,
+            },
+        );
 
         addPressureCalculationFields(result, entity.systemUid, "", { defaultEnabled: true }, { defaultEnabled: true });
 
@@ -52,5 +64,7 @@ export function emptyFlowSourceCalculation(): FlowSourceCalculation {
         pressureKPA: null,
         staticPressureKPA: null,
         warnings: null,
+
+        entityName: null
     };
 }

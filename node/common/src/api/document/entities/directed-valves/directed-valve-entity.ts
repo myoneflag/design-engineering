@@ -2,12 +2,12 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable, isGas } from "../../../config";
-import { Color, COLORS, ConnectableEntity, Coord, DrawingState, SelectedMaterialManufacturer } from "../../drawing";
+import { Color, COLORS, ConnectableEntity, Coord, DrawingState, NamedEntity, SelectedMaterialManufacturer } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { convertPipeDiameterFromMetric, Units } from "../../../../lib/measurements";
 
-export default interface DirectedValveEntity extends ConnectableEntity {
+export default interface DirectedValveEntity extends ConnectableEntity, NamedEntity {
     type: EntityType.DIRECTED_VALVE;
     center: Coord;
     systemUidOption: string | null;
@@ -28,6 +28,15 @@ export function makeDirectedValveFields(
 
     fields.push(
         {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
+        {
             property: "systemUidOption",
             title: "Flow System",
             hasDefault: false,
@@ -36,8 +45,6 @@ export function makeDirectedValveFields(
             params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "systemUid"
         },
-    );
-    fields.push(
         {
             property: "color",
             title: "Color",

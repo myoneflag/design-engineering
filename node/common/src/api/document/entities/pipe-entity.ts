@@ -1,13 +1,13 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { Color, COLORS, DrawableEntity, DrawingState, NetworkType } from "../drawing";
+import { Color, COLORS, DrawableEntity, DrawingState, NamedEntity, NetworkType } from "../drawing";
 import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
 import { Catalog } from "../../catalog/types";
 import { convertMeasurementSystem, convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import { isDrainage, isGas, StandardFlowSystemUids } from "../../config";
 import { getPipeManufacturer, getEntityNetwork, getEntitySystem } from "./utils";
 
-export default interface PipeEntity extends DrawableEntity {
+export default interface PipeEntity extends DrawableEntity, NamedEntity {
     type: EntityType.PIPE;
 
     parentUid: null;
@@ -66,6 +66,15 @@ export function makePipeFields(
     const iAmDrainage = isDrainage(entity.systemUid, drawing.metadata.flowSystems);
 
     fields.push(
+        {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
         {
             property: "systemUid",
             title: "Flow System",
