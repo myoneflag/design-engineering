@@ -139,11 +139,11 @@ function onSetActiveFlowSystem(state: DocumentState, value: number) {
 }
 function deleteEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNullable) {
     if (levelUid === null) {
-        if (entity.type !== EntityType.RISER) {
-            throw new Error(
-                "Deleting a non shared object from the shared level " + levelUid + " " + JSON.stringify(entity)
-            );
-        }
+        // if (entity.type !== EntityType.RISER) {
+        //     throw new Error(
+        //         "Deleting a non shared object from the shared level " + levelUid + " " + JSON.stringify(entity)
+        //     );
+        // }
         Vue.delete(state.drawing.shared, entity.uid);
         logEntityMutation(state, { entityUid: entity.uid, levelUid: null });
     } else if (entity.uid in state.drawing.levels[levelUid].entities) {
@@ -531,7 +531,7 @@ function proxyLevel(lvl: Level, state: DocumentState, levelUid: string) {
 }
 
 function proxyUpFromStateDiff(state: DocumentState, diff: any) {
-    if (diff.shared && state.drawing.shared) {
+    if (diff && diff.shared && state.drawing.shared) {
         Object.keys(diff.shared).forEach((uid) => {
             if (state.drawing.shared.hasOwnProperty(uid)) {
                 state.drawing.shared[uid] = proxyEntity(state.drawing.shared[uid], entityHandler(state, null, uid));
@@ -539,7 +539,7 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
         });
     }
 
-    if (diff.levels && state.drawing.levels) {
+    if (diff && diff.levels && state.drawing.levels) {
         Object.keys(diff.levels).forEach((lvlUid) => {
             if (state.drawing.levels[lvlUid] && state.drawing.levels[lvlUid].entities) {
                 if (diff.levels[lvlUid] && diff.levels[lvlUid].entities) {
@@ -561,7 +561,7 @@ function proxyUpFromStateDiff(state: DocumentState, diff: any) {
 // Call this before destroying the current state to figure out what we need to alert changes for.
 function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: boolean = false): Array<[string, any]> {
     const res: Array<[string, any]> = [];
-    if (diff.shared && from.shared) {
+    if (diff && diff.shared && from.shared) {
         Object.keys(diff.shared).forEach((uid) => {
             if (to.shared.hasOwnProperty(uid) && from.shared.hasOwnProperty(uid)) {
                 res.push(["update-entity", uid]);
@@ -577,7 +577,7 @@ function marshalChanges(from: DrawingState, to: DrawingState, diff: any, fuzzy: 
         });
     }
 
-    if (diff.levels && to.levels) {
+    if (diff && diff.levels && to.levels) {
         Object.keys(diff.levels).forEach((lvlUid) => {
             if (from.levels.hasOwnProperty(lvlUid) && to.levels.hasOwnProperty(lvlUid)) {
                 // Diff elements here
