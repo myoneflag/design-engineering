@@ -55,11 +55,11 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
             newGraph.addDirectedEdge(
                 {
                     connectable: o.entity.plant.returnUid,
-                    connection:  o.entity.uid ,
+                    connection: o.entity.uid,
                 },
                 {
                     connectable: o.entity.outletUid,
-                    connection: o.entity.uid ,
+                    connection: o.entity.uid,
                 },
                 {
                     type: EdgeType.RETURN_PUMP,
@@ -107,7 +107,7 @@ export function identifyReturns(engine: CalculationEngine): ReturnRecord[] {
             const res = isSeriesParallel(simpleGraph, o.entity.outletUid, o.entity.plant.returnUid);
             if (res) {
                 const [orderLookup, spTree] = res;
-                records.push({spTree, plant: o.entity});
+                records.push({ spTree, plant: o.entity });
                 // we are good.
                 for (const e of returnComponent[1]) {
                     if (e.value.type === EdgeType.PIPE) {
@@ -168,57 +168,57 @@ export function getHeatLossOfPipeMomentWATT_M(context: CalculationContext, pipe:
         iters += 1;
         if (iters > 30) return null;
         // Calculation for insulated pipe
-        const averageFilmTemperatureC   = (surfaceTempC + context.doc.drawing.metadata.calculationParams.roomTemperatureC) / 2;
-        const averageFilmTemperatureK   = averageFilmTemperatureC + 273.15;
-        const thermalConductivityW_MK   = evaluatePolynomial(AIR_PROPERTIES.thermalConductivityW_MK_3, averageFilmTemperatureK) / 1e3;
-        const viscosity_N_SM2           = evaluatePolynomial(AIR_PROPERTIES.viscosityNS_M2_7, averageFilmTemperatureK) / 1e7;
-        const prandtlNumber             = evaluatePolynomial(AIR_PROPERTIES.prandtlNumber, averageFilmTemperatureK);
-        const expansionCoefficient_1_K  = 1 / averageFilmTemperatureK;
-        const airDensity_KG_M3          = 29 / 0.0820575 / averageFilmTemperatureK;
-        const kinematicViscosityM2_S    = evaluatePolynomial(AIR_PROPERTIES.kinematicViscosityM2_S_6, averageFilmTemperatureK) / 1e6;
-        const specificHeatKJ_KGK        = evaluatePolynomial(AIR_PROPERTIES.specificHeatKJ_KGK, averageFilmTemperatureK);
-        const alphaM2_S                 = evaluatePolynomial(AIR_PROPERTIES.alphaM2_S_6, averageFilmTemperatureK) / 1e6;
-        const reynoldsNumber            = totalOutsideDiameter / 1000 * windSpeedMS / kinematicViscosityM2_S;
-        const rayleighNumber            = ga * expansionCoefficient_1_K * Math.abs(surfaceTempC - ambientTemperatureC) * (totalOutsideDiameter / 1000) ** 3 / (kinematicViscosityM2_S * alphaM2_S);
+        const averageFilmTemperatureC = (surfaceTempC + context.doc.drawing.metadata.calculationParams.roomTemperatureC) / 2;
+        const averageFilmTemperatureK = averageFilmTemperatureC + 273.15;
+        const thermalConductivityW_MK = evaluatePolynomial(AIR_PROPERTIES.thermalConductivityW_MK_3, averageFilmTemperatureK) / 1e3;
+        const viscosity_N_SM2 = evaluatePolynomial(AIR_PROPERTIES.viscosityNS_M2_7, averageFilmTemperatureK) / 1e7;
+        const prandtlNumber = evaluatePolynomial(AIR_PROPERTIES.prandtlNumber, averageFilmTemperatureK);
+        const expansionCoefficient_1_K = 1 / averageFilmTemperatureK;
+        const airDensity_KG_M3 = 29 / 0.0820575 / averageFilmTemperatureK;
+        const kinematicViscosityM2_S = evaluatePolynomial(AIR_PROPERTIES.kinematicViscosityM2_S_6, averageFilmTemperatureK) / 1e6;
+        const specificHeatKJ_KGK = evaluatePolynomial(AIR_PROPERTIES.specificHeatKJ_KGK, averageFilmTemperatureK);
+        const alphaM2_S = evaluatePolynomial(AIR_PROPERTIES.alphaM2_S_6, averageFilmTemperatureK) / 1e6;
+        const reynoldsNumber = totalOutsideDiameter / 1000 * windSpeedMS / kinematicViscosityM2_S;
+        const rayleighNumber = ga * expansionCoefficient_1_K * Math.abs(surfaceTempC - ambientTemperatureC) * (totalOutsideDiameter / 1000) ** 3 / (kinematicViscosityM2_S * alphaM2_S);
 
 
 
         // Air film resistance
-        const radiationW_M2K            = 0.00000005670373 * SURFACE_EMISSIVITY[flowSystem.insulationJacket] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15) ** 4) / ((surfaceTempC + 273.15) - (ambientTemperatureC + 273.15));
+        const radiationW_M2K = 0.00000005670373 * SURFACE_EMISSIVITY[flowSystem.insulationJacket] * ((surfaceTempC + 273.15) ** 4 - (ambientTemperatureC + 273.15) ** 4) / ((surfaceTempC + 273.15) - (ambientTemperatureC + 273.15));
 
 
-        const nu_forced                 = 0.3 + (0.62 * Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1 / 3)) * (1 + (reynoldsNumber / 282000) ** (5 / 8)) ** (4 / 5) / (1 + (0.4 / prandtlNumber) ** (2 / 3)) ** (1 / 4);
-        const forcedConvectionW_M2K     = nu_forced * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+        const nu_forced = 0.3 + (0.62 * Math.sqrt(reynoldsNumber) * Math.pow(prandtlNumber, 1 / 3)) * (1 + (reynoldsNumber / 282000) ** (5 / 8)) ** (4 / 5) / (1 + (0.4 / prandtlNumber) ** (2 / 3)) ** (1 / 4);
+        const forcedConvectionW_M2K = nu_forced * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
 
 
 
 
-        const nu_free                   = (0.6 + 0.387 * rayleighNumber ** (1 / 6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
-        const freeConvectionW_M2K       = nu_free * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+        const nu_free = (0.6 + 0.387 * rayleighNumber ** (1 / 6) / (1 + (0.559 / prandtlNumber) ** (9 / 16)) ** (8 / 27)) ** 2;
+        const freeConvectionW_M2K = nu_free * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
 
-        const nu_combined               = (nu_forced ** 4 + nu_free ** 4) ** (1 / 4);
-        const combinedConvectionW_M2K   = nu_combined * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
-        const overallAirSideHtcW_M2K    = combinedConvectionW_M2K + radiationW_M2K;
+        const nu_combined = (nu_forced ** 4 + nu_free ** 4) ** (1 / 4);
+        const combinedConvectionW_M2K = nu_combined * thermalConductivityW_MK / (totalOutsideDiameter / 1000);
+        const overallAirSideHtcW_M2K = combinedConvectionW_M2K + radiationW_M2K;
 
         // Pipe Resistance
         const pipeThermalConductivityW_MK = evaluatePolynomial(THERMAL_CONDUCTIVITY[filled.material!], tempC + 273.15);
-        const pipeWallResistanceM2K_W   = (totalOutsideDiameter / 1000) * Math.log(bareOutsideDiameter / pCalc.realInternalDiameterMM) / (2 * pipeThermalConductivityW_MK);
+        const pipeWallResistanceM2K_W = (totalOutsideDiameter / 1000) * Math.log(bareOutsideDiameter / pCalc.realInternalDiameterMM) / (2 * pipeThermalConductivityW_MK);
 
         // Insulation Resistance
-        const averageInsulationTempK    = (surfaceTempC + interfaceTempC) / 2 + 273.15;
+        const averageInsulationTempK = (surfaceTempC + interfaceTempC) / 2 + 273.15;
         const insulationThermalConductivityW_MK = evaluatePolynomial(THERMAL_CONDUCTIVITY[flowSystem.insulationMaterial], averageInsulationTempK);
         const insulationResistanceM2K_W = (totalOutsideDiameter / 1000) * Math.log(totalOutsideDiameter / bareOutsideDiameter) / (2 * insulationThermalConductivityW_MK);
 
         // Overall Resistance
-        const overallResistanceM2_KW    = insulationResistanceM2K_W + pipeWallResistanceM2K_W + 1 / overallAirSideHtcW_M2K;
-        const heatFlowW_M2              = (tempC - ambientTemperatureC) / overallResistanceM2_KW;
+        const overallResistanceM2_KW = insulationResistanceM2K_W + pipeWallResistanceM2K_W + 1 / overallAirSideHtcW_M2K;
+        const heatFlowW_M2 = (tempC - ambientTemperatureC) / overallResistanceM2_KW;
 
 
-        interfaceTempC                  = tempC - heatFlowW_M2 * pipeWallResistanceM2K_W;
+        interfaceTempC = tempC - heatFlowW_M2 * pipeWallResistanceM2K_W;
 
-        surfaceTempC                    = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
+        surfaceTempC = interfaceTempC - heatFlowW_M2 * insulationResistanceM2K_W;
 
-        const heatLossPerUnitLengthW_M  = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
+        const heatLossPerUnitLengthW_M = heatFlowW_M2 * Math.PI * (totalOutsideDiameter / 1000);
 
 
         if (true) {
@@ -345,7 +345,7 @@ function setFlowRatesNode(
     currNode: SPNode<Edge<unknown, FlowEdge>>,
     currFlowRate: number,
     heatLossCache: Map<string, number | null>,
-    ): number| null {
+): number | null {
 
     if (isNaN(currFlowRate)) {
         throw new Error('flow rate is NaN');
@@ -448,7 +448,12 @@ function setFlowRatesNode(
 // Takes a look at the return loop, and calculates the return flow rates of each pipe. Pipes are found as leaf nodes
 // in the series parallel tree.
 export function setFlowRatesForReturn(context: CalculationEngine, record: ReturnRecord): number | null {
-    const filled = fillPlantDefaults(record.plant, context.drawing, context.catalog);
+    const filled = fillPlantDefaults(
+        record.plant,
+        context.drawing,
+        context.catalog,
+        context.doc.entityDependencies.get(record.plant.uid),
+    );
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
         throw new Error('Can only set return flow rates for return system');
@@ -531,7 +536,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
             }
 
             // don't propagate warnings beyond their loop
-            return { balanced, leafSeries, warning: (node.siblings.length > 1 ? null : warning)};
+            return { balanced, leafSeries, warning: (node.siblings.length > 1 ? null : warning) };
         }
         case "series": {
             let balanced = false;
@@ -556,7 +561,7 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                     throw new Error('expected flow from');
                 }
 
-                let uid =  pCalc.flowFrom;
+                let uid = pCalc.flowFrom;
                 const o = engine.globalStore.get(uid)!;
                 if (o.entity.type === EntityType.DIRECTED_VALVE) {
                     switch (o.entity.valve.type) {
@@ -706,7 +711,7 @@ export function findValveImbalances(
             const pressures = [];
 
             for (const uid of [node.edgeConcrete.from, node.edgeConcrete.to]) {
-                const p = nodePressureKPA.get(engine.serializeNode({connectable: uid, connection: node.edgeConcrete.value.uid}));
+                const p = nodePressureKPA.get(engine.serializeNode({ connectable: uid, connection: node.edgeConcrete.value.uid }));
                 pressures.push(p === undefined ? null : p);
             }
 
@@ -751,17 +756,17 @@ export function findValveImbalances(
     isLeafSeries.set(node.edge, leafSeries);
     valveUids.set(node.edge, valveUid);
 
-    return {valveUid, leafSeries, maxPressure, minPressure};
+    return { valveUid, leafSeries, maxPressure, minPressure };
 }
 
 // Returns true if the pressure drop was consumed, for the purposes of only having one segment in a series consume it.
 function setValveBalances(engine: CalculationEngine,
-                          leafValveUid: Map<string, string | null>,
-                          pressureDropKPA: Map<string, number | null>,
-                          isLeafSeries: Map<string, boolean>,
-                          node: SPNode<Edge<string, FlowEdge>>,
-                          pressureDropDifferentialKPA: number,
-                          adjustPressureDropByManufacturer: number,
+    leafValveUid: Map<string, string | null>,
+    pressureDropKPA: Map<string, number | null>,
+    isLeafSeries: Map<string, boolean>,
+    node: SPNode<Edge<string, FlowEdge>>,
+    pressureDropDifferentialKPA: number,
+    adjustPressureDropByManufacturer: number,
 ): boolean {
     switch (node.type) {
         case "parallel": {
@@ -839,7 +844,7 @@ function adjustPlantPressureDropByManufacturer(props: {
     catalog: Catalog,
     drawing: DrawingState,
     pressureDrop: number,
-}): {total: number, manufacturer: string} {
+}): { total: number, manufacturer: string } {
     const returnFlow = props.pCalc.circulationFlowRateLS;
     let totalIncease = 0
     let settingManufacturerName = '';
@@ -851,21 +856,21 @@ function adjustPlantPressureDropByManufacturer(props: {
         if (manufacturer === 'grundfos') {
             let stop = false;
             for (let [settings, data] of Object.entries(catalogHotWaterPlant.grundfosPressureDrop)) {
-                settingManufacturerName = (HotWaterPlantGrundfosSettingsName as {[key: string]: string})[settings];
-                let settingsData =  Object.entries(data); 
-                
+                settingManufacturerName = (HotWaterPlantGrundfosSettingsName as { [key: string]: string })[settings];
+                let settingsData = Object.entries(data);
+
                 settingsData.find(([Q, H], i) => {
                     if (Number(Q) > returnFlow) {
-                        const pressure1 = Number(settingsData[(i > 0) ? (i-1): 0][1]);
+                        const pressure1 = Number(settingsData[(i > 0) ? (i - 1) : 0][1]);
                         const pressure2 = Number(H);
 
                         // check if pressureLoss is below the current settings pressure
                         // so that we can adjust the pressuLoss up until it meets the current settings pressure
-                        if (pressure1 > props.pressureDrop &&  pressure2 > props.pressureDrop) {
+                        if (pressure1 > props.pressureDrop && pressure2 > props.pressureDrop) {
                             totalIncease = ((pressure1 + pressure2) / 2) - props.pressureDrop;
                             stop = true;
                         }
-                        
+
                         return true;
                     }
                 });
@@ -874,7 +879,7 @@ function adjustPlantPressureDropByManufacturer(props: {
                     break;
                 }
             }
-            
+
         }
     }
 
@@ -894,14 +899,14 @@ export function returnBalanceValves(engine: CalculationEngine, returns: ReturnRe
         const pressureAtOutlet = 0; // for purposes of just determining pressure differences, it's OK to start with an unknown initial pressure.
         const pressuresInStaticReturnKPA = new Map<string, number | null>();
 
-        engine.pushPressureThroughNetwork(flowOut, pressureAtOutlet, new Map<string, number|null>(), pressuresInStaticReturnKPA, PressurePushMode.CirculationFlowOnly);
+        engine.pushPressureThroughNetwork(flowOut, pressureAtOutlet, new Map<string, number | null>(), pressuresInStaticReturnKPA, PressurePushMode.CirculationFlowOnly);
 
         const pressureDropKPA = new Map<string, number>();
         const isLeafSeries = new Map<string, boolean>();
         const valveUids = new Map<string, string | null>();
 
         findValveImbalances(engine, pressuresInStaticReturnKPA, valveUids, pressureDropKPA, isLeafSeries, ret.spTree);
-        
+
         const pCalc = engine.globalStore.getOrCreateCalculation(ret.plant);
         const circulationPressureLoss = pressureDropKPA.get(ret.spTree.edge)!;
         const checkAdjustment = adjustPlantPressureDropByManufacturer({

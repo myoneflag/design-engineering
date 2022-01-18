@@ -1,3 +1,4 @@
+import { StandardFlowSystemUids } from './../../config';
 import { Color, FlowSystemParameters } from "../drawing";
 import { Choice } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
@@ -31,6 +32,7 @@ export interface ChoiceParams extends FieldParams {
 
 export interface FlowSystemChoiceParams extends FieldParams {
     systems: FlowSystemParameters[];
+    disabledSystems?: FlowSystemParameters['uid'][];
 }
 
 export interface FieldParams {

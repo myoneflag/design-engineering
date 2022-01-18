@@ -39,12 +39,12 @@ export class ObjectStore extends Map<string, BaseBackedObject> {
         return this.connections.get(uid) || [];
     }
 
-    get(key: string) {
+    get(key: string): BaseBackedObject {
         const res = super.get(key);
         if (res) {
             return res;
         }
-        return this.graveyard.get(key);
+        return this.graveyard.get(key)!;
     }
 
     watchDependencies(uid: string, prop: string, deps: Set<string>) {

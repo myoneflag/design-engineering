@@ -1,5 +1,6 @@
-import { SupportedPsdStandards, isLUStandard } from './../../../../../common/src/api/config';
-import { NodeType } from './../../../../../common/src/api/document/entities/load-node-entity';
+import { GasRegulator } from '../../../../../common/src/api/document/entities/directed-valves/valve-types';
+import { SupportedPsdStandards, isLUStandard } from '../../../../../common/src/api/config';
+import { NodeType } from '../../../../../common/src/api/document/entities/load-node-entity';
 import { DocumentState } from "../types";
 import { ObjectStore } from "../../../htmlcanvas/lib/object-store";
 import { cloneSimple, parseCatalogNumberOrMin, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
@@ -8,7 +9,13 @@ import LoadNodeEntity from "../../../../../common/src/api/document/entities/load
 import { NodeProps } from '../../../../../common/src/models/CustomEntity';
 import { Catalog } from '../../../../../common/src/api/catalog/types';
 
-export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: ObjectStore, value: LoadNodeEntity, catalog: Catalog, nodes: NodeProps[]) {
+export function fillDefaultLoadNodeFields(
+    doc: DocumentState,
+    objectStore: ObjectStore,
+    value: LoadNodeEntity,
+    catalog: Catalog,
+    nodes: NodeProps[]
+) {
     const result = cloneSimple(value);
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
@@ -139,6 +146,17 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         }
         if (result.node.enDischargeUnits === null) {
             result.node.enDischargeUnits = enDischargeUnits;
+        }
+    }
+
+    if (result.node.type === NodeType.LOAD_NODE) {
+        if (result.node.gasPressureKPA === null) {
+            const gasRegulator = doc.entityDependencies.get(result.uid)?.valve as GasRegulator;
+            result.node.gasPressureKPA = gasRegulator?.downStreamPressureKPA || 0;
+        }
+
+        if (result.node.diversity === null) {
+            result.node.diversity = 100;
         }
     }
 

@@ -3,7 +3,7 @@ import { EntityType } from "./types";
 import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
-import { isDrainage, isGas, StandardFlowSystemUids } from "../../config";
+import { isDrainage, isGas } from "../../config";
 import { SupportedLocales } from "../../locale";
 import { Catalog } from "../../catalog/types";
 
@@ -52,7 +52,7 @@ export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: Fl
             type: FieldType.Number,
             params: { min: 0, max: null },
             multiFieldId: "minPressureKPA",
-            units: Units.KiloPascals,
+            units: Units.GasKiloPascals,
         });
     } else if (!isDrainage(entity.systemUid, systems)) {
         res.push(

@@ -96,7 +96,7 @@ import { FixtureSpec } from "../../../../common/src/api/catalog/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { add, remove, update } from "../../api/custom-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import { drawingContainsCustomNode } from "@/../../common/src/api/document/entities/load-node-entity";
+import { drawingContainsCustomNode } from "../../../../common/src/api/document/entities/load-node-entity";
 import { convertMeasurementSystem, convertMeasurementToMetric, Units } from "../../../../common/src/lib/measurements";
 import { setPropertyByString } from "../../lib/utils";
 

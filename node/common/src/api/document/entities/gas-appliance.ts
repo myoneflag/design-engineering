@@ -1,10 +1,10 @@
-import {EntityType} from "./types";
-import {FieldType, PropertyField} from "./property-field";
-import {isLUStandard, SupportedPsdStandards} from "../../config";
-import {Catalog} from "../../catalog/types";
-import {Coord, DrawableEntity, DrawingState} from "../drawing";
-import {cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin} from "../../../lib/utils";
-import {Units} from "../../../lib/measurements";
+import { GasRegulator } from './directed-valves/valve-types';
+import { EntityType } from "./types";
+import { FieldType, PropertyField } from "./property-field";
+import DirectedValveEntity from "./directed-valves/directed-valve-entity";
+import { Coord, DrawableEntity, DrawingState } from "../drawing";
+import { cloneSimple } from "../../../lib/utils";
+import { Units } from "../../../lib/measurements";
 
 
 export default interface GasApplianceEntity extends DrawableEntity {
@@ -21,6 +21,7 @@ export default interface GasApplianceEntity extends DrawableEntity {
     widthMM: number;
     heightMM: number;
     flowRateMJH: number | null;
+    diversity: number | null;
 }
 
 export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplianceEntity): PropertyField[] {
@@ -34,7 +35,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             params: null,
             multiFieldId: "name",
         },
-
         {
             property: "abbreviation",
             title: "Abbreviation",
@@ -44,7 +44,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             params: null,
             multiFieldId: "abbreviation",
         },
-
         {
             property: "rotation",
             title: "Rotation: (Degrees)",
@@ -54,7 +53,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             params: null,
             multiFieldId: null
         },
-
         {
             property: "outletAboveFloorM",
             title: "Height Above Floor",
@@ -65,19 +63,16 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             multiFieldId: "outletAboveFloorM",
             units: Units.Meters,
         },
-
         {
             property: "inletPressureKPA",
             title: "Inlet Pressure",
-            hasDefault: false,
-            requiresInput: true,
+            hasDefault: true,
             isCalculated: false,
             type: FieldType.Number,
             params: { min: 0, max: null },
             multiFieldId: "inletPressureKPA",
-            units: Units.KiloPascals,
+            units: Units.GasKiloPascals,
         },
-
         {
             property: "widthMM",
             title: "Width",
@@ -88,7 +83,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             multiFieldId: "widthMM",
             units: Units.Millimeters,
         },
-
         {
             property: "heightMM",
             title: "Height",
@@ -99,8 +93,6 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             multiFieldId: "heightMM",
             units: Units.Millimeters,
         },
-
-
         {
             property: "flowRateMJH",
             title: "Flow Rate",
@@ -112,14 +104,36 @@ export function makeGasApplianceFields(drawing: DrawingState, entity: GasApplian
             multiFieldId: "flowRateMJH",
             units: Units.MegajoulesPerHour,
         },
+        {
+            property: "diversity",
+            title: "Diversity",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 0, max: null },
+            multiFieldId: "diversity",
+            units: Units.Percent
+        },
     ];
 
     return res;
 }
 
 export function fillGasApplianceFields(
-    value: GasApplianceEntity
+    value: GasApplianceEntity,
+    regulator?: DirectedValveEntity,
 ): GasApplianceEntity {
     const result = cloneSimple(value);
+
+    const gasRegulator = regulator?.valve as GasRegulator;
+
+    if (result.inletPressureKPA === null) {
+        result.inletPressureKPA = gasRegulator?.downStreamPressureKPA || 0;
+    }
+
+    if (result.diversity === null) {
+        result.diversity = 100;
+    }
+
     return result;
 }

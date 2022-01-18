@@ -2272,7 +2272,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "7c470d70-8f12-4bff-8ebb-862fc84870c2"
                 },
                 "f261b766-9a0f-42da-bc73-1549eff202c7": {
-                    "version": 1,
                     "heightAboveFloorM": 2,
                     "heightMM": 1300,
                     "widthMM": 2500,
@@ -2305,6 +2304,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "rheemMinimumInitialDelivery": null,
                         "rheemkWRating": null,
                         "rheemStorageTankSize": null,
+                        "diversity": 100,
                     },
                     "calculation": {
                         "widthMM": null,
@@ -4709,7 +4709,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "valve": {
                         "type": "GAS_REGULATOR",
                         "catalogId": "gasRegulator",
-                        "outletPressureKPA": 5
+                        "outletPressureKPA": 5,
+                        "downStreamPressureKPA": 0,
                     }
                 },
                 "b483f932-a45b-44b4-b5cb-60fa94eea124": {
@@ -6730,7 +6731,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "inletPressureKPA": 2.75,
                     "widthMM": 500,
                     "heightMM": 500,
-                    "flowRateMJH": 80
+                    "flowRateMJH": 80,
+                    "diversity": 100,
                 },
                 "7ed19aa4-6d4a-4d5d-b446-b99dab105fb3": {
                     "center": {
@@ -7266,7 +7268,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "b3d9041c-721a-4b23-90d1-fdd9d5ddae9b"
                 },
                 "aa79a0c4-39c3-4e63-8a97-6ca6c4f5e70e": {
-                    "version": 1,
                     "heightAboveFloorM": 1,
                     "heightMM": 500,
                     "widthMM": 1200,
@@ -8263,7 +8264,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "64d6f74f-800a-4e45-ac13-74e238950ba0"
                 },
                 "f5b251aa-6416-400b-b166-46c1bd99edc6": {
-                    "version": 1,
                     "heightAboveFloorM": 0.75,
                     "heightMM": 1100,
                     "widthMM": 2100,
@@ -8487,7 +8487,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "enDischargeUnits": 0,
                         "upcFixtureUnits": 0,
                         "loadingUnits": 0,
-                        "variant": "FIXTURE"
+                        "variant": "FIXTURE",
+                        "diversity": 0
                     },
                     "minPressureKPA": null,
                     "maxPressureKPA": null,
@@ -8514,7 +8515,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "enDischargeUnits": 0,
                         "upcFixtureUnits": 0,
                         "loadingUnits": 0,
-                        "variant": "FIXTURE"
+                        "variant": "FIXTURE",
+                        "diversity": 0
                     },
                     "minPressureKPA": null,
                     "maxPressureKPA": null,
@@ -14192,7 +14194,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "key": "39aa765c-b8b1-4f4b-a305-79a4cd934f4e.png"
                 },
                 "c3439528-c948-4a58-aeb5-977e45f8e6d4": {
-                    "version": 1,
                     "heightAboveFloorM": 2,
                     "heightMM": 3200,
                     "widthMM": 3200,
@@ -14250,7 +14251,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "configuration": 1
                 },
                 "1910d32c-6bc1-4621-a095-14c22b09b9eb": {
-                    "version": 1,
                     "heightAboveFloorM": 0.75,
                     "heightMM": 1300,
                     "widthMM": 1300,
@@ -14606,7 +14606,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "variant": "CONTINUOUS",
                         "upcFixtureUnits": null,
                         "asnzFixtureUnits": 10,
-                        "enDischargeUnits": null
+                        "enDischargeUnits": null,
+                        "diversity": 0
                     },
                     "minPressureKPA": null,
                     "maxPressureKPA": null,
@@ -15237,7 +15238,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "variant": "FIXTURE",
                         "upcFixtureUnits": null,
                         "asnzFixtureUnits": 2,
-                        "enDischargeUnits": null
+                        "enDischargeUnits": null,
+                        "diversity": 0
                     },
                     "minPressureKPA": null,
                     "maxPressureKPA": null,
@@ -15379,7 +15381,8 @@ export const EXAMPLE_DRAWING: DrawingState = {
                         "variant": "CONTINUOUS",
                         "upcFixtureUnits": null,
                         "asnzFixtureUnits": null,
-                        "enDischargeUnits": null
+                        "enDischargeUnits": null,
+                        "diversity": 0
                     },
                     "minPressureKPA": 250,
                     "maxPressureKPA": 1100,

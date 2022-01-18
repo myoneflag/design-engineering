@@ -32,7 +32,7 @@ import { getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-d
 import { Coord, coordDist2, FlowSystemParameters } from "../../../../common/src/api/document/drawing";
 import { cloneSimple, EPS } from "../../../../common/src/lib/utils";
 import { HotWaterPlantManufacturers, PlantManufacturers, PlantType, ReturnSystemPlant } from "../../../../common/src/api/document/entities/plants/plant-types";
-import { assertUnreachable, StandardFlowSystemUids } from "../../../../common/src/api/config";
+import { assertUnreachable, isGas, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { rgb2style } from "../../lib/utils";
 import Pipe from "./pipe";
@@ -59,7 +59,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const { ctx } = context;
         const { selected } = args;
 
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, context.catalog);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            context.catalog,
+        );
 
         this.withWorldScale(context, { x: 0, y: 0 }, () => {
             const lastAlpha = ctx.globalAlpha;
@@ -100,7 +104,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             const outletFS = context.doc.drawing.metadata.flowSystems.find(
                 (s) => s.uid === filled.outletSystemUid
             );
-            const GasFS = context.doc.drawing.metadata.flowSystems.find((s) => s.uid === "gas");
+            const GasFS = context.doc.drawing.metadata.flowSystems.find((s) => isGas(s.uid, context.catalog.fluids, this.document.drawing.metadata.flowSystems));
 
             const middleOfBox = t - (t - b) / 2;
             const capTop = middleOfBox - 23;
@@ -260,7 +264,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, context.catalog);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            context.catalog,
+        );
         const angle = (this.toWorldAngleDeg(0) / 180) * Math.PI;
         const height = data.length * FIELD_HEIGHT;
         const wc = this.toWorldCoord();
@@ -305,7 +313,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             return false;
         }
 
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            store.getters['catalog/default'],
+        );
 
         let entitywidthMM = filled.widthMM!;
         let entityHeightMM = filled.heightMM!;
@@ -333,7 +345,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     }
 
     getInletsOutlets(all: boolean = false): SystemNode[] {
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            store.getters['catalog/default'],
+        );
         const result: string[] = [filled.inletUid, filled.outletUid];
 
         let manufacturer = 'generic';
@@ -439,7 +455,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         signed: boolean,
         pressureKPA: number | null
     ): number | null {
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            store.getters['catalog/default'],
+        );
 
         let sign = 1;
         if (flowLS < 0) {
@@ -452,7 +472,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
             }
         }
 
-        const { drawing, catalog } = context;
+        const { doc, catalog } = context;
 
         if (from.connectable === filled.inletSystemUid) {
             if (to.connectable !== filled.outletSystemUid) {
@@ -470,7 +490,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
         const pl = getPlantPressureLossKPA(
             filled,
-            drawing,
+            doc,
             catalog,
             pressureKPA,
             flowLS
@@ -510,7 +530,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
     onUpdate() {
         super.onUpdate();
 
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, store.getters['catalog/default']);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            store.getters['catalog/default'],
+        );
 
         const outlet = this.globalStore.get(filled.outletUid);
         const inlet = this.globalStore.get(filled.inletUid);
@@ -656,7 +680,11 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
 
     resolveDisplayName(context: DrawingContext, entity: PlantEntity): string {
         const catalog = context.catalog;
-        const filled = fillPlantDefaults(this.entity, this.document.drawing, catalog);
+        const filled = fillPlantDefaults(
+            this.entity,
+            this.document.drawing,
+            catalog,
+        );
 
         let manufacturer: PlantManufacturers = 'generic';
         let name = entity.name;

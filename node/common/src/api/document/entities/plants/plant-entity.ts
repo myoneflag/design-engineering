@@ -1,9 +1,9 @@
+import { GasRegulator } from './../directed-valves/valve-types';
 import {
     CenteredEntity,
     COLORS,
     Coord,
     DrawingState,
-    FlowSystemParameters
 } from "../../drawing";
 import { EntityType } from "../types";
 import {
@@ -25,15 +25,17 @@ import {
     isDrainage,
 } from "../../../config";
 import { auCatalog } from "../../../catalog/initial-catalog/au-catalog";
-import { Catalog, HotWaterPlant, HotWaterPlantSizePropsElectric, HotWaterPlantSizePropsHeatPump } from './../../../catalog/types';
+import {
+    Catalog,
+    HotWaterPlant,
+    HotWaterPlantSizePropsElectric,
+    HotWaterPlantSizePropsHeatPump,
+} from './../../../catalog/types';
 import { Units } from "../../../../lib/measurements";
-import { cloneSimple, Complete, setPropertyByString } from "../../../../lib/utils";
-
-export const PLANT_ENTITY_VERSION = 2;
+import { cloneSimple } from "../../../../lib/utils";
+import DirectedValveEntity from "../directed-valves/directed-valve-entity";
 
 export default interface PlantEntity extends CenteredEntity {
-    version: number;
-
     center: Coord;
     rotation: number;
     rightToLeft: boolean;
@@ -59,9 +61,16 @@ export default interface PlantEntity extends CenteredEntity {
     };
 }
 
-export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, entity: PlantEntity, systems: FlowSystemParameters[]): PropertyField[] {
-    const filled = fillPlantDefaults(entity, drawing, catalog);
-    const iAmDrainage = isDrainage(filled.outletSystemUid, drawing.metadata.flowSystems) || isDrainage(filled.inletSystemUid, drawing.metadata.flowSystems);
+export function makePlantEntityFields(
+    entity: PlantEntity,
+    drawing: DrawingState,
+    catalog: Catalog,
+    regulator?: DirectedValveEntity,
+): PropertyField[] {
+    const filled = fillPlantDefaults(entity, drawing, catalog, regulator);
+
+    const iAmDrainage = isDrainage(filled.outletSystemUid, drawing.metadata.flowSystems) ||
+        isDrainage(filled.inletSystemUid, drawing.metadata.flowSystems);
 
     const res: PropertyField[] = [
         {
@@ -98,7 +107,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "inletSystemUid"
         },
         {
@@ -107,7 +116,7 @@ export function makePlantEntityFields(catalog: Catalog, drawing: DrawingState, e
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems },
+            params: { systems: drawing.metadata.flowSystems },
             multiFieldId: "outletSystemUid"
         },
         {
@@ -376,16 +385,9 @@ export function fillPlantDefaults(
     entity: PlantEntity,
     drawing: DrawingState,
     catalog: Catalog,
+    regulator?: DirectedValveEntity,
 ) {
     const result = cloneSimple(entity);
-
-    if (result.version === undefined) {
-        result.version = 0;
-    }
-
-    if (result.version < PLANT_ENTITY_VERSION) {
-        doPlantEntityUpgrade(result);
-    }
 
     if (result.plant.type !== PlantType.RETURN_SYSTEM) {
         switch (result.plant.pressureLoss.pressureMethod) {
@@ -424,6 +426,8 @@ export function fillPlantDefaults(
 
     switch (result.plant.type) {
         case PlantType.RETURN_SYSTEM:
+            const gasRegulator = regulator?.valve as GasRegulator;
+
             manufacturer = drawing.metadata.catalog.hotWaterPlant.find(
                 (i) => i.uid === 'hotWaterPlant'
             )!.manufacturer as HotWaterPlantManufacturers;
@@ -462,14 +466,14 @@ export function fillPlantDefaults(
                     result.plant.gasConsumptionMJH = size[1].gas.requirement;
                 }
                 if (result.plant.gasPressureKPA === null) {
-                    result.plant.gasPressureKPA = size[1].gas.pressure;
+                    result.plant.gasPressureKPA = gasRegulator?.downStreamPressureKPA || size[1].gas.pressure;
                 }
             } else {
                 if (result.plant.gasConsumptionMJH === null) {
                     result.plant.gasConsumptionMJH = 500;
                 }
                 if (result.plant.gasPressureKPA === null) {
-                    result.plant.gasPressureKPA = 2.75;
+                    result.plant.gasPressureKPA = gasRegulator?.downStreamPressureKPA || 2.75;
                 }
             }
 
@@ -519,6 +523,13 @@ export function fillPlantDefaults(
     }
     if (result.heightAboveFloorM === null) {
         result.heightAboveFloorM = 0.75;
+    }
+
+    if (hasGas(manufacturer, result)) {
+        const returnSystem = result.plant as ReturnSystemPlant;
+        if (returnSystem.diversity === null) {
+            returnSystem.diversity = 100;
+        }
     }
 
     return result;
@@ -619,8 +630,8 @@ function resolvePlantReturnSystemFields(
                 type: FieldType.Text,
                 params: null,
                 multiFieldId: "name"
-            } as PropertyField
-        ] || []),
+            }
+        ] as PropertyField[] || []),
         {
             property: "heightAboveFloorM",
             title: "Height Above Floor",
@@ -662,33 +673,55 @@ function resolvePlantReturnSystemFields(
             params: null,
             multiFieldId: "plant.addReturnToPSDFlowRate",
         },
-        {
-            property: "plant.gasConsumptionMJH",
-            title: "Gas Consumption",
-            hasDefault: manufacturer !== 'rheem',
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "plant.gasConsumptionMJH",
-            units: Units.MegajoulesPerHour,
-            readonly: manufacturer === 'rheem',
-        },
-        {
-            property: "plant.gasPressureKPA",
-            title: "Gas Pressure",
-            hasDefault: manufacturer !== 'rheem',
-            isCalculated: false,
-            type: FieldType.Number,
-            params: { min: 0, max: null },
-            multiFieldId: "plant.gasPressureKPA",
-            units: Units.KiloPascals,
-            readonly: manufacturer === 'rheem',
-        },
+        ...(hasGas(manufacturer, entity) && [
+            {
+                property: "plant.gasConsumptionMJH",
+                title: "Gas Consumption",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "plant.gasConsumptionMJH",
+                units: Units.MegajoulesPerHour,
+            },
+            {
+                property: "plant.diversity",
+                title: "Diversity",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "diversity",
+                units: Units.Percent,
+            },
+            {
+                property: "plant.gasPressureKPA",
+                title: "Gas Pressure",
+                hasDefault: true,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "plant.gasPressureKPA",
+                units: Units.GasKiloPascals,
+            }
+        ] as PropertyField[] || []),
+
     ];
 
     fields.push(...otherFields);
 
     return fields;
+}
+
+function hasGas(manufacturer: PlantManufacturers, entity: PlantEntity) {
+    if (entity.plant.type === PlantType.RETURN_SYSTEM &&
+        (manufacturer === 'generic' ||
+            (manufacturer === 'rheem' &&
+                ![RheemVariantValues.electric, RheemVariantValues.heatPump].includes(entity.plant.rheemVariant!)))) {
+        return true;
+    }
+
+    return false;
 }
 
 function isReadonly(drawing: DrawingState, entity: PlantEntity) {
@@ -711,45 +744,4 @@ function isReadonly(drawing: DrawingState, entity: PlantEntity) {
     }
 
     return readOnly;
-}
-
-export const doPlantEntityUpgrade = (entity: Complete<PlantEntity>) => {
-    switch (entity.version) {
-        case 0:
-            setPropertyByString(entity, 'version', 0);
-            upgrade0to1(entity);
-            break;
-        case 1:
-            upgrade1to2(entity);
-            break;
-        default:
-            setPropertyByString(entity, 'version', 0);
-            upgrade0to1(entity);
-            break;
-    }
-}
-
-const upgrade0to1 = (entity: Complete<PlantEntity>) => {
-    setPropertyByString(entity, 'version', ++entity.version);
-
-    setPropertyByString(entity, 'calculation', {
-        widthMM: null,
-        depthMM: null,
-    });
-
-    if (entity.plant.type === PlantType.RETURN_SYSTEM) {
-        setPropertyByString(entity, 'plant.rheemVariant', null);
-        setPropertyByString(entity, 'plant.rheemPeakHourCapacity', null);
-        setPropertyByString(entity, 'plant.rheemMinimumInitialDelivery', null);
-        setPropertyByString(entity, 'plant.rheemkWRating', null);
-        setPropertyByString(entity, 'plant.rheemStorageTankSize', null);
-    }
-}
-
-const upgrade1to2 = (entity: Complete<PlantEntity>) => {
-    setPropertyByString(entity, 'version', ++entity.version);
-
-    if (entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-        setPropertyByString(entity, 'plant.lengthMM', null);
-    }
 }

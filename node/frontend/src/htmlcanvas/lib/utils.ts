@@ -119,7 +119,7 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
             }
             return entity.heightAboveFloorM;
         case EntityType.PLANT:
-            const filled = fillPlantDefaults(entity, context.drawing, context.catalog,);
+            const filled = fillPlantDefaults(entity, context.drawing, context.catalog);
             return filled.heightAboveFloorM!;
     }
     assertUnreachable(entity);
@@ -341,12 +341,12 @@ export function drawRpzdDouble(context: DrawingContext, colors: [string, string]
 
 export function getPlantPressureLossKPA(
     entity: PlantEntity,
-    drawing: DrawingState,
+    document: DocumentState,
     catalog: Catalog,
     pressureKPA: number | null,
     flowLs?: number
 ) {
-    const filled = fillPlantDefaults(entity, drawing, catalog);
+    const filled = fillPlantDefaults(entity, document.drawing, catalog, document.entityDependencies.get(entity.uid),);
 
     if (filled.plant.type !== PlantType.RETURN_SYSTEM) {
         switch (filled.plant.pressureLoss.pressureMethod) {
@@ -399,7 +399,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
                 .filter((p) => p.multiFieldId)
                 .filter((p) => p.multiFieldId);
         case EntityType.DIRECTED_VALVE:
-            return makeDirectedValveFields(entity, catalog, document.drawing)
+            return makeDirectedValveFields(entity, catalog, document.drawing, determineConnectableSystemUid(store, entity))
                 .filter((p) => p.multiFieldId)
                 .filter((p) => p.multiFieldId);
         case EntityType.SYSTEM_NODE:
@@ -417,7 +417,7 @@ export function makeEntityFields(entity: DrawableEntityConcrete, document: Docum
                 undefined
             ).filter((p) => p.multiFieldId);
         case EntityType.PLANT:
-            return makePlantEntityFields(catalog, document.drawing, entity, document.drawing.metadata.flowSystems);
+            return makePlantEntityFields(entity, document.drawing, catalog, document.entityDependencies.get(entity.uid));
     }
     assertUnreachable(entity);
 }

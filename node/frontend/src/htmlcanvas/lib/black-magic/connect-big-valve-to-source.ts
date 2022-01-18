@@ -15,7 +15,7 @@ import uuid from "uuid";
 import { InteractionType } from "../../../../src/htmlcanvas/lib/interaction";
 import { FlowConfiguration } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { ConnectableEntity, Coord, DrawableEntity, NetworkType } from "../../../../../common/src/api/document/drawing";
-import { StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import { isDrainage, isGas, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 
 export default function connectBigValveToSource(
     context: CanvasContext,
@@ -103,6 +103,13 @@ export function leadPipe(
         }
     }
 
+    let network = NetworkType.CONNECTIONS;
+    if (isDrainage(systemUid, context.document.drawing.metadata.flowSystems) ||
+        isGas(systemUid, context.effectiveCatalog.fluids, context.document.drawing.metadata.flowSystems)) {
+
+        network = NetworkType.RETICULATIONS;
+    }
+
     // Draw de cold peep
     const newPipe: PipeEntity = {
         color: null,
@@ -114,7 +121,7 @@ export function leadPipe(
         maximumVelocityMS: null,
         parentUid: null,
         systemUid,
-        network: context.document.uiState.pressureOrDrainage === 'drainage' ? NetworkType.RETICULATIONS : NetworkType.CONNECTIONS,
+        network,
         type: EntityType.PIPE,
         gradePCT: null,
         uid: uuid()

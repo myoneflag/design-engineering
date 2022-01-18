@@ -1,22 +1,17 @@
 import { DocumentState } from "../../../src/store/document/types";
 import { MainEventBus } from "../../../src/store/main-event-bus";
-import PointTool from "../../../src/htmlcanvas/tools/point-tool";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import { getInsertCoordsAt } from "../../../src/htmlcanvas/lib/utils";
-import FixtureEntity from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import {
     FlowConfiguration,
     SystemNodeEntity
 } from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
-import { StandardFlowSystemUids, SupportedPsdStandards } from "../../../../common/src/api/config";
+import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
-import { parseCatalogNumberExact } from "../../../../common/src/lib/utils";
 import SnappingInsertTool from "./snapping-insert-tool";
-import connectLoadNodeToSource from "../lib/black-magic/connect-load-node-to-source";
-import LoadNode from "../objects/load-node";
+
 import GasApplianceEntity from "../../../../common/src/api/document/entities/gas-appliance";
 
 export default function insertGasAppliance(context: CanvasContext, angle: number) {
@@ -49,7 +44,6 @@ export default function insertGasAppliance(context: CanvasContext, angle: number
                     type: EntityType.GAS_APPLIANCE,
                     uid: gasApplianceUuid,
 
-
                     name: "Enter Name",
                     outletAboveFloorM: 0.7,
                     rotation: angle,
@@ -58,6 +52,7 @@ export default function insertGasAppliance(context: CanvasContext, angle: number
                     widthMM: 750,
                     heightMM: 750,
                     flowRateMJH: null,
+                    diversity: 100,
                 };
 
 

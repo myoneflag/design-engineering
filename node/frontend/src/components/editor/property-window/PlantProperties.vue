@@ -81,7 +81,6 @@ import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import PropertiesFieldBuilder from "../../../components/editor/lib/PropertiesFieldBuilder.vue";
 import { DocumentState } from "../../../store/document/types";
-import { DrawingMode } from "../../../htmlcanvas/types";
 import { DrawingContext } from "../../../htmlcanvas/lib/types";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
@@ -102,7 +101,6 @@ import PipeEntity from "../../../../../common/src/api/document/entities/pipe-ent
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { SystemNodeEntity } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
-import { checkEntityUpdates } from "../../../api/upgrader";
 
 @Component({
   components: { PropertiesFieldBuilder },
@@ -136,10 +134,10 @@ export default class PlantProperties extends Vue {
 
   get fields() {
     return makePlantEntityFields(
-      this.defaultCatalog,
-      this.document.drawing,
       this.$props.selectedEntity,
-      this.document.drawing.metadata.flowSystems
+      this.document.drawing,
+      this.defaultCatalog,
+      this.document.entityDependencies.get(this.$props.selectedEntity.uid)
     );
   }
 
@@ -160,13 +158,12 @@ export default class PlantProperties extends Vue {
   }
 
   get defaultData(): PlantEntity {
-    return fillPlantDefaults(this.$props.selectedEntity, this.document.drawing, this.defaultCatalog);
-  }
-
-  mounted() {
-    // Check for update before applying some changes
-    // This should be called inside builder component but lets keep this here for now
-    checkEntityUpdates(this.reactiveData) && this.onCommit();
+    return fillPlantDefaults(
+      this.$props.selectedEntity,
+      this.document.drawing,
+      this.defaultCatalog,
+      this.document.entityDependencies.get(this.$props.selectedEntity.uid)
+    );
   }
 
   onCommit() {

@@ -17,6 +17,7 @@ import DirectedValve from "../htmlcanvas/objects/directed-valve";
 import { NodeType } from "../../../common/src/api/document/entities/load-node-entity";
 import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import { fillPlantDefaults } from "../../../common/src/api/document/entities/plants/plant-entity";
+import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 
 export interface GasComponent {
     pipes: Set<string>;
@@ -178,7 +179,6 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
             }
             case EntityType.LOAD_NODE: {
                 const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
-                const system = engine.drawing.metadata.flowSystems.find((f) => f.uid === systemUid);
                 const thisIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
 
                 if (thisIsGas) {
@@ -201,7 +201,12 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
             }
             case EntityType.PLANT:
                 if (o.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                    const filled = fillPlantDefaults(o.entity, engine.drawing, engine.catalog);
+                    const filled = fillPlantDefaults(
+                        o.entity,
+                        engine.drawing,
+                        engine.catalog,
+                        engine.doc.entityDependencies.get(o.entity.uid),
+                    );
                     const calc = engine.globalStore.getOrCreateCalculation(o.entity);
                     calc.gasPressureKPA = (filled.plant as ReturnSystemPlant).gasPressureKPA;
                     calc.gasFlowRateMJH = (filled.plant as ReturnSystemPlant).gasConsumptionMJH;
@@ -255,7 +260,12 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                         } else if (parent.entity.type === EntityType.PLANT) {
                             console.log('in parent');
                             if (parent.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                                const filled = fillPlantDefaults(parent.entity, engine.drawing, engine.catalog);
+                                const filled = fillPlantDefaults(
+                                    parent.entity,
+                                    engine.drawing,
+                                    engine.catalog,
+                                    engine.doc.entityDependencies.get(parent.entity.uid),
+                                );
                                 mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
                                 maxPressureRequiredKPA = Math.max(
                                     maxPressureRequiredKPA,
@@ -266,9 +276,11 @@ export function getAndFillInGasComponent(engine: CalculationEngine) {
                     } else if (no.entity.type === EntityType.LOAD_NODE) {
                         const systemUid = determineConnectableSystemUid(engine.globalStore, no.entity);
                         const nodeIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
+                        const filled = fillDefaultLoadNodeFields(engine.doc, engine.globalStore, no.entity, engine.catalog, engine.nodes)
+
                         if (nodeIsGas) {
                             mainRunLengthM = Math.max(mainRunLengthM, (prevDist || 0));
-                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, no.entity.node.gasPressureKPA + prevDrop!);
+                            maxPressureRequiredKPA = Math.max(maxPressureRequiredKPA, filled.node.gasPressureKPA! + prevDrop!);
                         }
                     }
 

@@ -90,6 +90,7 @@ export interface ReturnSystemPlant extends Plant {
     rheemMinimumInitialDelivery: number | null;
     rheemkWRating: number | null;
     rheemStorageTankSize: number | null;
+    diversity: number | null;
 }
 
 
