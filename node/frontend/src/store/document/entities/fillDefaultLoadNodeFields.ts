@@ -13,9 +13,6 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
     const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUid);
-    const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === value.uid);
-    const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
-    const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
     result.systemUidOption = system ? system.uid : null;
 
@@ -29,10 +26,10 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         }
     }
 
-    if (result.minPressureKPA === null && typeof result.customNodeId === "undefined") {
+    if (result.minPressureKPA === null) {
         result.minPressureKPA = 200;
     }
-    if (result.maxPressureKPA === null && typeof result.customNodeId === "undefined") {
+    if (result.maxPressureKPA === null) {
         result.maxPressureKPA = 500;
     }
 
@@ -60,10 +57,9 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         let asnzFixtureUnits = 0;
         let enDischargeUnits = 0;
 
-        if (!result.node.loadingUnits 
+        if (!result.node.loadingUnits
             || !result.node.designFlowRateLS
-            || !result.node.continuousFlowLS)
-        {
+            || !result.node.continuousFlowLS) {
             for (var i = 0; i < node.fixtures.length; i++) {
                 const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === node.fixtures[i]);
                 const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
@@ -71,8 +67,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
 
                 if (result.node.loadingUnits === null
                     && isLUStandard(psdStrategy)
-                    && result.systemUidOption)
-                {
+                    && result.systemUidOption) {
                     let systemChk = null;
                     if (!!(catalog.fixtures[node.fixtures[i]].loadingUnits[psdStrategy][result.systemUidOption])) {
                         systemChk = result.systemUidOption;
@@ -89,9 +84,8 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                     }
                 }
 
-                if (result.node.designFlowRateLS === null 
-                    && result.systemUidOption)
-                {   
+                if (result.node.designFlowRateLS === null
+                    && result.systemUidOption) {
                     let systemChk = null;
                     if (!!(catalog.fixtures[node.fixtures[i]].qLS[manufacturer][selectedOption][result.systemUidOption])) {
                         systemChk = result.systemUidOption;
@@ -108,8 +102,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                 if (continuousFlowLS
                     && result.node.continuousFlowLS === null
                     && result.systemUidOption
-                    && !!(continuousFlowLS[result.systemUidOption])) 
-                {
+                    && !!(continuousFlowLS[result.systemUidOption])) {
                     let systemChk = null;
                     if (!!(continuousFlowLS[result.systemUidOption])) {
                         systemChk = result.systemUidOption;

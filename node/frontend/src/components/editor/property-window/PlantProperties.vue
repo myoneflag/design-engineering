@@ -87,7 +87,7 @@ import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import BaseBackedObject from "../../../htmlcanvas/lib/base-backed-object";
 import PlantEntity, {
   fillPlantDefaults,
-  makePlantEntityFields
+  makePlantEntityFields,
 } from "../../../../../common/src/api/document/entities/plants/plant-entity";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { Choice } from "../../../../../common/src/lib/utils";
@@ -96,7 +96,7 @@ import { PropertyField } from "../../../../../common/src/api/document/entities/p
 import {
   DrainageGreaseInterceptorTrap,
   RheemVariantValues,
-  ReturnSystemPlant
+  ReturnSystemPlant,
 } from "../../../../../common/src/api/document/entities/plants/plant-types";
 import PipeEntity from "../../../../../common/src/api/document/entities/pipe-entity";
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
@@ -105,7 +105,7 @@ import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { checkEntityUpdates } from "../../../api/upgrader";
 
 @Component({
-  components: { PropertiesFieldBuilder }
+  components: { PropertiesFieldBuilder },
 })
 export default class PlantProperties extends Vue {
   getPropertyByString = getPropertyByString;
@@ -197,9 +197,10 @@ export default class PlantProperties extends Vue {
   handleGreaseInterceptorTrapSizeUpdate() {
     const plant = this.defaultData.plant as DrainageGreaseInterceptorTrap;
     const manufacturer = this.document.drawing.metadata.catalog.greaseInterceptorTrap![0].manufacturer;
-    const size = this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][plant.location!]?.[plant.position!]?.[
-      plant.capacity!
-    ];
+    const size =
+      this.defaultCatalog.greaseInterceptorTrap!.size[manufacturer][plant.location!]?.[plant.position!]?.[
+        plant.capacity!
+      ];
 
     if (!!size) {
       setPropertyByString(this.reactiveData, "plant.lengthMM", size.lengthMM);
@@ -241,10 +242,10 @@ export default class PlantProperties extends Vue {
         color: gasPipe.color,
         center: {
           x: center.x - Math.abs(gasNode.center.x) - 200,
-          y: center.y + Math.abs(gasNode.center.y)
+          y: center.y + Math.abs(gasNode.center.y),
         },
         parentUid: null,
-        calculationHeightM: null
+        calculationHeightM: null,
       };
 
       this.$store.dispatch("document/addEntity", fitting);
@@ -253,8 +254,8 @@ export default class PlantProperties extends Vue {
         entity: gasPipe,
         endpoints: [
           gasPipe.endpointUid[0] === gasNodeUid ? fitting.uid : gasPipe.endpointUid[0],
-          gasPipe.endpointUid[1] === gasNodeUid ? fitting.uid : gasPipe.endpointUid[1]
-        ]
+          gasPipe.endpointUid[1] === gasNodeUid ? fitting.uid : gasPipe.endpointUid[1],
+        ],
       });
     }
   }
@@ -276,7 +277,7 @@ export default class PlantProperties extends Vue {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .sidebar-title {
   position: relative;
   font-size: 30px;

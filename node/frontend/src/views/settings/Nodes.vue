@@ -6,12 +6,22 @@
         :key="key"
         button
         @click="(e) => handleViewNode(node.id ? node.id : node.uid)"
-        >{{ node.name }}</b-list-group-item
       >
+        {{ node.name }}
+      </b-list-group-item>
     </b-list-group>
     <b-button variant="success" class="mt-4" block v-b-modal.form>New Fixture Group</b-button>
 
-    <b-modal id="form" hide-header hide-footer no-close-on-backdrop no-close-on-esc no-fade @hidden="resetForm">
+    <b-modal
+      id="form"
+      centered
+      hide-header
+      hide-footer
+      no-close-on-backdrop
+      no-close-on-esc
+      no-fade
+      @hidden="resetForm"
+    >
       <b-form-group label="Name" label-for="name" label-cols-lg="4">
         <b-form-input :disabled="submitting" id="name" v-model="reactiveForm.name"></b-form-input>
       </b-form-group>
@@ -75,7 +85,7 @@
   </b-container>
 </template>
 
-<script lang="ts">
+<script lang="tsx">
 import Vue from "vue";
 import Component from "vue-class-component";
 import * as _ from "lodash";
@@ -97,7 +107,7 @@ function initialForm(): NodeProps {
     minPressure: null,
     fixtures: [],
     dwelling: "",
-    type: EntityType.LOAD_NODE
+    type: EntityType.LOAD_NODE,
   };
 }
 
@@ -117,7 +127,7 @@ export default class Nodes extends Vue {
     return this.$store.getters["document/document"];
   }
 
-  get nodes() {
+  get nodes(): NodeProps[] {
     return this.$store.getters["customEntity/nodes"];
   }
 
@@ -184,7 +194,7 @@ export default class Nodes extends Vue {
 
   handleViewNode(key: number | string) {
     this.viewNode = key;
-    this.originalForm = this.nodes.find((node: NodeProps) => node.id === key || node.uid === key);
+    this.originalForm = this.nodes.find((node) => node.id === key || node.uid === key)!;
     this.reactiveForm = cloneSimple(this.originalForm);
     this.$bvModal.show("form");
   }
@@ -194,10 +204,10 @@ export default class Nodes extends Vue {
   }
 
   setFixtureInputValue(fixtureUid: string, value: number) {
-    const filteredFixture = this.reactiveForm.fixtures.filter(fixture => fixture !== fixtureUid);
+    const filteredFixture = this.reactiveForm.fixtures.filter((fixture) => fixture !== fixtureUid);
     const addedFixtures = Array(+value).fill(fixtureUid);
 
-    this.setReactiveForm('fixtures', [...filteredFixture, ...addedFixtures]);
+    this.setReactiveForm("fixtures", [...filteredFixture, ...addedFixtures]);
   }
 
   resetForm() {
