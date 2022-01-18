@@ -18,6 +18,7 @@ import DrawableObjectFactory from "../../htmlcanvas/lib/drawable-object-factory"
 import { DrawingMode } from "../../htmlcanvas/types";
 import { applyDiffNative } from "../../../../common/src/api/document/state-ot-apply";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 
 export const globalStore = new GlobalStore();
 
@@ -456,6 +457,10 @@ export const mutations: MutationTree<DocumentState> = {
     setIsLoading(state, isLoading: boolean) {
         state.isLoading = isLoading;
     },
+
+    updateDependenceOn(state, data: Map<string, DirectedValveEntity>) {
+        state.entityDependencies = data;
+    }
 };
 
 function entityHandler(state: DocumentState, levelUid: string | null, entityUid: string) {

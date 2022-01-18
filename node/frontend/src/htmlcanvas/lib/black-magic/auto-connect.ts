@@ -28,7 +28,7 @@ import connectBigValveToSource from "./connect-big-valve-to-source";
 import BigValve from "../../objects/big-valve/bigValve";
 import RiserEntity, { fillRiserDefaults } from "../../../../../common/src/api/document/entities/riser-entity";
 import { GroupDistCache } from "./group-dist-cache";
-import { assertUnreachable, isDrainage, StandardFlowSystemUids } from "../../../../../common/src/api/config";
+import { assertUnreachable, isDrainage, isGas, StandardFlowSystemUids } from "../../../../../common/src/api/config";
 import { Coord, NetworkType } from "../../../../../common/src/api/document/drawing";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
@@ -1018,7 +1018,9 @@ export class AutoConnector {
         systemUid: string
     ) {
         let network = NetworkType.CONNECTIONS;
-        if (isDrainage(systemUid, this.context.document.drawing.metadata.flowSystems)) {
+        if (isDrainage(systemUid, this.context.document.drawing.metadata.flowSystems) ||
+            isGas(systemUid, this.context.effectiveCatalog.fluids, this.context.document.drawing.metadata.flowSystems)) {
+
             network = NetworkType.RETICULATIONS;
         }
 

@@ -46,6 +46,7 @@ export interface PsdCountEntry {
     continuousFlowLS: number;
     dwellings: number;
     gasMJH: number;
+    gasDiversity?: number;
 
     // drainage
     drainageUnits: number;
@@ -268,11 +269,15 @@ export function addPsdCounts(
         }
     }
 
+    const gasDiversity = (a.gasDiversity || 0) + (b.gasDiversity || 0);
+    const gasMJH = Math.max(a.gasMJH, b.gasMJH);
+
     return {
         units: units,
         continuousFlowLS: a.continuousFlowLS + b.continuousFlowLS,
         dwellings: a.dwellings + b.dwellings,
-        gasMJH: a.gasMJH + b.gasMJH,
+        gasMJH: Math.max(gasMJH, gasDiversity),
+        gasDiversity: gasDiversity,
         drainageUnits,
         mainDrainageUnits,
         highestDrainageUnits,

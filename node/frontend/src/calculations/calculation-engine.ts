@@ -95,6 +95,7 @@ import {
     cloneSimple,
     interpolateTable,
     lowerBoundTable,
+    numToPercent,
     parseCatalogNumberExact,
     parseCatalogNumberOrMax,
     parseCatalogNumberOrMin,
@@ -117,7 +118,7 @@ import Fixture from "../htmlcanvas/objects/fixture";
 import LoadNodeCalculation from "../store/document/calculations/load-node-calculation";
 import { fillDefaultLoadNodeFields } from "../store/document/entities/fillDefaultLoadNodeFields";
 import { PriceTable } from "../../../common/src/api/catalog/price-table";
-import { makeGasApplianceFields } from "../../../common/src/api/document/entities/gas-appliance";
+import { fillGasApplianceFields, makeGasApplianceFields } from "../../../common/src/api/document/entities/gas-appliance";
 import { calculateGas } from "./gas";
 import { PlantType, ReturnSystemPlant } from "../../../common/src/api/document/entities/plants/plant-types";
 import { NodeProps } from '../../../common/src/models/CustomEntity';
@@ -126,7 +127,6 @@ import { convertMeasurementSystem, Units } from "../../../common/src/lib/measure
 import { getNext } from '../../../common/src/lib/utils';
 import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
-import { checkEntityUpdates } from '../api/upgrader';
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -273,6 +273,89 @@ export default class CalculationEngine implements CalculationContext {
         }
     }
 
+    identifyDependencies(objectStore: GlobalStore, doc: DocumentState, catalog: Catalog) {
+        const dependencies = new Map<string, DirectedValveEntity>();
+
+        this.networkObjectUids = [];
+        this.globalStore = objectStore;
+        this.doc = doc;
+        this.drawing = doc.drawing;
+        this.catalog = catalog;
+        this.buildNetworkObjects(true);
+        this.configureLUFlowGraph();
+
+        const engine = this;
+        let block = new Set<string>();
+        for (const o of engine.networkObjects()) {
+            if (o.entity.type === EntityType.DIRECTED_VALVE) {
+                let connection = '';
+                const connections = engine.globalStore.getConnections(o.entity.uid);
+                const systemUid = determineConnectableSystemUid(engine.globalStore, o.entity);
+                const thisIsGas = isGas(systemUid!, engine.catalog.fluids, engine.drawing.metadata.flowSystems);
+
+                if (o.entity.valve.type === ValveType.GAS_REGULATOR && thisIsGas) {
+                    const regulator = this.globalStore.get(o.entity.uid.split(".")[0])!.entity as DirectedValveEntity;
+
+                    if (o.entity.sourceUid === connections[0]) {
+                        connection = connections[1];
+                        block.add(engine.serializeNode({ connectable: o.entity.uid, connection: connections[0] }));
+                    } else if (o.entity.sourceUid === connections[1]) {
+                        connection = connections[0];
+                        block.add(engine.serializeNode({ connectable: o.entity.uid, connection: connections[1] }));
+                    }
+
+                    if (!!connection) {
+                        engine.flowGraph.dfs(
+                            {
+                                connectable: o.entity.uid,
+                                connection,
+                            },
+                            (node) => {
+                                const no = engine.globalStore.get(node.connectable);
+
+                                if (!no || (no.entity.type === EntityType.FLOW_SOURCE && no.entity.uid !== o.entity.uid)
+                                    || (no.entity.type === EntityType.DIRECTED_VALVE && no.entity.uid !== o.entity.uid
+                                        && no.entity.valve.type === ValveType.GAS_REGULATOR)) {
+                                    return true;
+                                }
+                            },
+                            undefined,
+                            (e) => {
+                                if (e.value.type === EdgeType.PIPE) {
+                                    const pipe = this.globalStore.get(e.value.uid.split(".")[0])?.entity as PipeEntity;
+
+                                    pipe.endpointUid?.forEach(uid => {
+                                        const entity = this.globalStore.get(uid)?.entity as DrawableEntityConcrete;
+
+                                        if (entity?.type === EntityType.LOAD_NODE ||
+                                            (entity?.type === EntityType.DIRECTED_VALVE && !entity.uid.includes(regulator.uid))) {
+                                            dependencies.set(entity.uid, regulator);
+                                        }
+
+                                        if (entity?.type === EntityType.SYSTEM_NODE) {
+                                            const parent = this.globalStore.get(entity.parentUid!)?.entity as DrawableEntityConcrete;
+
+                                            if (parent?.type === EntityType.GAS_APPLIANCE ||
+                                                (parent?.type === EntityType.PLANT && parent?.plant.type === PlantType.RETURN_SYSTEM)) {
+                                                dependencies.set(parent.uid, regulator);
+                                            }
+                                        }
+                                    });
+                                }
+                            },
+                            undefined,
+                            block,
+                        );
+                    }
+                }
+            }
+        }
+
+        this.removeNetworkObjects();
+
+        return dependencies;
+    }
+
     clearCalculations() {
         this.globalStore.clearCalculations();
 
@@ -309,7 +392,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeFixtureFields(this.doc.drawing, obj.entity, this.doc.locale);
                     break;
                 case EntityType.DIRECTED_VALVE:
-                    fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing);
+                    fields = makeDirectedValveFields(obj.entity, this.catalog, this.doc.drawing, determineConnectableSystemUid(this.globalStore, obj.entity));
                     break;
                 case EntityType.FLOW_SOURCE:
                     fields = makeFlowSourceFields(this.doc.drawing.metadata.flowSystems, obj.entity, this.catalog, undefined);
@@ -319,7 +402,7 @@ export default class CalculationEngine implements CalculationContext {
                     fields = makeLoadNodesFields(this.doc.drawing, obj.entity, this.catalog, this.doc.locale, systemUid || null);
                     break;
                 case EntityType.PLANT:
-                    fields = makePlantEntityFields(this.catalog, this.drawing, obj.entity, []);
+                    fields = makePlantEntityFields(obj.entity, this.drawing, this.catalog, this.doc.entityDependencies.get(obj.entity.uid));
                     break;
                 case EntityType.SYSTEM_NODE:
                 case EntityType.BACKGROUND_IMAGE:
@@ -644,7 +727,7 @@ export default class CalculationEngine implements CalculationContext {
         });
     }
 
-    buildNetworkObjects() {
+    buildNetworkObjects(runtime?: boolean) {
         this.drawableObjectUids = Array.from(this.globalStore.keys());
         // We assume we have a fresh globalstore with no pollutants.
         // DO NOT refactor this into a traversal of the this.globalStore.values()
@@ -656,7 +739,7 @@ export default class CalculationEngine implements CalculationContext {
                 }
 
                 // all z coordinates are thingos.
-                if (isConnectableEntity(e)) {
+                if (!runtime && isConnectableEntity(e)) {
                     if (e.calculationHeightM === null) {
                         throw new Error("entities in the calculation phase must be 3d - " + e.uid + " " + e.type);
                     }
@@ -693,7 +776,12 @@ export default class CalculationEngine implements CalculationContext {
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 c.demandMJH = o.entity.flowRateMJH;
             } else if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
-                const filled = fillPlantDefaults(o.entity, this.drawing, this.catalog);
+                const filled = fillPlantDefaults(
+                    o.entity,
+                    this.drawing,
+                    this.catalog,
+                    this.doc.entityDependencies.get(o.entity.uid),
+                );
                 const plant = filled.plant as DrainageGreaseInterceptorTrap;
                 const c = this.globalStore.getOrCreateCalculation(o.entity);
                 const manufacturer = this.drawing.metadata.catalog.greaseInterceptorTrap![0]?.manufacturer || 'generic';
@@ -715,7 +803,12 @@ export default class CalculationEngine implements CalculationContext {
     finalCompute() {
         this.networkObjects().forEach((o) => {
             if (o.entity.type === EntityType.PLANT && o.entity.plant.type === PlantType.RETURN_SYSTEM) {
-                const filled = fillPlantDefaults(o.entity, this.drawing, this.catalog);
+                const filled = fillPlantDefaults(
+                    o.entity,
+                    this.drawing,
+                    this.catalog,
+                    this.doc.entityDependencies.get(o.entity.uid),
+                );
                 const manufacturer = this.drawing.metadata.catalog.hotWaterPlant.find(
                     i => i.uid === 'hotWaterPlant'
                 )?.manufacturer as HotWaterPlantManufacturers;
@@ -857,16 +950,13 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     // Call this function if you want to update entity with the calculated values
-    // This function checks updates before doing some changes to the entity
-    // And then it will trigger document/commit to save updated entity to backend
+    // And then it will trigger document/commit somewhere to save updated entity to backend
     resolveEntity(props: {
         entity: DrawableEntityConcrete,
         plantProps?: ResolvePlantEntityProps,
     }) {
         const { entity, plantProps } = props;
         const baseObj = this.globalStore.get(entity.uid.split('.')[0]) as BaseBackedObject;
-
-        checkEntityUpdates(baseObj.entity);
 
         switch (baseObj.entity.type) {
             case EntityType.PLANT:
@@ -1766,29 +1856,36 @@ export default class CalculationEngine implements CalculationContext {
                     break;
                 }
                 case EntityType.GAS_APPLIANCE: {
+                    const filled = fillGasApplianceFields(parentEntity, this.doc.entityDependencies.get(parentEntity.uid));
                     units.push({
                         units: 0,
                         continuousFlowLS: 0,
                         dwellings: 0,
-                        entity: parentEntity.uid,
-                        correlationGroup: parentEntity.uid,
-                        gasMJH: parentEntity.flowRateMJH!,
+                        entity: filled.uid,
+                        correlationGroup: filled.uid,
+                        gasMJH: filled.flowRateMJH!,
+                        gasDiversity: filled.flowRateMJH! * numToPercent(filled.diversity!),
                         drainageUnits: 0,
                     });
                     break;
                 }
                 case EntityType.PLANT: {
-                    switch (parentEntity.plant.type) {
+                    const filled = fillPlantDefaults(
+                        parentEntity,
+                        this.drawing,
+                        this.catalog,
+                        this.doc.entityDependencies.get(parentEntity.uid),
+                    );
+                    switch (filled.plant.type) {
                         case PlantType.RETURN_SYSTEM:
-                            const filled = fillPlantDefaults(parentEntity, this.drawing, this.catalog).plant as ReturnSystemPlant;
-                            if (filled.gasConsumptionMJH !== null && node.uid === filled.gasNodeUid) {
+                            if (filled.plant.gasConsumptionMJH !== null && node.uid === filled.plant.gasNodeUid) {
                                 units.push({
                                     units: 0,
                                     continuousFlowLS: 0,
                                     dwellings: 0,
                                     entity: node.entity.uid,
                                     correlationGroup: parentEntity.uid,
-                                    gasMJH: filled.gasConsumptionMJH,
+                                    gasMJH: filled.plant.gasConsumptionMJH,
                                     drainageUnits: 0,
                                 });
                             }
@@ -1800,7 +1897,7 @@ export default class CalculationEngine implements CalculationContext {
                         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
                             break;
                         default:
-                            assertUnreachable(parentEntity.plant as never);
+                            assertUnreachable(filled.plant as never);
                     }
 
                     if (!units.length) {
@@ -1947,6 +2044,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
+                                gasDiversity: filled.node.gasFlowRateMJH * numToPercent(filled.node.diversity!),
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
                             });
@@ -1957,6 +2055,7 @@ export default class CalculationEngine implements CalculationContext {
                                 dwellings: 0,
                                 entity: filled.uid,
                                 gasMJH: filled.node.gasFlowRateMJH,
+                                gasDiversity: filled.node.gasFlowRateMJH * numToPercent(filled.node.diversity!),
                                 drainageUnits: drainageUnits!,
                                 correlationGroup
                             });
@@ -2030,7 +2129,6 @@ export default class CalculationEngine implements CalculationContext {
                 }
                 calculation.noFlowAvailableReason = noFlowReason;
 
-                
                 if (isGas(entity.systemUid, this.catalog.fluids, this.drawing.metadata.flowSystems)) {
                     // Gas calculation done elsewhere
                 } else if (isDrainage(entity.systemUid, this.drawing.metadata.flowSystems)) {
@@ -2904,7 +3002,7 @@ export default class CalculationEngine implements CalculationContext {
                     const calc = this.globalStore.getOrCreateCalculation(o.entity);
                     const inlet = this.globalStore.get(o.entity.inletUid)!.entity as SystemNodeEntity;
                     const inletCalc = this.globalStore.getOrCreateCalculation(inlet);
-                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, this.drawing, this.catalog, inletCalc.pressureKPA);
+                    calc.pressureDropKPA = getPlantPressureLossKPA(o.entity, this.doc, this.catalog, inletCalc.pressureKPA);
                     break;
                 }
                 case EntityType.FIXTURE:
@@ -3099,7 +3197,7 @@ export default class CalculationEngine implements CalculationContext {
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
 
                         addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_NODE, null, { pressure: (pConverted as number).toFixed(2) + units, target: (mpConverted as number).toFixed(2) + units });
-                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA && filled.systemUidOption != "gas") {
+                    } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA && !isGas(filled.systemUidOption!, this.catalog.fluids, this.drawing.metadata.flowSystems)) {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
 
                         const [units, converted] =

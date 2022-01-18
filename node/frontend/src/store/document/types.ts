@@ -8,6 +8,7 @@ import { cloneSimple } from "../../../../common/src/lib/utils";
 import { Operation } from "../../../../common/src/models/Operation";
 import { PAPER_SIZES, PaperSize } from "../../../../common/src/api/paper-config";
 import { SupportedLocales } from "../../../../common/src/api/locale";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
@@ -138,6 +139,7 @@ export interface DocumentState {
     shareToken: string;
     isLoading: boolean;
 
+    entityDependencies: Map<string, DirectedValveEntity>;
 }
 
 export interface DiffFilter {
@@ -219,7 +221,8 @@ export const initialDocumentState: DocumentState = {
     isLoading: false,
     locale: SupportedLocales.AU,
     isPreview: false,
-    activeflowSystemId: 0
+    activeflowSystemId: 0,
+    entityDependencies: new Map(),
 };
 
 export interface EntityParam {

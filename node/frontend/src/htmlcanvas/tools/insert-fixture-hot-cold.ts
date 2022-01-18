@@ -66,9 +66,10 @@ export default function insertFixtureHotCold(context: CanvasContext, rotationDEG
                         enDischargeUnits: null,
                         upcFixtureUnits: null,
                         variant: NodeVariant.FIXTURE_GROUP,
+                        diversity: 100,
                     };
                 }
-                
+
                 const hotEntity: LoadNodeEntity = {
                     name: null,
                     node: node,

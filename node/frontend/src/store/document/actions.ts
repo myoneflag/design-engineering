@@ -12,6 +12,7 @@ import { MainEventBus } from "../main-event-bus";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { DrawingMode } from "../../htmlcanvas/types";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { reportError } from "../../../src/api/error-report";
 
 export const actions: ActionTree<DocumentState, RootState> = {
@@ -29,6 +30,10 @@ export const actions: ActionTree<DocumentState, RootState> = {
     },
     addEntity({ commit, state }, entity) {
         commit("addEntity", entity);
+    },
+
+    updateDependenceOn({ commit, state }, entityDependencies: Map<string, DirectedValveEntity | null>) {
+        commit("updateDependenceOn", entityDependencies);
     },
 
     deleteEntity({ commit, state }, entity) {

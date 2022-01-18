@@ -1,5 +1,6 @@
-import { SupportedPsdStandards, isLUStandard } from './../../../../../common/src/api/config';
-import { NodeType } from './../../../../../common/src/api/document/entities/load-node-entity';
+import { GasRegulator } from '../../../../../common/src/api/document/entities/directed-valves/valve-types';
+import { SupportedPsdStandards, isLUStandard } from '../../../../../common/src/api/config';
+import { NodeType } from '../../../../../common/src/api/document/entities/load-node-entity';
 import { DocumentState } from "../types";
 import { ObjectStore } from "../../../htmlcanvas/lib/object-store";
 import { cloneSimple, parseCatalogNumberOrMin, parseCatalogNumberExact } from "../../../../../common/src/lib/utils";
@@ -8,14 +9,17 @@ import LoadNodeEntity from "../../../../../common/src/api/document/entities/load
 import { NodeProps } from '../../../../../common/src/models/CustomEntity';
 import { Catalog } from '../../../../../common/src/api/catalog/types';
 
-export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: ObjectStore, value: LoadNodeEntity, catalog: Catalog, nodes: NodeProps[]) {
+export function fillDefaultLoadNodeFields(
+    doc: DocumentState,
+    objectStore: ObjectStore,
+    value: LoadNodeEntity,
+    catalog: Catalog,
+    nodes: NodeProps[]
+) {
     const result = cloneSimple(value);
 
     const systemUid = determineConnectableSystemUid(objectStore, value);
     const system = doc.drawing.metadata.flowSystems.find((s) => s.uid === systemUid);
-    const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === value.uid);
-    const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
-    const selectedOption = selectedMaterialManufacturer?.selected || 'default';
 
     result.systemUidOption = system ? system.uid : null;
 
@@ -60,10 +64,9 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         let asnzFixtureUnits = 0;
         let enDischargeUnits = 0;
 
-        if (!result.node.loadingUnits 
+        if (!result.node.loadingUnits
             || !result.node.designFlowRateLS
-            || !result.node.continuousFlowLS)
-        {
+            || !result.node.continuousFlowLS) {
             for (var i = 0; i < node.fixtures.length; i++) {
                 const selectedMaterialManufacturer = doc.drawing.metadata.catalog.fixtures.find(obj => obj.uid === node.fixtures[i]);
                 const manufacturer = selectedMaterialManufacturer?.manufacturer || 'generic';
@@ -71,8 +74,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
 
                 if (result.node.loadingUnits === null
                     && isLUStandard(psdStrategy)
-                    && result.systemUidOption)
-                {
+                    && result.systemUidOption) {
                     let systemChk = null;
                     if (!!(catalog.fixtures[node.fixtures[i]].loadingUnits[psdStrategy][result.systemUidOption])) {
                         systemChk = result.systemUidOption;
@@ -89,9 +91,8 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                     }
                 }
 
-                if (result.node.designFlowRateLS === null 
-                    && result.systemUidOption)
-                {   
+                if (result.node.designFlowRateLS === null
+                    && result.systemUidOption) {
                     let systemChk = null;
                     if (!!(catalog.fixtures[node.fixtures[i]].qLS[manufacturer][selectedOption][result.systemUidOption])) {
                         systemChk = result.systemUidOption;
@@ -108,8 +109,7 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
                 if (continuousFlowLS
                     && result.node.continuousFlowLS === null
                     && result.systemUidOption
-                    && !!(continuousFlowLS[result.systemUidOption])) 
-                {
+                    && !!(continuousFlowLS[result.systemUidOption])) {
                     let systemChk = null;
                     if (!!(continuousFlowLS[result.systemUidOption])) {
                         systemChk = result.systemUidOption;
@@ -146,6 +146,17 @@ export function fillDefaultLoadNodeFields(doc: DocumentState, objectStore: Objec
         }
         if (result.node.enDischargeUnits === null) {
             result.node.enDischargeUnits = enDischargeUnits;
+        }
+    }
+
+    if (result.node.type === NodeType.LOAD_NODE) {
+        if (result.node.gasPressureKPA === null) {
+            const gasRegulator = doc.entityDependencies.get(result.uid)?.valve as GasRegulator;
+            result.node.gasPressureKPA = gasRegulator?.downStreamPressureKPA || 0;
+        }
+
+        if (result.node.diversity === null) {
+            result.node.diversity = 100;
         }
     }
 

@@ -244,6 +244,7 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
                 type,
                 catalogId: "gasRegulator",
                 outletPressureKPA: null,
+                downStreamPressureKPA: null,
             };
         case ValveType.FILTER:
             return {

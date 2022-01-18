@@ -14,8 +14,8 @@ import LoadNode from "../objects/load-node";
 import { KeyCode } from "../utils";
 
 export default function insertLoadNode(context: CanvasContext, type: NodeType, systemUid: string | null,
-                                       loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1,
-                                       variant: NodeVariant) {
+    loadingUnits: number = 1, continuousFlowLS: number = 0, dwellings: number = 1,
+    variant: NodeVariant) {
     const newUid = uuid();
 
     MainEventBus.$emit(
@@ -55,12 +55,13 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                         continuousFlowLS,
                         designFlowRateLS: 0,
                         gasFlowRateMJH: 0,
-                        gasPressureKPA: 0,
+                        gasPressureKPA: null,
                         asnzFixtureUnits: 0,
                         enDischargeUnits: 0,
                         upcFixtureUnits: 0,
                         loadingUnits,
                         variant: variant,
+                        diversity: 0,
                     },
                     minPressureKPA: null,
                     maxPressureKPA: null,
@@ -74,7 +75,7 @@ export default function insertLoadNode(context: CanvasContext, type: NodeType, s
                     uid: newUid,
                     name: '',
                 };
-                
+
                 context.$store.dispatch("document/addEntity", newEntity);
 
                 if (interactive) {

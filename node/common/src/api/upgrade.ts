@@ -418,7 +418,12 @@ export function operations_upgraded21to22(original: DrawingState) {
 // They are not used anymore in code.
 
 import { DrawingState } from "./document/drawing";
+import { ValveType } from "./document/entities/directed-valves/valve-types";
+import { NodeType } from "./document/entities/load-node-entity";
+import { PlantType } from "./document/entities/plants/plant-types";
+import { EntityType } from "./document/entities/types";
 
+// export const DRAWING_UPGRADE_VERSION = 23;
 // Before this version, documents are stored only as an Operation[] in the operations table.
 // Upgrades need to be performed for each operation of a document.
 
@@ -434,7 +439,80 @@ import { DrawingState } from "./document/drawing";
 //   Basically, Upgrade to check if a chamnge has already been done on an entity.
 // * All new data that the upgrade adds to the document needs to be added as operations as well in the database.
 
-export const DRAWING_UPGRADE_VERSION = 23;
 export function drawing_upgraded22to23(original: DrawingState) {
     // do nothing with this migration
+}
+
+export function drawing_upgraded23to24(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const entity of Object.values(entities)) {
+            if (entity.type === EntityType.DIRECTED_VALVE && entity.valve.type === ValveType.GAS_REGULATOR) {
+                if (entity.valve.downStreamPressureKPA === undefined) {
+                    entity.valve.downStreamPressureKPA = null;
+                }
+            }
+
+            if (entity.type === EntityType.GAS_APPLIANCE) {
+                if (entity.diversity === undefined) {
+                    entity.diversity = null;
+                }
+            }
+
+            if (entity.type === EntityType.LOAD_NODE && entity.node.type === NodeType.LOAD_NODE) {
+                if (entity.node.diversity === undefined) {
+                    entity.node.diversity = null;
+                }
+            }
+
+            if (entity.type === EntityType.PLANT) {
+                if (entity.plant.type === PlantType.RETURN_SYSTEM) {
+                    if (entity.plant.diversity === undefined) {
+                        entity.plant.diversity = null;
+                    }
+
+                    if (entity.plant.gasConsumptionMJH === undefined) {
+                        entity.plant.gasConsumptionMJH = null;
+                    }
+
+                    if (entity.plant.gasPressureKPA === undefined) {
+                        entity.plant.gasPressureKPA = null;
+                    }
+
+                    if (entity.plant.rheemVariant === undefined) {
+                        entity.plant.rheemVariant = null;
+                    }
+
+                    if (entity.plant.rheemPeakHourCapacity === undefined) {
+                        entity.plant.rheemPeakHourCapacity = null;
+                    }
+
+                    if (entity.plant.rheemMinimumInitialDelivery === undefined) {
+                        entity.plant.rheemMinimumInitialDelivery = null;
+                    }
+
+                    if (entity.plant.rheemkWRating === undefined) {
+                        entity.plant.rheemkWRating = null;
+                    }
+
+                    if (entity.plant.rheemStorageTankSize === undefined) {
+                        entity.plant.rheemStorageTankSize = null;
+                    }
+                }
+
+                if (entity.plant.type === PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP) {
+                    if (entity.plant.lengthMM === undefined) {
+                        entity.plant.lengthMM = null;
+                    }
+                }
+
+                if (entity.calculation === undefined) {
+                    entity.calculation = {
+                        widthMM: null,
+                        depthMM: null,
+                    }
+                }
+            }
+        }
+    }
 }

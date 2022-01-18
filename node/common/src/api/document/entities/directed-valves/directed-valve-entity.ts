@@ -1,7 +1,7 @@
 import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
-import { assertUnreachable } from "../../../config";
+import { assertUnreachable, isGas } from "../../../config";
 import { Color, COLORS, ConnectableEntity, Coord, DrawingState, SelectedMaterialManufacturer } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
@@ -21,7 +21,8 @@ export default interface DirectedValveEntity extends ConnectableEntity {
 export function makeDirectedValveFields(
     entity: DirectedValveEntity,
     catalog: Catalog,
-    drawing: DrawingState
+    drawing: DrawingState,
+    systemUid?: string,
 ): PropertyField[] {
     const fields: PropertyField[] = [];
 
@@ -165,7 +166,17 @@ export function makeDirectedValveFields(
                 params: { min: 0, max: null },
                 multiFieldId: "outletPressureKPA",
                 requiresInput: true,
-                units: Units.KiloPascals,
+                units: Units.GasKiloPascals,
+            }, {
+                property: "valve.downStreamPressureKPA",
+                title: "Downstream Pressure",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Number,
+                params: { min: 0, max: null },
+                multiFieldId: "downStreamPressureKPA",
+                requiresInput: true,
+                units: Units.GasKiloPascals,
             });
             break;
         }
@@ -180,7 +191,7 @@ export function makeDirectedValveFields(
                 params: { min: 0, max: null },
                 multiFieldId: "pressureDrop",
                 requiresInput: true,
-                units: Units.KiloPascals,
+                units: isGas(systemUid || '', catalog.fluids, drawing.metadata.flowSystems) ? Units.GasKiloPascals : Units.KiloPascals,
             });
             break;
         }

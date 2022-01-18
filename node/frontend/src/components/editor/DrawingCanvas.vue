@@ -276,6 +276,7 @@ import { I18N } from "../../../../common/src/api/locale/values";
 import { SupportedLocales } from "../../../../common/src/api/locale";
 import FeedbackModal from "../FeedbackModal.vue";
 import { DocumentStep } from "../../store/onboarding/steps";
+import CalculationEngine from "../../calculations/calculation-engine";
 
 @Component({
   components: {
@@ -740,6 +741,7 @@ export default class DrawingCanvas extends Vue {
     MainEventBus.$on("set-scale", this.onSetScale);
     MainEventBus.$on("set-detail-scale", this.onDetailScale);
     MainEventBus.$on("set-preview", this.setIsPreview);
+    MainEventBus.$on("entity-dependencies", this.runCheckEntityDependencies);
     this.$watch(
       () => this.document.uiState.drawingMode,
       (newVal, oldVal) => {
@@ -841,6 +843,7 @@ export default class DrawingCanvas extends Vue {
     MainEventBus.$off("drawing-loaded", this.onDrawingLoaded);
     MainEventBus.$off("set-scale", this.onSetScale);
     MainEventBus.$off("set-detail-scale", this.onDetailScale);
+    MainEventBus.$off("entity-dependencies", this.runCheckEntityDependencies);
     this.document.uiState.lastCalculationId = -1;
   }
 
@@ -911,6 +914,7 @@ export default class DrawingCanvas extends Vue {
   }
   onDrawingLoaded() {
     this.onValidateAndCommit(false, true);
+    this.runCheckEntityDependencies();
   }
 
   onChangeFromLayer(uids: string[]) {
@@ -927,6 +931,7 @@ export default class DrawingCanvas extends Vue {
   onCommitted(redraw: boolean = true) {
     if (redraw) {
       this.scheduleDraw();
+      this.runCheckEntityDependencies();
     }
   }
 
@@ -2287,6 +2292,14 @@ export default class DrawingCanvas extends Vue {
 
   checkOnboardingClass(step: number) {
     return step === this.onboarding.currentStep && this.onboarding.screen === ONBOARDING_SCREEN.DOCUMENT;
+  }
+
+  runCheckEntityDependencies() {
+    const calc = new CalculationEngine();
+    this.$store.dispatch(
+      "document/updateDependenceOn",
+      calc.identifyDependencies(this.globalStore, this.document, this.effectiveCatalog)
+    );
   }
 }
 </script>

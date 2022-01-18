@@ -24,12 +24,12 @@ export interface LoadNode {
     designFlowRateLS: number | null;
     continuousFlowLS: number | null;
     gasFlowRateMJH: number;
-    gasPressureKPA: number;
+    gasPressureKPA: number | null;
     variant: NodeVariant;
     asnzFixtureUnits: number | null;
     enDischargeUnits: number | null;
     upcFixtureUnits: number | null;
-
+    diversity: number | null;
 }
 
 export interface DwellingNode {
@@ -37,7 +37,7 @@ export interface DwellingNode {
     dwellings: number;
     continuousFlowLS: number | null;
     gasFlowRateMJH: number;
-    gasPressureKPA: number;
+    gasPressureKPA: number | null;
     loadingUnits: number | null;
     designFlowRateLS: number | null;
     asnzFixtureUnits: number;
@@ -61,6 +61,8 @@ export default interface LoadNodeEntity extends DrawableEntity, CenteredEntity {
 }
 
 export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity, catalog: Catalog, locale: SupportedLocales, systemUid: string | null): PropertyField[] {
+    const gasSystems = drawing.metadata.flowSystems.filter(i => isGas(i.uid, catalog.fluids, drawing.metadata.flowSystems));
+
     const fields: PropertyField[] = [
         {
             property: "systemUidOption",
@@ -68,7 +70,10 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
             hasDefault: false,
             isCalculated: false,
             type: FieldType.FlowSystemChoice,
-            params: { systems: drawing.metadata.flowSystems },
+            params: {
+                systems: drawing.metadata.flowSystems,
+                disabledSystems: value.node.type === NodeType.DWELLING ? gasSystems.map(({ uid }) => (uid)) : undefined,
+            },
             multiFieldId: "systemUid"
         },
 
@@ -412,6 +417,16 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
                     params: { min: 0, max: null },
                     multiFieldId: "gasFlowRateMJH"
                 },
+                {
+                    property: "node.diversity",
+                    title: "Diversity",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Number,
+                    params: { min: 0, max: null },
+                    multiFieldId: "diversity",
+                    units: Units.Percent
+                },
             );
         }
 
@@ -419,10 +434,10 @@ export function makeLoadNodesFields(drawing: DrawingState, value: LoadNodeEntity
             {
                 property: "node.gasPressureKPA",
                 title: "Gas Pressure",
-                hasDefault: false,
+                hasDefault: true,
                 isCalculated: false,
                 type: FieldType.Number,
-                units: Units.KiloPascals,
+                units: Units.GasKiloPascals,
                 params: { min: 0, max: null },
                 multiFieldId: "gasPressureKPA"
             },

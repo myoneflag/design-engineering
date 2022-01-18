@@ -1,12 +1,10 @@
-/* tslint:disable:no-bitwise */
-
+import Vue from 'vue';
 import { Catalog } from "../../../common/src/api/catalog/types";
 import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import BaseBackedObject from "../htmlcanvas/lib/base-backed-object";
 import { CalculationFilters, DocumentState } from "../store/document/types";
 import { getFields } from "../calculations/utils";
 import { getEntityName } from "../../../common/src/api/document/entities/types";
-import Vue from 'vue';
 import { Color } from "../../../common/src/api/document/drawing";
 import { assertUnreachable } from "../../../common/src/api/config";
 

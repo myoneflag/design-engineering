@@ -1,14 +1,14 @@
 import {
-    DRAWING_UPGRADE_VERSION,
     drawing_upgraded22to23,
+    drawing_upgraded23to24,
 } from "../../../common/src/api/upgrade";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
 import ConcurrentDocument from "./concurrentDocument";
-import {EntityManager, LessThan} from "typeorm";
+import { EntityManager, LessThan } from "typeorm";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import SqsClient from "../services/SqsClient";
-import {withReadUncommittedTransaction} from "../helpers/database";
+import { withReadUncommittedTransaction } from "../helpers/database";
 import { Tasks } from "../controllers/worker";
 import { Drawing, DrawingStatus } from "../../../common/src/models/Drawing";
 import { Operation } from "../../../common/src/models/Operation";
@@ -19,9 +19,11 @@ export class DocumentUpgrader {
 
     static async submitDocumentsForUpgrade() {
 
-        const docs = await Document.find( { where: {
-            version: LessThan(CURRENT_VERSION),
-        }});
+        const docs = await Document.find({
+            where: {
+                version: LessThan(CURRENT_VERSION),
+            }
+        });
 
         // Easier to just sort in code than DB
         const toUpgrade = docs.sort((a, b) => {
@@ -40,13 +42,13 @@ export class DocumentUpgrader {
         console.log('documentUpgradeScan', { toUpgrade: toUpgrade.length });
         while (toUpgrade.length) {
             const docsBatch = toUpgrade.splice(0, 10);
-            const docsIdBatch = docsBatch.map( (d) => d.id);
+            const docsIdBatch = docsBatch.map((d) => d.id);
             await this.enqueueDocumentForUpgrade(docsIdBatch);
         }
     }
 
     static async enqueueDocumentForUpgrade(docIds: number[]) {
-        const queueMessages = docIds.map( (docId) => (
+        const queueMessages = docIds.map((docId) => (
             {
                 task: Tasks.DocumentUpgradeExecute,
                 params: {
@@ -83,7 +85,7 @@ export class DocumentUpgrader {
     static async onDocumentUpgradeRequest(docId: number, overwrite = false): Promise<boolean> {
         const timingLabel = `timer:documentUpgradeExecute:${docId}:${Date.now()}`;
         try {
-            console.log(timingLabel, 'start', {docId, CURRENT_VERSION});
+            console.log(timingLabel, 'start', { docId, CURRENT_VERSION });
 
             console.time(timingLabel);
 
@@ -97,54 +99,40 @@ export class DocumentUpgrader {
 
             const doc = await Document.findOne({ id: docId });
 
-            await withReadUncommittedTransaction( async (tx) => {
-
-                // transition from operation to drawing based upgrades and storage
-                if (CURRENT_VERSION === DRAWING_UPGRADE_VERSION) {
-                    // if migration is re-run, we will update the existing record
-                    let drawingData = await Drawing.getRepository().findOne(
-                        {where: { documentId: docId, status: DrawingStatus.CURRENT}});
-                    if (!drawingData) {
-                        drawingData = Drawing.create();
-                        drawingData.documentId = docId;
-                        drawingData.status = DrawingStatus.CURRENT;
-                    }
-                    const drawing = await DocumentUpgrader.composeDrawingStateFromOperations(tx, doc, false);
-                    drawingData.drawing = drawing;
-                    drawingData.version = CURRENT_VERSION;
-                    await tx.save(Drawing, drawingData);
-                }
+            await withReadUncommittedTransaction(async (tx) => {
 
                 // drawing based upgrades
-                if (CURRENT_VERSION > DRAWING_UPGRADE_VERSION) {
-                    const drawingData: Drawing = await tx.getRepository(Drawing).findOneOrFail(
-                        { where: { documentId: doc.id, status: DrawingStatus.CURRENT }});
-                    const drawing = drawingData.drawing;
-                    DocumentUpgrader.upgradeDrawing(drawing, doc.version);
-                    doc.metadata = drawing.metadata.generalInfo;
-                    drawingData.version = CURRENT_VERSION;
-                    await tx.save(Drawing, drawingData);
-                }
+                const drawingData: Drawing = await tx.getRepository(Drawing).findOneOrFail(
+                    { where: { documentId: doc.id, status: DrawingStatus.CURRENT } });
+                const drawing = drawingData.drawing;
+                DocumentUpgrader.upgradeDrawing(drawing, doc.version);
+                doc.metadata = drawing.metadata.generalInfo;
+                drawingData.version = CURRENT_VERSION;
+                await tx.save(Drawing, drawingData);
 
                 // upgrade
                 doc.version = CURRENT_VERSION;
 
                 await tx.save(Document, doc);
             });
-            console.timeLog(timingLabel, 'complete', { docId } );
+            console.timeLog(timingLabel, 'complete', { docId });
             console.timeEnd(timingLabel);
         } catch (error) {
-            console.timeLog(timingLabel, 'error', { docId, error } );
+            console.timeLog(timingLabel, 'error', { docId, error });
             console.timeEnd(timingLabel);
-            throw(error);
+            throw (error);
         }
         return true;
     }
 
     public static upgradeDrawing(drawing: DrawingState, version: number) {
+        // do not add "break" statements to the swith case below
+        // intentionally the upgrade process will go through all the version increments until reaching CURRENT_VERSION
         switch (version) {
-            case 23:
+            case 22:
                 drawing_upgraded22to23(drawing);
+            case 23:
+                drawing_upgraded23to24(drawing);
             case CURRENT_VERSION:
                 break;
         }

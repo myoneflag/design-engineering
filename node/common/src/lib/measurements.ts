@@ -10,6 +10,7 @@ export enum Units {
     Millimeters = "mm",
     Meters = "m",
     KiloPascals = "kPa",
+    GasKiloPascals = "gaskPa",
     MetersPerSecond = "m/s",
     MetersPerSecondSquared = "m/s\u0178",
     Celsius = "\u00B0C",
@@ -29,6 +30,7 @@ export enum Units {
     FeetPerSecondSquared = "ftt/s\u0178",
     Psi = "psi",
     Bar = 'bar',
+    Mbar = 'mbar',
     FeetPerSecond = "ft/s",
     Fahrenheit = "\u00B0F",
     // keep it at kilowatts
@@ -39,7 +41,9 @@ export enum Units {
     BtuPerHour = 'Btu/hr',
 
     PipeDiameterMM = "pmm",
-    CubicFeetPerHour = "ft^3/hr"
+    CubicFeetPerHour = "ft^3/hr",
+
+    Percent = "%"
 }
 
 export enum Conversion {
@@ -73,7 +77,11 @@ export enum VelocityMeasurementSystem {
     IMPERIAL = "IMPERIAL"
 }
 
-export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, units: Units, valueRaw: number | string): [Units, number | string | null] {
+export function convertMeasurementSystemNonNull(
+    unitsPrefs: UnitsParameters,
+    units: Units,
+    valueRaw: number | string,
+): [Units, number | string | null] {
     const value = Number(valueRaw);
 
     switch (units) {
@@ -122,6 +130,17 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.Psi, kpa2PSI(value)];
                 case PressureMeasurementSystem.UK:
                     return [Units.Bar, kpa2bar(value)];
+            }
+            assertUnreachable(unitsPrefs.pressureMeasurementSystem);
+            return [Units.None, 0];
+        case Units.GasKiloPascals:
+            switch (unitsPrefs.pressureMeasurementSystem) {
+                case PressureMeasurementSystem.METRIC:
+                    return [Units.KiloPascals, value];
+                case PressureMeasurementSystem.IMPERIAL:
+                    return [Units.Psi, kpa2PSI(value)];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Mbar, barToMBar(kpa2bar(value))];
             }
             assertUnreachable(unitsPrefs.pressureMeasurementSystem);
             return [Units.None, 0];
@@ -313,6 +332,19 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
                     return [Units.BtuPerHour, value];
             }
             return [Units.None, 0];
+        case Units.Mbar:
+            const barValue = mbarToBar(value);
+            switch (unitsPrefs.pressureMeasurementSystem) {
+                case PressureMeasurementSystem.METRIC:
+                    return [Units.KiloPascals, bar2kpa(barValue)];
+                case PressureMeasurementSystem.IMPERIAL:
+                    return [Units.Psi, kpa2PSI(bar2kpa(barValue))];
+                case PressureMeasurementSystem.UK:
+                    return [Units.Mbar, value];
+            }
+            return [Units.None, 0];
+        case Units.Percent:
+            return [Units.Percent, value];
         default:
             assertUnreachable(units);
     }
@@ -320,7 +352,11 @@ export function convertMeasurementSystemNonNull(unitsPrefs: UnitsParameters, uni
     return [Units.None, 0];
 }
 
-export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Units, value: number | string | null): [Units, number | null | string] {
+export function convertMeasurementSystem(
+    unitsPrefs: UnitsParameters,
+    units: Units,
+    value: number | string | null,
+): [Units, number | null | string] {
     if (value === null) {
         const [newUnits] = convertMeasurementSystemNonNull(unitsPrefs, units, 1);
         return [newUnits, null];
@@ -330,7 +366,10 @@ export function convertMeasurementSystem(unitsPrefs: UnitsParameters, units: Uni
 }
 
 // Always store in metric, no matter the document properties.
-export function convertMeasurementToMetric(units: Units, value: number | null) {
+export function convertMeasurementToMetric(
+    units: Units,
+    value: number | null,
+) {
     return convertMeasurementSystem(
         {
             lengthMeasurementSystem: MeasurementSystem.METRIC,
@@ -375,6 +414,14 @@ export function psi2KPA(psi: number) {
 
 export function kpa2bar(kpa: number) {
     return kpa / 100;
+}
+
+export function barToMBar(bar: number) {
+    return bar * 1000;
+}
+
+export function mbarToBar(bar: number) {
+    return bar / 1000;
 }
 
 export function bar2kpa(bar: number) {

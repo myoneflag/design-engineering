@@ -351,3 +351,7 @@ export function arrayToMap<T, K extends keyof T>(arg: T[], key: K): Map<string, 
 export function mapToArray<T>(arg: Map<string, T>): T[] {
     return Array.from(arg, (v) => v[1]);
 }
+
+export function numToPercent(val: number) {
+    return val / 100;
+}

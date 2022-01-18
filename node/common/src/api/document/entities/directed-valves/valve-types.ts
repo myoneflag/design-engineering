@@ -95,6 +95,7 @@ export interface Balancing extends DirectedValve {
 export interface GasRegulator extends DirectedValve {
     type: ValveType.GAS_REGULATOR;
     outletPressureKPA: number | null;
+    downStreamPressureKPA: number | null;
 }
 
 export interface Filter extends DirectedValve {

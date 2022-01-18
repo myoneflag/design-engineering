@@ -587,6 +587,17 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             }
             // 0 index is cold water.
             result.metadata.flowSystems[0].temperature = 10;
+            result.metadata.flowSystems[3].networks = {
+                ...result.metadata.flowSystems[3].networks,
+                RISERS: {
+                    ...result.metadata.flowSystems[3].networks.RISERS,
+                    material: 'stainlessSteel',
+                },
+                RETICULATIONS: {
+                    ...result.metadata.flowSystems[3].networks.RETICULATIONS,
+                    material: 'stainlessSteel',
+                }
+            }
             result.metadata.units.currency = {
                 symbol: CurrencySymbol.POUNDS,
                 multiplierPct: 100,
@@ -596,6 +607,7 @@ export function initialDrawing(locale: SupportedLocales): DrawingState {
             result.metadata.catalog.pipes[0].manufacturer = "bsen1057Cu"
             result.metadata.catalog.pipes[1].manufacturer = "enIso15875pex"
             result.metadata.catalog.pipes[2].manufacturer = "bs1387ss"
+            result.metadata.units.pressureMeasurementSystem = PressureMeasurementSystem.UK;
 
             break;
         case SupportedLocales.US:

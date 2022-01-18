@@ -4,9 +4,7 @@ import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { KeyCode } from "../../../src/htmlcanvas/utils";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import PlantEntity, {
-    fillPlantDefaults, PLANT_ENTITY_VERSION
-} from "../../../../common/src/api/document/entities/plants/plant-entity";
+import PlantEntity, { fillPlantDefaults } from "../../../../common/src/api/document/entities/plants/plant-entity";
 import {
     PlantConcrete,
     PlantType,
@@ -45,8 +43,6 @@ export default function insertPlant(context: CanvasContext, angle: number, type:
                 newEntity = null;
 
                 newEntity = {
-                    version: PLANT_ENTITY_VERSION,
-
                     center: wc,
                     rotation: angle,
                     rightToLeft,
@@ -214,14 +210,11 @@ function createPlant(
     returnUid: string | null,
     gasInUid: string | null,
 ): PlantConcrete {
-    let plant = {
-        type
-    } as PlantConcrete;
-
-    switch (plant.type) {
+    let plant: PlantConcrete;
+    switch (type) {
         case PlantType.RETURN_SYSTEM:
             plant = {
-                ...plant,
+                type: PlantType.RETURN_SYSTEM,
                 returnMinimumTemperatureC: null,
                 gasConsumptionMJH: null,
                 returnUid: returnUid!,
@@ -234,12 +227,13 @@ function createPlant(
                 rheemMinimumInitialDelivery: null,
                 rheemkWRating: null,
                 rheemStorageTankSize: null,
+                diversity: 100,
             };
 
             break;
         case PlantType.PUMP:
             plant = {
-                ...plant,
+                type: PlantType.PUMP,
                 pressureLoss: {
                     pressureMethod: PressureMethod.PUMP_DUTY,
                     pumpPressureKPA: null,
@@ -249,7 +243,7 @@ function createPlant(
             break;
         case PlantType.TANK:
             plant = {
-                ...plant,
+                type: PlantType.TANK,
                 pressureLoss: {
                     pressureMethod: PressureMethod.STATIC_PRESSURE,
                     staticPressureKPA: null,
@@ -259,7 +253,7 @@ function createPlant(
             break;
         case PlantType.CUSTOM:
             plant = {
-                ...plant,
+                type: PlantType.CUSTOM,
                 pressureLoss: {
                     pressureMethod: PressureMethod.FIXED_PRESSURE_LOSS,
                     pressureLossKPA: null,
@@ -271,7 +265,7 @@ function createPlant(
             break;
         case PlantType.DRAINAGE_PIT:
             plant = {
-                ...plant,
+                type: PlantType.DRAINAGE_PIT,
                 pressureLoss: {
                     pressureMethod: PressureMethod.STATIC_PRESSURE,
                     staticPressureKPA: 0,
@@ -281,7 +275,7 @@ function createPlant(
             break;
         case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             plant = {
-                ...plant,
+                type: PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP,
                 pressureLoss: {
                     pressureMethod: PressureMethod.STATIC_PRESSURE,
                     staticPressureKPA: 0,
@@ -294,8 +288,8 @@ function createPlant(
 
             break;
         default:
-            assertUnreachable(plant);
+            assertUnreachable(type);
     }
 
-    return plant;
+    return plant!;
 }
