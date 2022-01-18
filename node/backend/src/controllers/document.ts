@@ -1,7 +1,7 @@
 import { IsNull } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
 import { initialDrawing, setNewDocumentInitialValues } from "../../../common/src/api/document/drawing";
-import { diffState } from "../../../common/src/api/document/state-differ";
+import { diffObject, diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { Operation } from "../../../common/src/models/Operation";
@@ -22,7 +22,7 @@ import { EntityType } from "../../../common/src/api/document/entities/types";
 import ws from "ws";
 import { Drawing, DrawingStatus } from "../../../common/src/models/Drawing";
 import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
-import { DiffOperation } from "../../../common/src/api/document/operation-transforms";
+import { DiffOperation, OPERATION_NAMES } from "../../../common/src/api/document/operation-transforms";
 
 export class DocumentController {
 
@@ -79,6 +79,23 @@ export class DocumentController {
             applyDiffNative(drawingData.drawing, (exampleDiff as DiffOperation).diff);
         }
         await drawingData.save();
+
+        const operation = Operation.create();
+        operation.documentId = doc.id;
+        operation.orderIndex = doc.nextOperationIndex;
+        operation.operation = {
+            id: operation.orderIndex,
+            type: OPERATION_NAMES.DIFF_OPERATION,
+            diff: drawingData.drawing,
+            inverse: diffObject(drawingData.drawing, null, undefined),
+        };
+        operation.blame = doc.createdBy;
+        operation.dateTime = doc.createdOn;
+        Operation.insert(operation);
+
+        doc.nextOperationIndex++;
+        doc.save();
+
         res.status(200).send({
             success: true,
             data: doc,
@@ -268,9 +285,30 @@ export class DocumentController {
 
                 const drawingObj = await Drawing.getRepository().findOneOrFail(
                     {where: { documentId: targetId, status: DrawingStatus.CURRENT}});
-                drawingObj.documentId = doc.id;
-                drawingObj.drawing.metadata.generalInfo.title = doc.metadata.title;
-                await drawingObj.save();
+                const newDrawing = drawingObj.drawing;
+                const newDrawingObject = Drawing.create();
+                newDrawingObject.documentId = doc.id;
+                newDrawingObject.drawing = newDrawing;
+                newDrawingObject.status = DrawingStatus.CURRENT;
+                newDrawingObject.version = CURRENT_VERSION;
+                newDrawingObject.drawing.metadata.generalInfo.title = doc.metadata.title;
+                await newDrawingObject.save();
+
+                const operation = Operation.create();
+                operation.documentId = doc.id;
+                operation.orderIndex = doc.nextOperationIndex;
+                operation.operation = {
+                    id: operation.orderIndex,
+                    type: OPERATION_NAMES.DIFF_OPERATION,
+                    diff: newDrawing,
+                    inverse: diffObject(newDrawing, null, undefined),
+                };
+                operation.blame = doc.lastModifiedBy;
+                operation.dateTime = doc.lastModifiedOn;
+                Operation.insert(operation);
+
+                doc.nextOperationIndex++;
+                doc.save();
 
                 // copy over custom entities to new document
                 const customEntities = await CustomEntity.find({
