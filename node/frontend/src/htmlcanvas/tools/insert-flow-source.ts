@@ -52,7 +52,8 @@ export default function insertFlowSource(context: CanvasContext, system: FlowSys
                     heightAboveGroundM: null,
                     minPressureKPA: null,
                     maxPressureKPA: null,
-                    uid: newUid
+                    uid: newUid, 
+                    entityName: null
                 };
 
                 await context.$store.dispatch("document/addEntity", newEntity);

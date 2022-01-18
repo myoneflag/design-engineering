@@ -717,6 +717,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                             type: EntityType.PIPE,
                             uid: this.uid + "." + i + ".p",
                             gradePCT: null,
+                            entityName: null
                         };
                         result.push([ce, pe]);
                     } else {

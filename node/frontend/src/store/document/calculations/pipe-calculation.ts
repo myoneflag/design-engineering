@@ -4,7 +4,7 @@ import {
     CalculationLayout,
     FieldCategory
 } from "../../../../src/store/document/calculations/calculation-field";
-import { Calculation, CalculationType, PsdCalculation } from "../../../../src/store/document/calculations/types";
+import { Calculation, CalculationType, NameCalculation, PsdCalculation } from "../../../../src/store/document/calculations/types";
 import PipeEntity, { fillPipeDefaultFields } from "../../../../../common/src/api/document/entities/pipe-entity";
 import { getDrainageUnitName, getPsdUnitName, PsdProfile } from "../../../calculations/utils";
 import { assertUnreachable, isDrainage, isGas } from "../../../../../common/src/api/config";
@@ -33,7 +33,7 @@ export enum Configuration {
     RETURN = 'RETURN',
 }
 
-export default interface PipeCalculation extends PsdCalculation, Calculation {
+export default interface PipeCalculation extends PsdCalculation, Calculation, NameCalculation {
     totalPeakFlowRateLS: number | null;
     PSDFlowRateLS: number | null;
 
@@ -98,6 +98,17 @@ export function makePipeCalculationFields(
 
     const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
     const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['drainage'] : ['pressure'];
+
+    result.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+            systemUid: entity.systemUid,
+        },
+    );
 
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
@@ -330,6 +341,7 @@ export function makePipeCalculationFields(
 export function emptyPipeCalculation(): PipeCalculation {
     return {
         type: CalculationType.PipeCalculation,
+        entityName: '',
         cost: null,
         costBreakdown: null,
         expandedEntities: null,

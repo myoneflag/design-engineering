@@ -6,16 +6,17 @@ import {
     ConnectableEntity,
     Coord,
     DrawingState,
+    NamedEntity,
     NetworkType
 } from "../drawing";
-import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
-import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../config";
+    import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
+    import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../config";
 import { Catalog } from "../../catalog/types";
 import { getDrainageMaterials, getWaterDrainageMaterials } from "./pipe-entity";
 import { convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import { getPipeManufacturer } from "./utils";
 
-export default interface RiserEntity extends ConnectableEntity {
+export default interface RiserEntity extends ConnectableEntity, NamedEntity {
     type: EntityType.RISER;
     center: Coord;
     systemUid: string;
@@ -57,6 +58,15 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
     if (entity.isVent) {
 
         return [
+            {
+                property: "entityName",
+                title: "Name",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Text,
+                params: null,
+                multiFieldId: "entityName"
+            },
             {
                 property: "systemUid",
                 title: "Flow System",
@@ -117,6 +127,15 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
     } else {
 
         return [
+            {
+                property: "entityName",
+                title: "Name",
+                hasDefault: false,
+                isCalculated: false,
+                type: FieldType.Text,
+                params: null,
+                multiFieldId: "entityName"
+            },
             {
                 property: "systemUid",
                 title: "Flow System",

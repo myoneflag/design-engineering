@@ -1,6 +1,6 @@
 import { FieldType, PropertyField } from "./property-field";
 import { EntityType } from "./types";
-import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters } from "../drawing";
+import { Color, ConnectableEntity, Coord, DrawingState, FlowSystemParameters, NamedEntity } from "../drawing";
 import { Choice, cloneSimple } from "../../../lib/utils";
 import { Units } from "../../../lib/measurements";
 import { isDrainage, isGas } from "../../config";
@@ -17,7 +17,7 @@ export interface FlowSourceEntityV11 extends ConnectableEntity {
     pressureKPA: number | null;
 }
 
-export default interface FlowSourceEntity extends ConnectableEntity {
+export default interface FlowSourceEntity extends ConnectableEntity, NamedEntity {
     type: EntityType.FLOW_SOURCE;
     center: Coord;
     systemUid: string;
@@ -31,6 +31,15 @@ export default interface FlowSourceEntity extends ConnectableEntity {
 export function makeFlowSourceFields(systems: FlowSystemParameters[], entity: FlowSourceEntity, catalog: Catalog, locale: SupportedLocales | undefined): PropertyField[] {
 
     const res: PropertyField[] = [
+        {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
         {
             property: "systemUid",
             title: "Flow System",

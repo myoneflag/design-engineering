@@ -205,7 +205,7 @@
                 @input="setRenderedData(field, $event)"
                 :id="'input-' + field.property"
                 :type="field.type"
-                :placeholder="'Enter ' + field[1]"
+                :placeholder="'Enter ' + field.title"
                 size="sm"
                 :disabled="isDisabled(field)"
                 @blur="onCommitInternal"

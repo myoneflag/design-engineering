@@ -31,6 +31,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
 import { I18N } from "../../../../common/src/api/locale/values";
 import { addWarning, Warning } from "../../../src/store/document/calculations/warnings";
+import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Direction } from "../types";
 import { isSameWorldPX } from "../on-screen-items";
 
@@ -70,7 +71,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList }: EntityDrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList, withCalculation }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const scale = vp.currToSurfaceScale(ctx);
@@ -185,6 +186,23 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
             ctx.lineTo(-this.lastDrawnDiameterW * 0.38, this.lastDrawnDiameterW * 0.25);
             ctx.closePath();
             ctx.fill();
+        }
+
+        // Display Entity Name
+        if (this.entity.entityName && !withCalculation) {
+            const name = this.entity.entityName;
+            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            ctx.textBaseline = "top";
+            const nameWidth = ctx.measureText(name).width;
+            const offsetx = - nameWidth / 2;
+            ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = this.lastDrawnDiameterW / 2 + textHight;
+            ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+            ctx.fillStyle = this.color(doc).hex;
+            ctx.fillText(name, offsetx, offsetY - 4);
+            ctx.textBaseline = "alphabetic";
         }
     }
 

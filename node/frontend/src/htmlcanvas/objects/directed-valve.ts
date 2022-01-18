@@ -115,7 +115,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, withCalculation }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
 
@@ -134,6 +134,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         context.ctx.fillStyle = color.hex;
         context.ctx.strokeStyle = color.hex;
         context.ctx.lineWidth = baseWidth;
+        let maxOffsetY = VALVE_SIZE_MM;
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
                 this.drawCheckValve(context);
@@ -147,10 +148,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             case ValveType.PRV_DOUBLE:
                 this.drawPrvDouble(context);
+                maxOffsetY = VALVE_HEIGHT_MM * (2 + 0.3);
                 break;
 
             case ValveType.PRV_TRIPLE:
                 this.drawPrvTriple(context);
+                maxOffsetY = VALVE_HEIGHT_MM * (3 + 0.3);
                 break;
             case ValveType.RPZD_SINGLE:
                 this.drawRpzdSingle(context);
@@ -159,6 +162,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             case ValveType.RPZD_DOUBLE_ISOLATED:
             case ValveType.RPZD_DOUBLE_SHARED:
                 drawRpzdDouble(context, [context.ctx.fillStyle, context.ctx.fillStyle]);
+                maxOffsetY = VALVE_HEIGHT_MM * (2 + 0.3);
                 break;
             case ValveType.WATER_METER:
                 this.drawWaterMeter(context);
@@ -186,6 +190,23 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
                 break;
             default:
                 assertUnreachable(this.entity.valve);
+        }
+
+        // Display Entity Name
+        if (this.entity.entityName && !withCalculation) {
+            const name = this.entity.entityName;
+            context.ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            context.ctx.textBaseline = "top";
+            const nameWidth = context.ctx.measureText(name).width;
+            const offsetx = - nameWidth / 2;
+            context.ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = maxOffsetY + textHight / 2;
+            context.ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+            context.ctx.fillStyle = color.hex;
+            context.ctx.fillText(name, offsetx, offsetY - 4);
+            context.ctx.textBaseline = "alphabetic";
         }
     }
 

@@ -180,7 +180,8 @@ function createBareValveEntity(
         type: EntityType.DIRECTED_VALVE,
         calculationHeightM: null,
         uid: uuid(),
-        valve: createBareValve(type, catalogId)
+        valve: createBareValve(type, catalogId), 
+        entityName: null
     };
 }
 

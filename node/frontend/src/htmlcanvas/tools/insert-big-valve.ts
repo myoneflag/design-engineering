@@ -97,7 +97,8 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     heightAboveFloorM: 1,
                     parentUid: null,
                     outputTemperatureC: 50,
-                    uid: tmvUid
+                    uid: tmvUid, 
+                    entityName: null,
                 };
 
                 const newCold: SystemNodeEntity = {

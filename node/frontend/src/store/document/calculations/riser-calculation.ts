@@ -7,6 +7,7 @@ import {
     addPressureCalculationFields,
     Calculation,
     CalculationType,
+    NameCalculation,
     PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
@@ -18,7 +19,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../../../../common/src/api/config";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 
-export default interface RiserCalculation extends Calculation {
+export default interface RiserCalculation extends Calculation, NameCalculation {
     heights: {
         [levelUid: string]: {
             flowRateLS: number | null;
@@ -53,6 +54,16 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     const extendsToTop = lvlAboveUid
         ? filled.topHeightM! > doc.drawing.levels[lvlAboveUid].floorHeightM
         : filled.topHeightM! > doc.drawing.levels[lvlUid!].floorHeightM + LEVEL_HEIGHT_DIFF_M;
+
+    result.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+        },
+    );
 
     // TODO uncomment and fix DEV-325
     // addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", 
@@ -227,6 +238,8 @@ export function emptyRiserCalculations(): RiserCalculation {
         expandedEntities: null,
 
         warnings: null,
-        heights: {}
+        heights: {}, 
+
+        entityName: null
     };
 }

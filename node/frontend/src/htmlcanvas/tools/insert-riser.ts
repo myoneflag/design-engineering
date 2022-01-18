@@ -62,7 +62,8 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                     temperatureC: null,
                     type: EntityType.RISER,
                     isVent: !!isVent,
-                    uid: newUid
+                    uid: newUid, 
+                    entityName: null
                 };
 
                 context.$store.dispatch("document/addEntity", newEntity);

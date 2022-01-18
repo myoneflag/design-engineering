@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import InvisibleNodeEntity from "../Invisible-node-entity";
 import { Catalog } from "../../../catalog/types";
-import { COLORS, Coord, DrawableEntity, DrawingState, SelectedMaterialManufacturer } from "../../drawing";
+import { COLORS, Coord, DrawableEntity, DrawingState, NamedEntity, SelectedMaterialManufacturer } from "../../drawing";
 import { cloneSimple, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { Units } from "../../../../lib/measurements";
 
@@ -32,7 +32,7 @@ export interface RpzdHotColdValve {
     coldOutputUid: string;
 }
 
-export default interface BigValveEntity extends DrawableEntity {
+export default interface BigValveEntity extends DrawableEntity, NamedEntity {
     center: Coord;
     type: EntityType.BIG_VALVE;
     rotation: number;
@@ -63,6 +63,15 @@ export interface SystemNodeEntity extends InvisibleNodeEntity {
 
 export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
     return [
+        {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
         {
             property: "rotation",
             title: "Rotation: (Degrees)",

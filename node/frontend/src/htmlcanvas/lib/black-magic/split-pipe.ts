@@ -70,7 +70,8 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         network: pipe.entity.network,
         type: EntityType.PIPE,
-        uid: pipe1uid
+        uid: pipe1uid,
+        entityName: null
     };
 
     const newPipe2: PipeEntity = {
@@ -86,7 +87,8 @@ export function addValveAndSplitPipe(
         systemUid: pipe.entity.systemUid,
         network: pipe.entity.network,
         type: EntityType.PIPE,
-        uid: pipe2uid
+        uid: pipe2uid,
+        entityName: null
     };
     const puid = pipe.uid;
     context.$store.dispatch("document/deleteEntity", pipe.entity);

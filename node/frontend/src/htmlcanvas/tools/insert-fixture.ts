@@ -63,6 +63,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                         /**/
                     },
                     loadingUnitVariant: null,
+                    entityName: null
                 };
 
                 for (const suid of newEntity.roughInsInOrder) {

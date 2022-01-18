@@ -1,4 +1,4 @@
-import { NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
+import { NamedEntity, NetworkType, SelectedMaterialManufacturer } from './../../../common/src/api/document/drawing';
 import { DocumentState } from "../../src/store/document/types";
 import { SelectionTarget } from "../../src/htmlcanvas/lib/types";
 import { EntityType } from "../../../common/src/api/document/entities/types";
@@ -127,6 +127,7 @@ import { convertMeasurementSystem, Units } from "../../../common/src/lib/measure
 import { getNext } from '../../../common/src/lib/utils';
 import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
+import { NameCalculation } from "../store/document/calculations/types";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
 export const FLOW_SOURCE_ROOT = "FLOW_SOURCE_ROOT";
@@ -707,6 +708,10 @@ export default class CalculationEngine implements CalculationContext {
             if (isCalculated(o.entity)) {
                 const calc = ((o as unknown) as Calculated).collectCalculations(this);
                 const childEntities = o.getCalculationEntities(this);
+                // the name would be displayed in the Results mode
+                if ((o.entity as NamedEntity).entityName) {
+                    (calc as NameCalculation).entityName = (o.entity as NamedEntity).entityName;
+                }
                 calc.cost = zeroCost();
                 calc.expandedEntities = childEntities;
                 for (const e of childEntities) {

@@ -32,6 +32,7 @@ import { SnappableObject } from "../lib/object-traits/snappable-object";
 import useColors = Mocha.reporters.Base.useColors;
 import { getHighlightColor } from "../lib/utils";
 import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
+import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Direction } from "../types";
 import { isSameWorldPX } from "../on-screen-items";
 
@@ -71,7 +72,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList }: EntityDrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList, withCalculation }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const scale = vp.currToSurfaceScale(ctx);
@@ -154,6 +155,23 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         );
         ctx.closePath();
         ctx.fill();
+
+        // Display Entity Name
+        if (this.entity.entityName && !withCalculation) {
+            const name = this.entity.entityName;
+            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            ctx.textBaseline = "top";
+            const nameWidth = ctx.measureText(name).width;
+            const offsetx = - nameWidth / 2;
+            ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = this.lastDrawnDiameterW - textHight / 2;
+            ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+            ctx.fillStyle = this.color(doc).hex;
+            ctx.fillText(name, offsetx, offsetY - 4);
+            ctx.textBaseline = "alphabetic";
+        }
     }
 
     isActive(): boolean {
@@ -274,7 +292,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                 network: NetworkType.RISERS,
                 systemUid: this.entity.systemUid,
                 type: EntityType.PIPE,
-                uid: this.uid + ".-1.p"
+                uid: this.uid + ".-1.p",
+                entityName: null
             };
             return [se, pe, ...tower.flat()];
         }
@@ -294,7 +313,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                 network: NetworkType.RISERS,
                 systemUid: this.entity.systemUid,
                 type: EntityType.PIPE,
-                uid: this.uid + "." + tower.length + ".p"
+                uid: this.uid + "." + tower.length + ".p",
+                entityName: null
             };
             return [se, pe, ...tower.flat()];
         }
@@ -321,7 +341,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                     network: NetworkType.RISERS,
                     systemUid: this.entity.systemUid,
                     type: EntityType.PIPE,
-                    uid: this.uid + "." + tower.length + ".p"
+                    uid: this.uid + "." + tower.length + ".p",
+                    entityName: null
                 };
 
                 const p2: PipeEntity = {
@@ -337,7 +358,8 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
                     network: NetworkType.RISERS,
                     systemUid: this.entity.systemUid,
                     type: EntityType.PIPE,
-                    uid: this.uid + "." + tower.length + ".p"
+                    uid: this.uid + "." + tower.length + ".p",
+                    entityName: null
                 };
 
                 tower[i][1] = p1;
