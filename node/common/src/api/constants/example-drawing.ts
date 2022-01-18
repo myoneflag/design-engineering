@@ -5,7 +5,7 @@ import { DrawingState, initialDrawing } from "../document/drawing";
 // every time you add a upgrade step and increment the CURRENT_VERSION
 // THIS HAS TO BE DONE MANUALLY HERE TO ENSURE THE DEVELOPER IS AWARE
 // OF ANY DOCUMENT UPGRADE CHANGES THAT NEED TO BE PERFOMED
-export const EXAMPLE_DRAWING_VERSION = 23;
+export const EXAMPLE_DRAWING_VERSION = 24;
 export const EXAMPLE_META = {
     "title": "Example Project",
     "projectNumber": "0001",

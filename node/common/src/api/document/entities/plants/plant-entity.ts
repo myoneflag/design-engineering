@@ -330,7 +330,7 @@ export function makePlantEntityFields(
         }
 
         if (!(filled.plant.type === PlantType.RETURN_SYSTEM
-            && drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === 'hotWaterPlant')!.manufacturer === 'rheem')) {
+            && drawing.metadata.catalog.hotWaterPlant.find((i) => i.uid === 'hotWaterPlant')?.manufacturer === 'rheem')) {
 
             res.push(
                 {
@@ -430,7 +430,7 @@ export function fillPlantDefaults(
 
             manufacturer = drawing.metadata.catalog.hotWaterPlant.find(
                 (i) => i.uid === 'hotWaterPlant'
-            )!.manufacturer as HotWaterPlantManufacturers;
+            )?.manufacturer as HotWaterPlantManufacturers || manufacturer;
 
             if (result.plant.returnMinimumTemperatureC === null) {
                 result.plant.returnMinimumTemperatureC = result.outletTemperatureC - 5;
@@ -544,7 +544,7 @@ function resolvePlantReturnSystemFields(
     const plant = entity.plant as ReturnSystemPlant;
     const manufacturer = drawing.metadata.catalog.hotWaterPlant.find(
         (i) => i.uid === 'hotWaterPlant'
-    )!.manufacturer as HotWaterPlantManufacturers;
+    )?.manufacturer as HotWaterPlantManufacturers || 'generic';
 
     if (manufacturer === 'rheem') {
         fields.splice(0, 1, {
