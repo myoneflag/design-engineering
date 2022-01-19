@@ -25,6 +25,24 @@ export interface NodeTable {
     'Continuous Flow Node': number;
 }
 
+export const PipeWaterDrainageMaterials = [
+    'castIronCoated',
+    'copperTypeB',
+    'gmsMedium',
+    'hdpeSdr11',
+    'pexSdr74',
+    'stainlessSteel',
+    'ppr',
+];
+
+// TODO: replace pexSdr74
+export const PipeDrainageMaterials = [
+    'stainlessSteelSewer',
+    'uPVCSewer',
+    'hdpeSdr11Sewer',
+    'castIronSewer',
+];
+
 export type PipeMaterials =
     | 'PEX'
     | 'Copper'
