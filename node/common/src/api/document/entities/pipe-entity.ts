@@ -6,6 +6,7 @@ import { Catalog } from "../../catalog/types";
 import { convertMeasurementSystem, convertPipeDiameterFromMetric, Units } from "../../../lib/measurements";
 import { isDrainage, isGas, StandardFlowSystemUids } from "../../config";
 import { getPipeManufacturer, getEntityNetwork, getEntitySystem } from "./utils";
+import { PipeDrainageMaterials, PipeWaterDrainageMaterials } from "../../catalog/price-table";
 
 export default interface PipeEntity extends DrawableEntity, NamedEntity {
     type: EntityType.PIPE;
@@ -234,27 +235,12 @@ export function fillPipeDefaultFields(drawing: DrawingState, computedLengthM: nu
 
 export function getDrainageMaterials(allChoices: Choice[]): Choice[] {
     return allChoices.filter((c) => {
-        // TODO: replace pexSdr74
-        // QUESTION: why does typescript require the parameter inside includes to be the same type???
-        return [
-            'stainlessSteelSewer',
-            'uPVCSewer',
-            'hdpeSdr11Sewer',
-            'castIronSewer',
-        ].includes(c.key as string);
+        return PipeDrainageMaterials.includes(c.key as string);
     });
 }
 
 export function getWaterDrainageMaterials(allChoices: Choice[]): Choice[] {
     return allChoices.filter((c) => {
-        // QUESTION: why does typescript require the parameter inside includes to be the same type???
-        return [
-            'castIronCoated',
-            'copperTypeB',
-            'gmsMedium',
-            'hdpeSdr11',
-            'pexSdr74',
-            'stainlessSteel',
-        ].includes(c.key as string);
+        return PipeWaterDrainageMaterials.includes(c.key as string);
     });
 }

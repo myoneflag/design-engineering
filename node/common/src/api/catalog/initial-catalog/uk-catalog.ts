@@ -3529,6 +3529,127 @@ export const ukCatalog: Catalog = {
             },
             uid: "stainlessSteel"
         },
+        ppr: {
+            name: "PPR",
+            abbreviation: "PPR",
+            manufacturer: [
+                {
+                    name: 'Generic',
+                    abbreviation: 'Generic',
+                    priceTableName: "PPR",
+                    uid: 'generic',
+                },
+            ],
+            uid: 'ppr',
+            pipesBySize: {
+                generic: {
+                    20: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "14.4",
+                        diameterNominalMM: "20",
+                        diameterOutsideMM: "20",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    25: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "18",
+                        diameterNominalMM: "25",
+                        diameterOutsideMM: "25",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    32: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "23.2",
+                        diameterNominalMM: "32",
+                        diameterOutsideMM: "32",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    40: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "29",
+                        diameterNominalMM: "40",
+                        diameterOutsideMM: "40",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    50: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "36.2",
+                        diameterNominalMM: "50",
+                        diameterOutsideMM: "50",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    63: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "45.8",
+                        diameterNominalMM: "63",
+                        diameterOutsideMM: "63",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    75: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "54.4",
+                        diameterNominalMM: "75",
+                        diameterOutsideMM: "75",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    90: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "65.4",
+                        diameterNominalMM: "90",
+                        diameterOutsideMM: "90",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    110: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "79.8",
+                        diameterNominalMM: "110",
+                        diameterOutsideMM: "110",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    125: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "90.8",
+                        diameterNominalMM: "125",
+                        diameterOutsideMM: "125",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    160: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "116.2",
+                        diameterNominalMM: "160",
+                        diameterOutsideMM: "160",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    200: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "145.2",
+                        diameterNominalMM: "200",
+                        diameterOutsideMM: "200",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                    250: {
+                        colebrookWhiteCoefficient: "0.007",
+                        diameterInternalMM: "181.6",
+                        diameterNominalMM: "250",
+                        diameterOutsideMM: "250",
+                        pipeUid: "ppr",
+                        safeWorkingPressureKPA: "1240"
+                    },
+                }
+            }
+        },
         cpvc: {
             name: "CPVC (SDR 11)",
             manufacturer: [
@@ -3923,127 +4044,6 @@ export const ukCatalog: Catalog = {
                         pipeUid: "castIronSewer",
                         safeWorkingPressureKPA: "1600"
                     }
-                }
-            }
-        },
-        ppr: {
-            name: "PPR",
-            abbreviation: "PPR",
-            manufacturer: [
-                {
-                    name: 'Generic',
-                    abbreviation: 'Generic',
-                    priceTableName: "PPR",
-                    uid: 'generic',
-                },
-            ],
-            uid: 'ppr',
-            pipesBySize: {
-                generic: {
-                    20: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "14.4",
-                        diameterNominalMM: "20",
-                        diameterOutsideMM: "20",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    25: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "18",
-                        diameterNominalMM: "25",
-                        diameterOutsideMM: "25",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    32: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "23.2",
-                        diameterNominalMM: "32",
-                        diameterOutsideMM: "32",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    40: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "29",
-                        diameterNominalMM: "40",
-                        diameterOutsideMM: "40",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    50: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "36.2",
-                        diameterNominalMM: "50",
-                        diameterOutsideMM: "50",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    63: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "45.8",
-                        diameterNominalMM: "63",
-                        diameterOutsideMM: "63",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    75: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "54.4",
-                        diameterNominalMM: "75",
-                        diameterOutsideMM: "75",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    90: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "65.4",
-                        diameterNominalMM: "90",
-                        diameterOutsideMM: "90",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    110: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "79.8",
-                        diameterNominalMM: "110",
-                        diameterOutsideMM: "110",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    125: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "90.8",
-                        diameterNominalMM: "125",
-                        diameterOutsideMM: "125",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    160: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "116.2",
-                        diameterNominalMM: "160",
-                        diameterOutsideMM: "160",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    200: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "145.2",
-                        diameterNominalMM: "200",
-                        diameterOutsideMM: "200",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
-                    250: {
-                        colebrookWhiteCoefficient: "0.007",
-                        diameterInternalMM: "181.6",
-                        diameterNominalMM: "250",
-                        diameterOutsideMM: "250",
-                        pipeUid: "ppr",
-                        safeWorkingPressureKPA: "1240"
-                    },
                 }
             }
         },
