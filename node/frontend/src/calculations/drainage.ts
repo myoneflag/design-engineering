@@ -63,7 +63,7 @@ export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext
 
 
                 if (calc.realNominalPipeDiameterMM === null) {
-                    addWarning(calc, Warning.UPDATE_FLOW_SYSTEM_SETTINGS, "drainage");
+                    addWarning(entity.uid, calc, Warning.UPDATE_FLOW_SYSTEM_SETTINGS, "drainage");
                     calc.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
                 }
             }
@@ -89,7 +89,7 @@ export function sizeVentPipe(entity: PipeEntity, context: CalculationContext, ps
         calc.optimalInnerPipeDiameterMM = calc.realNominalPipeDiameterMM = calculatedVentSize;
     } else {
         if (calculatedVentSize && entity.diameterMM < calculatedVentSize) {
-            addWarning(calc, Warning.OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT, "drainage");
+            addWarning(entity.uid, calc, Warning.OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT, "drainage");
         }
     }
     if (calc.realNominalPipeDiameterMM === null) {
@@ -350,7 +350,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 if (currPipe?.entity.type === EntityType.PIPE) {
                                     const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
                                     if (visitedUnventedRun.has(curr.value.uid)) {
-                                        addWarning(currPCalc, Warning.LOOP_IN_PIPESYSTEM_DETECTED, "drainage");
+                                        addWarning(currPipe.entity.uid, currPCalc, Warning.LOOP_IN_PIPESYSTEM_DETECTED, "drainage");
                                         console.warn("Loop in pipesystem detected for id: " + curr.value.uid)
                                         break;
                                     }
@@ -361,7 +361,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                     const [_, unventedConverted] =
                                         convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, unventedLength!);
                                     currPCalc.ventTooFarDist = true;
-                                    addWarning(currPCalc, Warning.MAX_UNVENTED_LENGTH, "drainage", { value: (maxConverted as number).toFixed(2) + units, max: (unventedConverted as number).toFixed(2) + units });
+                                    addWarning(currPipe.entity.uid, currPCalc, Warning.MAX_UNVENTED_LENGTH, "drainage", { value: (maxConverted as number).toFixed(2) + units, max: (unventedConverted as number).toFixed(2) + units });
                                     curr = parentOf.get(curr.from.connectable);
                                 }
                             }
@@ -376,7 +376,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 UnventedDrainageFlowExceeds = true;
                                 const currPCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
                                 currPCalc.ventTooFarWC = true;
-                                addWarning(currPCalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
+                                addWarning(pipe.entity.uid, currPCalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
                                 // const accountedFor = pCalc.ventTooFarWC;
                                 // let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
                                 // while (curr) {
@@ -586,7 +586,7 @@ export function produceUnventedUnitsWarnings(context: CalculationEngine, roots: 
                         console.log("For fixture " + fixture.uid + " we have " + units.drainageUnits + ' and max is ' + maxUnventedUnits);
                         if (units.drainageUnits > maxUnventedUnits) {
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
-                            addWarning(fcalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
+                            addWarning(fixture.uid, fcalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
                         }
                     }
                 }
@@ -686,7 +686,7 @@ export function produceUnventedLengthWarningsAndGetUnventedGroup(context: Calcul
                             const fcalc = context.globalStore.getOrCreateCalculation(fixture);
                             const [units, converted] =
                                 convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, maxUnventedLengthM);
-                            addWarning(fcalc, Warning.MAX_UNVENTED_LENGTH, "drainage", { value: (converted as number).toFixed(2) + units });
+                            addWarning(fixture.uid, fcalc, Warning.MAX_UNVENTED_LENGTH, "drainage", { value: (converted as number).toFixed(2) + units });
                         }
                     }
                 }
@@ -828,6 +828,9 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
     // in case it IS poorly draw, keep this seen set to help avoid taking too much time.
     const seenPipes = new Set<string>();
 
+    let seenFlowSource = false;
+    let randomPipeUid = '';
+
     for (const obj of context.networkObjects()) {
         if (obj.entity.type === EntityType.FLOW_SOURCE) {
             if (isDrainage(obj.entity.systemUid, context.drawing.metadata.flowSystems)) {
@@ -838,6 +841,7 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                 // have that, the unvented load at any point is the load of the pipe upstream
                 // from it minus the load experienced (and neutralized) by the vented nodes below.
 
+                seenFlowSource = true;
                 const flowAtNextVent = new Map<string, PsdCountEntry>();
                 const lenghtAtNextVent = new Map<string, number>();
                 let multipleSewerConnections = false;
@@ -938,6 +942,17 @@ export function processVentRoots(context: CalculationEngine): Map<string, PsdCou
                 }
             }
         }
+        if (obj.entity.type === EntityType.PIPE) {
+            if (!randomPipeUid && isDrainage(obj.entity.systemUid, context.drawing.metadata.flowSystems)) {
+                randomPipeUid = obj.entity.uid;
+            }
+        }
+    }
+    // there is no flow source, provide a warning into random Pipe
+    if (!seenFlowSource && randomPipeUid) {
+        const p = context.globalStore.get(randomPipeUid) as Pipe;
+        const pCalc = context.globalStore.getOrCreateCalculation(p.entity);
+        addWarning(p.entity.uid, pCalc, Warning.ADD_FLOW_SOURCE_TO_SYSTEM, "drainage");
     }
     return result;
 }

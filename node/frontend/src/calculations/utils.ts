@@ -40,6 +40,7 @@ import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 import { SupportedLocales } from "../../../common/src/api/locale";
 import { Units, VolumeMeasurementSystem } from './../../../common/src/lib/measurements';
+import { Level } from "../../../common/src/api/document/drawing";
 
 export interface PsdCountEntry {
     units: number;
@@ -748,4 +749,18 @@ export function resolveDINUnits(document: DocumentState, units: number, warmTemp
     const hotTemp = hot.temperature;
 
     return ((warmTemp - coldTemp) / (hotTemp - coldTemp)) * units;
+}
+
+export function getLevelHeightFloorToVertexM(levels: { [key: string]: Level }, levelUid: string): number | null {
+    const sortedLevels = Object.values(levels).sort((a, b) => a.floorHeightM - b.floorHeightM);
+    const currentLevelIndex = sortedLevels.findIndex((level) => level.uid === levelUid);
+    if (!levelUid || currentLevelIndex < 0) {
+        assertUnreachable(levels as never);
+    }
+    if (currentLevelIndex + 1 >= sortedLevels.length) {
+        // Is Top level
+        return null;
+    }
+    const heightAboveToVertexM = sortedLevels[currentLevelIndex + 1].floorHeightM - sortedLevels[currentLevelIndex].floorHeightM;
+    return heightAboveToVertexM;
 }

@@ -38,6 +38,7 @@ import { determineConnectableSystemUid } from "../../store/document/entities/lib
 import Pipe from "./pipe";
 import { Direction } from "../types";
 import { isSameWorldPX } from "../on-screen-items";
+import { NoFlowAvailableReason } from "../../store/document/calculations/pipe-calculation";
 
 @SelectableObject
 @CenterDraggableObject
@@ -418,5 +419,20 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
             this.entity.center.y += point.y - originCenter.y;
             this.rebase(context);
         }
+    }
+
+    validateConnectionPoints(): boolean {
+        const connections = this.globalStore.getConnections(this.entity.uid);
+        if (!connections.length) {
+            return false;
+        }
+        for (const conn of connections) {
+            const pipe = this.globalStore.get(conn) as Pipe;
+            const calc = this.globalStore.getOrCreateCalculation(pipe.entity);
+            if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+                return false;
+            }
+        }
+        return true;
     }
 }

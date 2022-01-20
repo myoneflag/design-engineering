@@ -28,6 +28,13 @@ export enum Warning {
     PRESSURE_PRV_MORE_THAN_TARGET,
     OVERRIDEN_PIPE_DIAMETER_INSUFFICIENT,
     RHEEM_ADVICE,
+    PIPE_NOT_CONNECTED_TO_FLOW_SOURCE,
+    PIPE_HIGHER_THAN_FLOOR_LEVEL,
+    NOT_CONNECTED_TO_FLOW_SYSTEM,
+    ADD_FLOW_SOURCE_TO_SYSTEM,
+    ISOLATION_VALVES_REQUIRED_ON_RING_MAIN,
+    REMOVE_PLANT_FROM_FLOW_AND_RETURN_PIPEWORK,
+    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION,
 }
 
 export interface WarningDescription {
@@ -215,18 +222,56 @@ export const WarningDetails: { [key: string]: WarningDescription } = {
         title: "Contact Rheem for Advice",
         description: "",
         helpLink: "",
-    }
+    },
+    PIPE_NOT_CONNECTED_TO_FLOW_SOURCE: {
+        title: "Pipe Not Connected To Flow Source",
+        description: "Pipe is not connected to a flow source or is not connected to a pipe that is connected to a flow source.",
+        helpLink: "",
+    },
+    PIPE_HIGHER_THAN_FLOOR_LEVEL: {
+        title: "Pipe Higher Than Floor Level",
+        description: "",
+        helpLink: "",
+    },
+    NOT_CONNECTED_TO_FLOW_SYSTEM:{
+        title: "Not Connected to Flow System",
+        description: "Appliance and Node not connected to flow system",
+        helpLink: "",
+    },
+    ADD_FLOW_SOURCE_TO_SYSTEM: {
+        title: "Add Flow Source to System",
+        description: "There is no flow source in drainage",
+        helpLink: "",
+    },
+    ISOLATION_VALVES_REQUIRED_ON_RING_MAIN: {
+        title: "2 Isolation Valves Required on Ring Main",
+        description: "",
+        helpLink: "",
+    },
+    REMOVE_PLANT_FROM_FLOW_AND_RETURN_PIPEWORK: {
+        title: "Remove Plant from Flow and Return Pipework",
+        description: "",
+        helpLink: "",
+    },
+    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION: {
+        title: "Arrangement of Pipework not Suitable for Calculation",
+        description: "",
+        helpLink: "",
+    },
 }
 
 export const addWarning = (
+    entityUid: string,
     calculation: Calculation,
     warning: Warning,
     mode?: CalculationLayout | null,
     params?: { [key: string]: string | number | null }
 ): void => {
     let newWarningDetail = WarningDetails[Warning[warning]];
+    let warningParams: string[] = [];
     if (params) {
         Object.keys(params).forEach((key) => {
+            warningParams.push(key);
             newWarningDetail = {
                 ...newWarningDetail,
                 title: newWarningDetail?.title?.replace(`\$\{${key}\}`, params[key]?.toString() || '')!,
@@ -237,7 +282,7 @@ export const addWarning = (
     calculation.warnings = [...calculation.warnings || [], {
         ...newWarningDetail,
         type: warning,
-        uid: uuid(),
+        uid: `${entityUid}.${warning}.${warningParams.join('-')}`,
         warningLayout: mode,
     }];
 }

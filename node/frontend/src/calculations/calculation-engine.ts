@@ -43,6 +43,7 @@ import {
     ContextualPCE,
     countPsdProfile,
     FinalPsdCountEntry,
+    getLevelHeightFloorToVertexM,
     insertPsdProfile,
     isZeroWaterPsdCounts,
     lookupFlowRate,
@@ -127,6 +128,8 @@ import { convertMeasurementSystem, Units } from "../../../common/src/lib/measure
 import { getNext } from '../../../common/src/lib/utils';
 import { reportError } from "../api/error-report";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
+import LoadNode from 'src/htmlcanvas/objects/load-node';
+import GasAppliance from 'src/htmlcanvas/objects/gas-appliance';
 import { NameCalculation } from "../store/document/calculations/types";
 
 export const FLOW_SOURCE_EDGE = "FLOW_SOURCE_EDGE";
@@ -860,7 +863,7 @@ export default class CalculationEngine implements CalculationContext {
                     calc.depthMM = size.depthMM;
 
                     if (outletPipeFlowRate > size.flowRate[targetTempRise]! || size.heaters! > 18) {
-                        addWarning(calc, Warning.RHEEM_ADVICE);
+                        addWarning(entity.uid, calc, Warning.RHEEM_ADVICE);
                     }
 
                     break;
@@ -876,7 +879,7 @@ export default class CalculationEngine implements CalculationContext {
                     calc.depthMM = size.depthMM;
 
                     if (plant.rheemPeakHourCapacity! > size.flowRate[targetTempRise]!) {
-                        addWarning(calc, Warning.RHEEM_ADVICE);
+                        addWarning(entity.uid, calc, Warning.RHEEM_ADVICE);
                     }
 
                     break;
@@ -902,7 +905,7 @@ export default class CalculationEngine implements CalculationContext {
                     calc.depthMM = size.depthMM;
 
                     if (plant.rheemPeakHourCapacity! > size.flowRate[targetTempRise]!) {
-                        addWarning(calc, Warning.RHEEM_ADVICE);
+                        addWarning(entity.uid, calc, Warning.RHEEM_ADVICE);
                     }
 
                     break;
@@ -934,7 +937,7 @@ export default class CalculationEngine implements CalculationContext {
                     calc.depthMM = (size.depthMM * heatPumpQuantity) + (storageTank.depthMM * storageTankQuantity);
 
                     if (ambientTemp <= 10) {
-                        addWarning(calc, Warning.RHEEM_ADVICE);
+                        addWarning(entity.uid, calc, Warning.RHEEM_ADVICE);
                     }
 
                     break;
@@ -2149,7 +2152,7 @@ export default class CalculationEngine implements CalculationContext {
                             this.setPipePSDFlowRate(entity, 0);
                         } else {
                             calculation.noFlowAvailableReason = NoFlowAvailableReason.LOADING_UNITS_OUT_OF_BOUNDS;
-                            addWarning(calculation, Warning.CHANGE_THE_PEAK_FLOW_RATE_CALCULATION_METHOD);
+                            addWarning(entity.uid, calculation, Warning.CHANGE_THE_PEAK_FLOW_RATE_CALCULATION_METHOD);
                         }
                     } else {
                         this.setPipePSDFlowRate(entity, flowRate.flowRateLS);
@@ -2269,7 +2272,7 @@ export default class CalculationEngine implements CalculationContext {
         }
         if (!page) {
             calculation.noFlowAvailableReason = NoFlowAvailableReason.NO_SUITABLE_PIPE_SIZE;
-            addWarning(calculation, Warning.NO_SUITABLE_PIPE_SIZE);
+            addWarning(pipe.uid, calculation, Warning.NO_SUITABLE_PIPE_SIZE);
             return;
         }
         calculation.realNominalPipeDiameterMM = parseCatalogNumberExact(page.diameterNominalMM);
@@ -3022,7 +3025,7 @@ export default class CalculationEngine implements CalculationContext {
     }
 
     createWarnings() {
-
+        const heightAboveToVertexM = getLevelHeightFloorToVertexM(this.drawing.levels, this.doc.uiState.levelUid!);
         for (const o of this.networkObjects()) {
             switch (o.entity.type) {
                 case EntityType.BACKGROUND_IMAGE:
@@ -3049,25 +3052,48 @@ export default class CalculationEngine implements CalculationContext {
                                     let [_, actualPressureDisplay] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, actualPressure);
                                     actualPressureDisplay = roundNumber(actualPressureDisplay as number, 3);
-                                    addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}` });
+                                    addWarning(o.entity.uid, calc, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: `${maxWorkingDisplay}${units}`, actual: `${actualPressureDisplay}${units}` });
                                 }
                             }
                         }
                     }
                     if (!calc || (isGas(o.entity.systemUid, this.catalog.fluids, this.drawing.metadata.flowSystems) && calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)) {
-                        addWarning(calc, Warning.PRESSURE_AT_UPSTREAM_NEEDS_HIGHER_THAN_DOWNSTREAM);
+                        addWarning(o.entity.uid, calc, Warning.PRESSURE_AT_UPSTREAM_NEEDS_HIGHER_THAN_DOWNSTREAM);
                     }
 
                     if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.bs806 && calc.psdUnits?.units! > 5000 && calc.psdUnits?.units! < 10001) {
-                        addWarning(calc, Warning.EXTRAPOLATED);
+                        addWarning(o.entity.uid, calc, Warning.EXTRAPOLATED);
                     }
 
                     if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.as35002018LoadingUnits && calc.psdUnits?.units! > 60 && calc.psdUnits?.units! < 5001) {
-                        addWarning(calc, Warning.EXTRAPOLATED);
+                        addWarning(o.entity.uid, calc, Warning.EXTRAPOLATED);
                     }
 
                     if (this.drawing.metadata.calculationParams.psdMethod === SupportedPsdStandards.barriesBookLoadingUnits && calc.psdUnits?.units! > 4000 && calc.psdUnits?.units! < 10001) {
-                        addWarning(calc, Warning.EXTRAPOLATED);
+                        addWarning(o.entity.uid, calc, Warning.EXTRAPOLATED);
+                    }
+
+                    if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+                        addWarning(o.entity.uid, calc, Warning.PIPE_NOT_CONNECTED_TO_FLOW_SOURCE, thisIsDrainage ? "drainage" : null);
+                    }
+
+                    if (heightAboveToVertexM && heightAboveToVertexM < o.entity.heightAboveFloorM) {
+                        addWarning(o.entity.uid, calc, Warning.PIPE_HIGHER_THAN_FLOOR_LEVEL, thisIsDrainage ? "drainage" : null);
+                    }
+
+                    if (calc.rawReturnFlowRateLS === null && calc.configuration === Configuration.RETURN) {
+                        addWarning(o.entity.uid, calc, Warning.REMOVE_PLANT_FROM_FLOW_AND_RETURN_PIPEWORK, thisIsDrainage ? "drainage" : null);
+                    }
+
+                    if (calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null) {
+                        addWarning(o.entity.uid, calc, Warning.ISOLATION_VALVES_REQUIRED_ON_RING_MAIN, thisIsDrainage ? "drainage" : null);
+                    }
+
+                    if (
+                        (calc.rawReturnFlowRateLS === null && calc.configuration === Configuration.RETURN) ||
+                        (calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)
+                    ) {
+                        addWarning(o.entity.uid, calc, Warning.ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION, thisIsDrainage ? "drainage" : null);
                     }
 
                     break;
@@ -3098,7 +3124,7 @@ export default class CalculationEngine implements CalculationContext {
                         if ((calc.hotPeakFlowRate || 0) > maxFlowRateLS || (calc.coldPeakFlowRate || 0) > maxFlowRateLS) {
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.LitersPerSecond, maxFlowRateLS);
-                            addWarning(calc, Warning.MAX_FLOW_RATE_EXCEEDED, null, { flowRate: `${converted}${units}` });
+                            addWarning(o.entity.uid, calc, Warning.MAX_FLOW_RATE_EXCEEDED, null, { flowRate: `${converted}${units}` });
                         }
                     }
                     break;
@@ -3118,16 +3144,16 @@ export default class CalculationEngine implements CalculationContext {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].minPressureKPA);
-                            addWarning(calculation, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
+                            addWarning(o.entity.uid, calculation, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
                         } else if ((calculation.inlets[suid].staticPressureKPA || 0) > e.roughIns[suid].maxPressureKPA!) {
                             const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === suid)!;
                             const [units, converted] =
                                 convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, e.roughIns[suid].maxPressureKPA);
-                            addWarning(calculation, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
+                            addWarning(o.entity.uid, calculation, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
                         }
                     }
                     if (!(o as Fixture).validateConnectionPoints()) {
-                        addWarning(calculation, Warning.CONNECT_THE_FIXTURE_TO_A_FLOW_SYSTEM);
+                        addWarning(o.entity.uid, calculation, Warning.CONNECT_THE_FIXTURE_TO_A_FLOW_SYSTEM);
                     }
                     if (calculation.warnings && !calculation.warnings.length) calculation.warnings = null;
                     break;
@@ -3160,7 +3186,7 @@ export default class CalculationEngine implements CalculationContext {
 
                                 if (maxInletPressure !== null && inPressure > maxInletPressure) {
                                     const [units, converted] = convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, maxInletPressure);
-                                    addWarning(calculation, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: (converted as number).toFixed(2) + units });
+                                    addWarning(o.entity.uid, calculation, Warning.MAX_PRESSURE_EXCEEDED_PIPE, null, { pressure: (converted as number).toFixed(2) + units });
                                 }
                             }
 
@@ -3175,7 +3201,7 @@ export default class CalculationEngine implements CalculationContext {
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, inPressure);
                                     const [_, targetConverted] =
                                         convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, o.entity.valve.targetPressureKPA);
-                                    addWarning(calculation, Warning.PRESSURE_PRV_MORE_THAN_TARGET, null, { pressure: (inPressureConverted as number).toFixed(2) + units, ratio, target: targetConverted + units });
+                                    addWarning(o.entity.uid, calculation, Warning.PRESSURE_PRV_MORE_THAN_TARGET, null, { pressure: (inPressureConverted as number).toFixed(2) + units, ratio, target: targetConverted + units });
                                 }
                             }
                             break;
@@ -3189,35 +3215,42 @@ export default class CalculationEngine implements CalculationContext {
                 case EntityType.PLANT:
                     const calculation = this.globalStore.getOrCreateCalculation(o.entity);
                     if (!(o as Plant).validateConnectionPoints()) {
-                        addWarning(calculation, Warning.FLOW_SYSTEM_NOT_CONNECTED_TO_PLANT);
+                        addWarning(o.entity.uid, calculation, Warning.FLOW_SYSTEM_NOT_CONNECTED_TO_PLANT);
                     }
                     break;
                 case EntityType.LOAD_NODE: {
                     const filled = fillDefaultLoadNodeFields(this.doc, this.globalStore, o.entity, this.catalog, this.nodes);
                     const calc = this.globalStore.getOrCreateCalculation(filled);
+                    if (!(o as LoadNode).validateConnectionPoints()) {
+                        addWarning(o.entity.uid, calc, Warning.NOT_CONNECTED_TO_FLOW_SYSTEM);
+                    }
                     if (calc.pressureKPA !== null && filled.maxPressureKPA !== null && calc.pressureKPA > filled.maxPressureKPA!) {
                         const [units, pConverted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, calc.pressureKPA);
                         const [_, mpConverted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
 
-                        addWarning(calc, Warning.MAX_PRESSURE_EXCEEDED_NODE, null, { pressure: (pConverted as number).toFixed(2) + units, target: (mpConverted as number).toFixed(2) + units });
+                        addWarning(o.entity.uid, calc, Warning.MAX_PRESSURE_EXCEEDED_NODE, null, { pressure: (pConverted as number).toFixed(2) + units, target: (mpConverted as number).toFixed(2) + units });
                     } else if (calc.pressureKPA !== null && filled.minPressureKPA !== null && calc.pressureKPA < filled.minPressureKPA && !isGas(filled.systemUidOption!, this.catalog.fluids, this.drawing.metadata.flowSystems)) {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
 
                         const [units, converted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.minPressureKPA);
-                        addWarning(calc, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
+                        addWarning(o.entity.uid, calc, Warning.NOT_ENOUGH_PRESSURE, null, { systemName: system.name, required: (converted as number).toFixed(0) + units });
                     } else if ((calc.staticPressureKPA || 0) > filled.maxPressureKPA!) {
                         const system = this.doc.drawing.metadata.flowSystems.find((s) => s.uid === filled.systemUidOption)!;
                         const [units, converted] =
                             convertMeasurementSystem(this.doc.drawing.metadata.units, Units.KiloPascals, filled.maxPressureKPA);
-                        addWarning(calc, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
+                        addWarning(o.entity.uid, calc, Warning.MAX_PRESSURE_OVERLOAD, null, { systemName: system.name, max: (converted as number).toFixed(0) + units });
                     }
                     break;
                 }
                 case EntityType.GAS_APPLIANCE:
                     // TODO: Gas applicance warnings - like not enough gas pressure.
+                    const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                    if (!(o as GasAppliance).validateConnectionPoints()) {
+                        addWarning(o.entity.uid, calc, Warning.NOT_CONNECTED_TO_FLOW_SYSTEM);
+                    }
                     break;
                 default:
                     assertUnreachable(o.entity);
