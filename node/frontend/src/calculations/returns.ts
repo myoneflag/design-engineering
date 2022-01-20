@@ -505,7 +505,7 @@ function setNodeWarningRecursive(engine: CalculationEngine, node: SPNode<Edge<un
             if (node.edgeConcrete.value.type === EdgeType.PIPE) {
                 const pipe = engine.globalStore.get(node.edgeConcrete.value.uid) as Pipe;
                 const pCalc = engine.globalStore.getOrCreateCalculation(pipe.entity);
-                addWarning(pCalc, warning);
+                addWarning(pipe.entity.uid, pCalc, warning);
                 pCalc.rawReturnFlowRateLS = null; // Create dotted line
             }
             break;
@@ -581,14 +581,14 @@ function warnMissingBalancingValvesRecursive(engine: CalculationEngine, node: SP
                         case ValveType.RPZD_DOUBLE_ISOLATED:
                             if (node.edgeConcrete.value.uid === o.entity.sourceUid) {
                                 const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                                addWarning(calc, Warning.VALVE_IN_WRONG_DIRECTION);
+                                addWarning(o.entity.uid, calc, Warning.VALVE_IN_WRONG_DIRECTION);
                             }
                             break;
                         case ValveType.PRV_SINGLE:
                         case ValveType.PRV_DOUBLE:
                         case ValveType.PRV_TRIPLE:
                             const calc = engine.globalStore.getOrCreateCalculation(o.entity);
-                            addWarning(calc, Warning.PRVS_ARE_FORBIDDEN_HERE);
+                            addWarning(o.entity.uid, calc, Warning.PRVS_ARE_FORBIDDEN_HERE);
                             break;
                         case ValveType.BALANCING:
                             connectedToBalancingValve = true;

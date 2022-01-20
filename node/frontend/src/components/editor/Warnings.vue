@@ -245,7 +245,7 @@ export default class Warnings extends Vue {
 
     for (const o of this.globalStore.values()) {
       if (isCalculated(o.entity)) {
-        const calculation = this.globalStore.getOrCreateCalculation(o.entity);
+        const calculation = this.globalStore.getCalculation(o.entity)!;
         allWarnings = [
           ...allWarnings,
           ...(calculation.warnings?.map((w) => ({

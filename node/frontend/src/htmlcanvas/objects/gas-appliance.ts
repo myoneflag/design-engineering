@@ -37,6 +37,7 @@ import { getHighlightColor } from "../lib/utils";
 import GasApplianceEntity from "../../../../common/src/api/document/entities/gas-appliance";
 import GasApplianceCalculation from "../../store/document/calculations/gas-appliance-calculation";
 import store from "../../../src/store/store";
+import { NoFlowAvailableReason } from "../../store/document/calculations/pipe-calculation";
 
 @CalculatedObject
 @SelectableObject
@@ -269,5 +270,22 @@ export default class GasAppliance extends BackedDrawableObject<GasApplianceEntit
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
         return {cost: 0, breakdown: []};
+    }
+
+    validateConnectionPoints(): boolean {
+        const connections = this.getNeighbours();
+        if (!connections.length) {
+            return false;
+        }
+        for (const conn of connections) {
+            const o = this.globalStore.get(conn.uid)!;
+            if (o.entity.type === EntityType.PIPE) {
+                const calc = this.globalStore.getOrCreateCalculation(o.entity);
+                if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

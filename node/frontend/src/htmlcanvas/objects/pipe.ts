@@ -60,7 +60,6 @@ import SystemNode from "./big-valve/system-node";
 import FlowSource from "./flow-source";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Direction } from "../types";
-import LoadNode from "./load-node";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;

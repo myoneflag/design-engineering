@@ -518,7 +518,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 }
 
                 if (overFlowedLevels.length > 0) {
-                    addWarning(res, Warning.MAX_PER_LEVEL_EXCEEDED, 'drainage', { value: I18N.loadingUnits[context.doc.locale], level: overFlowedLevels.join(", ") });
+                    addWarning(this.entity.uid, res, Warning.MAX_PER_LEVEL_EXCEEDED, 'drainage', { value: I18N.loadingUnits[context.doc.locale], level: overFlowedLevels.join(", ") });
                 }
             }
         }
