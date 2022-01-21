@@ -39,6 +39,7 @@ export enum Warning {
 
 export interface WarningDescription {
     title: string | null;
+    shortTitle?: string | null;
     description?: string | null;
     helpLink?: string | null;
 }
@@ -81,8 +82,11 @@ export const WarningDetails: { [key: string]: WarningDescription } = {
         helpLink: "https://youtu.be/KPzWxiQsHt0",
     },
     MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED: {
-        title: "Unvented drainage flow exceeds the max of ${value}",
-        description: "2 x WCs",
+        title: "Unvented Drain Exceeds ${value}",
+        shortTitle: "Max. Unvented WC's",
+        description: `There are too many WC's connected to the unvented pipe based on the flow system settings.<br />
+        To resolve this, you can add a vent to the system or modify the pipe layout.<br />
+        Alternatively, you can edit the maximum number of WC's allowed to connect to an unvented pipe length in Settings > Flow Systems.`,
         helpLink: "",
     },
     MAX_UNVENTED_LENGTH: {
@@ -326,7 +330,7 @@ export function getTreeDataOfWarnings(
                 const hasActiveWarning = typeData.filter((e) => e.entityUid === activeEntityUid).length;
                 (levelData.data as any).push({
                     ...typeData[0],
-                    label: Warning[Number(type)].toString().replace(/\_/g, ' ').toLowerCase(),
+                    label: typeData[0].shortTitle || Warning[Number(type)].toString().replace(/\_/g, ' ').toLowerCase(),
                     type,
                     hidden,
                     children: typeData,

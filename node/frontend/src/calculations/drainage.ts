@@ -13,7 +13,6 @@ import { fillFixtureFields } from "../../../common/src/api/document/entities/fix
 import { Edge } from "./graph";
 import PipeCalculation, { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
-import Fixture from "src/htmlcanvas/objects/fixture";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
@@ -155,6 +154,8 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
     const entryPoints: VentSource[] = [];
 
+    const fixtureOutlets: string[] = [];
+
     // For every fixture, find the closest vented pipe downstream, and add it to the vent root associated.
     for (const obj of context.networkObjects()) {
         if (obj.entity.type === EntityType.FIXTURE) {
@@ -176,12 +177,16 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                     assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod)
             }
 
+            if (obj.entity.abbreviation === 'WC') {
+                drainageUnits = 0;
+            }
 
             for (const outletUid of fixture.roughInsInOrder) {
                 if (isDrainage(outletUid, context.drawing.metadata.flowSystems)) {
 
                     const outlet = fixture.roughIns[outletUid];
                     const connections = context.globalStore.getConnections(outlet.uid);
+                    fixtureOutlets.push(outlet.uid.replace('.1', '.0'));
 
                     if (connections.length > 0) {
                         const pipe = context.globalStore.get(connections[0]) as Pipe;
@@ -263,26 +268,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
             ep.pipeSize,
         );
 
-        const maxUnventedWCs = upperBoundTable(
-            ep.system.drainageProperties.maxUnventedCapacityWCs,
-            ep.pipeSize,
-        );
-
-        let unitsPerWc = 0;
-        switch (context.doc.drawing.metadata.calculationParams.drainageMethod) {
-            case SupportedDrainageMethods.AS2018FixtureUnits:
-                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
-                break;
-            case SupportedDrainageMethods.EN1205622000DischargeUnits:
-                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDrainageSystem[context.doc.drawing.metadata.calculationParams.drainageSystem])!;
-                break;
-            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
-                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
-                break;
-            default:
-                assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod);
-        }
-        let UnventedDrainageFlowExceeds: boolean = false;
         context.flowGraph.dfsRecursive(
             ep.node,
             undefined,
@@ -335,7 +320,6 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                     } else {
                         // Check that the pipe will not exceed max unvented length or FU/DU
                         const unventedLength = (distTo.get(edge.from.connectable) || 0) + pCalc.lengthM!;
-                        const unventedLU = pCalc.psdUnits?.drainageUnits || 0;
 
                         distTo.set(edge.to.connectable, unventedLength);
 
@@ -361,7 +345,18 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                     const [_, unventedConverted] =
                                         convertMeasurementSystem(context.doc.drawing.metadata.units, Units.Meters, unventedLength!);
                                     currPCalc.ventTooFarDist = true;
-                                    addWarning(currPipe.entity.uid, currPCalc, Warning.MAX_UNVENTED_LENGTH, "drainage", { value: (maxConverted as number).toFixed(2) + units, max: (unventedConverted as number).toFixed(2) + units });
+                                    if (fixtureOutlets.includes(currPipe.entity.endpointUid[0]) || fixtureOutlets.includes(currPipe.entity.endpointUid[1])) {
+                                        addWarning(
+                                            currPipe.entity.uid,
+                                            currPCalc,
+                                            Warning.MAX_UNVENTED_LENGTH,
+                                            "drainage",
+                                            {
+                                                value: (maxConverted as number).toFixed(2) + units,
+                                                max: (unventedConverted as number).toFixed(2) + units
+                                            }
+                                        );
+                                    }
                                     curr = parentOf.get(curr.from.connectable);
                                 }
                             }
@@ -369,30 +364,55 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                                 return true;
                             };
                         }
-                        if (maxUnventedWCs && countAllFixtures(pipe, "WC") > maxUnventedWCs) {
-                            if ((maxUnventedWCs != null && countConnectedWCs(pipe, maxUnventedWCs) > maxUnventedWCs)
-                                || pCalc.ventTooFarWC || UnventedDrainageFlowExceeds
-                            ) {
-                                UnventedDrainageFlowExceeds = true;
-                                const currPCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
-                                currPCalc.ventTooFarWC = true;
-                                addWarning(pipe.entity.uid, currPCalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
-                                // const accountedFor = pCalc.ventTooFarWC;
-                                // let curr: Edge<FlowNode, FlowEdge> | undefined = edge;
-                                // while (curr) {
-                                //     const currPipe = context.globalStore.get(curr.value.uid);
-                                //     if (currPipe?.entity.type === EntityType.PIPE) {
-                                //         const currPCalc = context.globalStore.getOrCreateCalculation(currPipe.entity);
-                                //         currPCalc.ventTooFarWC = true;
-                                //         currPCalc.warning = 'Unvented drainage flow exceeds the max of ' + maxUnventedWCs + ' WC\'s';
-                                //         currPCalc.warningLayout = 'drainage';
-                                //         curr = parentOf.get(curr.from.connectable);
-                                //     }
-                                // }
-                                // if (accountedFor) {
-                                //     return true;
-                                // }
-                            }
+                    }
+                }
+            }
+        );
+    }
+
+    for (const ep of entryPoints) {
+
+        const maxUnventedWCs = upperBoundTable(
+            ep.system.drainageProperties.maxUnventedCapacityWCs,
+            ep.pipeSize,
+        );
+
+        let unitsPerWc = 0;
+        switch (context.doc.drawing.metadata.calculationParams.drainageMethod) {
+            case SupportedDrainageMethods.AS2018FixtureUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].asnzFixtureUnits)!;
+                break;
+            case SupportedDrainageMethods.EN1205622000DischargeUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].enDrainageSystem[context.doc.drawing.metadata.calculationParams.drainageSystem])!;
+                break;
+            case SupportedDrainageMethods.UPC2018DrainageFixtureUnits:
+                unitsPerWc = parseCatalogNumberExact(context.catalog.fixtures['wc'].upcFixtureUnits)!;
+                break;
+            default:
+                assertUnreachable(context.doc.drawing.metadata.calculationParams.drainageMethod);
+        }
+
+        context.flowGraph.dfsRecursive(
+            ep.node,
+            undefined,
+            undefined,
+            (edge) => {
+                if (edge.value.type === EdgeType.PIPE) {
+                    const pipe = context.globalStore.get(edge.value.uid) as Pipe;
+                    const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
+                    
+                    if (pCalc.ventRoot) {
+                        return;
+                    }
+                    if (unventedLUs.get(edge.value.uid)) {
+                        const totalDrainageUnits = pCalc.psdUnits?.drainageUnits || 0;
+                        const unventedLU = unventedLUs.get(edge.value.uid)!.drainageUnits || 0;
+                        if (pCalc.warnings?.filter((warning) => warning.type === Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED)?.length) {
+                            return;
+                        }
+                        if (maxUnventedWCs && totalDrainageUnits - unventedLU > maxUnventedWCs * unitsPerWc) {
+                            pCalc.ventTooFarWC = true;
+                            addWarning(pipe.entity.uid, pCalc, Warning.MAX_UNVENTED_DRAINAGE_FLOW_EXCEEDED, "drainage", { value: maxUnventedWCs + ' WC\'s' });
                         }
                     }
                 }
@@ -402,40 +422,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
 
     return result;
 }
-let countedFixtures: string[] = [];
-let calculatedPipes: string[] = [];
-function countAllFixtures(sourcePipe: Pipe, abbreviation: string): number {
-    const GlobalStoreObjects = Array.from(sourcePipe.globalStore.values());
-    return GlobalStoreObjects.filter((item) => {
 
-        return item.entity.type == EntityType.FIXTURE &&
-            (item as Fixture).entity.abbreviation == abbreviation &&
-            (item as Fixture).uid.indexOf("calculation") === -1
-    }).length
-}
-function countConnectedWCs(sourcePipe: Pipe, maxUnventedWCs: number): number {
-    if (sourcePipe.connectedWCs)
-        return sourcePipe.connectedWCs;
-    countedFixtures = [];
-    calculatedPipes = [];
-    if (!sourcePipe.getConnectedFlowSource())
-        return 0;
-    findConnectedWCs(sourcePipe, maxUnventedWCs);
-    sourcePipe.connectedWCs = countedFixtures.filter((value, index, self) => { return self.indexOf(value) === index }).length
-    return sourcePipe.connectedWCs;
-}
-
-function findConnectedWCs(pipe: Pipe, maxUnventedWCs: number, parent: string = "") {
-    pipe.getConnectedFixtures("WC").map((fix: Fixture) => { countedFixtures.push(fix.entity.uid) })
-    calculatedPipes.push(pipe.entity.uid);
-    if (countedFixtures.filter((value, index, self) => { return self.indexOf(value) === index }).length > maxUnventedWCs)
-        return;
-    pipe.getConnectedPipes(parent)
-        .map(p => {
-            if (calculatedPipes.indexOf(p.entity.uid) === -1)
-                findConnectedWCs(p, maxUnventedWCs, `${parent}${parent === '' ? '' : ','}${pipe.entity.uid}`)
-        });
-}
 export function produceUnventedWarnings(context: CalculationEngine, roots: Map<string, PsdCountEntry>) {
     produceUnventedLengthWarningsAndGetUnventedGroup(context);
     produceUnventedUnitsWarnings(context, roots);
