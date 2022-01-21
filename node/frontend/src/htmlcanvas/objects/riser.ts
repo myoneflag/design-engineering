@@ -422,6 +422,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                 staticPressureKPA: null,
                 sizeMM: null,
                 ventSizeMM: null,
+                velocityRealMS: null,
             };
 
             // iterate pipe if need be. Note, we don't want to go over.
@@ -470,6 +471,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                         staticPressureKPA: bottomStaticPressure ? bottomStaticPressure : 0 - risenSegmentPressureLossKPA,
                         sizeMM: calc.realNominalPipeDiameterMM,
                         ventSizeMM: null,
+                        velocityRealMS: calc.velocityRealMS,
                     };
                 } else if (IAmDrainage) {
                     res.heights[lvlUid] = {
@@ -480,6 +482,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
                         staticPressureKPA: null,
                         sizeMM: calc.realNominalPipeDiameterMM,
                         ventSizeMM: biggestDedicatedVentSize,
+                        velocityRealMS: calc.velocityRealMS,
                     };
                 }
             }
