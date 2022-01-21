@@ -2917,18 +2917,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "8b9f3752-7c68-4dd3-9335-6f1412cf9fa1",
                     "entityName": null
                 },
-                "1af9ade6-5d66-447a-8ce6-d306d6f81acc": {
-                    "center": {
-                        "x": -7557.539690886708,
-                        "y": -6363.472364178329
-                    },
-                    "color": null,
-                    "parentUid": "883c8bcd-a994-4c3e-82ec-748f683e2cba",
-                    "calculationHeightM": null,
-                    "systemUid": "hot-water",
-                    "type": "FITTING",
-                    "uid": "1af9ade6-5d66-447a-8ce6-d306d6f81acc"
-                },
                 "d77f15e7-f357-4654-9171-e0475214c039": {
                     "center": {
                         "x": -7169.246917577244,
@@ -8808,18 +8796,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "122b7e18-96de-4d22-8073-adf483e8dd65",
                     "entityName": null
                 },
-                "84cc8729-c517-4a3d-8dd4-078389c4e56d": {
-                    "center": {
-                        "x": -13065.857829227283,
-                        "y": -8866.581332386822
-                    },
-                    "color": null,
-                    "parentUid": "883c8bcd-a994-4c3e-82ec-748f683e2cba",
-                    "calculationHeightM": null,
-                    "systemUid": "sewer-drainage",
-                    "type": "FITTING",
-                    "uid": "84cc8729-c517-4a3d-8dd4-078389c4e56d"
-                },
                 "2af5fce3-b11e-4ecd-b0b9-5b3c07c41eeb": {
                     "center": {
                         "x": -10927.02089845073,
@@ -12892,30 +12868,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "8f0b7948-4f11-4f75-86b1-220f39146fd9",
                     "entityName": null
                 },
-                "31850c65-20cf-45e3-8594-75345c787314": {
-                    "center": {
-                        "x": 17582.554931382703,
-                        "y": -5309.779635081696
-                    },
-                    "color": null,
-                    "parentUid": "c4c97bf5-4bbd-4405-bc75-0bb09e46b23f",
-                    "calculationHeightM": null,
-                    "systemUid": "grease-waste",
-                    "type": "FITTING",
-                    "uid": "31850c65-20cf-45e3-8594-75345c787314"
-                },
-                "c7c274fb-72df-498c-8efb-23adbd6229ba": {
-                    "center": {
-                        "x": 9193.641024265242,
-                        "y": -9569.83313709839
-                    },
-                    "color": null,
-                    "parentUid": "c4c97bf5-4bbd-4405-bc75-0bb09e46b23f",
-                    "calculationHeightM": null,
-                    "systemUid": "sanitary-plumbing",
-                    "type": "FITTING",
-                    "uid": "c7c274fb-72df-498c-8efb-23adbd6229ba"
-                },
                 "cef25a3c-dfdc-4aac-811c-042cb966aa73": {
                     "center": {
                         "x": 8297.862226200294,
@@ -14447,18 +14399,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "5f86567d-adee-468a-8d59-3fe4b566a782",
                     "entityName": null
                 },
-                "11aee990-803e-4159-8de0-8f9f6fcf5ae7": {
-                    "center": {
-                        "x": 17446.628454315807,
-                        "y": -6082.713203735904
-                    },
-                    "color": null,
-                    "parentUid": "c4c97bf5-4bbd-4405-bc75-0bb09e46b23f",
-                    "calculationHeightM": null,
-                    "systemUid": "grease-waste",
-                    "type": "FITTING",
-                    "uid": "11aee990-803e-4159-8de0-8f9f6fcf5ae7"
-                },
                 "2a7cb756-02f5-4751-80e7-ef5cb6b2801b": {
                     "center": {
                         "x": 15993.269938968642,
@@ -15775,18 +15715,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "37553116-8f6a-489f-b2ec-f462da982fff",
                     "entityName": null
                 },
-                "513c5868-f528-419f-a2ca-56b539fbdc0a": {
-                    "calculationHeightM": null,
-                    "center": {
-                        "x": -9909.381898041776,
-                        "y": -2220.7723604275157
-                    },
-                    "color": null,
-                    "parentUid": "ae920a4b-184b-4508-9b3b-5ecabc5c76c1",
-                    "systemUid": "cold-water",
-                    "type": "FITTING",
-                    "uid": "513c5868-f528-419f-a2ca-56b539fbdc0a"
-                },
                 "6fffdfe4-9042-4817-b785-e5026bd681dd": {
                     "node": {
                         "type": 0,
@@ -15833,18 +15761,6 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "gradePCT": null,
                     "uid": "58b5e7a4-bbb3-49bf-b44f-3fe4b7069517",
                     "entityName": null
-                },
-                "210d63a3-e456-49bd-a4ea-e751786a24e9": {
-                    "center": {
-                        "x": -5400.21671636855,
-                        "y": -6229.606816826321
-                    },
-                    "color": null,
-                    "parentUid": "ae920a4b-184b-4508-9b3b-5ecabc5c76c1",
-                    "calculationHeightM": null,
-                    "systemUid": "sanitary-plumbing",
-                    "type": "FITTING",
-                    "uid": "210d63a3-e456-49bd-a4ea-e751786a24e9"
                 },
                 "903ef19a-7273-4974-a8b2-74a8e6f349d7": {
                     "center": {

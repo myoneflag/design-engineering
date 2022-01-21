@@ -277,6 +277,7 @@ import { SupportedLocales } from "../../../../common/src/api/locale";
 import FeedbackModal from "../FeedbackModal.vue";
 import { DocumentStep } from "../../store/onboarding/steps";
 import CalculationEngine from "../../calculations/calculation-engine";
+import { reportWarning } from '../../../src/api/error-report';
 
 @Component({
   components: {
@@ -1162,17 +1163,20 @@ export default class DrawingCanvas extends Vue {
     }
   }
 
-  onValidateAndCommit(logUndo: boolean, tryToFix: boolean = false) {
+  async onValidateAndCommit(logUndo: boolean, tryToFix: boolean = false) {
     if (this.document.uiState.drawingMode === DrawingMode.History) {
       this.$store.dispatch("document/revert");
       return;
     }
 
     rebaseAll(this);
-    const modified = this.murderOrphans();
+    const modified = this.removeOrphanObjects();
+    if(modified) {
+      await reportWarning("Removed orphan objects");
+    }
     if (tryToFix) {
-      this.deleteDuplicatePipes();
-      this.deleteWeirdStuff();
+      await this.deleteDuplicatePipes();
+      await this.deleteWeirdStuff();
     }
     const res = this.validate(tryToFix);
     if (res.success) {
@@ -1180,14 +1184,16 @@ export default class DrawingCanvas extends Vue {
     } else if (res.modified) {
       this.onValidateAndCommit(logUndo, tryToFix);
       this.$bvModal.msgBoxOk(res.message);
+      await reportWarning(res.message);
     } else {
       this.$store.dispatch("document/revert");
       this.$bvModal.msgBoxOk(res.message);
+      await reportWarning(res.message);      
       this.scheduleDraw();
     }
   }
 
-  deleteDuplicatePipes() {
+  async deleteDuplicatePipes() {
     // this is done here rather than at the entity level for performance reasons.
     let numDeleted = 0;
     const seen = new Set<string>();
@@ -1206,11 +1212,13 @@ export default class DrawingCanvas extends Vue {
     }
 
     if (numDeleted) {
-      this.$bvModal.msgBoxOk("Info: Deleted " + numDeleted + " duplicate pipes");
+      const message = "Info: Deleted " + numDeleted + " duplicate pipes";
+      this.$bvModal.msgBoxOk(message);
+      await reportWarning(message);
     }
   }
 
-  deleteWeirdStuff() {
+  async deleteWeirdStuff() {
     // Sometimes, there are dangling objects that don't have IDs. This is caused by something broken in the software.
     // DEV-156. I cannot find it. It is cheaper to remove it here, and mask the problem.
     let numDeleted = 0;
@@ -1237,16 +1245,16 @@ export default class DrawingCanvas extends Vue {
     }
 
     if (numDeleted) {
-      this.$bvModal.msgBoxOk(
-        "Info: Deleted " +
-          numDeleted +
+      const message = "Info: Deleted " +
+          numDeleted + 
           " extraneous objects. This could have been" +
-          " caused by a saving /network error."
-      );
+          " caused by a saving /network error.";
+      this.$bvModal.msgBoxOk(message);
+      await reportWarning(message);
     }
   }
 
-  murderOrphans(): boolean {
+  removeOrphanObjects(): boolean {
     let modified = false;
     for (const o of Array.from(this.globalStore.values())) {
       switch (o.entity.type) {
@@ -1255,6 +1263,7 @@ export default class DrawingCanvas extends Vue {
         case EntityType.FITTING:
           if (this.globalStore.getConnections(o.entity.uid).length === 0) {
             // this.deleteEntity(o); this is causing issues with multi editing and drawing pipes, first leg.
+            console.log("orphan fitting", o.entity.uid);
             modified = true;
           }
           break;
@@ -1275,6 +1284,7 @@ export default class DrawingCanvas extends Vue {
             };
             this.$store.dispatch("document/deleteEntityOn", ep);
             modified = true;
+            console.log("pipe multi-level endpoints", o.entity.uid);
           }
           break;
         case EntityType.RISER:
@@ -1287,8 +1297,9 @@ export default class DrawingCanvas extends Vue {
               levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!
             };
             this.$store.dispatch("document/deleteEntityOn", ep);
+            modified = true;
+            console.log("orphan system node", o.entity.uid);
           }
-          modified = true;
           break;
         case EntityType.BIG_VALVE:
           break;

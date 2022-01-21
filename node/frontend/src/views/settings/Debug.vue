@@ -16,9 +16,11 @@
                     <b-button v-if="showDocument" variant="primary" @click="copy">Copy to clipboard</b-button> &nbsp;                    
                     <b-button v-if="showDocument" variant="warning" @click="getJson()">Revert</b-button> &nbsp;   
                     <b-button v-if="showDocument" variant="danger" @click="save">Save</b-button>
-                    <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
                     <br/>
-                    <b-button v-if="showDocument" variant="danger" @click="generateAnError">Generate an error</b-button>                    
+                    <b-button v-if="showDocument" variant="danger" @click="generateError">Generate error</b-button>
+                    <b-button v-if="showDocument" variant="warning" @click="generateWarning">Generate warning</b-button>                    
+                    <br/>
+                    <b-textarea v-if="showDocument" v-model="drawingJson" rows="30" style="font-size: 12px"></b-textarea>
                 </b-form-group>
             </b-col>
         </b-row>
@@ -62,6 +64,7 @@ import { DrawingState } from "../../../../common/src/api/document/drawing";
 import ReportingFilter, { ReportingStatus } from "../../../../common/src/reporting/ReportingFilter";
 import { refreshDocumentReport, downloadDocumentReport, triggerSystemManufacturerReport } from "../../api/reports";
 import { getDocument } from '../../api/document';
+import { reportWarning } from '../../../src/api/error-report';
 
 @Component({})
 export default class Debug extends Vue {
@@ -141,9 +144,14 @@ export default class Debug extends Vue {
         Object.assign(this.document.drawing, newDoc);
         await this.$store.dispatch("document/commit", {skipUndo: true, diffAll: true});
     }
-    generateAnError(){
+    generateError(){
         throw new Error('this is sample error');  
     }
+
+    async generateWarning() {
+        await reportWarning("This is a test warning");
+    }
+
     log() {
         // tslint:disable-next-line:no-console
 	    console.log(JSON.parse(JSON.stringify(this.document)));
