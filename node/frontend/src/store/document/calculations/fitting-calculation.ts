@@ -3,6 +3,7 @@ import {
     addPressureCalculationFields,
     Calculation,
     CalculationType,
+    NameCalculation,
     PressureCalculation,
     PsdCalculation
 } from "../../../../src/store/document/calculations/types";
@@ -15,7 +16,8 @@ import { DocumentState } from "../types";
 
 export default interface FittingCalculation extends
     Calculation,
-    PressureCalculation {
+    PressureCalculation,
+    NameCalculation {
     flowRateLS: number | null;
     pressureDropKPA: number | [number, number] | null;
     pressureByEndpointKPA: { [key: string]: number | null };
@@ -27,6 +29,16 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
     }
     const result: CalculationField[] = [];
     const fittingIsGas = catalog && isGas(entity.systemUid!, catalog.fluids, document.drawing.metadata.flowSystems);
+
+    result.push(
+        {
+            property: "entityName",
+            title: "Name",
+            short: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+        },
+    );
 
     if (!fittingIsGas) {
         result.push(
@@ -79,5 +91,6 @@ export function emptyFittingCalculation(): FittingCalculation {
         staticPressureKPA: null,
         warnings: null,
         pressureByEndpointKPA: {},
+        entityName: null,
     };
 }

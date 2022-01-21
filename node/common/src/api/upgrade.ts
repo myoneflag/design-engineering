@@ -550,3 +550,16 @@ export function drawing_upgraded25to26(original: DrawingState) {
     }
 }
 
+export function drawing_upgraded26to27(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const entity of Object.values(entities)) {
+            if (entity.type === EntityType.FITTING ) {
+                if (entity.entityName === undefined) {
+                    entity.entityName = null;
+                }
+            }
+        }
+    }
+}
+
