@@ -243,6 +243,7 @@ export default class PlantProperties extends Vue {
         },
         parentUid: null,
         calculationHeightM: null,
+        entityName: null,
       };
 
       this.$store.dispatch("document/addEntity", fitting);

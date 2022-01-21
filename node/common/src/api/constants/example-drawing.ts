@@ -5,7 +5,7 @@ import { DrawingState, initialDrawing } from "../document/drawing";
 // every time you add a upgrade step and increment the CURRENT_VERSION
 // THIS HAS TO BE DONE MANUALLY HERE TO ENSURE THE DEVELOPER IS AWARE
 // OF ANY DOCUMENT UPGRADE CHANGES THAT NEED TO BE PERFOMED
-export const EXAMPLE_DRAWING_VERSION = 26;
+export const EXAMPLE_DRAWING_VERSION = 27;
 export const EXAMPLE_META = {
     "title": "Example Project",
     "projectNumber": "0001",
@@ -2374,6 +2374,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "364dd4c8-8055-46f6-a272-f16aecfbd2b3"
                 },
                 "2256c697-fde5-410a-a739-66a0aedef169": {
@@ -2386,6 +2387,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2256c697-fde5-410a-a739-66a0aedef169"
                 },
                 "ff4868ed-f939-4126-b193-d35d7de35b3b": {
@@ -2398,6 +2400,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ff4868ed-f939-4126-b193-d35d7de35b3b"
                 },
                 "e9fa6226-96fd-44cb-9227-d0a6ac813f58": {
@@ -2659,6 +2662,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "f9e70a31-4312-4147-9396-3b0d5dae570b"
                 },
                 "2c1a4c3e-4ee1-4797-8743-a36c5f93c4dc": {
@@ -2671,6 +2675,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2c1a4c3e-4ee1-4797-8743-a36c5f93c4dc"
                 },
                 "b5b10a68-c711-4547-a0f0-373c8f0f4064": {
@@ -2683,6 +2688,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "b5b10a68-c711-4547-a0f0-373c8f0f4064"
                 },
                 "7233a08f-e43d-43c6-a76e-0cab9bd0a3b1": {
@@ -2695,6 +2701,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "7233a08f-e43d-43c6-a76e-0cab9bd0a3b1"
                 },
                 "3d0f731c-1cb3-40a2-aaec-16f9550c7ce0": {
@@ -2726,6 +2733,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cbce59c7-3410-48d8-aee7-48b09e83825f"
                 },
                 "0ef1cd13-8edd-4924-9524-172e0544adff": {
@@ -2757,6 +2765,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "05508f9b-0021-42ab-925f-da2948d28bad"
                 },
                 "95e7994c-f12a-4568-887a-ec1f6cd6dd0e": {
@@ -2769,6 +2778,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "95e7994c-f12a-4568-887a-ec1f6cd6dd0e"
                 },
                 "5fecb1dc-dbf6-426b-80e7-5689e3d130de": {
@@ -2800,6 +2810,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0970f36f-37f7-4d85-a170-f2793d973220"
                 },
                 "ba4dfe8a-c9c4-45f3-b877-ec821d02df0d": {
@@ -2836,6 +2847,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ba4dfe8a-c9c4-45f3-b877-ec821d02df0d"
                 },
                 "d758a8a9-fb2d-42c0-acfe-da29b9a7f1a3": {
@@ -2872,6 +2884,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d758a8a9-fb2d-42c0-acfe-da29b9a7f1a3"
                 },
                 "8b9f3752-7c68-4dd3-9335-6f1412cf9fa1": {
@@ -2951,6 +2964,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d77f15e7-f357-4654-9171-e0475214c039"
                 },
                 "fccd1ab3-74f6-4124-92f1-74285c95b7ff": {
@@ -2987,6 +3001,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "fccd1ab3-74f6-4124-92f1-74285c95b7ff"
                 },
                 "5fbd1bee-c424-49be-b431-827df90213cb": {
@@ -3109,6 +3124,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "628550de-688d-448b-84fe-2216624fd7e8"
                 },
                 "a9e8520b-06e1-4980-84c1-19d24268e6fa": {
@@ -3188,6 +3204,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d7e506f1-a091-403d-863a-17c9d168dff1"
                 },
                 "627bc9c8-db1a-4672-b201-a721ee7dd3b2": {
@@ -3267,6 +3284,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0fe31025-c2cf-4f38-8389-4fa8b77ee2b7"
                 },
                 "1fc01957-88c7-4e61-bb94-68b168d894bc": {
@@ -3303,6 +3321,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1fc01957-88c7-4e61-bb94-68b168d894bc"
                 },
                 "240a17fd-96b2-4c0b-aa0e-738bc2a7f7e7": {
@@ -3382,6 +3401,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a767951a-92b2-48f0-b232-636cb835c63f"
                 },
                 "665216c0-a433-482a-a342-60ecf784c607": {
@@ -4490,6 +4510,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bd0f4202-1611-4480-b368-bd7564c74e41"
                 },
                 "28fc3636-9157-475b-b043-373d48517ba9": {
@@ -4502,6 +4523,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "28fc3636-9157-475b-b043-373d48517ba9"
                 },
                 "48a798b7-b385-4bcd-a46b-bc946b19acaf": {
@@ -4533,6 +4555,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "3fad7c47-d46f-4dd1-9b27-fa23fdd4c9ab"
                 },
                 "0cf9f0d7-c186-45fb-b9b7-334c96402763": {
@@ -4564,6 +4587,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8e7a552a-dff4-4bd2-99d1-2f91fd88efba"
                 },
                 "567e0514-e592-4118-b8a0-9014217243ce": {
@@ -4595,6 +4619,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cc4d406e-6e24-4f32-be60-afcd3ce32c3b"
                 },
                 "111bcdb1-cca6-4788-89d0-7e42c9ad093e": {
@@ -4626,6 +4651,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a7487a8f-7c10-4e08-89cf-e09f44f5f882"
                 },
                 "b31720eb-b6ea-48b9-af4f-ebe339349f57": {
@@ -4657,6 +4683,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "efab15ca-bdff-472d-9f57-ebd207c68c0a"
                 },
                 "bc781ba3-ce62-4c48-931d-a4d7d0e03a57": {
@@ -5745,6 +5772,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "212f1abb-a4f6-4c10-b43a-5c5d16c4918a"
                 },
                 "627c5c28-aebb-44af-bacc-93ebf4f97b4a": {
@@ -5795,6 +5823,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1add8f24-28e9-4dd5-8976-22a31e8c7fd4"
                 },
                 "93a2a70e-bbb8-4ace-a108-0ba023b3fa03": {
@@ -5826,6 +5855,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "134dba28-aead-4155-b22f-bcd923caaf01"
                 },
                 "09747444-adc5-43e9-92b9-3189f6c162b9": {
@@ -5857,6 +5887,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2c231c4a-47ba-49ec-9c75-8c5acf5d0d3f"
                 },
                 "3aa6fbb0-047e-4549-ae72-80d04ddf2140": {
@@ -5869,6 +5900,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "3aa6fbb0-047e-4549-ae72-80d04ddf2140"
                 },
                 "ac11ec5b-e372-4013-be18-0284f8bbdd86": {
@@ -5900,6 +5932,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "00597d49-e54e-4cfd-88cb-e1101ab84a5a"
                 },
                 "9a865e0f-a41c-49d4-b070-95e322ed2d32": {
@@ -5931,6 +5964,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "255dd2b3-1bd1-466d-9606-da9e21682919"
                 },
                 "331c3b5a-429b-4ff2-8895-f69e3386d52c": {
@@ -5981,6 +6015,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ec497a01-b28e-4250-b71d-d7e75866e30a"
                 },
                 "0282db5d-7fe4-4346-8cc6-ae442bed25f2": {
@@ -6031,6 +6066,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "72401ade-3746-41f4-99e3-33328f6593ee"
                 },
                 "eba8b4d3-f4ff-4d05-be54-018ef7ddf399": {
@@ -6100,6 +6136,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "085c8a13-a903-4b1c-bdb2-9d674760a01e"
                 },
                 "dbb36114-cc24-493e-937b-afb7a161199f": {
@@ -6150,6 +6187,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0b010ce9-c661-4f58-9be1-2794200e98f9"
                 },
                 "9ca462cd-a4fc-43cd-8d07-e19acd99c64b": {
@@ -6200,6 +6238,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "90a33554-7014-4a06-ae79-99cc54662d0f"
                 },
                 "9f4c6aa4-bee0-4d90-9f30-e173157157e0": {
@@ -6250,6 +6289,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0dae8258-b6c0-47c0-bed1-e76424d25d73"
                 },
                 "31d7d662-8bd9-4e4f-92c4-ab20126aad2c": {
@@ -6319,6 +6359,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "dcf69b4d-2b24-4503-8e1d-3d859cc3acf3"
                 },
                 "166cb028-2079-4e58-8ee7-ef96d7574b5b": {
@@ -6350,6 +6391,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ac1a7d2d-7d39-4035-bb93-b7c5eff68829"
                 },
                 "dbca6c7e-2cc0-4e1c-a308-6e9bcefcd35a": {
@@ -6362,6 +6404,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "dbca6c7e-2cc0-4e1c-a308-6e9bcefcd35a"
                 },
                 "c6d2999d-b180-40a3-8524-fa371c5381e7": {
@@ -6393,6 +6436,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "92c1f143-2b99-49e5-ac3f-3338a6c3fb96"
                 },
                 "c710ee6a-2a33-47c8-9b33-8d4f55dd14b3": {
@@ -6654,6 +6698,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bc237f14-bc88-4065-b987-6cad571683f1"
                 },
                 "ac0e6a14-46d0-4138-a886-314cbb122864": {
@@ -6876,6 +6921,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "61147ba9-764b-4657-9060-78810ccbf4b9"
                 },
                 "253b3096-f04c-45d0-840e-71c1c37ee2b7": {
@@ -6888,6 +6934,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "gas",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "253b3096-f04c-45d0-840e-71c1c37ee2b7"
                 },
                 "ef3059d2-c7e2-414b-8195-fbaedee768a3": {
@@ -6996,6 +7043,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2bf89f70-27c9-4351-af7b-e8a8a48b4953"
                 },
                 "32aa24aa-2e00-4df4-8cb2-8b96c8472f35": {
@@ -7046,6 +7094,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "14ac630c-807a-4d9d-9a63-c3eab67eb41f"
                 },
                 "836c5207-78e7-4258-a47b-dbd4ff5f1b23": {
@@ -7096,6 +7145,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "4061e185-80d9-450a-878d-e65e99f9dfa9"
                 },
                 "9378f75d-b13f-481f-98d0-22f2f10f4505": {
@@ -7146,6 +7196,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "70dd8ef9-23db-4a0c-a2c9-ae74e4bdde41"
                 },
                 "868bd0ce-c56c-440f-b3b8-283ee9226a01": {
@@ -7231,6 +7282,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1855d963-5b19-4122-ac07-6cfeaa49ed7e"
                 },
                 "ca640aed-ec46-4e52-83a6-14b2c8f2776a": {
@@ -7262,6 +7314,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "13e0fab4-005e-4605-9730-d46455b99447"
                 },
                 "06438907-4824-4fde-9d9b-08342c32372c": {
@@ -7274,6 +7327,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "06438907-4824-4fde-9d9b-08342c32372c"
                 },
                 "fe3707d2-1673-457c-a576-a51403721299": {
@@ -7305,6 +7359,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1c44c5bb-4124-42e9-87a2-5d64cc16bde2"
                 },
                 "29711703-feac-4795-a4de-9e52f3102684": {
@@ -7336,6 +7391,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "9e94e5db-83ce-41da-87e9-7765080c9a6d"
                 },
                 "cd29bc53-be72-42c3-9388-fba219f0545c": {
@@ -7405,6 +7461,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "b3d9041c-721a-4b23-90d1-fdd9d5ddae9b"
                 },
                 "aa79a0c4-39c3-4e63-8a97-6ca6c4f5e70e": {
@@ -7476,6 +7533,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a7b03604-8f70-492c-a92a-f15c359ebf1c"
                 },
                 "20e12e5c-3629-43fd-95ae-da066b9dd992": {
@@ -7507,6 +7565,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "fire-hydrant",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1127c7c0-0729-4320-b8c2-8ef8fe55e881"
                 },
                 "f075449c-c0db-4ade-9f2d-60b9bc99316b": {
@@ -7592,6 +7651,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "4b5857bc-dbe7-4ee4-8638-53e7d3825516"
                 },
                 "2b96b70d-eba8-49b2-9da2-695cdad393d0": {
@@ -7623,6 +7683,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bc2b94bf-4ca6-4df9-8b84-09336426c613"
                 },
                 "ec08bb40-a1c7-4f75-b068-86ff0fc434d5": {
@@ -7654,6 +7715,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "9f61793f-b1dd-4359-8a06-baf3f5aa5004"
                 },
                 "615fa378-df0b-4857-807b-d5345f69694a": {
@@ -7666,6 +7728,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "615fa378-df0b-4857-807b-d5345f69694a"
                 },
                 "0dee797f-fe76-40a9-9f96-f8fb1c1b743f": {
@@ -7733,6 +7796,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8ea8365d-0842-4a3d-9b73-a9bada86e978"
                 },
                 "0551307e-82a3-4864-97df-f518cf6dab34": {
@@ -7745,6 +7809,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0551307e-82a3-4864-97df-f518cf6dab34"
                 },
                 "6913d396-dae4-4134-bf19-7076fa1534b1": {
@@ -7776,6 +7841,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ae35f2ad-8d1d-46a9-a053-521ef7de6c7e"
                 },
                 "eb61d3e2-21e5-498a-a193-3a1a04656693": {
@@ -7807,6 +7873,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1ffc312b-d49d-4769-9952-0e3eb4c5e19a"
                 },
                 "26c63bd3-252e-4e6c-b233-b050b9934109": {
@@ -7838,6 +7905,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "06777789-2949-4061-bf9b-c24e5ac0d2b3"
                 },
                 "33eb2ffb-0cfa-4891-80d6-440a95132b8d": {
@@ -7869,6 +7937,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "652895f7-ba43-4851-af32-230e186a4239"
                 },
                 "f3588f07-c28f-4e0f-86a3-82761decd59c": {
@@ -7900,6 +7969,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "53b933c9-f364-4800-9b37-041d2a4fc789"
                 },
                 "ef6bc050-8953-4c7a-bf8b-fa335ab1ba01": {
@@ -7931,6 +8001,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a989f559-2a24-4e91-abc0-f8dfe71641f1"
                 },
                 "f619eb0a-54d0-41da-8e0f-03dace1cea60": {
@@ -7981,6 +8052,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "dd80b698-9356-4c07-821c-8de5b79528d4"
                 },
                 "6f2e3735-2484-45be-a7dc-f880413c296a": {
@@ -8012,6 +8084,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "7ba6772b-4fd3-4cf5-9d26-1156747e70f5"
                 },
                 "54126f89-c03e-4dd1-aae3-59ca8816f985": {
@@ -8081,6 +8154,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "421c42e7-0f7c-42dc-9379-b03e1b5d8eb4"
                 },
                 "dfb1e5bd-3613-4e39-be7e-2b67cd74b85c": {
@@ -8131,6 +8205,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "6dd67d54-751a-4fb6-afc0-db70c4ba4dcc"
                 },
                 "f6ca8bfe-2234-4567-9e3e-cc47fd2eae40": {
@@ -8181,6 +8256,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0435af4d-a4f7-47e9-9244-c8e659f3c359"
                 },
                 "0f62ecb8-013e-4365-9d1f-b0e07364bc63": {
@@ -8231,6 +8307,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "e5bfd9b5-c893-445b-b92c-6174b627840d"
                 },
                 "cef57e21-54ec-4978-a77c-0e4d77637c6e": {
@@ -8281,6 +8358,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "99389ff7-f4c8-4b99-bffd-f03cd4654ff1"
                 },
                 "a35fdae6-7b9e-4a7c-8de0-4b1a393e88fc": {
@@ -8331,6 +8409,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2fbd0873-3bac-4efd-9587-312647467e6b"
                 },
                 "785b1262-b153-41f0-a207-1122dff45a33": {
@@ -8381,6 +8460,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a7ef1a6b-0523-404c-8870-28ab8bfffe61"
                 },
                 "be57490f-0aac-4cd2-88c0-9f2fd4851050": {
@@ -8507,6 +8587,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "4c6ff379-7154-4020-8e7d-317c32355a8c"
                 },
                 "25d7457b-614d-4795-b0e5-940c6f148594": {
@@ -8538,6 +8619,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "03cad8bf-90be-4735-b844-c080c07ddcf6"
                 },
                 "2d889e86-07e9-4fe2-a49f-b72359bb50b8": {
@@ -8607,6 +8689,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "grease-waste",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "857f3a29-258e-4d19-9d34-6820046fae6c"
                 },
                 "00b36398-40a5-432a-ac29-5d3731a1d14c": {
@@ -8638,6 +8721,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "grease-waste",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "90c958cc-7573-4acb-b485-0ad1b0e393a6"
                 },
                 "2b3836e5-5c9c-4921-a74c-0870696aee23": {
@@ -8725,6 +8809,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "358ca67d-7cee-4cff-b6cf-de44000a9d5a"
                 },
                 "049f7396-bb59-44c3-ad07-a14fed201dc6": {
@@ -8775,6 +8860,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cc863c18-6d91-4d56-a51f-5752bb28a7a2"
                 },
                 "122b7e18-96de-4d22-8073-adf483e8dd65": {
@@ -8806,6 +8892,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2af5fce3-b11e-4ecd-b0b9-5b3c07c41eeb"
                 },
                 "9816d06c-2717-49d1-bbbd-ba4ab7247f8a": {
@@ -8837,6 +8924,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "97195e91-6183-4c82-aac7-cea71ca44fce"
                 },
                 "946290d2-cc2b-4fba-8860-16f127d53662": {
@@ -8887,6 +8975,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "e5f43269-b050-4ae6-adf1-5902d7192418"
                 },
                 "881a50a1-d627-4513-a114-34cf8dbcc0d2": {
@@ -8937,6 +9026,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "grease-waste",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "9822dee8-bde1-4640-89ed-3679614ec645"
                 },
                 "631e300c-7a89-4517-9ed4-aa690ce5f008": {
@@ -8987,6 +9077,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sewer-drainage",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ae371914-4e03-4344-bf5a-9e36e9bb3714"
                 },
                 "90891b5b-5c77-4621-8463-d3ef14014fe1": {
@@ -9018,6 +9109,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sewer-drainage",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "fca8909e-8f0c-4036-9752-3a182f1780e3"
                 },
                 "2abb31e5-61c3-4ea2-b2de-356e9a7fe108": {
@@ -10275,6 +10367,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "515edd69-39f0-4aab-abd7-39a1e88189ad"
                 },
                 "22419e2f-4e97-4537-945f-378937c448dc": {
@@ -10287,6 +10380,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "22419e2f-4e97-4537-945f-378937c448dc"
                 },
                 "f2ec9419-edbc-47e3-9b8e-b2eba1794daf": {
@@ -10394,6 +10488,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5c994c03-388e-4485-af89-9c2717bb6e7e"
                 },
                 "dceadb63-4e97-4003-83e4-98483299a567": {
@@ -10425,6 +10520,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cb3ee8cc-cf92-42da-9b8d-51fa718fc923"
                 },
                 "44c7da22-c230-44e7-b8ef-81905a849424": {
@@ -10437,6 +10533,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "44c7da22-c230-44e7-b8ef-81905a849424"
                 },
                 "aa7c2aea-1727-4e7f-839a-912ba3497353": {
@@ -10468,6 +10565,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d80cbf7f-e347-4be4-bda4-041d2a427faa"
                 },
                 "d919a4e2-25e9-4984-b93e-011e57492e49": {
@@ -10499,6 +10597,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "f306289f-579c-46aa-9aec-07541df9a791"
                 },
                 "f5685d67-f3ae-45eb-b139-f1f66c3341a3": {
@@ -10530,6 +10629,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0f7306dc-819f-46a1-bb1c-2e1ce8076fec"
                 },
                 "f95ebb42-565a-404f-8a92-adbb2721d9a4": {
@@ -10561,6 +10661,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "6866814d-4d28-4966-b08a-a054f2008d9c"
                 },
                 "4665d5ca-3c1e-4143-8908-32d38c5fbede": {
@@ -10592,6 +10693,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "06d2188c-5288-47de-a594-6c69d8e3773f"
                 },
                 "d0d0d79d-6055-447b-974c-dd801410c983": {
@@ -10628,6 +10730,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "hot-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d0d0d79d-6055-447b-974c-dd801410c983"
                 },
                 "f9259b57-608c-4c31-bd59-8c3a84d62a8e": {
@@ -10640,6 +10743,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "f9259b57-608c-4c31-bd59-8c3a84d62a8e"
                 },
                 "046deaee-555d-4188-96b2-f504589532d3": {
@@ -10886,6 +10990,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "51b230af-4a58-425a-888f-e2da0ed53ccf"
                 },
                 "6ff30a70-380b-4f05-92c1-dfc685454e74": {
@@ -10917,6 +11022,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "22766997-e5e6-42b7-a663-30cebeff50b9"
                 },
                 "4a0bd6af-7dba-4df2-8be9-5ea77d469dc3": {
@@ -11052,6 +11158,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "46c90f82-fa3c-49ae-a787-c579d20ac5ae"
                 },
                 "7b1de821-748f-48f8-b5ee-1631ffa943f4": {
@@ -11102,6 +11209,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "hot-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "9b942ed6-4c67-4726-922e-368aa63ac309"
                 },
                 "ae6d0f91-e4e5-497a-9d7c-b8cb3cd67f46": {
@@ -11630,6 +11738,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8ca591db-92cb-4298-9532-48e91a6662f1"
                 },
                 "6f81c2e5-86e7-4838-a629-d0575dff7e6f": {
@@ -11661,6 +11770,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "45bb0146-b780-4a98-8832-9f05289dc1d9"
                 },
                 "8251dcae-63f1-4c26-b269-958fcb62b252": {
@@ -11673,6 +11783,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8251dcae-63f1-4c26-b269-958fcb62b252"
                 },
                 "6b17729f-8fcb-4ee5-aa30-71e583e0177b": {
@@ -11704,6 +11815,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "c328f0d3-a1bf-4173-bf41-42c6e1bf00b4"
                 },
                 "bcb52945-d398-4625-b451-d5e45b776cbc": {
@@ -11735,6 +11847,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ff9b46f1-3677-4d6d-a570-33fc2c3168fa"
                 },
                 "d00d7e3b-ad3e-4946-bfc2-921a52e0e20a": {
@@ -11785,6 +11898,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "dbf87f6e-2376-4ca4-9466-97cf2af0e2ff"
                 },
                 "4d551985-0f94-46a0-a063-f53d04d889f6": {
@@ -11835,6 +11949,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a63e3bbc-f25c-4ef0-93f8-7ae431739abf"
                 },
                 "88f2b12c-1941-498d-8556-0607951e2e59": {
@@ -11904,6 +12019,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0b32d302-5962-4c38-a4ff-52dfd4284ff0"
                 },
                 "fef55f32-4716-4a56-a23f-8929356baf20": {
@@ -11954,6 +12070,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2752810c-89be-4e24-96a3-22d6eaa5ee90"
                 },
                 "ecdcd7d7-b5df-4e2f-8006-667c6fe48e70": {
@@ -12004,6 +12121,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "da68795d-bf0f-4f8c-8acf-b863e34c054b"
                 },
                 "bd6eb84c-d664-47bd-965e-7e46ad035cb0": {
@@ -12073,6 +12191,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "0807e685-e8ab-4ae3-a602-3079d9eac4a1"
                 },
                 "8a36eec1-dab6-4ad2-8e98-f35aee315acb": {
@@ -12104,6 +12223,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "7f17a016-8010-4a28-9fb4-9be88bc89d86"
                 },
                 "13c3ccbc-7beb-4285-b0d9-68da0a399e97": {
@@ -12135,6 +12255,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "15809c20-c406-409d-b60b-b9c94e5c9683"
                 },
                 "ce10722b-5b70-430d-a5af-cd95414c13aa": {
@@ -12185,6 +12306,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "87409b3c-6745-427a-84d9-b0beaf0377c6"
                 },
                 "ba46c06f-0083-4831-b0d6-c7f6cfd89102": {
@@ -12254,6 +12376,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "482e92b5-16ea-4fa4-8604-09219fa4d867"
                 },
                 "d913fb8b-9a69-466b-8abc-0698c90f9d1c": {
@@ -12285,6 +12408,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "warm-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "59502467-a86c-45a4-a418-5c23e87709a5"
                 },
                 "a429f067-9a20-47ae-b145-068f747ba990": {
@@ -12316,6 +12440,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d30fe62d-cc28-467f-8b19-d0e17ac9fea8"
                 },
                 "70f08312-3489-47cb-9fad-ee2c4f2d24c8": {
@@ -12366,6 +12491,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "warm-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1eb9e9ca-119a-4126-83e1-069110afd763"
                 },
                 "f2ab5da5-c2c5-468b-8e5f-66657a391b64": {
@@ -12435,6 +12561,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "535bb450-7d29-4b8f-af56-ddeff61ed370"
                 },
                 "2fc4af1f-c490-4651-9686-42e3102d4db5": {
@@ -12466,6 +12593,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a920e5b6-9941-4e9b-a905-fe6f59075d73"
                 },
                 "33f4c8b7-520e-4e11-852e-fb07760c1632": {
@@ -12478,6 +12606,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "33f4c8b7-520e-4e11-852e-fb07760c1632"
                 },
                 "5d740ae5-afde-4be0-be36-52881ea52fa7": {
@@ -12509,6 +12638,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cd735a03-af99-4341-aef9-afe2cb8834be"
                 },
                 "23e4b00b-f9ba-4fb0-b5ec-424cc0459e4a": {
@@ -12540,6 +12670,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "00e433e2-78a1-4042-acd3-99a708f54d26"
                 },
                 "766598c2-c359-4b25-9c61-c2349c120182": {
@@ -12590,6 +12721,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "284d58b5-291b-4007-9baa-9b05511d6c5b"
                 },
                 "f8398cf8-291c-4fd4-a6b5-7c73c862c796": {
@@ -12640,6 +12772,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "10418acc-6097-4ad8-bb66-813e0d0ee9b2"
                 },
                 "ece626e6-c7c6-4601-af47-8171f3973cc0": {
@@ -12709,6 +12842,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d163537a-328f-4b0d-aa09-fe202d40c6ed"
                 },
                 "e46fd22c-b48d-45b6-beb8-4618dfc32307": {
@@ -12759,6 +12893,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bef8b50d-da16-4ed3-9f0b-4744c1b56337"
                 },
                 "edaac992-7927-40e1-9f0c-3c0aab075f73": {
@@ -12809,6 +12944,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5730063e-c59d-4773-a4af-5d5f4bbc6022"
                 },
                 "e58d533d-6e90-4679-aadb-d492a1944674": {
@@ -12878,6 +13014,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "cef25a3c-dfdc-4aac-811c-042cb966aa73"
                 },
                 "297521fa-a431-4985-bcd7-c847726f7a33": {
@@ -12890,6 +13027,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "297521fa-a431-4985-bcd7-c847726f7a33"
                 },
                 "c9b64c2e-08f3-4bfc-8a50-b8ba059fedb5": {
@@ -12939,6 +13077,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "afa9835e-f9d9-4a14-b872-25276d47bf56"
                 },
                 "b117e721-aa42-42ed-b4a9-f33d16db6bbb": {
@@ -12989,6 +13128,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "db0f85a9-d844-401f-b912-5dbcb2744cc8"
                 },
                 "b2edda64-f83f-408d-83ec-fbf4fabaf3cb": {
@@ -13020,6 +13160,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "6d87f043-a78a-4700-b6d0-dfae4f5125e9"
                 },
                 "1a087956-35f6-45ad-9eab-4cf8f013294e": {
@@ -13051,6 +13192,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "9ae2e92b-5389-4423-a120-d9942439f4b8"
                 },
                 "0202c586-418a-4e15-9f16-010ae6ba8084": {
@@ -13082,6 +13224,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "180d37c7-4140-4684-9aa5-1f3576915c25"
                 },
                 "a6068447-bda7-44f1-9ea9-b079954e36d5": {
@@ -13113,6 +13256,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "27edaa6f-d9ad-47b9-a838-d346646b0582"
                 },
                 "a3c3d8a8-c210-46b7-aa60-84e8b0bcc2e5": {
@@ -13144,6 +13288,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "1fd73f20-e4af-4a26-99e5-c361fb76c651"
                 },
                 "3b9445b8-34a4-4396-8438-0b4dfb6d1fa8": {
@@ -13175,6 +13320,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bfbd5162-9510-4c9a-a40b-9c9db114ed91"
                 },
                 "62b2b862-90e4-4d46-bb8a-bededd845169": {
@@ -13206,6 +13352,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "57831c89-f0e3-4960-9c71-73a87c8b0d05"
                 },
                 "f5cc0dc6-c10b-46e6-bf64-f5d38f9c7722": {
@@ -13237,6 +13384,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "a0723d1c-4088-4009-8827-99f250079d20"
                 },
                 "e6ae97f9-736f-4e5d-9a3e-d4095f04a4d3": {
@@ -13268,6 +13416,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "fa70b28f-b986-4be1-80d0-1ae719818f57"
                 },
                 "b4f331cd-47a7-4d65-b240-195497e4c4d1": {
@@ -13299,6 +13448,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ac806a66-3e09-4093-bc42-e0d3ae1bb5ff"
                 },
                 "bf2a60fd-9b54-407f-82cf-02731904a7e6": {
@@ -13330,6 +13480,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d867d35f-b997-4123-b4c8-83c68e361a18"
                 },
                 "26223f50-218f-4036-897a-8360dfc74939": {
@@ -13361,6 +13512,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "3e2191ea-373c-4ca5-9e20-2e6a9d18214d"
                 },
                 "c2048dc0-bd84-460f-839d-45a50742d4ae": {
@@ -13392,6 +13544,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "19aaf52d-0bf6-44ed-9bb7-3f2a2f9c651c"
                 },
                 "19831a67-6836-4df8-9b37-766fa2adddcd": {
@@ -13442,6 +13595,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "6c30dd97-9df8-4a53-a032-a0c554352961"
                 },
                 "7bd8b589-89df-44e3-a6f2-2e14bd2e0dfd": {
@@ -13473,6 +13627,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "7c529727-f063-4a79-9ee1-4125f645285b"
                 },
                 "65e08548-64c9-4721-92f7-025b9f1952f9": {
@@ -13542,6 +13697,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "b427688b-88a4-4189-a6b3-357d2a08ac23"
                 },
                 "92d3823b-d6c2-4787-b8c3-141d82c13cbb": {
@@ -13592,6 +13748,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "ce959e8a-8877-4a94-bc5b-f9cd0c659f00"
                 },
                 "dacc7737-c509-4012-ba99-e663f938d182": {
@@ -13642,6 +13799,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "35fd245f-5676-4d8f-9f63-dd875da9410e"
                 },
                 "7f339a99-6f12-4075-ada6-d949dbb607de": {
@@ -13692,6 +13850,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5e5c0b70-2867-4765-9d79-c325c88a207c"
                 },
                 "feb267e4-ee6d-419b-adba-5eaaa2d8f5b9": {
@@ -13742,6 +13901,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5c73a186-5581-4f5b-858e-932339f54da4"
                 },
                 "6fa021f0-e27f-4c8a-bae8-071015848a28": {
@@ -13792,6 +13952,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5fadca1d-0624-4fd9-9434-5e5827eefe0d"
                 },
                 "a6d739e2-a227-466d-9fc0-76d459d568d3": {
@@ -13897,6 +14058,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "6202416f-b793-4966-ab37-942c206f47db"
                 },
                 "8cb94542-2617-47d5-a937-ae8a5cb307b3": {
@@ -13928,6 +14090,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "bba1d656-2669-4ccb-87c0-e6976dc03a2d"
                 },
                 "a9132827-e13b-489e-a26d-2c9eba927acc": {
@@ -14016,6 +14179,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "332dc579-8b99-426c-8d2a-3fd9b9c23f87"
                 },
                 "ff4eb633-346d-4d38-b8d0-f736fece28a9": {
@@ -14066,6 +14230,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d941cce8-220a-4dac-906d-f40ea1d0ac82"
                 },
                 "24019430-8346-4cb9-9d1d-9ee654bf82b4": {
@@ -14116,6 +14281,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "63f0bb1c-0aec-417e-ad77-3a4855d3e2b1"
                 },
                 "e91168d5-ab93-4da9-848b-fc92a3840420": {
@@ -14166,6 +14332,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "e6ead707-00c4-4b87-a3b0-70547f5e601a"
                 },
                 "2593d16d-b025-46ee-bea6-a3e7cc31c39e": {
@@ -14216,6 +14383,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8dca124a-920f-4c89-b1b5-c02c887a5856"
                 },
                 "439e68e4-6d2b-4a2b-8a8b-a81eb6b990d5": {
@@ -14247,6 +14415,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "c087c022-0905-45f9-b9b0-19f357b82ce8"
                 },
                 "f2945c4a-abf4-4e3a-ae6b-1defd5401b0e": {
@@ -14297,6 +14466,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2f816921-53a1-4214-ac5d-2101ee124904"
                 },
                 "278b74b4-5eb2-4426-9014-0fe0f04ff3ef": {
@@ -14328,6 +14498,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "69ca5ff0-749b-49da-971f-8a36c809f4b5"
                 },
                 "79c1bbdb-ba16-4943-87ff-803fa7362694": {
@@ -14359,6 +14530,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "3bb3d0c8-005b-4493-9059-0ae100eafa51"
                 },
                 "09c11159-a2dd-444e-8cd5-2d1ef12436ce": {
@@ -14409,6 +14581,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "grease-waste",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "2a7cb756-02f5-4751-80e7-ef5cb6b2801b"
                 },
                 "a8be06b4-2b36-4910-926d-bea5bb911686": {
@@ -14652,6 +14825,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "03376c42-12f6-42dc-820d-a7cfc489936f"
                 },
                 "aeae45e2-74a7-4d93-b08e-edfed304a612": {
@@ -14683,6 +14857,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "d4de5960-3d52-41bb-bf8e-2a88bcb3b1e6"
                 },
                 "c6f685b7-d0f1-4eab-b95f-43bd3f4f6646": {
@@ -14733,6 +14908,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "5ff71d44-5350-44b0-8406-f67b1ad496c8"
                 },
                 "451495fc-4243-4acf-b269-9e0808a3f1f2": {
@@ -14764,6 +14940,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "36e80a31-19e1-4c1b-89b2-f3b4ff6e7f05"
                 },
                 "293335e6-4309-4051-b984-605cffadf1b4": {
@@ -14795,6 +14972,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "45602dd2-25a3-4fd1-8cd4-8d0c2eaf1ee2"
                 },
                 "78b3938e-04a7-44f1-ad3d-6bc2166f63b7": {
@@ -14807,6 +14985,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "78b3938e-04a7-44f1-ad3d-6bc2166f63b7"
                 },
                 "9f538144-4082-4697-bf66-98742aa5fc45": {
@@ -14857,6 +15036,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "15189a30-a0c1-47d4-a83f-1fc3de7e0b68"
                 },
                 "bde08082-f2fd-4295-b198-7366bdf95b57": {
@@ -14907,6 +15087,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "56c975b5-dd15-4982-a888-52a2749f6620"
                 },
                 "dd872fc5-24f9-484a-95aa-6505646b9ca5": {
@@ -14919,6 +15100,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "cold-water",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "dd872fc5-24f9-484a-95aa-6505646b9ca5"
                 },
                 "4e7964fe-7f6d-472a-a7c9-85e2afd9960b": {
@@ -15489,6 +15671,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8cc3686f-d1a4-43ba-a85d-f2641a10e91a"
                 },
                 "908eecb3-81d1-4fa5-9f81-b68df4c23683": {
@@ -15520,6 +15703,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "b9a6551e-6f10-4686-8a85-3d4572309038"
                 },
                 "1e939ac4-f928-46e3-83c6-5bc41a88a82a": {
@@ -15617,6 +15801,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "cold-water",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8ed6f249-f79d-4df1-b2a1-0797ee56a760"
                 },
                 "f00ea431-0bf8-44cd-98bc-80f4f93d620c": {
@@ -15772,6 +15957,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "903ef19a-7273-4974-a8b2-74a8e6f349d7"
                 },
                 "3a377985-637d-4041-9fd3-c231a44851a4": {
@@ -15822,6 +16008,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "46d2de05-bbc1-4438-a5b7-5e9d0c2457f5"
                 },
                 "8e7921c1-5d41-4410-b028-a9c7fc724400": {
@@ -15834,6 +16021,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "8e7921c1-5d41-4410-b028-a9c7fc724400"
                 },
                 "69c23cf3-a909-41c3-b404-9835826f2ee8": {
@@ -15884,6 +16072,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "systemUid": "sanitary-plumbing",
                     "calculationHeightM": null,
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "e621e2ab-43ec-4db1-9607-eb9d44eee5c4"
                 },
                 "20561679-93ac-4a87-97af-3b9f6685561a": {
@@ -15934,6 +16123,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "calculationHeightM": null,
                     "systemUid": "sanitary-plumbing",
                     "type": "FITTING",
+                    "entityName": null,
                     "uid": "c951cd8e-5830-47fc-83a2-050ffd2c48e7"
                 },
                 "b1350495-d9a9-40b1-986f-fd6856511700": {

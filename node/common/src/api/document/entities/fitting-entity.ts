@@ -1,8 +1,8 @@
-import {FieldType, PropertyField} from "./property-field";
-import {EntityType} from "./types";
-import {Color, ConnectableEntity, Coord, FlowSystemParameters} from "../drawing";
+import { FieldType, PropertyField } from "./property-field";
+import { EntityType } from "./types";
+import { Color, ConnectableEntity, Coord, FlowSystemParameters, NamedEntity } from "../drawing";
 
-export default interface FittingEntity extends ConnectableEntity {
+export default interface FittingEntity extends ConnectableEntity, NamedEntity {
     type: EntityType.FITTING;
     center: Coord;
     systemUid: string;
@@ -11,6 +11,15 @@ export default interface FittingEntity extends ConnectableEntity {
 
 export function makeValveFields(systems: FlowSystemParameters[]): PropertyField[] {
     return [
+        {
+            property: "entityName",
+            title: "Name",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Text,
+            params: null,
+            multiFieldId: "entityName"
+        },
         {
             property: "systemUid",
             title: "Flow System",

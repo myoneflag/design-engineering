@@ -45,6 +45,7 @@ import { fittingFrictionLossMH } from "../../../src/calculations/pressure-drops"
 import { Direction } from "../types";
 import CanvasContext from "../lib/canvas-context";
 import { isSameWorldPX } from "../on-screen-items";
+import { DEFAULT_FONT_NAME } from "../../../src/config";
 
 @CalculatedObject
 @SelectableObject
@@ -87,7 +88,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawEntity(context: DrawingContext, { selected, overrideColorList, forExport }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, overrideColorList, forExport, withCalculation }: EntityDrawingArgs): void {
         const { ctx, doc, vp } = context;
         try {
             if (forExport) {
@@ -165,6 +166,23 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             ctx.beginPath();
             ctx.arc(0, 0, this.toObjectLength(vp.surfaceToWorldLength(10)), 0, Math.PI * 2);
             ctx.fill();
+        }
+
+        // Display Entity Name
+        if (this.entity.entityName && !withCalculation) {
+            const name = this.entity.entityName;
+            ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
+            ctx.textBaseline = "top";
+            const nameWidth = ctx.measureText(name).width;
+            const offsetx = - nameWidth / 2;
+            ctx.fillStyle = "#00ff1421";
+            // the 70 represents the height of the font
+            const textHight = 70;
+            const offsetY = - textHight * 1.5;
+            ctx.fillRect(offsetx, offsetY, nameWidth, 70);
+            ctx.fillStyle = this.displayEntity(doc).color!.hex;
+            ctx.fillText(name, offsetx, offsetY - 4);
+            ctx.textBaseline = "alphabetic";
         }
     }
 

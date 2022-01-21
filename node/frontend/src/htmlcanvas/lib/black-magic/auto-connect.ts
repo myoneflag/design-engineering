@@ -476,7 +476,8 @@ export class AutoConnector {
                             systemUid,
                             calculationHeightM: null,
                             type: EntityType.FITTING,
-                            uid: uuid()
+                            uid: uuid(),
+                            entityName: null,
                         };
 
                         if (doit) {
@@ -611,7 +612,8 @@ export class AutoConnector {
                         systemUid,
                         calculationHeightM: null,
                         type: EntityType.FITTING,
-                        uid: uuid()
+                        uid: uuid(),
+                        entityName: null,
                     };
 
                     this.context.$store.dispatch("document/addEntity", v);
@@ -776,7 +778,8 @@ export class AutoConnector {
                     systemUid,
                     calculationHeightM: null,
                     type: EntityType.FITTING,
-                    uid: uuid()
+                    uid: uuid(),
+                    entityName: null,
                 };
 
                 this.context.$store.dispatch("document/addEntity", v);

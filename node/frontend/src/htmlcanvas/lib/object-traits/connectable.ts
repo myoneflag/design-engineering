@@ -460,7 +460,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                             parentUid: this.entity.parentUid,
                             systemUid: determineConnectableSystemUid(this.globalStore, this.entity)!,
                             type: EntityType.FITTING,
-                            uid: uuid()
+                            uid: uuid(),
+                            entityName: null,
                         };
                         context.$store.dispatch("document/addEntity", fitting);
 
@@ -699,7 +700,8 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                         calculationHeightM: (minHeight + maxHeight) / 2,
                         systemUid,
                         type: EntityType.FITTING,
-                        uid: this.uid + "." + i
+                        uid: this.uid + "." + i,
+                        entityName: null,
                     };
 
                     if (lastGroup) {
