@@ -34,7 +34,7 @@ export enum Warning {
     ADD_FLOW_SOURCE_TO_SYSTEM,
     ISOLATION_VALVES_REQUIRED_ON_RING_MAIN,
     REMOVE_PLANT_FROM_FLOW_AND_RETURN_PIPEWORK,
-    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION,
+    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_FOR_CALCULATION,
 }
 
 export interface WarningDescription {
@@ -229,17 +229,24 @@ export const WarningDetails: { [key: string]: WarningDescription } = {
     },
     PIPE_NOT_CONNECTED_TO_FLOW_SOURCE: {
         title: "Pipe Not Connected To Flow Source",
-        description: "Pipe is not connected to a flow source or is not connected to a pipe that is connected to a flow source.",
+        description: `To resolve this, follow the grey pipe towards the flow source until you see a coloured pipe or the flow source
+         - this is where the pipe is disconnected from the system.`,
         helpLink: "",
     },
     PIPE_HIGHER_THAN_FLOOR_LEVEL: {
         title: "Pipe Higher Than Floor Level",
-        description: "",
+        description: `The pipe is higher than the floor level above.<br />
+
+        If this is unintentional, you can resolve this by selecting the pipe and changing the 'Height Above Floor' in the properties.<br />
+        
+        Alternatively, you can change the floor height of the floor level above by opening the panel on the left-hand side of the screen and modifying the numbers.`,
         helpLink: "",
     },
     NOT_CONNECTED_TO_FLOW_SYSTEM:{
         title: "Not Connected to Flow System",
-        description: "Appliance and Node not connected to flow system",
+        description: `The node/appliance is missing a pipe connection.<br />
+
+        To resolve this, draw a pipe to the node/appliance. If you intentionally do not want to connect a pipe, you can hide the warning.`,
         helpLink: "",
     },
     ADD_FLOW_SOURCE_TO_SYSTEM: {
@@ -249,17 +256,33 @@ export const WarningDetails: { [key: string]: WarningDescription } = {
     },
     ISOLATION_VALVES_REQUIRED_ON_RING_MAIN: {
         title: "2 Isolation Valves Required on Ring Main",
-        description: "",
+        description: `Due to the complex nature of calculating ring mains where there is a diversified flow rate 
+        (there is no industry standard / recognised calculation method) the results through the ring main are not able to be calculated.<br />
+
+        To resolve this, place at least two isolation valves on the ring main. 
+        This allows the calculations to be iterated as various dead legs, simulating peak scenarios where the ring main is isolated in different areas.`,
         helpLink: "",
     },
     REMOVE_PLANT_FROM_FLOW_AND_RETURN_PIPEWORK: {
         title: "Remove Plant from Flow and Return Pipework",
-        description: "",
+        description: `The plant on the return system pipework is causing the results to not calculate.<br />
+
+        To resolve this, remove any plant from the return system pipework and place it on other parts of the system such as the inlet to the plant or the branches off the return system pipework.<br />
+        
+        Note that the hot water plant is inclusive of the circulating pump, so you do not need to add one.`,
         helpLink: "",
     },
-    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION: {
+    ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_FOR_CALCULATION: {
         title: "Arrangement of Pipework not Suitable for Calculation",
-        description: "",
+        description: `Due to the complex nature of calculating pipework that is interconnected when there is a diversified flow rate 
+        (there is no industry standard / recognised calculation method) the results are not able to be calculated.<br />
+
+        To resolve this on a cold water system, place isolation valves on each pipe that interconnects the different loops and 
+        in the properties of the valve, you will need to mark some of them as 'closed'. This allows the calculations 
+        to be iterated as various dead legs, simulating peak scenarios where the system is isolated in different areas.<br />
+        
+        To resolve this on a hot water circulating system, you will need to simplify the layout so that the loops/circuits branch off 
+        from each other, and join together in the same order. `,
         helpLink: "",
     },
 }
@@ -275,7 +298,7 @@ export const addWarning = (
     let warningParams: string[] = [];
     if (params) {
         Object.keys(params).forEach((key) => {
-            warningParams.push(key);
+            if (params[key]) warningParams.push(params[key]!.toString());
             newWarningDetail = {
                 ...newWarningDetail,
                 title: newWarningDetail?.title?.replace(`\$\{${key}\}`, params[key]?.toString() || '')!,
