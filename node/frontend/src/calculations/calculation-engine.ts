@@ -3093,7 +3093,7 @@ export default class CalculationEngine implements CalculationContext {
                         (calc.rawReturnFlowRateLS === null && calc.configuration === Configuration.RETURN) ||
                         (calc.PSDFlowRateLS === null && calc.optimalInnerPipeDiameterMM === null)
                     ) {
-                        addWarning(o.entity.uid, calc, Warning.ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_OFR_CALCULATION, thisIsDrainage ? "drainage" : null);
+                        addWarning(o.entity.uid, calc, Warning.ARRANGEMENT_OF_PIPWORK_NOT_SUITABLE_FOR_CALCULATION, thisIsDrainage ? "drainage" : null);
                     }
 
                     break;
