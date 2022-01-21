@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, ManyToOne } from "typeorm";
 import { BaseEntity } from "typeorm";
-import { Document } from "./Document";
 import { User } from "./User";
 
 export enum ErrorStatus {

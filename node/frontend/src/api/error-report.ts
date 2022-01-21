@@ -58,30 +58,13 @@ export async function submitErrorReport(
     }
 }
 
-export async function updateErrorReport(
-    id: number,
-    status?: ErrorStatus,
-    trace?: string
-): Promise<APIResult<ErrorReport>> {
-    try {
-        return (
-            await axios.put("/api/errors/" + id, {
-                status,
-                trace
-            })
-        ).data;
-    } catch (e) {
-        if (e.response && e.response.data && e.response.data.message) {
-            return { success: false, message: e.response.data.message };
-        } else {
-            return { success: false, message: e.message };
-        }
-    }
-}
-
 const sentErrors = new Set<string>();
 
-export async function reportError(message: string, error: Error) {
+export async function reportWarning(message: string) {
+    await reportError("[WARNING] " + message, new Error(message), false);
+}
+
+export async function reportError(message: string, error: Error, showDialog: boolean = true) {
     // @ts-ignore
     const vue = document.vue;
     // @ts-ignore
@@ -91,32 +74,15 @@ export async function reportError(message: string, error: Error) {
         return;
     }
     sentErrors.add(message.toString());
+    console.log(error.stack);
     submitErrorReport(
         store.getters.appVersion,
         message ? message.toString() : "[No Message]",
         error.name,
         error.stack || "No Stack",
         window.location.href
-    ).then((res) => {
-        if (res.success) {
-            StackTrace.fromError(error).then((trace) => {
-                updateErrorReport(
-                    res.data.id,
-                    undefined,
-                    trace
-                        .map(
-                            (frame) =>
-                                frame.functionName +
-                                " " +
-                                frame.fileName +
-                                ":" +
-                                frame.columnNumber +
-                                ":" +
-                                frame.lineNumber
-                        )
-                        .join("\n")
-                );
-            });
+    ).then(() => {
+        if (showDialog) {
             const msgstr =
                 "An error occurred: " +
                 message.toString() +
@@ -127,18 +93,19 @@ export async function reportError(message: string, error: Error) {
 
             if (vue) {
                 vue.$bvToast.toast(
-                    "Our developers have been notified and will find a fix as soon as they can. \n" +
-                        "If you experience problems with the page from now on, please refresh.\n" +
-                        "Thank you for your patience!",
-                    {
-                        title: "An error has occured: " + message.toString(),
-                        variant: "danger"
-                    }
-                );
+                "Our developers have been notified and will find a fix as soon as they can. \n" +
+                "If you experience problems with the page from now on, please refresh.\n" +
+                "Thank you for your patience!",
+                {
+                    title: "An error has occured: " + message.toString(),
+                    variant: "danger"
+                });
             } else {
                 window.alert(msgstr);
             }
-        } else {
+        }
+    }).catch( () => {
+        if (showDialog) {        
             const msgstr =
                 "An error occurred, but we couldn't report the error!\n" +
                 message.toString();

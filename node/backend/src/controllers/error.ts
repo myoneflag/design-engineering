@@ -63,36 +63,6 @@ export class ErrorController {
         });
     }
 
-    // Error stack traces are updated with a follow up call. Restrict USER => MANAGER's to only updating that.
-    @ApiHandleError()
-    @AuthRequired(AccessLevel.USER)
-    public async update(req: Request, res: Response, next: NextFunction, session: Session) {
-        const {status, trace} = req.body;
-
-        const error = await ErrorReport.findOne({id: Number(req.params.id)});
-        if (!error) {
-            res.status(404).send({
-                success: false,
-                message: "error not found",
-            });
-            return ;
-        }
-
-        if (status) {
-            error.status = status;
-        }
-
-        if (trace) {
-            error.trace = trace;
-        }
-
-        await error.save();
-        res.status(200).send({
-            success: true,
-            data: error,
-        });
-    }
-
     @ApiHandleError()
     @AuthRequired(AccessLevel.SUPERUSER)
     public async findAll(req: Request, res: Response, next: NextFunction, session: Session) {
@@ -115,7 +85,6 @@ const controller = new ErrorController();
 
 router.post('/', controller.create);
 router.get('/:id', controller.findOne.bind(controller));
-router.put('/:id', controller.update.bind(controller));
 router.get('/', controller.findAll.bind(controller));
 
 export const errorRouter = router;
