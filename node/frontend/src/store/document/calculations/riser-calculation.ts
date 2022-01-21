@@ -26,6 +26,7 @@ export default interface RiserCalculation extends Calculation, NameCalculation {
             heightAboveGround: number | null;
             sizeMM: number | null;
             ventSizeMM: number | null;
+            velocityRealMS: number | null;
         } & PressureCalculation & PsdCalculation;
     };
 }
@@ -66,17 +67,18 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     );
 
     // TODO uncomment and fix DEV-325
-    // addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".", 
+    // addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".",
     // {
     //     title: "Pressure At Floor",
     //     short: "at floor",
-    // }, 
-    // { 
-    //     title: "Static Pressure At Floor", 
-    //     short: "at floor" 
+    // },
+    // {
+    //     title: "Static Pressure At Floor",
+    //     short: "at floor"
     // });
 
-    const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
+    const iAmDrainage = isDrainage(entity.systemUid, drawing.metadata.flowSystems);
+    const layoutOptionDrainage: CalculationLayout[] = iAmDrainage ? ['pressure', 'drainage'] : [];
 
     if (extendsToBottom) {
 
@@ -116,19 +118,41 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 format: (v) => "" + Number((v ? v : 0).toFixed(5))
             });
         }
-        if (doc.uiState.pressureOrDrainage === "pressure") {
+
+        if (iAmDrainage) {
             result.push({
                 property: "heights." + lvlUid + ".sizeMM",
                 title: "Size To Below",
-                short: "\u00f8 to below",
-                bold: true,
+                short: "to below",
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Size,
-                hideUnits: true,
-                layouts: ['drainage', 'pressure'],
-                significantDigits: 0
-            })
+                layouts: ["drainage"],
+            });
+        } else {
+            result.push(
+                {
+                    property: "heights." + lvlUid + ".sizeMM",
+                    title: "Size To Below",
+                    short: "\u00f8 to below",
+                    bold: true,
+                    units: Units.PipeDiameterMM,
+                    systemUid: entity.systemUid,
+                    category: FieldCategory.Size,
+                    hideUnits: true,
+                    layouts: ['pressure'],
+                    significantDigits: 0
+                },
+                {
+                    property: "heights." + lvlUid + ".velocityRealMS",
+                    title: "Velocity To Below",
+                    short: "",
+                    units: Units.MetersPerSecond,
+                    systemUid: entity.systemUid,
+                    category: FieldCategory.Velocity,
+                    layouts: ['pressure'],
+                }
+            );
         }
 
         if (drawing.metadata.calculationParams.dwellingMethod !== null) {
@@ -157,17 +181,41 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             }
         );
 
-        result.push(
-            {
+        if (iAmDrainage) {
+            result.push({
                 property: "heights." + lvlAboveUid + ".sizeMM",
                 title: "Size To Above",
                 short: "to above",
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Size,
-                layouts: layoutOptionDrainage,
-            }
-        );
+                layouts: ["drainage"],
+            });
+        } else {
+            result.push(
+                {
+                    property: "heights." + lvlAboveUid + ".sizeMM",
+                    title: "Size To Above",
+                    short: "\u00f8 to above",
+                    bold: true,
+                    units: Units.PipeDiameterMM,
+                    systemUid: entity.systemUid,
+                    category: FieldCategory.Size,
+                    hideUnits: true,
+                    layouts: ['pressure'],
+                    significantDigits: 0
+                },
+                {
+                    property: "heights." + lvlAboveUid + ".velocityRealMS",
+                    title: "Velocity To Above",
+                    short: "",
+                    units: Units.MetersPerSecond,
+                    systemUid: entity.systemUid,
+                    category: FieldCategory.Velocity,
+                    layouts: ['pressure'],
+                }
+            );
+        }
 
         if (drawing.metadata.calculationParams.psdMethod !== null) {
             result.push({
