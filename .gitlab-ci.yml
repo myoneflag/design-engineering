@@ -198,6 +198,7 @@ deploy_prod:
 
 crawl_website:
   stage: test
+  timeout: 6h
   cache: []
   script:
     - export ENV=${CRAWLER_ENV}
