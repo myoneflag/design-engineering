@@ -9,6 +9,6 @@ docker/package-lock.json
 docker/dist
 .aws-sam
 docker/temp/*
-scripts/reports/temp/*
 scripts/worker/.lastreportid
+scripts/crawler/temp/*
 .idea

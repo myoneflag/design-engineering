@@ -2,6 +2,18 @@ stages:
     - build
     - git
     - deploy
+    - test
+
+variables:
+  CRAWLER_ENV:
+    value: stage
+    description: Env to crawl
+  CRAWLER_USERNAME:
+    value: h2xbot
+    description: Crawl username
+  CRAWLER_PASSWORD:
+    value: changeme  
+    description: Crawl password
 
 build:cloudformation:
     stage: build
@@ -183,3 +195,22 @@ deploy_prod:
     - tags
   when: manual
   allow_failure: false
+
+crawl_website:
+  stage: test
+  cache: []
+  script:
+    - export ENV=${CRAWLER_ENV}
+    - export USERNAME=${CRAWLER_USERNAME}
+    - export PASSWORD=${CRAWLER_PASSWORD}
+    - cd scripts/crawler
+    - npm install
+    - ./crawl.sh
+  artifacts:
+    paths:
+      - "scripts/crawler/temp/*"
+    expire_in: 1 week    
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+      allow_failure: true

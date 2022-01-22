@@ -20,26 +20,29 @@ if (!fs.existsSync(artifactsPath)){
 }
 var logger
 
-function initLogger(docId, env) { 
+function initLogger(docId) { 
     logger = fs.createWriteStream(`${artifactsPath}/${docId}_log.txt`, { flags: 'a' })
 }
 function logLine(string) { logger.write(string + "\r\n") }
 function closeLog() { logger.close() }
 
-function delay(time) {
-    return new Promise(function(resolve) { 
-        setTimeout(resolve, time)
+function readDocIdsFromFile() {
+    require('fs').readFileSync(docIdsFile, 'utf-8').split(/\r?\n/).forEach(function (line) {
+        docIds.push(parseInt(line));
     });
- }
+}
+
+process.on('unhandledRejection', error => {
+    throw error;
+});
 
 let browser;
 let count = 0;
-(async() => {
+( async () => {
     if (!browser) {
         browser = await puppeteer.launch();
     }
     for (const docId of docIds) {
-
         try {
             initLogger(docId, env);
             logLine(`DocumentID ${docId}`); 
@@ -90,11 +93,5 @@ let count = 0;
             console.error(err)
         }
     }
+    process.exit(0);
 })();
-
-function readDocIdsFromFile() {
-    require('fs').readFileSync(docIdsFile, 'utf-8').split(/\r?\n/).forEach(function (line) {
-        docIds.push(parseInt(line));
-    });
-}
-
