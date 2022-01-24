@@ -50,8 +50,8 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegVolumeL !== null) {
             result.push({
                 property: "inlets." + suid + ".deadlegVolumeL",
-                title: system.name + " Deadleg Volume",
-                short: "deadleg",
+                title: system.name + " Dead Leg Volume",
+                short: "",
                 systemUid: suid,
                 units: Units.Liters,
                 category: FieldCategory.Volume,
@@ -63,8 +63,8 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegLengthM !== null) {
             result.push({
                 property: "inlets." + suid + ".deadlegLengthM",
-                title: system.name + " Deadleg Length",
-                short: "deadleg",
+                title: system.name + " Dead Leg Length",
+                short: "",
                 systemUid: suid,
                 units: Units.Meters,
                 category: FieldCategory.Length,

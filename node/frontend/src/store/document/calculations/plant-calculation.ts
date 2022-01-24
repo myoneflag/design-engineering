@@ -57,7 +57,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             {
                 property: "circulationFlowRateLS",
                 title: "Return System Duty Flow Rate",
-                short: "(rtn)",
+                short: "",
                 units: Units.LitersPerSecond,
                 category: FieldCategory.FlowRate,
                 defaultEnabled: true,
@@ -65,7 +65,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             {
                 property: "circulationPressureLoss",
                 title: "Return System Pressure Loss",
-                short: "(rtn drop)",
+                short: "",
                 units: Units.KiloPascals,
                 category: FieldCategory.Pressure,
                 defaultEnabled: true,
@@ -73,7 +73,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
 
             {
                 property: "heatLossKW",
-                title: "Return Heat Loss",
+                title: "Return System Heat Loss",
                 short: "",
                 units: Units.KiloWatts,
                 category: FieldCategory.HeatLoss
@@ -89,16 +89,16 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                 {
                     property: "gasFlowRateMJH",
                     title: "Gas Demand",
-                    short: "gas",
+                    short: "",
                     units: Units.MegajoulesPerHour,
                     category: FieldCategory.FlowRate,
                 },
                 {
                     property: "gasPressureKPA",
                     title: "Gas Pressure",
-                    short: "gas",
+                    short: "",
                     units: Units.KiloPascals,
-                    category: FieldCategory.FlowRate,
+                    category: FieldCategory.Pressure,
                 },
                 ...(manufacturer === 'rheem' && [{
                     property: "model",
@@ -110,7 +110,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                 },
                 {
                     property: "size",
-                    title: "Dimensions w/ Clearance",
+                    title: "Dimensions",
                     short: "",
                     units: Units.None,
                     category: FieldCategory.FlowRate,

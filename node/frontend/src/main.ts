@@ -5,7 +5,7 @@ import store from "./store/store";
 import "./registerServiceWorker";
 
 import VueYouTubeEmbed from "vue-youtube-embed";
-import filters from "./filters";
+import filters from "./views/filters";
 Vue.use(filters);
 // @ts-ignore
 import VueInputAutowidth from "vue-input-autowidth";

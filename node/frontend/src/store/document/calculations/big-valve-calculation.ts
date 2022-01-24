@@ -89,7 +89,7 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
         result.push({
             property: "outputs." + suids[i] + ".pressureDropKPA",
             title: system.name + " Pressure Drop",
-            short: "drop",
+            short: "",
             attachUid: attachments[i] as string,
             systemUid: suids[i],
             units: Units.KiloPascals,

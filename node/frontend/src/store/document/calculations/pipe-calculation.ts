@@ -115,7 +115,7 @@ export function makePipeCalculationFields(
             result.push(
                 {
                     property: "PSDFlowRateLS",
-                    title: "Flow Rate + Spare",
+                    title: "Peak Flow Rate",
                     short: "",
                     units: Units.LitersPerSecond,
                     category: FieldCategory.FlowRate,
@@ -130,7 +130,8 @@ export function makePipeCalculationFields(
         {
             property: "heightM",
             title: "Height Above Floor",
-            short: "height",
+            shortTitle: "Pipe Height",
+            short: "",
             units: Units.Meters,
             category: FieldCategory.Location,
             systemUid: entity.systemUid,
@@ -142,12 +143,12 @@ export function makePipeCalculationFields(
             {
                 property: "rawReturnFlowRateLS",
                 title: "Return Flow Rate",
-                short: "(rtn)",
+                short: "",
                 units: Units.LitersPerSecond,
                 category: FieldCategory.FlowRate,
                 systemUid: entity.systemUid,
                 defaultEnabled: true,
-                format: (v: number | null) => "(" + (v === null ? "??" : v.toFixed(2)) + ")"
+                format: (v: number | null) => (v === null ? "??" : v.toFixed(2))
             },
         );
     }
@@ -156,6 +157,7 @@ export function makePipeCalculationFields(
         {
             property: "realNominalPipeDiameterMM",
             title: "Pipe Diameter",
+            shortTitle: "",
             short: "\u00f8" + materialName!,
             hideUnits: true,
             units: Units.Millimeters,
@@ -182,7 +184,7 @@ export function makePipeCalculationFields(
         {
             property: "realInternalDiameterMM",
             title: "Internal Diameter",
-            short: "Internal",
+            short: "",
             units: Units.Millimeters,
             category: FieldCategory.Size,
             systemUid: entity.systemUid
@@ -194,7 +196,7 @@ export function makePipeCalculationFields(
         result.push(
             {
                 property: "gasMJH",
-                title: "Flow Rate + Spare",
+                title: "Peak Flow Rate",
                 short: "",
                 units: Units.MegajoulesPerHour,
                 category: FieldCategory.FlowRate,
@@ -206,7 +208,7 @@ export function makePipeCalculationFields(
             {
                 property: "pressureDropKPA",
                 title: "Pressure Drop",
-                short: "Drop",
+                short: "",
                 units: Units.KiloPascals,
                 category: FieldCategory.Pressure,
                 systemUid: entity.systemUid
@@ -218,9 +220,10 @@ export function makePipeCalculationFields(
         {
             property: "lengthM",
             title: "Length",
+            shortTitle: 'Pipe Length',
             short: "",
             units: Units.Meters,
-            category: FieldCategory.Size,
+            category: FieldCategory.Length,
             systemUid: entity.systemUid,
             layouts: layoutOptionDrainage,
         },
@@ -247,7 +250,7 @@ export function makePipeCalculationFields(
         {
             property: "psdUnits.continuousFlowLS",
             title: "Continuous Flow",
-            short: "C. Flow",
+            short: "",
             units: Units.LitersPerSecond,
             category: FieldCategory.LoadingUnits,
             systemUid: entity.systemUid
@@ -260,7 +263,7 @@ export function makePipeCalculationFields(
             result.push({
                 property: "psdUnits.units",
                 title: psdUnit.name,
-                short: psdUnit.abbreviation,
+                short: "", // psdUnit.abbreviation,
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid
@@ -271,7 +274,7 @@ export function makePipeCalculationFields(
             result.push({
                 property: "psdUnits.dwellings",
                 title: "Dwellings",
-                short: "dwlg",
+                short: "",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid
@@ -284,7 +287,7 @@ export function makePipeCalculationFields(
                 {
                     property: "psdUnits.drainageUnits",
                     title: drainageUnits.name,
-                    short: drainageUnits.abbreviation,
+                    short: "", // drainageUnits.abbreviation,
                     units: Units.None,
                     category: FieldCategory.LoadingUnits,
                     systemUid: entity.systemUid,
@@ -297,7 +300,8 @@ export function makePipeCalculationFields(
                 result.push(
                     {
                         property: "gradePCT",
-                        title: 'Grade (%)',
+                        title: 'Grade',
+                        shortTitle: 'Pipe Grade',
                         short: '%',
                         units: Units.None,
                         category: FieldCategory.Location,
@@ -309,7 +313,8 @@ export function makePipeCalculationFields(
                     {
                         property: "fallM",
                         title: "Fall",
-                        short: "fall",
+                        shortTitle: 'Pipe Fall',
+                        short: "",
                         units: Units.Meters,
                         systemUid: entity.systemUid,
                         defaultEnabled: true,

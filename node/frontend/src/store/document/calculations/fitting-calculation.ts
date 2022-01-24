@@ -44,7 +44,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
         result.push(
             {
                 property: "flowRateLS",
-                title: "Flow Rate",
+                title: "Peak Flow Rate",
                 short: "",
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUid,
@@ -56,7 +56,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
             {
                 property: "pressureDropKPA",
                 title: "Pressure Drop",
-                short: "Drop",
+                short: "",
                 units: Units.KiloPascals,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Pressure,

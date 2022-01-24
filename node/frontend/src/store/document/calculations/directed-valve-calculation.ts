@@ -51,7 +51,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         fields.push(
             {
                 property: "flowRateLS",
-                title: "Flow Rate",
+                title: "Peak Flow Rate",
                 short: "",
                 units: Units.LitersPerSecond,
                 category: FieldCategory.FlowRate,
@@ -61,17 +61,15 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
     }
 
     if (!valveIsGas) {
-        fields.push(
-            {
-                property: "pressureDropKPA",
-                title: "Pressure Drop",
-                short: "Drop",
-                defaultEnabled: true,
-                units: Units.KiloPascals,
-                category: FieldCategory.Pressure,
-                systemUid,
-            },
-        );
+        fields.push({
+            property: "pressureDropKPA",
+            title: "Pressure Drop",
+            short: "",
+            defaultEnabled: true,
+            units: Units.KiloPascals,
+            category: FieldCategory.Pressure,
+            systemUid,
+        });
     }
 
     if (entity.valve.type === ValveType.BALANCING) {
@@ -86,7 +84,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
     }
 
     if (!valveIsGas) {
-        addPressureCalculationFields(fields, systemUid, "", { short: "In" });
+        addPressureCalculationFields(fields, systemUid);
     }
 
     if (entity.systemUidOption) {
@@ -96,21 +94,24 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
-
-
     switch (entity.valve.type) {
         case ValveType.GAS_REGULATOR:
             if (valveIsGas) {
-                fields.push(
-                    {
-                        property: "pressureKPA",
-                        title: "Pressure",
-                        short: "Out",
-                        units: Units.KiloPascals,
-                        systemUid,
-                        category: FieldCategory.Pressure,
-                    },
-                );
+                fields.push({
+                    property: "pressureKPA",
+                    title: "Pressure Out",
+                    short: "",
+                    units: Units.KiloPascals,
+                    systemUid,
+                    category: FieldCategory.Pressure,
+                }, {
+                    property: "pressureKPA",
+                    title: "Residual Pressure",
+                    short: "",
+                    units: Units.KiloPascals,
+                    systemUid,
+                    category: FieldCategory.Pressure,
+                });
             }
             break;
         case ValveType.CHECK_VALVE:
@@ -120,17 +121,22 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         case ValveType.WATER_METER:
         case ValveType.FILTER:
             if (valveIsGas) {
-                fields.push(
-                    {
-                        property: "pressureDropKPA",
-                        title: "Pressure Drop",
-                        short: "Drop",
-                        defaultEnabled: true,
-                        units: Units.KiloPascals,
-                        category: FieldCategory.Pressure,
-                        systemUid,
-                    },
-                );
+                fields.push({
+                    property: "pressureDropKPA",
+                    title: "Pressure Drop",
+                    short: "",
+                    defaultEnabled: true,
+                    units: Units.KiloPascals,
+                    category: FieldCategory.Pressure,
+                    systemUid,
+                }, {
+                    property: "flowRateLS",
+                    title: "Peak Flow Rate",
+                    short: "",
+                    units: Units.MegajoulesPerHour,
+                    category: FieldCategory.FlowRate,
+                    systemUid,
+                });
             }
             break;
         case ValveType.BALANCING: {
@@ -141,7 +147,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
             fields.push({
                 property: "sizeMM",
-                title: "Size (mm)",
+                title: "Size",
                 short: abbreviation,
                 units: Units.Millimeters,
                 category: FieldCategory.Size
@@ -158,7 +164,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
 
             fields.push({
                 property: "sizeMM",
-                title: "Size (mm)",
+                title: "Size",
                 short: abbreviation,
                 units: Units.Millimeters,
                 category: FieldCategory.Size
@@ -174,7 +180,7 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 || '';
             fields.push({
                 property: "sizeMM",
-                title: "Size (mm)",
+                title: "Size",
                 short: abbreviation,
                 units: Units.Millimeters,
                 category: FieldCategory.Size,

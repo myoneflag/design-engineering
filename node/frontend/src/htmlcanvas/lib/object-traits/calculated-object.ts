@@ -96,19 +96,24 @@ export function CalculatedObject<
                 if (datum.format) {
                     numberText = datum.format(value);
                 } else {
-                    const fractionDigits = datum.significantDigits === undefined ? 3 : datum.significantDigits;
+                    const fractionDigits = datum.significantDigits === undefined ? 2 : datum.significantDigits;
 
                     if (typeof value === 'string') {
                         numberText = value;
                     } else if (Array.isArray(value)) {
-                        numberText = value === null ? "??" : value.map(v => (v as number).toFixed(fractionDigits)).toString()
+                        numberText = value === null ? "??" : value.map(v => parseFloat((v as number).toFixed(fractionDigits)).toString()).toString()
                     } else {
-                        numberText = value === null ? "??" : (value as number).toFixed(fractionDigits);
+                        numberText = value === null ? "??" : parseFloat((value as number).toFixed(fractionDigits)).toString();
                     }
                 }
 
                 const calc = context.globalStore.getCalculation(this.entity);
-                const text = (numberText + " " + (datum.hideUnits ? "" : units + " ") + datum.short).trim();
+                const text = (
+                    (datum.shortTitle === "" ? "" : (datum.shortTitle || datum.title) ? ((datum.shortTitle || datum.title) + ": ") : "") + 
+                    numberText + " " + 
+                    (datum.hideUnits ? "" : units + " ") + 
+                    datum.short
+                ).trim();
 
                 const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && `${calc.manufacturer}` || '';
                 if (datum.property === "circulationPressureLoss" && manufacturer) {

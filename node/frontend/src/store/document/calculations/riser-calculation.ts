@@ -86,7 +86,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             {
                 property: "heights." + lvlUid + ".flowRateLS",
                 title: "Flow Rate To Below",
-                short: "to below",
+                short: "",
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUid,
                 category: FieldCategory.FlowRate,
@@ -98,7 +98,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlUid + ".psdUnits.units",
                 title: psdUnit.name + " To Below",
-                short: psdUnit.abbreviation + " to below",
+                short: "", // psdUnit.abbreviation + " to below",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
@@ -110,7 +110,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Below",
-                short: drainageUnit.abbreviation + " to below",
+                short: "", // drainageUnit.abbreviation + " to below",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
@@ -123,7 +123,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlUid + ".sizeMM",
                 title: "Size To Below",
-                short: "to below",
+                short: "\u00f8",
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Size,
@@ -134,8 +134,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 {
                     property: "heights." + lvlUid + ".sizeMM",
                     title: "Size To Below",
-                    short: "\u00f8 to below",
-                    bold: true,
+                    short: "\u00f8",
                     units: Units.PipeDiameterMM,
                     systemUid: entity.systemUid,
                     category: FieldCategory.Size,
@@ -159,7 +158,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlUid + ".psdUnits.dwellings",
                 title: "Dwellings To Below",
-                short: "dwlg to below",
+                short: "",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
@@ -173,11 +172,10 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             {
                 property: "heights." + lvlAboveUid + ".flowRateLS",
                 title: "Flow Rate To Above",
-                short: "\u00f8 to above",
+                short: "",
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUid,
                 category: FieldCategory.FlowRate,
-                bold: true
             }
         );
 
@@ -185,7 +183,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlAboveUid + ".sizeMM",
                 title: "Size To Above",
-                short: "to above",
+                short: "\u00f8",
                 units: Units.PipeDiameterMM,
                 systemUid: entity.systemUid,
                 category: FieldCategory.Size,
@@ -196,8 +194,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 {
                     property: "heights." + lvlAboveUid + ".sizeMM",
                     title: "Size To Above",
-                    short: "\u00f8 to above",
-                    bold: true,
+                    short: "\u00f8",
                     units: Units.PipeDiameterMM,
                     systemUid: entity.systemUid,
                     category: FieldCategory.Size,
@@ -221,7 +218,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.units",
                 title: psdUnit.name + " To Above",
-                short: psdUnit.abbreviation + " to above",
+                short: "", // psdUnit.abbreviation + " to above",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
@@ -233,7 +230,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.drainageUnits",
                 title: drainageUnit.name + " To Above",
-                short: drainageUnit.abbreviation + " to above",
+                short: "", // drainageUnit.abbreviation + " to above",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid,
@@ -245,7 +242,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
                 result.push({
                     property: "heights." + lvlAboveUid + ".ventSizeMM",
                     title: "Dedicated Vent Size",
-                    short: "vent",
+                    short: "",
                     units: Units.PipeDiameterMM,
                     category: FieldCategory.LoadingUnits,
                     systemUid: entity.systemUid,
@@ -258,7 +255,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             result.push({
                 property: "heights." + lvlAboveUid + ".psdUnits.dwellings",
                 title: "Dwellings To Above",
-                short: "dwlg to above",
+                short: "",
                 units: Units.None,
                 category: FieldCategory.LoadingUnits,
                 systemUid: entity.systemUid

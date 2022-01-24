@@ -23,6 +23,7 @@ export type CalculationLayout = 'pressure' | 'drainage';
 export interface CalculationField {
     property: string;
     title: string;
+    shortTitle?: string;
     short: string;
     units: Units;
     category: FieldCategory;

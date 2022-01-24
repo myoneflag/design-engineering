@@ -43,7 +43,7 @@ export function getEntityName(entity: DrawableEntityConcrete, drawing: DrawingSt
         case EntityType.FITTING:
             return "Fitting";
         case EntityType.BIG_VALVE:
-            return "TMV, H/C RPZD && Tempering Valves";
+            return "Large Valves";
         case EntityType.SYSTEM_NODE:
             return "Inlet/Outlet";
         case EntityType.PLANT:
@@ -64,7 +64,7 @@ export function getEntityName(entity: DrawableEntityConcrete, drawing: DrawingSt
         case EntityType.FIXTURE:
             return "Fixture";
         case EntityType.DIRECTED_VALVE:
-            return "Valve";
+            return "Small Valves";
         case EntityType.LOAD_NODE:
             return "Load Node";
         case EntityType.FLOW_SOURCE:

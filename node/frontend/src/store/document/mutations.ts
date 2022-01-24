@@ -440,7 +440,16 @@ export const mutations: MutationTree<DocumentState> = {
 
     setCurrentLevelUid(state, levelUid) {
         state.uiState.levelUid = levelUid;
-        state.uiState.warningFilter.collapsedLevelType.push({ levelUid, visible: true, types: [] });
+        let targetLevelProperty = state.uiState.warningFilter.collapsedLevelType.find((e) => e.levelUid === levelUid);
+        if (targetLevelProperty) {
+            targetLevelProperty.visible = true;
+        } else {
+            state.uiState.warningFilter.collapsedLevelType.push({
+            levelUid,
+            visible: true,
+            types: []
+          });
+        }
         MainEventBus.$emit("current-level-changed");
     },
 

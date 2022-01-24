@@ -1,5 +1,5 @@
 import { LayerImplementation } from "../../../src/htmlcanvas/layers/layer";
-import { CalculationFilters, DocumentState } from "../../../src/store/document/types";
+import { CalculationFilters, CalculationFilterSettings, DocumentState } from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
@@ -21,13 +21,14 @@ import {
 import { assertUnreachable } from "../../../../common/src/api/config";
 import LayoutAllocator from "../lib/layout-allocator";
 import stringify from "json-stable-stringify";
-import { getEffectiveFilter } from "../../lib/utils";
+import { getEffectiveFilter, getFilterSettings } from "../../lib/filters/results";
 import { updateCalculationReport } from "../../api/reports";
 import AbbreviatedCalculationReport, { PipeCalculationReportEntry } from "../../../../common/src/api/reports/calculation-report";
 import { CalculationType } from "../../../src/store/document/calculations/types";
 import PipeCalculation from "src/store/document/calculations/pipe-calculation";
 import RiserCalculation from "src/store/document/calculations/riser-calculation";
 import { Entity } from "typeorm";
+import { getEntitySystem } from "../../../src/calculations/utils";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -50,9 +51,14 @@ export default class CalculationLayer extends LayerImplementation {
         // TODO: asyncify
         const { ctx, vp } = context;
         if (active && withCalculation) {
+            const filterSettings = getFilterSettings(
+                context.doc.uiState.calculationFilterSettings,
+                context.doc,
+            );
             const filters = getEffectiveFilter(
                 this.uidsInOrder.map((uid) => context.globalStore.get(uid)!),
                 context.doc.uiState.calculationFilters,
+                filterSettings,
                 context.doc,
                 context.catalog,
             );
@@ -62,7 +68,7 @@ export default class CalculationLayer extends LayerImplementation {
             const effRes = Math.pow(2, rexp);
             const scaleWarp = effRes / resolutionWL;
 
-            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, filters, forExport);
+            const layout = await this.getOrCreateLayout(context, effRes, shouldContinueInternal, filters, filterSettings, forExport);
             if (!layout) {
                 return;
             }
@@ -100,10 +106,11 @@ export default class CalculationLayer extends LayerImplementation {
         resolution: number,
         shouldContinueInternal: () => boolean,
         calculationFilters: CalculationFilters,
+        calculationFilterSettings: CalculationFilterSettings,
         forExport: boolean,
     ): Promise<LayoutAllocator<[string, TM.Matrix, CalculationData[], boolean]> | undefined> {
         const lvlUid = context.doc.uiState.levelUid;
-        const key = stringify(calculationFilters) + ".." + lvlUid + ".." + resolution + "." + forExport;
+        const key = stringify(calculationFilters) + stringify(calculationFilterSettings) + ".." + lvlUid + ".." + resolution + "." + forExport;
 
         if (this.layout.has(key)) {
             return this.layout.get(key)!;
@@ -143,6 +150,7 @@ export default class CalculationLayer extends LayerImplementation {
                 context.globalStore.getCalculation(o.entity)
             ) {
                 const fields = o.getCalculationFields(context, calculationFilters);
+                // console.log(fields, eName, obj2props)
                 fields.forEach((f: any) => {
                     if (!obj2props.has(f.attachUid)) {
                         obj2props.set(f.attachUid, []);
@@ -167,9 +175,24 @@ export default class CalculationLayer extends LayerImplementation {
             }
         });
 
+        const filterSystemSetting = calculationFilterSettings.systems.filters;
+        let isShowAll = true;
+        const disallowedSystems = new Set<string>();
+        for (const sName in filterSystemSetting) {
+            if (!filterSystemSetting[sName].enabled) {
+                if (sName !== "all") {
+                    disallowedSystems.add(sName);
+                }
+                isShowAll = false;
+            }
+        }
+
         const objList = Array.from(this.uidsInOrder)
             .map((uid) => this.context.globalStore.get(uid)!)
-            .filter((o) => o.calculated);
+            .filter((o) => {
+                const entitySystem = getEntitySystem(o.entity, this.context);
+                return (isShowAll || (entitySystem && !disallowedSystems.has(entitySystem))) && o.calculated;
+            });
         objList.sort((a, b) => {
             return -(this.messagePriority(context, a) - this.messagePriority(context, b));
         });

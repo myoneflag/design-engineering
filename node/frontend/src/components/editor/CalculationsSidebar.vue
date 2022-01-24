@@ -30,16 +30,35 @@
         <b-row v-if="popupShown === 'filter'">
             <b-col>
                 <div class="filterPanel">
-                    <div v-for="(objectFilters, type) in filters" :key="type">
-                        <template v-if="Object.keys(objectFilters.filters).length">
-                            <b-check :checked="objectFilters.enabled" @input="onObjectCheck(type, $event)">
-                                <h4>{{ objectFilters.name }}</h4>
-                            </b-check>
+                    <div v-for="(objectFilters, type) in filterSettings" :key="type">
+                        <template>
+                            <h4>{{ objectFilters.name }}</h4>
                             <b-check
                                 :disabled="!objectFilters.enabled"
                                 v-for="(filter, prop) in objectFilters.filters"
                                 :checked="filter.enabled"
-                                @input="onCheck(type, filter.name, $event)"
+                                @change="onSettingCheck(type, prop, $event)"
+                                :key="prop"
+                            >
+                                {{ filter.name }}
+                            </b-check>
+                            <hr />
+                        </template>
+                    </div>
+                    <div v-for="(objectFilters, type) in combinedfilters" :key="type">
+                        <template v-if="Object.keys(objectFilters.filters).length">
+                            <b-check
+                                :disabled="!isCustomfilter"
+                                :checked="objectFilters.enabled"
+                                @input="onObjectCheck(type, $event)"
+                            >
+                                <h4>{{ objectFilters.name }}</h4>
+                            </b-check>
+                            <b-check
+                                :disabled="!objectFilters.enabled || !isCustomfilter"
+                                v-for="(filter, prop) in objectFilters.filters"
+                                :checked="filter.enabled"
+                                @input="filter.targets? onMultiCheck(type, filter.targets, $event) : onCheck(type, filter.name, $event)"
                                 :key="prop"
                             >
                                 {{ filter.name }}
@@ -88,9 +107,9 @@ import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { exportBudgetReport } from "../../htmlcanvas/lib/budget-report/budget-report";
 import { globalStore } from "../../store/document/mutations";
-import { CalculationFilters, DocumentState } from "../../store/document/types";
+import { CalculationFilters, CalculationFilterSettings, DocumentState, CalculationFilterSettingType } from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
-import { getEffectiveFilter } from "../../lib/utils";
+import { getEffectiveFilter, getFilterSettings, getCombinedFilter } from "../../lib/filters/results";
 import { User } from "../../../../common/src/models/User";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json"
@@ -144,9 +163,25 @@ export default class CalculationsSidebar extends Vue {
         return getEffectiveFilter(
             this.$props.objects,
             this.document.uiState.calculationFilters,
+            this.filterSettings,
             this.document,
             this.catalog
         );
+    }
+
+    get filterSettings(): CalculationFilterSettings {
+        return getFilterSettings(
+            this.document.uiState.calculationFilterSettings,
+            this.document,
+        );
+    }
+
+    get combinedfilters(): CalculationFilters {
+        return getCombinedFilter(this.filters);
+    }
+
+    get isCustomfilter(): boolean {
+        return this.filterSettings.view.filters['custom'].enabled;
     }
 
     get catalog(): Catalog {
@@ -179,8 +214,6 @@ export default class CalculationsSidebar extends Vue {
 
     stageNewFilters() {
         const filters = cloneSimple(this.filters);
-        console.log("Staging new filter: ");
-        console.log(filters);
         for (const eType in filters) {
             // noinspection JSUnfilteredForInLoop
             if (filters.hasOwnProperty(eType)) {
@@ -192,7 +225,7 @@ export default class CalculationsSidebar extends Vue {
                 this.onObjectCheck(eType, filters[eType].enabled, false);
             }
         }
-        this.$props.onChange();
+        this.$props.onChange(); 
     }
 
     pdfSnapshot() {
@@ -203,6 +236,78 @@ export default class CalculationsSidebar extends Vue {
 
     budgetReport() {
         exportBudgetReport(this.$props.canvasContext);
+    }
+
+    onSettingCheck(eName: string, prop: string, value: boolean, shouldChange: boolean = true) {
+        this.document.uiState.calculationFilterSettings[eName as CalculationFilterSettingType].filters[prop].enabled = value;
+        switch (eName) {
+            case CalculationFilterSettingType.Systems:
+                if (prop === "all") {
+                    for (const cName in this.document.uiState.calculationFilterSettings.systems.filters) {
+                        Vue.set(
+                            this.document.uiState.calculationFilterSettings.systems.filters[cName],
+                            "enabled",
+                            value
+                        );
+                    }
+                }
+                break;
+            case CalculationFilterSettingType.View:
+                switch (prop) {
+                    case "all":
+                        for (const cName in this.document.uiState.calculationFilterSettings.view.filters) {
+                            if (cName == "custom") {
+                                if (value) {
+                                    Vue.set(
+                                        this.document.uiState.calculationFilterSettings.view.filters[cName],
+                                        "enabled",
+                                        false
+                                    );
+                                }
+                            } else {
+                                Vue.set(
+                                    this.document.uiState.calculationFilterSettings.view.filters[cName],
+                                    "enabled",
+                                    value
+                                );
+                            }
+                        }
+                        break;
+                    case "custom":
+                        if (value) {
+                            for (const cName in this.document.uiState.calculationFilterSettings.view.filters) {
+                                if (cName !== "custom") {
+                                    Vue.set(
+                                        this.document.uiState.calculationFilterSettings.view.filters[cName],
+                                        "enabled",
+                                        false
+                                    );
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        if (value) {
+                            Vue.set(
+                                this.document.uiState.calculationFilterSettings.view.filters["custom"],
+                                "enabled",
+                                false
+                            );
+                        }
+                        break;
+                }
+            default:
+                break;
+        }
+        if (shouldChange) {
+            this.$props.onChange();
+        }
+    }
+
+    onMultiCheck(eName: string, props: string[], value: boolean, shouldChange: boolean = true) {
+        for (const prop of props) {
+            this.onCheck(eName, prop, value, shouldChange);
+        }
     }
 
     onCheck(eName: string, prop: string, value: boolean, shouldChange: boolean = true) {
