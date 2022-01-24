@@ -47,17 +47,20 @@ A production release is represented in Jira as a Release for tracking purposes i
 * Copy the link to the Release Issues report (e.g. [report](https://h2xengineering.atlassian.net/projects/DEV/versions/10011/tab/release-report-all-issues))
 
 ### Gitlab
-* Ensure all merge requests that are Done in Jira are merged in `master`
-* Create new `release-*` branch from `master` (e.g. `release-1.7.4`)
-* Create new commit in release branch to increment version number: 
+* (before creating the release branch, if not already done) 
+Create new commit/MR in `master` branch to increment version number: 
   ```shell
   cd node/frontend/
   ./bump_patch.sh
   ```
 This automatically increments the version build number (semantic format `MAJOR.Minor.build`) and updates several relevant files with it.
-* Commit to new release branch
-* Push new release branch to GitLab
-* _The new release branch will automatically be deployed to `stage`_  
+
+* Ensure all merge requests that are Done in Jira are merged in `master`
+* Create new `release-*` branch from `master` (e.g. `release-1.7.4`)
+* _The new release branch will automatically be deployed to `stage`_
+
+Recommended:
+* Create a new commit/MR in `master` branch to increment version number again, in anticipation for the hext release.
 
 ### Production deployment
 _After testing and other fixing is done_:
