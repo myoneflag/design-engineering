@@ -40,6 +40,8 @@ import { NodeProps } from '../../../common/src/models/CustomEntity';
 import { fillDefaultLoadNodeFields } from '../store/document/entities/fillDefaultLoadNodeFields';
 import { SupportedLocales } from "../../../common/src/api/locale";
 import { Units, VolumeMeasurementSystem } from './../../../common/src/lib/measurements';
+import { fillDirectedValveFields } from "../store/document/entities/fillDirectedValveFields";
+import CanvasContext from "../htmlcanvas/lib/canvas-context";
 import { Level } from "../../../common/src/api/document/drawing";
 
 export interface PsdCountEntry {
@@ -717,6 +719,32 @@ export function getFields(
         case EntityType.BACKGROUND_IMAGE:
             return [];
     }
+}
+
+export function getEntitySystem(entity: DrawableEntityConcrete, context: CanvasContext): string | null {
+    switch (entity.type) {
+        case EntityType.FITTING:
+        case EntityType.PIPE:
+        case EntityType.RISER:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.SYSTEM_NODE:
+            return entity.systemUid;
+        case EntityType.DIRECTED_VALVE: {
+            const res = fillDirectedValveFields(context.document.drawing, context.globalStore, entity);
+            return res.systemUidOption;
+        }
+        case EntityType.LOAD_NODE: {
+            const res = fillDefaultLoadNodeFields(context.document, context.globalStore, entity, context.$store.getters["catalog/default"], context.$store.getters["customEntity/nodes"]);
+            return res.systemUidOption;
+        }
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.BIG_VALVE:
+        case EntityType.PLANT:
+        case EntityType.FIXTURE:
+        case EntityType.GAS_APPLIANCE:
+            return null;
+    }
+    assertUnreachable(entity);
 }
 
 export interface Cost {

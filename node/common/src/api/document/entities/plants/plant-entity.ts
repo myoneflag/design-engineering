@@ -3,7 +3,7 @@ import {
     CenteredEntity,
     COLORS,
     Coord,
-    DrawingState,
+    DrawingState
 } from "../../drawing";
 import { EntityType } from "../types";
 import {

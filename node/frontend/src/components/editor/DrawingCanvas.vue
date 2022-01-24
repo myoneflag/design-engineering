@@ -175,7 +175,7 @@ import Component from "vue-class-component";
 import ClickOutside from "vue-click-outside";
 
 import { ViewPort } from "../../../src/htmlcanvas/viewport";
-import { DocumentState, EntityParam } from "../../../src/store/document/types";
+import { DocumentState, EntityParam, initialUIState } from "../../../src/store/document/types";
 import ModeButtons from "../../../src/components/editor/ModeButtons.vue";
 import PropertiesWindow from "../../../src/components/editor/property-window/PropertiesWindow.vue";
 import { DrawingMode, MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
@@ -278,6 +278,9 @@ import FeedbackModal from "../FeedbackModal.vue";
 import { DocumentStep } from "../../store/onboarding/steps";
 import CalculationEngine from "../../calculations/calculation-engine";
 import { reportWarning } from '../../../src/api/error-report';
+
+import { getSavedWarningsFilter } from "../../lib/filters/warnings";
+import { getSavedFilters, getSavedFilterSettings } from "../../lib/filters/results";
 
 @Component({
   components: {
@@ -760,7 +763,7 @@ export default class DrawingCanvas extends Vue {
       () => this.document.uiState.pressureOrDrainage,
       () => {
         this.select([], SelectMode.Replace);
-        // this.considerCalculating();
+        this.considerCalculating();
       }
     );
     this.$watch(
@@ -1912,6 +1915,10 @@ export default class DrawingCanvas extends Vue {
     this.$store.dispatch("document/reCalculate", false);
 
     if (this.document.uiState.drawingMode === DrawingMode.Calculations) {
+      this.document.uiState.calculationFilterSettings = getSavedFilterSettings(window, this.document.documentId, initialUIState.calculationFilterSettings);
+      this.document.uiState.calculationFilters = getSavedFilters(window, this.document.documentId, {});
+      this.document.uiState.warningFilter = getSavedWarningsFilter(window, this.document.documentId, initialUIState.warningFilter);
+
       if (!this.document.uiState.isCalculating) {
         this.calculationLayer.calculate(this, () => {
           this.scheduleDraw();

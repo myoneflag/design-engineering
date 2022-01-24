@@ -49,7 +49,7 @@ export function addPressureCalculationFields(
     fields.push(
         {
             property: propPrefix + "pressureKPA",
-            title: "Pressure",
+            title: "Residual Pressure",
             short: "",
             units: Units.KiloPascals,
             systemUid,
@@ -59,7 +59,7 @@ export function addPressureCalculationFields(
         {
             property: propPrefix + "staticPressureKPA",
             title: "Static Pressure",
-            short: "static",
+            short: "",
             units: Units.KiloPascals,
             systemUid,
             category: FieldCategory.Pressure,

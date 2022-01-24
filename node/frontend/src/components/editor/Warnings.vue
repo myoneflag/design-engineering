@@ -16,175 +16,177 @@
     </b-row>
     <b-row class="mt-4">
       <b-col cols="12" v-for="(level, index) in treeWarningsData" :key="index">
-        <div class="warning-level w-100 my-3">
-          <p
-            :aria-expanded="level.visible ? 'true' : 'false'"
-            :aria-controls="level.levelUid"
-            @click="toggleLevel(level.levelUid)"
-            class="m-0 pr-3 level-text"
-            :class="{ actived: document.uiState.levelUid === level.levelUid }"
-          >
-            <v-icon :name="level.visible ? 'caret-down' : 'caret-right'" scale="1" class="mr-2" />
-            {{ getLevelName(level.levelUid) }} ({{ level.count }})
-          </p>
-        </div>
-        <b-collapse :id="level.levelUid" :visible="level.visible" class="mt-2 w-100">
-          <b-table
-            :items="level.data"
-            :fields="fields"
-            responsive="lg"
-            borderless
-            small
-            hover
-            :busy="false"
-            thead-class="d-none"
-            class="level-table"
-          >
-            <template #cell(show_details)="row">
-              <v-icon
-                v-if="row.item.children.length"
-                :name="row.detailsShowing ? 'minus-square' : 'plus-square'"
-                scale="1"
-                role="button"
-                @click.native="toggleType(row, level.levelUid)"
-                class="ml-2"
-              />
-            </template>
-            <template #cell(label)="data">
-              <label
-                v-if="data.item.children.length"
-                class="warning-label text-capitalize mb-0"
-              >{{ data.value || "Unknown Warning Type" }}</label>
-              <label
-                v-else
-                class="warning-label text-capitalize mb-0"
-                role="button"
-                @click="handleClickWarningTitle(data.item)"
-                v-b-popover.hover.top="'Click to View in the Result Mode'"
-              >{{ data.value || "Unknown Title" }}</label>
-            </template>
-            <template #cell(action)="data">
-              <b-row align-h="end">
-                <b-col cols="auto" v-if="data.item.children.length">
-                  <v-icon
-                    :name="data.item.hidden ? 'eye' : 'eye-slash'"
-                    class="mr-2"
-                    scale="1"
-                    role="button"
-                    @click.native="
-                      toggleGroupWarning(
-                        data.item.children.map((e) => e.uid),
-                        data.item.hidden
-                      )
-                    "
-                    v-b-popover.hover.top="`Click to ${data.item.hidden ? 'Show' : 'Hide'} the Warnings`"
-                  />
-                  <a v-if="data.item.helpLink" :href="data.item.helpLink" target="_blank" class="help-link">
+        <template v-if="getLevel(level.levelUid)">
+          <div class="warning-level w-100 my-3">
+            <p
+              :aria-expanded="level.visible ? 'true' : 'false'"
+              :aria-controls="level.levelUid"
+              @click="toggleLevel(level.levelUid)"
+              class="m-0 pr-3 level-text"
+              :class="{ actived: document.uiState.levelUid === level.levelUid }"
+            >
+              <v-icon :name="level.visible ? 'caret-down' : 'caret-right'" scale="1" class="mr-2" />
+              {{ getLevel(level.levelUid).abbreviation }} ({{ level.count }})
+            </p>
+          </div>
+          <b-collapse :id="level.levelUid" :visible="level.visible" class="mt-2 w-100">
+            <b-table
+              :items="level.data"
+              :fields="fields"
+              responsive="lg"
+              borderless
+              small
+              hover
+              :busy="false"
+              thead-class="d-none"
+              class="level-table"
+            >
+              <template #cell(show_details)="row">
+                <v-icon
+                  v-if="row.item.children.length"
+                  :name="row.detailsShowing ? 'minus-square' : 'plus-square'"
+                  scale="1"
+                  role="button"
+                  @click.native="toggleType(row, level.levelUid)"
+                  class="ml-2"
+                />
+              </template>
+              <template #cell(label)="data">
+                <label
+                  v-if="data.item.children.length"
+                  class="warning-label text-capitalize mb-0"
+                >{{ data.value || "Unknown Warning Type" }}</label>
+                <label
+                  v-else
+                  class="warning-label text-capitalize mb-0"
+                  role="button"
+                  @click="handleClickWarningTitle(data.item)"
+                  v-b-popover.hover.top="'Click to View in the Result Mode'"
+                >{{ data.value || "Unknown Title" }}</label>
+              </template>
+              <template #cell(action)="data">
+                <b-row align-h="end">
+                  <b-col cols="auto" v-if="data.item.children.length">
                     <v-icon
-                      name="info-circle"
+                      :name="data.item.hidden ? 'eye' : 'eye-slash'"
                       class="mr-2"
                       scale="1"
-                      :id="'help_link_' + data.item.uid"
+                      role="button"
+                      @click.native="
+                        toggleGroupWarning(
+                          data.item.children.map((e) => e.uid),
+                          data.item.hidden
+                        )
+                      "
+                      v-b-popover.hover.top="`Click to ${data.item.hidden ? 'Show' : 'Hide'} the Warnings`"
                     />
-                  </a>
-                  <v-icon
-                    v-else
-                    name="info-circle"
-                    class="mr-2"
-                    scale="1"
-                    :id="'help_link_' + data.item.uid"
-                  />
-                </b-col>
-                <b-col cols="auto" v-else>
-                  <v-icon
-                    name="edit"
-                    class="mr-2"
-                    scale="1"
-                    role="button" 
-                    @click.native="editEntity(data.item)"
-                    v-b-popover.hover.top="'Click to Edit in the Plumbing Mode'"
-                  />
-                  <v-icon
-                    :name="isHiddenWarning(data.item.uid) ? 'eye' : 'eye-slash'"
-                    class="mr-2"
-                    scale="1"
-                    role="button"
-                    @click.native="toggleWarning(data.item.uid)"
-                    v-b-popover.hover.top="`Click to ${isHiddenWarning(data.item.uid) ? 'Show' : 'Hide'} the Warning`"
-                  />
-                  <a v-if="data.item.helpLink" :href="data.item.helpLink" target="_blank" class="help-link">
-                    <v-icon
-                      name="info-circle"
-                      class="mr-2"
-                      scale="1"
-                      :id="'help_link_' + data.item.uid"
-                    />
-                  </a>
-                  <v-icon
-                    v-else
-                    name="info-circle"
-                    class="mr-2"
-                    scale="1"
-                    :id="'help_link_' + data.item.uid"
-                  />
-                </b-col>
-                <b-popover v-if="data.item.description" :target="'help_link_' + data.item.uid" triggers="hover" placement="topright">
-                  <div v-html="data.item.description" />
-                  <template v-if="data.item.helpLink">
-                    More details <a :href="data.item.helpLink" target="_blank">here</a>
-                  </template>
-                </b-popover>
-              </b-row>
-            </template>
-
-            <template #row-details="row">
-              <b-table
-                v-if="row.item.children.length"
-                :items="row.item.children"
-                :fields="fields"
-                responsive="lg"
-                borderless
-                small
-                hover
-                :busy="false"
-                thead-class="d-none"
-                class="type-table mb-0"
-              >
-                <template #cell(show_details)>└</template>
-                <template #cell(label)="data">
-                  <label
-                    class="warning-label text-capitalize mb-0"
-                    role="button"
-                    @click="handleClickWarningTitle(data.item)"
-                    v-b-popover.hover.top="'Click to View in the Result Mode'"
-                  >{{ data.value }}</label>
-                </template>
-                <template #cell(action)="data">
-                  <b-row align-h="end">
-                    <b-col cols="auto">
+                    <a v-if="data.item.helpLink" :href="data.item.helpLink" target="_blank" class="help-link">
                       <v-icon
-                        name="edit"
+                        name="info-circle"
                         class="mr-2"
                         scale="1"
-                        role="button"
-                        @click.native="editEntity(data.item)"
-                        v-b-popover.hover.top="'Click to Edit in the Plumbing Mode'"
+                        :id="'help_link_' + data.item.uid"
                       />
+                    </a>
+                    <v-icon
+                      v-else
+                      name="info-circle"
+                      class="mr-2"
+                      scale="1"
+                      :id="'help_link_' + data.item.uid"
+                    />
+                  </b-col>
+                  <b-col cols="auto" v-else>
+                    <v-icon
+                      name="edit"
+                      class="mr-2"
+                      scale="1"
+                      role="button" 
+                      @click.native="editEntity(data.item)"
+                      v-b-popover.hover.top="'Click to Edit in the Plumbing Mode'"
+                    />
+                    <v-icon
+                      :name="isHiddenWarning(data.item.uid) ? 'eye' : 'eye-slash'"
+                      class="mr-2"
+                      scale="1"
+                      role="button"
+                      @click.native="toggleWarning(data.item.uid)"
+                      v-b-popover.hover.top="`Click to ${isHiddenWarning(data.item.uid) ? 'Show' : 'Hide'} the Warning`"
+                    />
+                    <a v-if="data.item.helpLink" :href="data.item.helpLink" target="_blank" class="help-link">
                       <v-icon
-                        :name="isHiddenWarning(data.item.uid) ? 'eye' : 'eye-slash'"
-                        class="mr-2rem"
+                        name="info-circle"
+                        class="mr-2"
                         scale="1"
-                        role="button"
-                        @click.native="toggleWarning(data.item.uid)"
-                        v-b-popover.hover.top="`Click to ${isHiddenWarning(data.item.uid) ? 'Show' : 'Hide'} the Warning`"
+                        :id="'help_link_' + data.item.uid"
                       />
-                    </b-col>
-                  </b-row>
-                </template>
-              </b-table>
-            </template>
-          </b-table>
-        </b-collapse>
+                    </a>
+                    <v-icon
+                      v-else
+                      name="info-circle"
+                      class="mr-2"
+                      scale="1"
+                      :id="'help_link_' + data.item.uid"
+                    />
+                  </b-col>
+                  <b-popover v-if="data.item.description" :target="'help_link_' + data.item.uid" triggers="hover" placement="topright">
+                    <div v-html="data.item.description" />
+                    <template v-if="data.item.helpLink">
+                      More details <a :href="data.item.helpLink" target="_blank">here</a>
+                    </template>
+                  </b-popover>
+                </b-row>
+              </template>
+
+              <template #row-details="row">
+                <b-table
+                  v-if="row.item.children.length"
+                  :items="row.item.children"
+                  :fields="fields"
+                  responsive="lg"
+                  borderless
+                  small
+                  hover
+                  :busy="false"
+                  thead-class="d-none"
+                  class="type-table mb-0"
+                >
+                  <template #cell(show_details)>└</template>
+                  <template #cell(label)="data">
+                    <label
+                      class="warning-label text-capitalize mb-0"
+                      role="button"
+                      @click="handleClickWarningTitle(data.item)"
+                      v-b-popover.hover.top="'Click to View in the Result Mode'"
+                    >{{ data.value }}</label>
+                  </template>
+                  <template #cell(action)="data">
+                    <b-row align-h="end">
+                      <b-col cols="auto">
+                        <v-icon
+                          name="edit"
+                          class="mr-2"
+                          scale="1"
+                          role="button"
+                          @click.native="editEntity(data.item)"
+                          v-b-popover.hover.top="'Click to Edit in the Plumbing Mode'"
+                        />
+                        <v-icon
+                          :name="isHiddenWarning(data.item.uid) ? 'eye' : 'eye-slash'"
+                          class="mr-2rem"
+                          scale="1"
+                          role="button"
+                          @click.native="toggleWarning(data.item.uid)"
+                          v-b-popover.hover.top="`Click to ${isHiddenWarning(data.item.uid) ? 'Show' : 'Hide'} the Warning`"
+                        />
+                      </b-col>
+                    </b-row>
+                  </template>
+                </b-table>
+              </template>
+            </b-table>
+          </b-collapse>
+        </template>
       </b-col>
     </b-row>
   </div>
@@ -237,7 +239,7 @@ export default class Warnings extends Vue {
   }
 
   get treeWarningsData(): any[] {
-    return getTreeDataOfWarnings(this.warnings, this.document.uiState.warningFilter, this.document.uiState.pressureOrDrainage);
+    return getTreeDataOfWarnings(this.document.documentId, this.warnings, this.document.uiState.warningFilter, this.document.uiState.pressureOrDrainage);
   }
 
   get warnings(): WarningUi[] {
@@ -245,10 +247,10 @@ export default class Warnings extends Vue {
 
     for (const o of this.globalStore.values()) {
       if (isCalculated(o.entity)) {
-        const calculation = this.globalStore.getCalculation(o.entity)!;
+        const calculation = this.globalStore.getCalculation(o.entity);
         allWarnings = [
           ...allWarnings,
-          ...(calculation.warnings?.map((w) => ({
+          ...(calculation?.warnings?.map((w) => ({
             ...w,
             entityUid: o.entity.uid,
             levelUid: this.globalStore.levelOfEntity.get(o.entity.uid)!
@@ -268,8 +270,8 @@ export default class Warnings extends Vue {
     return Warning;
   }
 
-  getLevelName(levelUid: string | null): string {
-    return this.sortedLevels.find((e) => e.uid === levelUid)?.abbreviation!;
+  getLevel(levelUid: string | null): Level {
+    return this.sortedLevels.find((e) => e.uid === levelUid)!;
   }
 
   isHiddenWarning(warningUid: string): boolean {

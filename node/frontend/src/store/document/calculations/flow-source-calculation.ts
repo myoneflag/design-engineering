@@ -39,7 +39,7 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: D
         result.push(
             {
                 property: "flowRateLS",
-                title: "Flow Rate",
+                title: "Peak Flow Rate",
                 short: "",
                 units: Units.LitersPerSecond,
                 systemUid: entity.systemUid,

@@ -28,14 +28,14 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, doc: D
     result.push(
         {
             property: "flowRateLS",
-            title: "Flow Rate",
+            title: "Peak Flow Rate",
             short: "",
             units: Units.LitersPerSecond,
             systemUid: entity.systemUid,
             category: FieldCategory.FlowRate
         },
     );
-
+/* 
     if (doc.drawing.metadata.calculationParams.psdMethod !== null) {
         result.push({
             property: "psdUnits.units",
@@ -57,7 +57,7 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, doc: D
             systemUid: entity.systemUid
         });
     }
-
+ */
     return result;
 }
 

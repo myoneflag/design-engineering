@@ -1,12 +1,8 @@
 import Vue from 'vue';
 import { Catalog } from "../../../common/src/api/catalog/types";
-import { cloneSimple, interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
-import BaseBackedObject from "../htmlcanvas/lib/base-backed-object";
-import { CalculationFilters, DocumentState } from "../store/document/types";
-import { getFields } from "../calculations/utils";
-import { getEntityName } from "../../../common/src/api/document/entities/types";
+import { interpolateTable, parseCatalogNumberExact } from "../../../common/src/lib/utils";
 import { Color } from "../../../common/src/api/document/drawing";
-import { assertUnreachable } from "../../../common/src/api/config";
+import _ from "lodash";
 
 export const lighten = (col: string, percent: number, alpha: number = 1.0) => {
     const num = parseInt(col.substr(1), 16);
@@ -142,71 +138,6 @@ export function setPropertyByStringVue(obj: any, s: string, val: any) {
 export function getValveK(catalogId: string, catalog: Catalog, pipeDiameterMM: number): number | null {
     const table = catalog.valves[catalogId].valvesBySize;
     return interpolateTable(table, pipeDiameterMM, false, (v) => parseCatalogNumberExact(v.kValue));
-}
-
-export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilters: CalculationFilters, document: DocumentState, catalog: Catalog) {
-    const build: CalculationFilters = {};
-
-    const existing = cloneSimple(calculationFilters);
-
-    const wasInserted = new Set<string>();
-    const hasEnabled = new Set<string>();
-
-    objects.forEach((o) => {
-        let fields = getFields(o.entity, document, o.globalStore, catalog);
-        switch (document.uiState.pressureOrDrainage) {
-            case "pressure":
-                fields = fields.filter((f) => f.layouts === undefined || f.layouts.includes('pressure'));
-                break;
-            case "drainage":
-                fields = fields.filter((f) => f.layouts !== undefined && f.layouts.includes('drainage'));
-                break;
-            default:
-                assertUnreachable(document.uiState.pressureOrDrainage);
-        }
-
-        const eName = getEntityName(o.entity, document.drawing);
-
-        if (!(eName in build)) {
-            Vue.set(build, eName, {
-                name: eName,
-                filters: {},
-                enabled: false
-            });
-            wasInserted.add(eName);
-        }
-
-        fields.forEach((f) => {
-            if (!(f.title in build[eName].filters)) {
-                Vue.set(build[eName].filters, f.title, {
-                    name: f.title,
-                    value: false
-                });
-                if (f.defaultEnabled) {
-                    build[eName].filters[f.title].enabled = true;
-                    hasEnabled.add(eName);
-                }
-            }
-        });
-    });
-
-    for (const eName of Array.from(wasInserted.values())) {
-        if (hasEnabled.has(eName)) {
-            build[eName].enabled = true;
-        }
-    }
-
-    for (const eName in existing) {
-        if (eName in build && existing.hasOwnProperty(eName)) {
-            for (const prop in existing[eName].filters) {
-                if (prop in build[eName].filters) {
-                    build[eName].filters[prop].enabled = existing[eName].filters[prop].enabled;
-                }
-            }
-            build[eName].enabled = existing[eName].enabled;
-        }
-    }
-    return build;
 }
 
 export function getNextPipeSize(currentSize: number, pipeSizes: number[]): number {

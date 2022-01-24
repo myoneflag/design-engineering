@@ -10,6 +10,8 @@ import { PAPER_SIZES, PaperSize } from "../../../../common/src/api/paper-config"
 import { SupportedLocales } from "../../../../common/src/api/locale";
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
+import { FieldCategory } from "./calculations/calculation-field";
+import { StandardFlowSystemUids } from "../../../../common/src/api/config";
 
 // Because of how the diffing engine works, there are restrictions on the data structure for the document state.
 // Rules are:
@@ -22,6 +24,11 @@ import { EntityType } from "../../../../common/src/api/document/entities/types";
 
 export interface CalculationUiSettings {
 
+}
+
+export enum PressureOrDrainage {
+    Pressure = "pressure",
+    Drainage = "drainage"
 }
 
 export interface UIState {
@@ -42,6 +49,7 @@ export interface UIState {
     lastUsedValveVid: ValveId | null;
 
     calculationFilters: CalculationFilters;
+    calculationFilterSettings: CalculationFilterSettings;
     warningFilter: WarningFilter;
 
     levelUid: string | null;
@@ -88,6 +96,24 @@ export interface CalculationFilter {
 export interface FilterKey {
     name: string;
     enabled: boolean;
+    targets?: string[];
+}
+
+export enum CalculationFilterSettingType {
+    Systems = "systems",
+    View = "view",
+}
+export type CalculationFilterSettings = {
+    [key in CalculationFilterSettingType]: CalculationFilterSetting;
+}
+export interface CalculationFilterSetting {
+    name: string;
+    enabled: boolean;
+    filters: { [key: string]: FilterSettingKey };
+}
+export interface FilterSettingKey extends FilterKey {
+    pressureOrDrainage?: PressureOrDrainage;
+    category?: FieldCategory[];
 }
 
 export interface WarningFilter {
@@ -148,6 +174,105 @@ export interface DiffFilter {
     shared: any;
 }
 
+export const initCalculationFilterSettings = {
+    [CalculationFilterSettingType.Systems]: {
+        enabled: true,
+        name: "Systems",
+        filters: {
+            "all": {
+                name: "Show All",
+                enabled: true,
+            },
+            [StandardFlowSystemUids.ColdWater]: {
+                name: "Cold Water",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
+            [StandardFlowSystemUids.HotWater]: {
+                name: "Hot Water",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
+            [StandardFlowSystemUids.Gas]: {
+                name: "Gas",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
+            [StandardFlowSystemUids.SewerDrainage]: {
+                name: "Sewer Drainage",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            },
+            [StandardFlowSystemUids.SanitaryPlumbing]: {
+                name: "Sanitary Plumbing",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            },
+            [StandardFlowSystemUids.TradeWaste]: {
+                name: "Trade Waste",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            },
+        },
+    },
+    [CalculationFilterSettingType.View]: {
+        enabled: true,
+        name: "View",
+        filters: {
+            "all": {
+                name: "All",
+                enabled: false,
+            },
+            "custom": {
+                name: "Custom",
+                enabled: true,
+            },
+            "names": {
+                name: "Names",
+                enabled: false,
+                category: [FieldCategory.EntityName]
+            },
+            "pipe-sizing": {
+                name: "Pipe Sizing",
+                enabled: false,
+                category: [
+                    FieldCategory.Size,
+                    FieldCategory.LoadingUnits,
+                    FieldCategory.Velocity,
+                    FieldCategory.FlowRate,
+                    FieldCategory.HeatLoss,
+                ]
+            },
+            "pressure": {
+                name: "Pressure",
+                enabled: false,
+                pressureOrDrainage: PressureOrDrainage.Pressure,
+                category: [FieldCategory.Pressure]
+            },
+            "heat-loss": {
+                name: "Heat Loss",
+                enabled: false,
+                pressureOrDrainage: PressureOrDrainage.Pressure,
+                category: [
+                    FieldCategory.HeatLoss,
+                    FieldCategory.Volume,
+                    FieldCategory.Length
+                ]
+            },
+            "grade-fall": {
+                name: "Grade/Fall",
+                enabled: false,
+                pressureOrDrainage: PressureOrDrainage.Drainage,
+                category: [
+                    FieldCategory.Location,
+                    FieldCategory.Size,
+                    FieldCategory.Length
+                ]
+            },
+        },
+    }
+};
+
 export const initialUIState: UIState = {
     drawingMode: DrawingMode.FloorPlan,
     loaded: false,
@@ -168,6 +293,7 @@ export const initialUIState: UIState = {
     lastCalculationSuccess: false,
     isCalculating: false,
     calculationFilters: {},
+    calculationFilterSettings: initCalculationFilterSettings,
     warningFilter: {
         hiddenUids: [],
         collapsedLevelType: [],

@@ -2,8 +2,9 @@ import { CalculationLayout } from "./calculation-field";
 import { Calculation } from "./types";
 import * as _ from "lodash";
 import uuid from 'uuid';
-import { WarningFilter } from "../types";
+import { DocumentState, WarningFilter } from "../types";
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
+import { saveWarningsPreference } from "../../../../src/lib/filters/warnings";
 
 export enum Warning {
     MAX_PRESSURE_EXCEEDED_NODE,
@@ -316,10 +317,12 @@ export const addWarning = (
 
 /* Get tree data of Warnings */
 export function getTreeDataOfWarnings(
+    documentId: number, 
     warnings: WarningUi[],
     warningFilter: WarningFilter,
     pressureOrDrainage: CalculationLayout,
 ): any[] {
+    saveWarningsPreference(window, documentId, warningFilter);
     const { showHiddenWarnings, hiddenUids, collapsedLevelType, activeEntityUid } = warningFilter;
     /** Filter hidden warnings & mentioning level to 'ground' */
     const visibleWarnings = warnings
