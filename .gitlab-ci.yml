@@ -23,6 +23,7 @@ build:cloudformation:
     only:
         refs:
           - merge_requests
+          - /^master$/          
         changes:
           - cloudformation/**/*
           - config/**/*
@@ -37,8 +38,9 @@ build:docker:
     only:
         refs:
           - merge_requests
+          - /^master$/          
         changes:
-          - docker/**/*          
+          - docker/**/*
     cache: []
     script:
         - cd docker
@@ -51,6 +53,7 @@ build:frontend:
     only:
         refs:
           - merge_requests
+          - /^master$/
         changes:
           - node/**/*
     cache:
@@ -69,6 +72,7 @@ build:backend:
     only:
         refs:
           - merge_requests
+          - /^master$/          
         changes:
           - node/**/*
     cache:
