@@ -428,8 +428,8 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
         }
         for (const conn of connections) {
             const pipe = this.globalStore.get(conn) as Pipe;
-            const calc = this.globalStore.getOrCreateCalculation(pipe.entity);
-            if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+            const calc = this.globalStore.getCalculation(pipe.entity)!;
+            if (calc?.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
                 return false;
             }
         }
