@@ -24,6 +24,7 @@ import {
 import CoordContextualSnappingTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 import { isDrainage } from "../../../../common/src/api/config";
 import { convertMeasurementSystem, Units } from "../../../../common/src/lib/measurements";
+import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
 
 export default function insertPipes(context: CanvasContext, system: FlowSystemParameters, network: NetworkType) {
     // strategy:
@@ -217,6 +218,17 @@ function insertPipeChain(
 
                     context.$store.dispatch("document/addEntity", nextEntity);
                     context.globalStore.get(nextEntity.uid)!.rebase(context);
+                }
+
+                const riser = lastAttachment.type === EntityType.RISER
+                    ? lastAttachment as RiserEntity
+                    : nextEntity.type === EntityType.RISER
+                        ? nextEntity as RiserEntity
+                        : null;
+
+                // lets fix v-vents that exist without connections yet
+                if (riser && riser.isVent && riser.bottomHeightM === null) {
+                    riser.bottomHeightM = context.document.drawing.levels[context.document.uiState.levelUid!].floorHeightM;
                 }
 
                 const pipe: PipeEntity = {

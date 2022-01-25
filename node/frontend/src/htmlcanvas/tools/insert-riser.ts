@@ -1,14 +1,14 @@
-import {MainEventBus} from "../../../src/store/main-event-bus";
+import { MainEventBus } from "../../../src/store/main-event-bus";
 import RiserEntity from "../../../../common/src/api/document/entities/riser-entity";
-import {EntityType} from "../../../../common/src/api/document/entities/types";
+import { EntityType } from "../../../../common/src/api/document/entities/types";
 import uuid from "uuid";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
-import {InteractionType} from "../../../src/htmlcanvas/lib/interaction";
-import {Coord, FlowSystemParameters, NetworkType} from "../../../../common/src/api/document/drawing";
-import {cloneSimple} from "../../../../common/src/lib/utils";
-import {moveOnto} from "../lib/black-magic/move-onto";
-import {BaseBackedConnectable} from "../lib/BackedConnectable";
-import SnappingInsertTool, {CONNECTABLE_SNAP_RADIUS_PX} from "./snapping-insert-tool";
+import { InteractionType } from "../../../src/htmlcanvas/lib/interaction";
+import { Coord, FlowSystemParameters, NetworkType } from "../../../../common/src/api/document/drawing";
+import { cloneSimple } from "../../../../common/src/lib/utils";
+import { moveOnto } from "../lib/black-magic/move-onto";
+import { BaseBackedConnectable } from "../lib/BackedConnectable";
+import SnappingInsertTool, { CONNECTABLE_SNAP_RADIUS_PX } from "./snapping-insert-tool";
 
 export default function insertRiser(context: CanvasContext, system: FlowSystemParameters, isVent: boolean | undefined) {
     const newUid = uuid();
@@ -49,7 +49,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                 const connections: string[] = [];
 
                 const newEntity: RiserEntity = {
-                    bottomHeightM: null,
+                    bottomHeightM: !!isVent ? context.document.drawing.levels[context.document.uiState.levelUid!].floorHeightM : null,
                     topHeightM: null,
                     center: cloneSimple(wc),
                     color: null,
@@ -62,7 +62,7 @@ export default function insertRiser(context: CanvasContext, system: FlowSystemPa
                     temperatureC: null,
                     type: EntityType.RISER,
                     isVent: !!isVent,
-                    uid: newUid, 
+                    uid: newUid,
                     entityName: null
                 };
 
