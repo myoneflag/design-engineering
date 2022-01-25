@@ -107,6 +107,7 @@ export function makePipeCalculationFields(
             units: Units.None,
             category: FieldCategory.EntityName,
             systemUid: entity.systemUid,
+            layouts: ['pressure', 'drainage'],
         },
     );
 

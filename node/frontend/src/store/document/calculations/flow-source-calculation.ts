@@ -31,6 +31,7 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: D
                 units: Units.None,
                 category: FieldCategory.EntityName,
                 systemUid: entity.systemUid,
+                layouts: ['pressure', 'drainage'],
             },
         );
 

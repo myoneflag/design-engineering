@@ -1,5 +1,10 @@
 import { LayerImplementation } from "../../../src/htmlcanvas/layers/layer";
-import { CalculationFilters, CalculationFilterSettings, DocumentState } from "../../../src/store/document/types";
+import {
+    CalculationFilters,
+    CalculationFilterSettings,
+    DocumentState,
+    FilterSettingSystemKeyValues
+} from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { MouseMoveResult, UNHANDLED } from "../../../src/htmlcanvas/types";
@@ -179,7 +184,7 @@ export default class CalculationLayer extends LayerImplementation {
         let isShowAll = true;
         const disallowedSystems = new Set<string>();
         for (const sName in filterSystemSetting) {
-            if (!filterSystemSetting[sName].enabled) {
+            if (!filterSystemSetting[sName as FilterSettingSystemKeyValues]?.enabled) {
                 if (sName !== "all") {
                     disallowedSystems.add(sName);
                 }

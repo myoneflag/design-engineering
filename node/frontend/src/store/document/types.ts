@@ -104,13 +104,33 @@ export enum CalculationFilterSettingType {
     View = "view",
 }
 export type CalculationFilterSettings = {
-    [key in CalculationFilterSettingType]: CalculationFilterSetting;
+    [CalculationFilterSettingType.Systems]: {
+        enabled: boolean,
+        name: string,
+        filters: { [key in FilterSettingSystemKeyValues]: FilterSettingKey },
+    },
+    [CalculationFilterSettingType.View]: {
+        enabled: boolean,
+        name: string,
+        filters: { [key in FilterSettingViewKeyValues]: FilterSettingKey },
+    },
 }
-export interface CalculationFilterSetting {
-    name: string;
-    enabled: boolean;
-    filters: { [key: string]: FilterSettingKey };
-}
+export type FilterSettingSystemKeyValues =
+    "all" |
+    StandardFlowSystemUids.ColdWater |
+    StandardFlowSystemUids.HotWater |
+    StandardFlowSystemUids.Gas |
+    StandardFlowSystemUids.SewerDrainage |
+    StandardFlowSystemUids.SanitaryPlumbing |
+    StandardFlowSystemUids.TradeWaste;
+export type FilterSettingViewKeyValues =
+    "all" |
+    "custom" |
+    "names" |
+    "pipe-sizing" |
+    "pressure" |
+    "heat-loss" |
+    "grade-fall";
 export interface FilterSettingKey extends FilterKey {
     pressureOrDrainage?: PressureOrDrainage;
     category?: FieldCategory[];

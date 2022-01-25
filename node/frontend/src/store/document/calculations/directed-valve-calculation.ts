@@ -50,6 +50,7 @@ export function makeDirectedValveCalculationFields(
                 units: Units.None,
                 category: FieldCategory.EntityName,
                 systemUid: systemUid,
+                layouts: ['pressure', 'drainage'],
             },
         );
     }

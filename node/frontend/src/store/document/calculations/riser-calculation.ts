@@ -63,6 +63,7 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
             short: "",
             units: Units.None,
             category: FieldCategory.EntityName,
+            layouts: ['pressure', 'drainage'],
         },
     );
 

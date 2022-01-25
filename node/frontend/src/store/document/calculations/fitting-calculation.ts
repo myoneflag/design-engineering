@@ -37,6 +37,7 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
             short: "",
             units: Units.None,
             category: FieldCategory.EntityName,
+            layouts: ['pressure', 'drainage'],
         },
     );
 

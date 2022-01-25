@@ -49,6 +49,7 @@ export function makeBigValveCalculationFields(doc: DocumentState, entity: BigVal
             short: "",
             units: Units.None,
             category: FieldCategory.EntityName,
+            layouts: ['pressure', 'drainage'],
         },
     );
 

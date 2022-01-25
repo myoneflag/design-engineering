@@ -107,7 +107,14 @@ import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { exportBudgetReport } from "../../htmlcanvas/lib/budget-report/budget-report";
 import { globalStore } from "../../store/document/mutations";
-import { CalculationFilters, CalculationFilterSettings, DocumentState, CalculationFilterSettingType } from "../../store/document/types";
+import {
+    CalculationFilters,
+    CalculationFilterSettings,
+    DocumentState,
+    CalculationFilterSettingType,
+    FilterSettingViewKeyValues,
+    FilterSettingSystemKeyValues
+} from "../../store/document/types";
 import { MainEventBus } from "../../store/main-event-bus";
 import { getEffectiveFilter, getFilterSettings, getCombinedFilter } from "../../lib/filters/results";
 import { User } from "../../../../common/src/models/User";
@@ -239,13 +246,13 @@ export default class CalculationsSidebar extends Vue {
     }
 
     onSettingCheck(eName: string, prop: string, value: boolean, shouldChange: boolean = true) {
-        this.document.uiState.calculationFilterSettings[eName as CalculationFilterSettingType].filters[prop].enabled = value;
         switch (eName) {
             case CalculationFilterSettingType.Systems:
+                this.document.uiState.calculationFilterSettings[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].enabled = value;
                 if (prop === "all") {
                     for (const cName in this.document.uiState.calculationFilterSettings.systems.filters) {
                         Vue.set(
-                            this.document.uiState.calculationFilterSettings.systems.filters[cName],
+                            this.document.uiState.calculationFilterSettings.systems.filters[cName as FilterSettingSystemKeyValues],
                             "enabled",
                             value
                         );
@@ -253,6 +260,7 @@ export default class CalculationsSidebar extends Vue {
                 }
                 break;
             case CalculationFilterSettingType.View:
+                this.document.uiState.calculationFilterSettings[CalculationFilterSettingType.View].filters[prop as FilterSettingViewKeyValues].enabled = value;
                 switch (prop) {
                     case "all":
                         for (const cName in this.document.uiState.calculationFilterSettings.view.filters) {
@@ -266,7 +274,7 @@ export default class CalculationsSidebar extends Vue {
                                 }
                             } else {
                                 Vue.set(
-                                    this.document.uiState.calculationFilterSettings.view.filters[cName],
+                                    this.document.uiState.calculationFilterSettings.view.filters[cName as FilterSettingViewKeyValues],
                                     "enabled",
                                     value
                                 );
@@ -278,7 +286,7 @@ export default class CalculationsSidebar extends Vue {
                             for (const cName in this.document.uiState.calculationFilterSettings.view.filters) {
                                 if (cName !== "custom") {
                                     Vue.set(
-                                        this.document.uiState.calculationFilterSettings.view.filters[cName],
+                                        this.document.uiState.calculationFilterSettings.view.filters[cName as FilterSettingViewKeyValues],
                                         "enabled",
                                         false
                                     );
