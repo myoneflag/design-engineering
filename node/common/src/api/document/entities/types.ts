@@ -3,6 +3,7 @@ import { DrawableEntityConcrete } from "./concrete-entity";
 import { assertUnreachable, isDrainage } from "../../config";
 import { BigValveType } from "./big-valve/big-valve-entity";
 import { PlantType } from "./plants/plant-types";
+import { ValveType } from "./directed-valves/valve-types";
 
 export enum EntityType {
     BACKGROUND_IMAGE = "BACKGROUND_IMAGE",
@@ -64,6 +65,14 @@ export function getEntityName(entity: DrawableEntityConcrete, drawing: DrawingSt
         case EntityType.FIXTURE:
             return "Fixture";
         case EntityType.DIRECTED_VALVE:
+            if (entity.valve.type === ValveType.FLOOR_WASTE) {
+                return 'Floor Waste';
+            }
+
+            if (entity.valve.type === ValveType.INSPECTION_OPENING) {
+                return 'Inspection Opening';
+            }
+
             return "Small Valves";
         case EntityType.LOAD_NODE:
             return "Load Node";

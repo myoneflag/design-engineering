@@ -290,6 +290,8 @@ export interface Catalog {
     hotWaterPlant: SelectedMaterialManufacturer[];
     fixtures: SelectedMaterialManufacturer[];
     greaseInterceptorTrap?: SelectedMaterialManufacturer[];
+    floorWaste: SelectedMaterialManufacturer[];
+    inspectionOpening: SelectedMaterialManufacturer[];
     [key: string]: SelectedMaterialManufacturer[] | undefined;
 }
 
@@ -1003,6 +1005,13 @@ export const initialAustralianDrawing: DrawingState = {
                 { uid: 'hotWaterPlant', manufacturer: 'generic', selected: null, }
             ],
             fixtures: [],
+            floorWaste: [
+                { manufacturer: "blucher", uid: "floorWaste", selected: null, },
+            ],
+            inspectionOpening: [
+                { manufacturer: "blucher", uid: "inspectionOpening", selected: null, },
+            ],
+
         },
         priceTable: {},
     },

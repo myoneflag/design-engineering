@@ -1,5 +1,5 @@
-import {Catalog, PRVSize} from "../../../../common/src/api/catalog/types";
-import {Units} from "../../../../common/src/lib/measurements";
+import { Catalog, PRVSize, FloorWasteSize, IOSize } from "../../../../common/src/api/catalog/types";
+import { Units } from "../../../../common/src/lib/measurements";
 import { SupportedLocales } from "../../../../common/src/api/locale";
 import { I18N } from "../../../../common/src/api/locale/values";
 
@@ -16,7 +16,7 @@ export type Page<V> = {
 export interface Table<TV> {
     primaryName: string | null;
     primaryUnits?: Units;
-    columns: Array<[keyof TV | null, string, Units] | [keyof TV | null, string] | [keyof PRVSize, string, Units]>;
+    columns: Array<[keyof TV | null, string, Units] | [keyof TV | null, string] | [keyof PRVSize | keyof FloorWasteSize | keyof IOSize, string, Units]>;
     link?: Page<TV> | null;
     twoDimensional?: boolean;
 }
@@ -40,7 +40,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                     ["outletAboveFloorM", "Outlet Height", Units.Meters]
                 ],
                 link: {
-                    manufacturer: { order: 1, name: "Manufacturer"},
+                    manufacturer: { order: 1, name: "Manufacturer" },
                     name: { order: 2, name: "Fixture Name" },
                     abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
@@ -209,7 +209,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
-                    state: { order: 2, name: "State"},
+                    state: { order: 2, name: "State" },
                     densityKGM3: { order: 3, name: "Density (kg/m^3)" },
                     dynamicViscosityByTemperature: {
                         order: 4,
@@ -242,7 +242,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 ],
                 link: {
                     name: { order: 1, name: "Material" },
-                    manufacturer: { order: 2, name: "Manufacturer"},
+                    manufacturer: { order: 2, name: "Manufacturer" },
                     abbreviation: { order: 3, name: "Abbreviation" },
                     uid: null,
                     pipesBySize: {
@@ -305,7 +305,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
-                    manufacturer: {order: 2, name: "Manufacturer"},
+                    manufacturer: { order: 2, name: "Manufacturer" },
                     uid: null,
                     minInletPressureKPA: { order: 4, name: "Min. Inlet Pressure", units: Units.KiloPascals },
                     maxInletPressureKPA: { order: 5, name: "Max. Inlet Pressure", units: Units.KiloPascals },
@@ -356,7 +356,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                 ],
                 link: {
                     name: { order: 1, name: "Name" },
-                    manufacturer: { order: 2, name: "Manufacturer"},
+                    manufacturer: { order: 2, name: "Manufacturer" },
                     abbreviation: null,
                     uid: null,
                     valvesBySize: {
@@ -383,7 +383,7 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
                                     table: {
                                         primaryName: "Flow Rate",
                                         primaryUnits: Units.LitersPerSecond,
-                                        columns: [[null, "Pressure Loss", Units.KiloPascals ]]
+                                        columns: [[null, "Pressure Loss", Units.KiloPascals]]
                                     }
                                 }
                             }
@@ -397,5 +397,27 @@ export function getCatalogDisplaySchema(locale: SupportedLocales): CatalogSchema
             name: I18N.balancingValve[locale],
         },
         hotWaterPlant: null,
+        floorWaste: {
+            order: 12,
+            name: I18N.floorWaste[locale],
+            table: {
+                primaryName: null,
+                columns: [
+                    ["options", "Options", Units.None],
+                    ["size", "Size (With Bucket Trap)", Units.Millimeters],
+                ],
+            },
+        },
+        inspectionOpening: {
+            order: 12,
+            name: I18N.inspectionOpening[locale],
+            table: {
+                primaryName: null,
+                columns: [
+                    ["pipeSize", "Pipe Size (mm)", Units.None],
+                    ["size", "I.O. Size", Units.Millimeters],
+                ],
+            },
+        },
     };
 }

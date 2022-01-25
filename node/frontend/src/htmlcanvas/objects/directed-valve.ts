@@ -1,5 +1,4 @@
 import BackedConnectable from "../../../src/htmlcanvas/lib/BackedConnectable";
-// tslint:disable-next-line:max-line-length
 import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -25,13 +24,12 @@ import {
     VALVE_SIZE_MM
 } from "../../../src/htmlcanvas/lib/utils";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { DrawingArgs, EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
+import { EntityDrawingArgs } from "../../../src/htmlcanvas/lib/drawable-object";
 import { Calculated, CalculatedObject } from "../../../src/htmlcanvas/lib/object-traits/calculated-object";
 import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
 import PipeEntity, { MutablePipe } from "../../../../common/src/api/document/entities/pipe-entity";
 import DirectedValveCalculation, { emptyDirectedValveCalculation } from "../../store/document/calculations/directed-valve-calculation";
 import FittingEntity from "../../../../common/src/api/document/entities/fitting-entity";
-import uuid from "uuid";
 import { assertUnreachable, ComponentPressureLossMethod, isDrainage, isGas } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, DrawableEntity } from "../../../../common/src/api/document/drawing";
@@ -39,7 +37,6 @@ import { cloneSimple, lowerBoundTable, parseCatalogNumberExact } from "../../../
 import { fillDirectedValveFields } from "../../store/document/entities/fillDirectedValveFields";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { fittingFrictionLossMH, getFluidDensityOfSystem, kpa2head } from "../../calculations/pressure-drops";
-import { EndErrorLine } from "tslint/lib/verify/lines";
 import { SnappableObject } from "../lib/object-traits/snappable-object";
 import { lowerBoundNumberTable } from "../utils";
 import { decomposeMatrix } from "../utils";
@@ -235,7 +232,13 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             ctx.fillStyle = '#000000';
             ctx.font = '65px ' + DEFAULT_FONT_NAME;
-            ctx.fillText("FW", -50, 25);
+
+            let name = 'FW';
+            if (this.entity.valve.type === ValveType.FLOOR_WASTE && this.entity.valve.variant === 'bucketTrap') {
+                name = 'BT';
+            }
+
+            ctx.fillText(name, -50, 25);
         });
     }
 

@@ -8238,4 +8238,40 @@ export const usCatalog: Catalog = {
             },
         },
     },
+    floorWaste: {
+        manufacturer: [
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Floor Waste' },
+            { name: "Blucher", abbreviation: "Blucher", uid: "blucher", priceTableName: 'Floor Waste' }
+        ],
+        size: {
+            blucher: {
+                200: {
+                    size: "200",
+                    options: "Regular",
+                },
+                300: {
+                    size: "300",
+                    options: "Large",
+                },
+            },
+        },
+    },
+    inspectionOpening: {
+        manufacturer: [
+            { name: "Generic", abbreviation: "Generic", uid: "generic", priceTableName: 'Inspection Opening' },
+            { name: "Blucher", abbreviation: "Blucher", uid: "blucher", priceTableName: 'Inspection Opening' }
+        ],
+        size: {
+            blucher: {
+                110: {
+                    size: "110",
+                    pipeSize: ">110",
+                },
+                150: {
+                    size: "150",
+                    pipeSize: "<111",
+                },
+            },
+        },
+    },
 };

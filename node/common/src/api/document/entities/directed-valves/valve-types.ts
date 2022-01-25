@@ -105,6 +105,8 @@ export interface Filter extends DirectedValve {
 
 export interface FloorWaste extends DirectedValve {
     type: ValveType.FLOOR_WASTE;
+    variant: 'normal' | 'bucketTrap' | null;
+    bucketTrapSize: 'regular' | 'large' | null;
 }
 
 export interface InspectionOpening extends DirectedValve {

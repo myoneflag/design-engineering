@@ -707,7 +707,7 @@ export function getFields(
         case EntityType.GAS_APPLIANCE:
             return makeGasApplianceCalculationFields(entity);
         case EntityType.DIRECTED_VALVE:
-            return makeDirectedValveCalculationFields(entity, globalStore, doc.drawing, catalog);
+            return makeDirectedValveCalculationFields(entity, globalStore, doc, catalog);
         case EntityType.SYSTEM_NODE:
             return makeSystemNodeCalculationFields(entity, doc);
         case EntityType.LOAD_NODE:

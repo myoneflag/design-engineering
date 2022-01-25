@@ -257,6 +257,8 @@ function createBareValve(type: ValveType, catalogId: string): DirectedValveConcr
             return {
                 type,
                 catalogId: 'floorWaste',
+                variant: null,
+                bucketTrapSize: null,
             };
         case ValveType.INSPECTION_OPENING:
             return {

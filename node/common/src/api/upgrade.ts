@@ -534,11 +534,11 @@ export function drawing_upgraded25to26(original: DrawingState) {
                 entity.type === EntityType.PIPE ||
                 entity.type === EntityType.BIG_VALVE ||
                 entity.type === EntityType.DIRECTED_VALVE ||
-                entity.type === EntityType.FIXTURE ) {
-                    if (entity.entityName === undefined) {
-                        entity.entityName = null;
-                    }
+                entity.type === EntityType.FIXTURE) {
+                if (entity.entityName === undefined) {
+                    entity.entityName = null;
                 }
+            }
         }
     }
     for (const entity of Object.values(original.shared)) {
@@ -554,7 +554,7 @@ export function drawing_upgraded26to27(original: DrawingState) {
     for (const level of Object.values(original.levels)) {
         const entities = level.entities;
         for (const entity of Object.values(entities)) {
-            if (entity.type === EntityType.FITTING ) {
+            if (entity.type === EntityType.FITTING) {
                 if (entity.entityName === undefined) {
                     entity.entityName = null;
                 }
@@ -563,3 +563,19 @@ export function drawing_upgraded26to27(original: DrawingState) {
     }
 }
 
+export function drawing_upgraded27to28(original: DrawingState) {
+    for (const level of Object.values(original.levels)) {
+        const entities = level.entities;
+        for (const entity of Object.values(entities)) {
+            if (entity.type === EntityType.DIRECTED_VALVE && entity.valve.type === ValveType.FLOOR_WASTE) {
+                if (entity.valve.variant === undefined) {
+                    entity.valve.variant = null;
+                }
+
+                if (entity.valve.bucketTrapSize === undefined) {
+                    entity.valve.bucketTrapSize = null;
+                }
+            }
+        }
+    }
+}
