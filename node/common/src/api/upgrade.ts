@@ -579,3 +579,25 @@ export function drawing_upgraded27to28(original: DrawingState) {
         }
     }
 }
+
+export function drawing_upgraded28to29(original: DrawingState) {
+    for (const riser of Object.values(original.shared)) {
+        if (riser.isVent && riser.bottomHeightM === null) {
+            // ground to roof
+            const sortedLevels = Object.values(original.levels)
+                .slice()
+                .sort((a, b) => -(a.floorHeightM - b.floorHeightM))
+                .reverse();
+
+            const lowestConnectedLevel = sortedLevels.find(l =>
+                !!Object.values(l.entities).find(e =>
+                    e.type === EntityType.PIPE && e.endpointUid.includes(riser.uid)
+                )
+            );
+
+            if (!!lowestConnectedLevel) {
+                riser.bottomHeightM = lowestConnectedLevel.floorHeightM;
+            }
+        }
+    }
+}

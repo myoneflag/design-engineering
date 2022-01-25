@@ -5,7 +5,7 @@ import { DrawingState, initialDrawing } from "../document/drawing";
 // every time you add a upgrade step and increment the CURRENT_VERSION
 // THIS HAS TO BE DONE MANUALLY HERE TO ENSURE THE DEVELOPER IS AWARE
 // OF ANY DOCUMENT UPGRADE CHANGES THAT NEED TO BE PERFOMED
-export const EXAMPLE_DRAWING_VERSION = 27;
+export const EXAMPLE_DRAWING_VERSION = 29;
 export const EXAMPLE_META = {
     "title": "Example Project",
     "projectNumber": "0001",
@@ -16342,7 +16342,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "entityName": null
         },
         "3eb96c69-48d4-4e17-8aee-9381dd5ac088": {
-            "bottomHeightM": null,
+            "bottomHeightM": 19,
             "topHeightM": 26,
             "center": {
                 "x": 38981.16188999843,
@@ -16362,7 +16362,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "entityName": null
         },
         "d3e2abb7-3342-443f-abe3-a5ed0af649e0": {
-            "bottomHeightM": null,
+            "bottomHeightM": 19,
             "topHeightM": 20,
             "center": {
                 "x": 32020.080981092084,
@@ -16382,7 +16382,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "entityName": null
         },
         "77e76434-ebc6-4e2d-a17d-11f2968b8984": {
-            "bottomHeightM": null,
+            "bottomHeightM": 15,
             "topHeightM": 26,
             "center": {
                 "x": 15520.287796589364,
@@ -16422,7 +16422,7 @@ export const EXAMPLE_DRAWING: DrawingState = {
             "entityName": null
         },
         "b2ea6885-b4f0-485f-9613-378dc906a225": {
-            "bottomHeightM": null,
+            "bottomHeightM": 22,
             "topHeightM": 26,
             "center": {
                 "x": 28857.885027994747,

@@ -5,6 +5,7 @@ import {
     drawing_upgraded25to26,
     drawing_upgraded26to27,
     drawing_upgraded27to28,
+    drawing_upgraded28to29,
 } from "../../../common/src/api/upgrade";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
 import { DrawingState, initialDrawing } from "../../../common/src/api/document/drawing";
@@ -145,6 +146,8 @@ export class DocumentUpgrader {
                 drawing_upgraded26to27(drawing);
             case 27:
                 drawing_upgraded27to28(drawing);
+            case 28:
+                drawing_upgraded28to29(drawing);
             case CURRENT_VERSION:
                 break;
         }

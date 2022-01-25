@@ -279,7 +279,8 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         }
 
         // check the sanity of heights
-        if (this.entity.bottomHeightM !== null) {
+        // let's exclude vent as it should not display on the level below lowest connected pipe's level
+        if (this.entity.bottomHeightM !== null && !this.entity.isVent) {
             if (this.entity.bottomHeightM > this.minPipeHeight(context)) {
                 if (tryToFix) {
                     this.entity.bottomHeightM = this.minPipeHeight(context);
