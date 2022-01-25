@@ -5,7 +5,7 @@ import PsdEquation from "./psd-standard/psdEquation";
 import LoadingUnitMaxTable from "./psd-standard/loading-unit-max-table";
 import { EN12056FrequencyFactor, SupportedPsdStandards } from "../config";
 import { FixturesTable, PipesTable } from "./price-table";
-import { CirculatingPumpsManufacturers, HotWaterPlantManufacturers, RheemVariant, RheemVariantValues } from "../document/entities/plants/plant-types";
+import { HotWaterPlantManufacturers, RheemVariant, RheemVariantValues } from "../document/entities/plants/plant-types";
 
 export interface DwellingUnitHotColdTable {
     type: DwellingStandardType.DWELLING_HOT_COLD_LOOKUP_TABLE;
@@ -91,6 +91,8 @@ export interface Catalog {
     balancingValves: BalancingValveSpec;
     hotWaterPlant: HotWaterPlant;
     greaseInterceptorTrap?: GreaseInterceptorTrap;
+    floorWaste: FloorWasteSpec;
+    inspectionOpening: InspectionOpeningSpec;
 }
 
 export type DwellingDiversificationTable = { [key: number]: number };
@@ -347,4 +349,24 @@ export interface FluidsSpec {
     state: State;
     dynamicViscosityByTemperature: { [key: string]: string };
     specificHeatByTemperatureKJ_KGK: { [key: string]: string };
+}
+
+export interface FloorWasteSpec {
+    manufacturer: Manufacturer<'Floor Waste'>[];
+    size: { [key: string]: { [key: string]: FloorWasteSize } };
+}
+
+export interface FloorWasteSize {
+    size: string;
+    options: string;
+}
+
+export interface InspectionOpeningSpec {
+    manufacturer: Manufacturer<'Inspection Opening'>[];
+    size: { [key: string]: { [key: string]: IOSize } };
+}
+
+export interface IOSize {
+    size: string;
+    pipeSize: string;
 }

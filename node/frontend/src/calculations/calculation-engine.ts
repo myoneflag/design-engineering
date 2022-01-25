@@ -804,6 +804,13 @@ export default class CalculationEngine implements CalculationContext {
 
                 c.size = `${size.lengthMM}mm (L) x ${size.widthMM}mm (W) x ${size.heightMM}mm (H)`;
                 c.model = `${manufacturerName.toLocaleUpperCase()} ${product}${capacity}`.trim();
+            } else if (o.entity.type === EntityType.DIRECTED_VALVE && o.entity.valve.type === ValveType.FLOOR_WASTE) {
+                const manufacturer = this.drawing.metadata.catalog.floorWaste[0]?.manufacturer || 'generic';
+
+                if (manufacturer === 'blucher') {
+                    const c = this.globalStore.getOrCreateCalculation(o.entity);
+                    c.sizeMM = o.entity.valve.bucketTrapSize === 'large' ? 300 : 200;
+                }
             }
         });
     }

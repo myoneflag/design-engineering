@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "types": [
       "webpack-env",
       "mocha",
@@ -17,7 +17,8 @@
     ],
     "emitDecoratorMetadata": true,
     "paths": {
-      "typeorm": ["./src/typeorm.d.ts"]
+      "typeorm": ["src/typeorm.d.ts"],
+      "tslib" : ["node_modules/tslib/tslib.d.ts"],
     },
     "lib": [
       "esnext",

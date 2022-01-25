@@ -14,6 +14,7 @@ import { Edge } from "./graph";
 import PipeCalculation, { NoFlowAvailableReason } from "../store/document/calculations/pipe-calculation";
 import { convertMeasurementSystem, Units } from "../../../common/src/lib/measurements";
 import { addWarning, Warning } from "../store/document/calculations/warnings";
+import { ValveType } from "../../../common/src/api/document/entities/directed-valves/valve-types";
 
 export function sizeDrainagePipe(entity: PipeEntity, context: CalculationContext, overridePsdUnits?: PsdCountEntry) {
     const calc = context.globalStore.getOrCreateCalculation(entity);
@@ -117,6 +118,71 @@ export function processDrainage(context: CalculationEngine) {
 
     processFixedStacks(context);
     calculateFalls(context);
+
+    // size I.O. and its connecting pipe going through a drainage pipe
+    sizeIOandPipes(context);
+}
+
+function sizeIOandPipes(context: CalculationEngine) {
+    for (const obj of context.networkObjects()) {
+        if (obj.entity.type === EntityType.DIRECTED_VALVE &&
+            obj.entity.valve.type === ValveType.INSPECTION_OPENING) {
+
+            const IO = obj.entity;
+            const connections = context.globalStore.getConnections(obj.entity.uid);
+
+            const pipes = new Set<PipeEntity>();
+
+            let finish = false;
+            if (connections.length) {
+                context.flowGraph.dfs(
+                    {
+                        connectable: obj.entity.uid,
+                        connection: connections[0],
+                    },
+                    undefined,
+                    undefined,
+                    (edge) => {
+                        if (edge.value.type === EdgeType.PIPE) {
+                            const o = context.globalStore.get(edge.value.uid) as Pipe;
+                            const pipe = o.entity;
+                            const filled = fillPipeDefaultFields(context.drawing, o.computedLengthM, pipe);
+                            const pc = context.globalStore.getOrCreateCalculation(pipe);
+
+                            if (pc.psdUnits?.drainageUnits && !finish) {
+                                const ioCalc = context.globalStore.getOrCreateCalculation(IO);
+                                ioCalc.sizeMM = (pc.realNominalPipeDiameterMM || 0) > 110
+                                    ? 160
+                                    : 110;
+
+                                pipes.forEach(i => sizePipe(i, pc.realNominalPipeDiameterMM || 0, context));
+
+                                finish = !finish;
+                            }
+
+                            if (!finish) {
+                                pipes.add(filled);
+                            }
+                        }
+                    },
+                    undefined,
+                    undefined,
+                )
+            }
+        }
+    }
+}
+
+function sizePipe(filledPipe: PipeEntity, pipSize: number, context: CalculationContext) {
+    const pc = context.globalStore.getOrCreateCalculation(filledPipe);
+
+    pc.realNominalPipeDiameterMM = (pipSize > 110)
+        ? ["castIronSewer", "uPVCSewer"].includes(filledPipe.material!)
+            ? 150
+            : 160
+        : ["castIronSewer", "uPVCSewer"].includes(filledPipe.material!)
+            ? 100
+            : 110;
 }
 
 export function calculateFalls(context: CalculationEngine) {
@@ -400,7 +466,7 @@ export function assignVentCapacities(context: CalculationEngine, roots: Map<stri
                 if (edge.value.type === EdgeType.PIPE) {
                     const pipe = context.globalStore.get(edge.value.uid) as Pipe;
                     const pCalc = context.globalStore.getOrCreateCalculation(pipe.entity);
-                    
+
                     if (pCalc.ventRoot) {
                         return;
                     }

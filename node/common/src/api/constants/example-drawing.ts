@@ -7764,7 +7764,9 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "fe2f2c58-5e20-4de0-8c81-62a6cb2e45fa",
                     "valve": {
                         "type": "FLOOR_WASTE",
-                        "catalogId": "floorWaste"
+                        "catalogId": "floorWaste",
+                        "variant": null,
+                        "bucketTrapSize": null,
                     },
                     "entityName": null
                 },
@@ -14007,7 +14009,9 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "ca33b1dc-d1f4-44be-bbee-a04bd94481a1",
                     "valve": {
                         "type": "FLOOR_WASTE",
-                        "catalogId": "floorWaste"
+                        "catalogId": "floorWaste",
+                        "variant": null,
+                        "bucketTrapSize": null,
                     },
                     "entityName": null
                 },
@@ -14025,7 +14029,9 @@ export const EXAMPLE_DRAWING: DrawingState = {
                     "uid": "71d3b759-b0bf-4597-b93a-bd23f675e9e9",
                     "valve": {
                         "type": "FLOOR_WASTE",
-                        "catalogId": "floorWaste"
+                        "catalogId": "floorWaste",
+                        "variant": null,
+                        "bucketTrapSize": null,
                     },
                     "entityName": null
                 },

@@ -1,4 +1,4 @@
-import { Color, UnitsParameters } from "../../../../../common/src/api/document/drawing";
+import { UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import { Units } from "../../../../../common/src/lib/measurements";
 
 export enum FieldCategory {
@@ -15,6 +15,8 @@ export enum FieldCategory {
     Length,
     Location,
     GreaseInterceptorTrap,
+    FloorWaste,
+    InspectionOpening,
     EntityName,
 }
 

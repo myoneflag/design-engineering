@@ -34,7 +34,7 @@ export const I18N = {
         [SupportedLocales.AU]: "LU",
         [SupportedLocales.UK]: "LU",
         [SupportedLocales.US]: "WSFU",
-    }, 
+    },
 
     currency: {
         [SupportedLocales.AU]: "AUD",
@@ -42,9 +42,21 @@ export const I18N = {
         [SupportedLocales.US]: "USD",
     },
 
-    currencySymbol:{
+    currencySymbol: {
         [SupportedLocales.AU]: CurrencySymbol.DOLLARS,
         [SupportedLocales.UK]: CurrencySymbol.POUNDS,
         [SupportedLocales.US]: CurrencySymbol.DOLLARS,
-    }
+    },
+
+    floorWaste: {
+        [SupportedLocales.AU]: "Floor Waste",
+        [SupportedLocales.US]: "Floor Waste",
+        [SupportedLocales.UK]: "Floor Waste",
+    },
+
+    inspectionOpening: {
+        [SupportedLocales.AU]: "Inspection Opening",
+        [SupportedLocales.US]: "Inspection Opening",
+        [SupportedLocales.UK]: "Inspection Opening",
+    },
 }

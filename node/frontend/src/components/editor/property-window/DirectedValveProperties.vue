@@ -55,7 +55,7 @@ import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { DrawingMode } from "../../../htmlcanvas/types";
 import { determineConnectableSystemUid } from "../../../../src/store/document/entities/lib";
-import { GlobalStore } from '../../../../src/htmlcanvas/lib/global-store';
+import { GlobalStore } from "../../../../src/htmlcanvas/lib/global-store";
 
 @Component({
   components: { PropertiesFieldBuilder },
@@ -72,6 +72,7 @@ export default class DirectedValveProperties extends Vue {
   get globalStore(): GlobalStore {
     return this.$props.selectedObject.globalStore;
   }
+
   get fields() {
     return makeDirectedValveFields(
       this.$props.selectedEntity,
@@ -101,12 +102,12 @@ export default class DirectedValveProperties extends Vue {
     return ValveType;
   }
 
-  onCommit() {
-    this.$store.dispatch("document/validateAndCommit");
-  }
-
   get readOnly() {
     return this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History;
+  }
+
+  onCommit() {
+    this.$store.dispatch("document/validateAndCommit");
   }
 
   flip() {

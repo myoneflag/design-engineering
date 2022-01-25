@@ -36,7 +36,15 @@ export const state: CatalogState = {
             grundfosPressureDrop: {},
             size: {},
             storageTanks: {},
-        }
+        },
+        floorWaste: {
+            manufacturer: [],
+            size: {},
+        },
+        inspectionOpening: {
+            manufacturer: [],
+            size: {},
+        },
     },
     loaded: false
 };

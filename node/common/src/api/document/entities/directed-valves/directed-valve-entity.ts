@@ -2,7 +2,7 @@ import { EntityType } from "../types";
 import { FieldType, PropertyField } from "../property-field";
 import { DirectedValveConcrete, ValveType } from "./valve-types";
 import { assertUnreachable, isGas } from "../../../config";
-import { Color, COLORS, ConnectableEntity, Coord, DrawingState, NamedEntity, SelectedMaterialManufacturer } from "../../drawing";
+import { Color, ConnectableEntity, Coord, DrawingState, NamedEntity, SelectedMaterialManufacturer } from "../../drawing";
 import { Catalog } from "../../../catalog/types";
 import { Choice, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../../lib/utils";
 import { convertPipeDiameterFromMetric, Units } from "../../../../lib/measurements";
@@ -203,6 +203,44 @@ export function makeDirectedValveFields(
             break;
         }
         case ValveType.FLOOR_WASTE:
+            const manufacturer = drawing.metadata.catalog.floorWaste[0]?.manufacturer || 'generic';
+
+            if (manufacturer === 'blucher') {
+                fields.push({
+                    property: "valve.variant",
+                    title: "Variant",
+                    hasDefault: false,
+                    isCalculated: false,
+                    type: FieldType.Choice,
+                    params: {
+                        choices: [
+                            { name: 'Normal', key: 'normal' },
+                            { name: 'Bucket Trap', key: 'bucketTrap' }
+                        ]
+                    },
+                    multiFieldId: null,
+                });
+
+                if (entity.valve.variant === 'bucketTrap') {
+                    fields.push({
+                        property: "valve.bucketTrapSize",
+                        title: "Size",
+                        hasDefault: false,
+                        isCalculated: false,
+                        type: FieldType.Choice,
+                        params: {
+                            choices: [
+                                { name: 'Regular', key: 'regular' },
+                                { name: 'Large', key: 'large' }
+                            ]
+                        },
+                        multiFieldId: null,
+                    });
+
+                }
+
+                break;
+            }
         case ValveType.INSPECTION_OPENING:
         case ValveType.REFLUX_VALVE:
             // No properties
@@ -213,4 +251,3 @@ export function makeDirectedValveFields(
 
     return fields;
 }
-

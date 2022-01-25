@@ -8,18 +8,13 @@ import {
     PressureCalculation
 } from "../../../../src/store/document/calculations/types";
 import { ValveType } from "../../../../../common/src/api/document/entities/directed-valves/valve-types";
-import { assertUnreachable, isGas } from "../../../../../common/src/api/config";
+import { assertUnreachable, isDrainage, isGas } from "../../../../../common/src/api/config";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
-import { DrawingState, SelectedMaterialManufacturer } from '../../../../../common/src/api/document/drawing';
-import {
-    BackflowValveManufacturer,
-    BalancingValveManufacturer,
-    Catalog,
-    Manufacturer,
-    PRVManufacturer
-} from '../../../../../common/src/api/catalog/types';
+import { Catalog } from '../../../../../common/src/api/catalog/types';
+import { DocumentState } from './../types';
+import { fillDirectedValveFields } from "../entities/fillDirectedValveFields";
 
 export default interface DirectedValveCalculation extends Calculation, PressureCalculation, NameCalculation {
     flowRateLS: number | null;
@@ -28,26 +23,38 @@ export default interface DirectedValveCalculation extends Calculation, PressureC
     sizeMM: number | null;
 }
 
-export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, globalStore: GlobalStore, drawing: DrawingState, catalog: Catalog | undefined,): CalculationField[] {
-    const systemUid = determineConnectableSystemUid(globalStore, entity);
+export function makeDirectedValveCalculationFields(
+    entity: DirectedValveEntity,
+    globalStore: GlobalStore,
+    document: DocumentState,
+    catalog: Catalog | undefined,
+): CalculationField[] {
+    const drawing = document.drawing;
+    const systems = drawing.metadata.flowSystems;
+    const filled = fillDirectedValveFields(drawing, globalStore, entity);
+    const systemUid = determineConnectableSystemUid(globalStore, filled);
 
-    const valveIsGas = catalog && systemUid && isGas(systemUid!, catalog.fluids, drawing.metadata.flowSystems);
-
+    const valveIsGas = catalog && systemUid && isGas(systemUid!, catalog.fluids, systems);
+    const iAmDrainage = isDrainage(systemUid!, systems);
 
     let fields: CalculationField[] = [];
 
-    fields.push(
-        {
-            property: "entityName",
-            title: "Name",
-            short: "",
-            units: Units.None,
-            category: FieldCategory.EntityName,
-            systemUid: systemUid,
-        },
-    );
+    if ((document.uiState.pressureOrDrainage === 'drainage' && iAmDrainage) ||
+        (document.uiState.pressureOrDrainage === 'pressure' && !iAmDrainage)) {
 
-    if (!valveIsGas) {
+        fields.push(
+            {
+                property: "entityName",
+                title: "Name",
+                short: "",
+                units: Units.None,
+                category: FieldCategory.EntityName,
+                systemUid: systemUid,
+            },
+        );
+    }
+
+    if (!valveIsGas && !iAmDrainage) {
         fields.push(
             {
                 property: "flowRateLS",
@@ -57,22 +64,19 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 category: FieldCategory.FlowRate,
                 systemUid,
             },
+            {
+                property: "pressureDropKPA",
+                title: "Pressure Drop",
+                short: "",
+                defaultEnabled: true,
+                units: Units.KiloPascals,
+                category: FieldCategory.Pressure,
+                systemUid,
+            }
         );
     }
 
-    if (!valveIsGas) {
-        fields.push({
-            property: "pressureDropKPA",
-            title: "Pressure Drop",
-            short: "",
-            defaultEnabled: true,
-            units: Units.KiloPascals,
-            category: FieldCategory.Pressure,
-            systemUid,
-        });
-    }
-
-    if (entity.valve.type === ValveType.BALANCING) {
+    if (filled.valve.type === ValveType.BALANCING) {
         fields.push({
             property: "kvValue",
             title: "Kv Value",
@@ -83,18 +87,20 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
         });
     }
 
-    if (!valveIsGas) {
+    if (!valveIsGas && !iAmDrainage) {
         addPressureCalculationFields(fields, systemUid);
     }
 
-    if (entity.systemUidOption) {
+    if (filled.systemUidOption) {
         fields = fields.map((f) => {
             f.systemUid = entity.systemUidOption!;
             return f;
         });
     }
 
-    switch (entity.valve.type) {
+    let manufacturer = 'generic';
+    let abbreviation = '';
+    switch (filled.valve.type) {
         case ValveType.GAS_REGULATOR:
             if (valveIsGas) {
                 fields.push({
@@ -104,19 +110,8 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                     units: Units.KiloPascals,
                     systemUid,
                     category: FieldCategory.Pressure,
-                }, {
-                    property: "pressureKPA",
-                    title: "Residual Pressure",
-                    short: "",
-                    units: Units.KiloPascals,
-                    systemUid,
-                    category: FieldCategory.Pressure,
                 });
             }
-            break;
-        case ValveType.CHECK_VALVE:
-        case ValveType.ISOLATION_VALVE:
-        case ValveType.STRAINER:
             break;
         case ValveType.WATER_METER:
         case ValveType.FILTER:
@@ -129,21 +124,14 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                     units: Units.KiloPascals,
                     category: FieldCategory.Pressure,
                     systemUid,
-                }, {
-                    property: "flowRateLS",
-                    title: "Peak Flow Rate",
-                    short: "",
-                    units: Units.MegajoulesPerHour,
-                    category: FieldCategory.FlowRate,
-                    systemUid,
                 });
             }
             break;
-        case ValveType.BALANCING: {
-            const manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || 'generic';
-            const abbreviation = manufacturer !== 'generic'
-                && catalog?.balancingValves.manufacturer.find((manufacturerObj: BalancingValveManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
-                || '';
+        case ValveType.BALANCING:
+            manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || manufacturer;
+            abbreviation = manufacturer !== 'generic'
+                && catalog?.balancingValves.manufacturer.find((manufacturerObj) => manufacturerObj.uid === manufacturer)?.abbreviation
+                || abbreviation;
 
             fields.push({
                 property: "sizeMM",
@@ -152,14 +140,14 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 units: Units.Millimeters,
                 category: FieldCategory.Size
             });
+
             break;
-        }
         case ValveType.RPZD_SINGLE:
         case ValveType.RPZD_DOUBLE_SHARED:
-        case ValveType.RPZD_DOUBLE_ISOLATED: {
-            const manufacturer = drawing.metadata.catalog.backflowValves.find((material: SelectedMaterialManufacturer) => material.uid === entity.valve.catalogId)?.manufacturer || 'generic';
-            const abbreviation = manufacturer !== 'generic'
-                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj: BackflowValveManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
+        case ValveType.RPZD_DOUBLE_ISOLATED:
+            manufacturer = drawing.metadata.catalog.backflowValves.find((material) => material.uid === entity.valve.catalogId)?.manufacturer || manufacturer;
+            abbreviation = manufacturer !== 'generic'
+                && catalog?.backflowValves[entity.valve.catalogId].manufacturer.find((manufacturerObj) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
 
             fields.push({
@@ -169,15 +157,16 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                 units: Units.Millimeters,
                 category: FieldCategory.Size
             });
+
             break;
-        }
         case ValveType.PRV_SINGLE:
         case ValveType.PRV_DOUBLE:
-        case ValveType.PRV_TRIPLE: {
-            const manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || 'generic';
-            const abbreviation = manufacturer !== 'generic'
-                && catalog?.prv.manufacturer.find((manufacturerObj: PRVManufacturer) => manufacturerObj.uid === manufacturer)?.abbreviation
+        case ValveType.PRV_TRIPLE:
+            manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || manufacturer;
+            abbreviation = manufacturer !== 'generic'
+                && catalog?.prv.manufacturer.find((manufacturerObj) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
+
             fields.push({
                 property: "sizeMM",
                 title: "Size",
@@ -189,16 +178,51 @@ export function makeDirectedValveCalculationFields(entity: DirectedValveEntity, 
                     return settings;
                 }
             });
+
             break;
-        }
         case ValveType.FLOOR_WASTE:
+            if (iAmDrainage) {
+                manufacturer = drawing.metadata.catalog.floorWaste[0]?.manufacturer || manufacturer;
+
+                if (manufacturer === 'blucher' && filled.valve.variant === 'bucketTrap') {
+                    fields.push({
+                        property: "sizeMM",
+                        title: 'Size',
+                        short: "BLUCHER FW/BT",
+                        units: Units.Millimeters,
+                        category: FieldCategory.FloorWaste,
+                        layouts: ['drainage']
+                    })
+                }
+            }
+
+            break;
         case ValveType.INSPECTION_OPENING:
-        case ValveType.REFLUX_VALVE: {
+            if (iAmDrainage) {
+                manufacturer = drawing.metadata.catalog.inspectionOpening[0]?.manufacturer || manufacturer;
+
+                console.log(manufacturer);
+                if (manufacturer === 'blucher') {
+                    fields.push({
+                        property: "sizeMM",
+                        title: 'Size',
+                        short: "BLUCHER I.O.",
+                        units: Units.Millimeters,
+                        category: FieldCategory.InspectionOpening,
+                        layouts: ['drainage']
+                    })
+                }
+            }
+
+            break;
+        case ValveType.REFLUX_VALVE:
+        case ValveType.CHECK_VALVE:
+        case ValveType.ISOLATION_VALVE:
+        case ValveType.STRAINER:
             // Nothing for these.
             break;
-        };
         default:
-            assertUnreachable(entity.valve);
+            assertUnreachable(filled.valve);
     }
 
     return fields;
@@ -217,7 +241,7 @@ export function emptyDirectedValveCalculation(): DirectedValveCalculation {
         kvValue: null,
         pressureKPA: null,
         warnings: null,
-        sizeMM: null, 
+        sizeMM: null,
 
         entityName: null
     };
