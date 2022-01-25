@@ -1028,6 +1028,36 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
         return null;
     }
+
+    getConnetectedSidePipe(pipeUid: string): Pipe[] {
+        const connections: Pipe[] = [];
+        for (const endpointUid of this.entity.endpointUid) {
+            const endpoint = this.globalStore.get(endpointUid)!;
+            if (endpoint.getConnetectedSidePipe(pipeUid).length) {
+                connections.push(endpoint.getConnetectedSidePipe(pipeUid)[0]);
+            }
+        }
+        return connections;
+    }
+
+    validateConnectionPoints(seenUids?: string[]): boolean {
+        const connectedPipes = this.getConnetectedSidePipe(this.entity.uid)!;
+        let result = false;
+        for (const pipe of connectedPipes) {
+            if (seenUids?.includes(pipe.uid)) {
+                continue;
+            }
+            const calc = this.globalStore.getCalculation(pipe.entity)!;
+            if (calc.flowFrom) {
+                if (calc.noFlowAvailableReason !== NoFlowAvailableReason.NO_SOURCE) {
+                    return true;
+                }
+            } else {
+                result = pipe.validateConnectionPoints([...seenUids || [], this.entity.uid]);
+            }
+        }
+        return result;
+    }
 }
 
 DrawableObjectFactory.registerEntity(EntityType.PIPE, Pipe);

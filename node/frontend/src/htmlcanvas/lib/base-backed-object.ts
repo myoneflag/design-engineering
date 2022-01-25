@@ -21,6 +21,7 @@ import { Color, Coord, Coord3D } from "../../../../common/src/api/document/drawi
 import { makeEntityFields } from "./utils";
 import { getPropertyByString } from "../../lib/utils";
 import {isCalculated} from "../../store/document/calculations";
+import Pipe from "../objects/pipe";
 
 export default abstract class BaseBackedObject extends DrawableObject {
     entityBacked: DrawableEntityConcrete;
@@ -220,5 +221,9 @@ export default abstract class BaseBackedObject extends DrawableObject {
 
     validate(context: CanvasContext, tryToFix: boolean): ValidationResult {
         return { success: true };
+    }
+
+    getConnetectedSidePipe(pipeUid: string): Pipe[] {
+        return [];
     }
 }

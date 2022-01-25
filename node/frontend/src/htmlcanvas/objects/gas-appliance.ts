@@ -280,8 +280,8 @@ export default class GasAppliance extends BackedDrawableObject<GasApplianceEntit
         for (const conn of connections) {
             const o = this.globalStore.get(conn.uid)!;
             if (o.entity.type === EntityType.PIPE) {
-                const calc = this.globalStore.getOrCreateCalculation(o.entity);
-                if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+                const calc = this.globalStore.getCalculation(o.entity)!;
+                if (calc?.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
                     return false;
                 }
             }

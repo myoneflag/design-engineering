@@ -3073,7 +3073,7 @@ export default class CalculationEngine implements CalculationContext {
                         addWarning(o.entity.uid, calc, Warning.EXTRAPOLATED);
                     }
 
-                    if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE) {
+                    if (calc.noFlowAvailableReason === NoFlowAvailableReason.NO_SOURCE && !(!calc.flowFrom && (o as Pipe).validateConnectionPoints())) {
                         addWarning(o.entity.uid, calc, Warning.PIPE_NOT_CONNECTED_TO_FLOW_SOURCE, thisIsDrainage ? "drainage" : null);
                     }
 
