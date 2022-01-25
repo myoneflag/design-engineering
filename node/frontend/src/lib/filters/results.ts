@@ -1,8 +1,16 @@
 import _ from "lodash";
 import { getFields } from "../../../src/calculations/utils";
-import BaseBackedObject from "src/htmlcanvas/lib/base-backed-object";
-import { FieldCategory } from "src/store/document/calculations/calculation-field";
-import { CalculationFilters, CalculationFilterSettings, DocumentState, CalculationFilterSettingType, FilterSettingKey } from "src/store/document/types";
+import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
+import { FieldCategory } from "../../../src/store/document/calculations/calculation-field";
+import {
+    CalculationFilters,
+    CalculationFilterSettings,
+    DocumentState,
+    CalculationFilterSettingType,
+    FilterSettingKey,
+    FilterSettingViewKeyValues,
+    FilterSettingSystemKeyValues
+} from "../../../src/store/document/types";
 import Vue from "vue";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";;
@@ -41,12 +49,12 @@ const combineFilters: CombineFilters = {
 
 function customFilterViewByField(filterViewSetting: { [key: string]: FilterSettingKey }, eName: string, title: string): boolean {
     // Custom filter view for the particular filter & entity
-    if (filterViewSetting['pressure'].enabled) {
+    if (filterViewSetting['pressure']?.enabled) {
         if (['Small Valves', 'Large Valves'].includes(eName) && ['Size'].includes(title)) {
             return true;
         }
     }
-    if (filterViewSetting['heat-loss'].enabled) {
+    if (filterViewSetting['heat-loss']?.enabled) {
         if (['Small Valves'].includes(eName) && ['Kv Value'].includes(title)) {
             return true;
         }
@@ -57,9 +65,12 @@ function customFilterViewByField(filterViewSetting: { [key: string]: FilterSetti
             return true;
         }
     }
-    if (filterViewSetting['pipe-sizing'].enabled) {
+    if (filterViewSetting['pipe-sizing']?.enabled) {
         // turn the ‘size' on for inspection opening, floor waste and grease interceptor trap
         // turn the ‘model' on for the grease interceptor trap
+        if (['Floor Waste', 'Inspection Opening'].includes(eName) && ['Size'].includes(title)) {
+            return true;
+        }
     }
     return false;
 }
@@ -78,9 +89,9 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
     let isAllFilterView = true;
 
     for (const cName in filterViewSetting) {
-        if (filterViewSetting[cName].enabled) {
-            if (filterViewSetting[cName].category) {
-                Array.from(filterViewSetting[cName].category!).forEach((category) => {
+        if (filterViewSetting[cName as FilterSettingViewKeyValues].enabled) {
+            if (filterViewSetting[cName as FilterSettingViewKeyValues].category) {
+                Array.from(filterViewSetting[cName as FilterSettingViewKeyValues].category!).forEach((category) => {
                     allowedCategories.add(category);
                 });
             }
@@ -195,18 +206,36 @@ export function getFilterSettings(calculationFilterSettings: CalculationFilterSe
 
     for (const eName in existing) {
         let isSelectedAll = true;
-        for (const prop in existing[eName as CalculationFilterSettingType].filters) {
-            if (
-                existing[eName as CalculationFilterSettingType].filters[prop].pressureOrDrainage &&
-                existing[eName as CalculationFilterSettingType].filters[prop].pressureOrDrainage !== document.uiState.pressureOrDrainage)
-            {
-                delete build[eName as CalculationFilterSettingType].filters[prop];
-            } else if (prop !== 'custom' && !existing[eName as CalculationFilterSettingType].filters[prop].enabled) {
-                // ‘Show All' and 'All’ should untick if one of the filters below it is unticked
-                isSelectedAll = false;
-            }
+        switch(eName) {
+            case CalculationFilterSettingType.Systems:
+                for (const prop in existing[CalculationFilterSettingType.Systems].filters) {
+                    if (
+                        existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].pressureOrDrainage &&
+                        existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].pressureOrDrainage !== document.uiState.pressureOrDrainage)
+                    {
+                        delete build[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues];
+                    } else if (!existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].enabled) {
+                        isSelectedAll = false;
+                    }
+                }
+                build[CalculationFilterSettingType.Systems].filters['all'].enabled = isSelectedAll;
+                break;
+            case CalculationFilterSettingType.View:
+                for (const prop in existing[CalculationFilterSettingType.View].filters) {
+                    if (
+                        existing[CalculationFilterSettingType.View].filters[prop as FilterSettingViewKeyValues].pressureOrDrainage &&
+                        existing[CalculationFilterSettingType.View].filters[prop as FilterSettingViewKeyValues].pressureOrDrainage !== document.uiState.pressureOrDrainage)
+                    {
+                        delete build[CalculationFilterSettingType.View].filters[prop as FilterSettingViewKeyValues];
+                    } else if (prop !== 'custom' && !existing[CalculationFilterSettingType.View].filters[prop as FilterSettingViewKeyValues].enabled) {
+                        isSelectedAll = false;
+                    }
+                }
+                build[CalculationFilterSettingType.View].filters['all'].enabled = isSelectedAll;
+                break;
+            default:
+                break;
         }
-        build[eName as CalculationFilterSettingType].filters['all'].enabled = isSelectedAll;
     }
 
     return build;

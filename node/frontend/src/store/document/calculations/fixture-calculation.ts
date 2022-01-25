@@ -32,6 +32,7 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             short: "",
             units: Units.None,
             category: FieldCategory.EntityName,
+            layouts: ['pressure', 'drainage'],
         },
     );
 
