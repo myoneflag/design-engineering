@@ -72,7 +72,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList, withCalculation }: EntityDrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { layerActive, selected, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const scale = vp.currToSurfaceScale(ctx);
@@ -157,7 +157,7 @@ export default class FlowSource extends BackedConnectable<FlowSourceEntity> impl
         ctx.fill();
 
         // Display Entity Name
-        if (this.entity.entityName && !withCalculation) {
+        if (this.entity.entityName) {
             const name = this.entity.entityName;
             ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
             ctx.textBaseline = "top";

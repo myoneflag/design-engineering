@@ -23,18 +23,6 @@ export function makeFlowSourceCalculationFields(entity: FlowSourceEntity, doc: D
 
         const result: CalculationField[] = [];
 
-        result.push(
-            {
-                property: "entityName",
-                title: "Name",
-                short: "",
-                units: Units.None,
-                category: FieldCategory.EntityName,
-                systemUid: entity.systemUid,
-                layouts: ['pressure', 'drainage'],
-            },
-        );
-
         addPressureCalculationFields(result, entity.systemUid, "", { defaultEnabled: true }, { defaultEnabled: true });
 
         result.push(

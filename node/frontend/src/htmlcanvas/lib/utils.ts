@@ -136,7 +136,7 @@ export function getFloorHeight(globalStore: GlobalStore, doc: DocumentState, ent
     } else if (levelUid === undefined) {
         throw new Error("entity has no level");
     } else {
-        return doc.drawing.levels[levelUid].floorHeightM;
+        return doc.drawing.levels[levelUid]?.floorHeightM;
     }
 }
 

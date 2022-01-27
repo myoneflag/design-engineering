@@ -112,7 +112,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity(context: DrawingContext, { selected, withCalculation }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
 
@@ -190,7 +190,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         }
 
         // Display Entity Name
-        if (this.entity.entityName && !withCalculation) {
+        if (this.entity.entityName) {
             const name = this.entity.entityName;
             context.ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
             context.ctx.textBaseline = "top";

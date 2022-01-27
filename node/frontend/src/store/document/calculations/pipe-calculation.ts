@@ -99,18 +99,6 @@ export function makePipeCalculationFields(
     const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
     const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['drainage'] : ['pressure'];
 
-    result.push(
-        {
-            property: "entityName",
-            title: "Name",
-            short: "",
-            units: Units.None,
-            category: FieldCategory.EntityName,
-            systemUid: entity.systemUid,
-            layouts: ['pressure', 'drainage'],
-        },
-    );
-
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
             result.push(

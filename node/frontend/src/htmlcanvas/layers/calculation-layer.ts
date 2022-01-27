@@ -3,7 +3,6 @@ import {
     CalculationFilters,
     CalculationFilterSettings,
     DocumentState,
-    FilterSettingSystemKeyValues
 } from "../../../src/store/document/types";
 import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
@@ -26,7 +25,7 @@ import {
 import { assertUnreachable } from "../../../../common/src/api/config";
 import LayoutAllocator from "../lib/layout-allocator";
 import stringify from "json-stable-stringify";
-import { getEffectiveFilter, getFilterSettings } from "../../lib/filters/results";
+import { getEffectiveFilter, getFilterSettings, setInitFilterSettings } from "../../lib/filters/results";
 import { updateCalculationReport } from "../../api/reports";
 import AbbreviatedCalculationReport, { PipeCalculationReportEntry } from "../../../../common/src/api/reports/calculation-report";
 import { CalculationType } from "../../../src/store/document/calculations/types";
@@ -56,6 +55,12 @@ export default class CalculationLayer extends LayerImplementation {
         // TODO: asyncify
         const { ctx, vp } = context;
         if (active && withCalculation) {
+            setInitFilterSettings(
+                this.uidsInOrder.map((uid) => context.globalStore.get(uid)!),
+                context.doc.uiState.calculationFilterSettings,
+                this.context,
+            );
+
             const filterSettings = getFilterSettings(
                 context.doc.uiState.calculationFilterSettings,
                 context.doc,
@@ -184,7 +189,7 @@ export default class CalculationLayer extends LayerImplementation {
         let isShowAll = true;
         const disallowedSystems = new Set<string>();
         for (const sName in filterSystemSetting) {
-            if (!filterSystemSetting[sName as FilterSettingSystemKeyValues]?.enabled) {
+            if (!filterSystemSetting[sName]?.enabled) {
                 if (sName !== "all") {
                     disallowedSystems.add(sName);
                 }
@@ -196,7 +201,7 @@ export default class CalculationLayer extends LayerImplementation {
             .map((uid) => this.context.globalStore.get(uid)!)
             .filter((o) => {
                 const entitySystem = getEntitySystem(o.entity, this.context);
-                return (isShowAll || (entitySystem && !disallowedSystems.has(entitySystem))) && o.calculated;
+                return (isShowAll || !entitySystem || !disallowedSystems.has(entitySystem)) && o.calculated;
             });
         objList.sort((a, b) => {
             return -(this.messagePriority(context, a) - this.messagePriority(context, b));

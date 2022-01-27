@@ -71,7 +71,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
-    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList, withCalculation }: EntityDrawingArgs): void {
+    drawEntity({ ctx, doc, vp }: DrawingContext, { selected, layerActive, overrideColorList }: EntityDrawingArgs): void {
         this.lastDrawnWorldRadius = 0;
 
         const scale = vp.currToSurfaceScale(ctx);
@@ -189,7 +189,7 @@ export default class Riser extends BackedConnectable<RiserEntity> implements Con
         }
 
         // Display Entity Name
-        if (this.entity.entityName && !withCalculation) {
+        if (this.entity.entityName) {
             const name = this.entity.entityName;
             ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
             ctx.textBaseline = "top";
