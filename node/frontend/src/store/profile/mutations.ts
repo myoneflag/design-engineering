@@ -4,6 +4,7 @@ import { User } from "../../../../common/src/models/User";
 import { viewedVideoIds } from "../../api/videos";
 import { Onboarding } from '../../../../common/src/models/Onboarding';
 import { SupportedLocales } from "../../../../common/src/api/locale";
+import { savePreference } from "../../../src/lib/localStorage";
 
 export const mutations: MutationTree<ProfileState> = {
     setProfile(state, profile: User | null) {
@@ -33,7 +34,7 @@ export const mutations: MutationTree<ProfileState> = {
     },
 
     setLocale(state, payload: SupportedLocales) {
-        localStorage.setItem('locale', payload);
+        savePreference(window, 'locale', payload);
         state.locale = payload;
     }
 };

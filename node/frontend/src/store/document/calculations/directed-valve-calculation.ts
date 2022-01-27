@@ -186,7 +186,6 @@ export function makeDirectedValveCalculationFields(
             if (iAmDrainage) {
                 manufacturer = drawing.metadata.catalog.inspectionOpening[0]?.manufacturer || manufacturer;
 
-                console.log(manufacturer);
                 if (manufacturer === 'blucher') {
                     fields.push({
                         property: "sizeMM",
