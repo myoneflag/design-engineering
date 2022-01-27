@@ -336,7 +336,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
 
         // Display Entity Name
         this.drawCalculations(context, {}, true);
-        if (this.entity.entityName && !withCalculation) {
+        if (this.entity.entityName) {
             const name = this.entity.entityName;
             ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
             ctx.textBaseline = "top";

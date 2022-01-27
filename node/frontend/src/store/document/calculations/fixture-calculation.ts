@@ -25,17 +25,6 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
 
     const result: CalculationField[] = [];
 
-    result.push(
-        {
-            property: "entityName",
-            title: "Name",
-            short: "",
-            units: Units.None,
-            category: FieldCategory.EntityName,
-            layouts: ['pressure', 'drainage'],
-        },
-    );
-
     entity.roughInsInOrder.forEach((suid) => {
         if (isDrainage(suid, doc.drawing.metadata.flowSystems)) {
             return [];

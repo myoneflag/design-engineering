@@ -59,8 +59,10 @@ export function CalculatedObject<
 
         makeDatumText(context: DrawingContext, datum: CalculationData): string | Array<string> {
             if (datum.type === CalculationDataType.VALUE) {
+                const titleText = (datum.shortTitle === "" ? "" : (datum.shortTitle || datum.title) ? ((datum.shortTitle || datum.title) + ": ") : "");
                 if (datum.static) {
-                    return datum.value as any as string[] | string;
+                    const text = titleText + datum.value;
+                    return text as any as string[] | string;
                 }
 
                 const convFun = datum.convert || convertMeasurementSystem;
@@ -109,7 +111,7 @@ export function CalculatedObject<
 
                 const calc = context.globalStore.getCalculation(this.entity);
                 const text = (
-                    (datum.shortTitle === "" ? "" : (datum.shortTitle || datum.title) ? ((datum.shortTitle || datum.title) + ": ") : "") + 
+                    titleText + 
                     numberText + " " + 
                     (datum.hideUnits ? "" : units + " ") + 
                     datum.short
@@ -117,8 +119,9 @@ export function CalculatedObject<
 
                 const manufacturer = calc && 'manufacturer' in calc && calc.manufacturer && `${calc.manufacturer}` || '';
                 if (datum.property === "circulationPressureLoss" && manufacturer) {
+                    const manufacturerText = 'Return System Pump Duty: ' + manufacturer;
                     return [
-                        manufacturer,
+                        manufacturerText,
                         text,
                     ];
                 }

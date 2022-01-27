@@ -88,7 +88,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     // @ts-ignore sadly, typescript lacks annotation type modification so we must put this function here manually to
     // complete the type.
 
-    drawEntity(context: DrawingContext, { selected, overrideColorList, forExport, withCalculation }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, overrideColorList, forExport }: EntityDrawingArgs): void {
         const { ctx, doc, vp } = context;
         try {
             if (forExport) {
@@ -169,7 +169,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         }
 
         // Display Entity Name
-        if (this.entity.entityName && !withCalculation) {
+        if (this.entity.entityName) {
             const name = this.entity.entityName;
             ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
             ctx.textBaseline = "top";

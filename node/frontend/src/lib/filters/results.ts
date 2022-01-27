@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { getFields } from "../../../src/calculations/utils";
+import { getEntitySystem, getFields } from "../../../src/calculations/utils";
 import BaseBackedObject from "../../../src/htmlcanvas/lib/base-backed-object";
 import { FieldCategory } from "../../../src/store/document/calculations/calculation-field";
 import {
@@ -9,15 +9,16 @@ import {
     CalculationFilterSettingType,
     FilterSettingKey,
     FilterSettingViewKeyValues,
-    FilterSettingSystemKeyValues
+    PressureOrDrainage,
 } from "../../../src/store/document/types";
 import Vue from "vue";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import { ALL_DRAINAGE_SYSTEM_UIDS, assertUnreachable, DrainageSystemUid } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";;
 import { getEntityName } from "../../../../common/src/api/document/entities/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { CombineFilters } from "../types";
 import { getSavedPreferenceOrDefault, savePreference } from "../localStorage";
+import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 
 const combineFilters: CombineFilters = {
     "Plant": [
@@ -58,17 +59,18 @@ function customFilterViewByField(filterViewSetting: { [key: string]: FilterSetti
         if (['Small Valves'].includes(eName) && ['Kv Value'].includes(title)) {
             return true;
         }
-        if (['Riser'].includes(eName) && ['Flow Rate To Above'].includes(title)) {
+        if (['Pipe'].includes(eName) && ['Pipe Diameter', 'Return Flow Rate'].includes(title)) {
             return true;
         }
-        if (['Pipe'].includes(eName) && ['Pipe Diameter'].includes(title)) {
+        if (['Plant'].includes(eName) && ['Return System Duty Flow Rate', 'Return System Pressure Loss'].includes(title)) {
             return true;
         }
     }
     if (filterViewSetting['pipe-sizing']?.enabled) {
-        // turn the ‘size' on for inspection opening, floor waste and grease interceptor trap
-        // turn the ‘model' on for the grease interceptor trap
-        if (['Floor Waste', 'Inspection Opening'].includes(eName) && ['Size'].includes(title)) {
+        if (['Floor Waste', 'Inspection Opening', 'Grease Interceptor Trap'].includes(eName) && ['Size'].includes(title)) {
+            return true;
+        }
+        if (['Grease Interceptor Trap'].includes(eName) && ['Model'].includes(title)) {
             return true;
         }
     }
@@ -197,6 +199,46 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
     return build;
 }
 
+export function setInitFilterSettings(objects: BaseBackedObject[], calculationFilterSettings: CalculationFilterSettings, context: CanvasContext) {
+    const allFlowSystems = new Set<string>();
+
+    objects.forEach((o) => {
+        const entitySystem = getEntitySystem(o.entity, context)!;
+        if (entitySystem) {
+            allFlowSystems.add(entitySystem);
+        }
+    });
+
+    const filterSystemSetting = cloneSimple(calculationFilterSettings.systems.filters);
+
+    for (const prop in filterSystemSetting) {
+        if (prop !== 'all' && !allFlowSystems.has(prop)) {
+            delete filterSystemSetting[prop];
+        }
+    }
+
+    allFlowSystems.forEach((flowSystemUid) => {
+        const systemName = context.document.drawing.metadata.flowSystems.find((e) => e.uid === flowSystemUid)?.name!;
+        if (flowSystemUid in filterSystemSetting) {
+            filterSystemSetting[flowSystemUid].name = systemName;
+        } else if (ALL_DRAINAGE_SYSTEM_UIDS.includes(flowSystemUid as DrainageSystemUid)) {
+            filterSystemSetting[flowSystemUid] = {
+                name: systemName,
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            };
+        } else {
+            filterSystemSetting[flowSystemUid] = {
+                name: systemName,
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            };
+        }
+    });
+
+    Vue.set(calculationFilterSettings.systems, 'filters', filterSystemSetting);
+}
+
 export function getFilterSettings(calculationFilterSettings: CalculationFilterSettings, document: DocumentState): CalculationFilterSettings {
 
     const existing = cloneSimple(calculationFilterSettings);
@@ -210,11 +252,11 @@ export function getFilterSettings(calculationFilterSettings: CalculationFilterSe
             case CalculationFilterSettingType.Systems:
                 for (const prop in existing[CalculationFilterSettingType.Systems].filters) {
                     if (
-                        existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].pressureOrDrainage &&
-                        existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].pressureOrDrainage !== document.uiState.pressureOrDrainage)
+                        existing[CalculationFilterSettingType.Systems].filters[prop].pressureOrDrainage &&
+                        existing[CalculationFilterSettingType.Systems].filters[prop].pressureOrDrainage !== document.uiState.pressureOrDrainage)
                     {
-                        delete build[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues];
-                    } else if (!existing[CalculationFilterSettingType.Systems].filters[prop as FilterSettingSystemKeyValues].enabled) {
+                        delete build[CalculationFilterSettingType.Systems].filters[prop];
+                    } else if (!existing[CalculationFilterSettingType.Systems].filters[prop].enabled) {
                         isSelectedAll = false;
                     }
                 }
@@ -270,7 +312,7 @@ export function getCombinedFilter(calculationFilters: CalculationFilters): Calcu
     return filters;
 }
 
-const FILTERS_ALL_KEYS_VERSION = "v2";
+const FILTERS_ALL_KEYS_VERSION = "v3";
 const FILTERS_KEY = (docId:number) => `filters_${FILTERS_ALL_KEYS_VERSION}:${docId}`;
 const FILTERSETTINGS_KEY = (docId:number) => `filters-setting_${FILTERS_ALL_KEYS_VERSION}:${docId}`;
 

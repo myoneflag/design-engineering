@@ -30,17 +30,6 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
     const result: CalculationField[] = [];
     const fittingIsGas = catalog && isGas(entity.systemUid!, catalog.fluids, document.drawing.metadata.flowSystems);
 
-    result.push(
-        {
-            property: "entityName",
-            title: "Name",
-            short: "",
-            units: Units.None,
-            category: FieldCategory.EntityName,
-            layouts: ['pressure', 'drainage'],
-        },
-    );
-
     if (!fittingIsGas) {
         result.push(
             {

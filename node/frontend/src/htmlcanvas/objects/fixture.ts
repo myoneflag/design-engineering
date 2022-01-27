@@ -81,7 +81,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
             .flat();
     }
 
-    drawEntity(context: DrawingContext, { selected, overrideColorList, withCalculation }: EntityDrawingArgs): void {
+    drawEntity(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs): void {
         const scale = context.vp.currToSurfaceScale(context.ctx);
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
 
@@ -216,7 +216,7 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
         // Display Entity Name
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM * 2 }, () => {
-            if (this.entity.entityName && !withCalculation) {
+            if (this.entity.entityName) {
                 const name = this.entity.entityName;
                 ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
                 ctx.textBaseline = "top";

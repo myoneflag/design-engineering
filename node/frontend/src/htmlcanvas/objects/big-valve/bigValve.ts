@@ -78,7 +78,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         // Display Entity Name
         this.withWorldAngle(context, { x: 0, y: this.entity.pipeDistanceMM / 2 }, () => {
-            if (this.entity.entityName && !args.withCalculation) {
+            if (this.entity.entityName) {
                 const name = this.entity.entityName;
                 context.ctx.font = 70 + "pt " + DEFAULT_FONT_NAME;
                 context.ctx.textBaseline = "top";

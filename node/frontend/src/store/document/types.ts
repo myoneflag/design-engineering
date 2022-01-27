@@ -107,7 +107,7 @@ export type CalculationFilterSettings = {
     [CalculationFilterSettingType.Systems]: {
         enabled: boolean,
         name: string,
-        filters: { [key in FilterSettingSystemKeyValues]: FilterSettingKey },
+        filters: { [key in string]: FilterSettingKey },
     },
     [CalculationFilterSettingType.View]: {
         enabled: boolean,
@@ -115,18 +115,9 @@ export type CalculationFilterSettings = {
         filters: { [key in FilterSettingViewKeyValues]: FilterSettingKey },
     },
 }
-export type FilterSettingSystemKeyValues =
-    "all" |
-    StandardFlowSystemUids.ColdWater |
-    StandardFlowSystemUids.HotWater |
-    StandardFlowSystemUids.Gas |
-    StandardFlowSystemUids.SewerDrainage |
-    StandardFlowSystemUids.SanitaryPlumbing |
-    StandardFlowSystemUids.TradeWaste;
 export type FilterSettingViewKeyValues =
     "all" |
     "custom" |
-    "names" |
     "pipe-sizing" |
     "pressure" |
     "heat-loss" |
@@ -213,8 +204,23 @@ export const initCalculationFilterSettings = {
                 enabled: true,
                 pressureOrDrainage: PressureOrDrainage.Pressure
             },
+            [StandardFlowSystemUids.WarmWater]: {
+                name: "Warm Water",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
             [StandardFlowSystemUids.Gas]: {
                 name: "Gas",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
+            [StandardFlowSystemUids.FireHydrant]: {
+                name: "Fire Hydrant",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Pressure
+            },
+            [StandardFlowSystemUids.FireHoseReel]: {
+                name: "Fire Hose Reel",
                 enabled: true,
                 pressureOrDrainage: PressureOrDrainage.Pressure
             },
@@ -228,8 +234,18 @@ export const initCalculationFilterSettings = {
                 enabled: true,
                 pressureOrDrainage: PressureOrDrainage.Drainage
             },
+            [StandardFlowSystemUids.GreaseWaste]: {
+                name: "Grease Waste",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            },
             [StandardFlowSystemUids.TradeWaste]: {
                 name: "Trade Waste",
+                enabled: true,
+                pressureOrDrainage: PressureOrDrainage.Drainage
+            },
+            [StandardFlowSystemUids.RisingMain]: {
+                name: "Rising Main",
                 enabled: true,
                 pressureOrDrainage: PressureOrDrainage.Drainage
             },
@@ -247,11 +263,11 @@ export const initCalculationFilterSettings = {
                 name: "Custom",
                 enabled: true,
             },
-            "names": {
+            /* "names": {
                 name: "Names",
                 enabled: false,
                 category: [FieldCategory.EntityName]
-            },
+            }, */
             "pipe-sizing": {
                 name: "Pipe Sizing",
                 enabled: false,

@@ -56,17 +56,6 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
         ? filled.topHeightM! > doc.drawing.levels[lvlAboveUid].floorHeightM
         : filled.topHeightM! > doc.drawing.levels[lvlUid!].floorHeightM + LEVEL_HEIGHT_DIFF_M;
 
-    result.push(
-        {
-            property: "entityName",
-            title: "Name",
-            short: "",
-            units: Units.None,
-            category: FieldCategory.EntityName,
-            layouts: ['pressure', 'drainage'],
-        },
-    );
-
     // TODO uncomment and fix DEV-325
     // addPressureCalculationFields(result, entity.systemUid, "heights." + lvlUid + ".",
     // {
