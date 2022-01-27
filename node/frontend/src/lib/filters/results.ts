@@ -16,7 +16,7 @@ import { ALL_DRAINAGE_SYSTEM_UIDS, assertUnreachable, DrainageSystemUid } from "
 import { Catalog } from "../../../../common/src/api/catalog/types";;
 import { getEntityName } from "../../../../common/src/api/document/entities/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
-import { CombineFilters } from "../types";
+import { ALL_KEY_VERSION, CombineFilters } from "../types";
 import { getSavedPreferenceOrDefault, savePreference } from "../localStorage";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 
