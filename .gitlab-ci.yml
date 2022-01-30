@@ -157,7 +157,11 @@ stop-deploy-app:
     name: $CI_COMMIT_REF_SLUG
     action: stop
   only:
-    - /^app-((?!test|stage|prod).*)$/
+    - /^app-.*$/
+  except:
+    - app-test
+    - app-stage
+    - app-prod
 
 deploy_stage:
   stage: deploy
