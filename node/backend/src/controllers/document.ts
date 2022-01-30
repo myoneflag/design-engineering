@@ -1,6 +1,6 @@
 import { IsNull } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
-import { initialDrawing, setNewDocumentInitialValues } from "../../../common/src/api/document/drawing";
+import { initialDrawing } from "../../../common/src/api/document/drawing";
 import { diffObject, diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
@@ -63,7 +63,6 @@ export class DocumentController {
             doc.version = CURRENT_VERSION;
             newDocumentState = cloneSimple(initialDrawingState);
         }
-        setNewDocumentInitialValues(newDocumentState, doc.locale);
         doc.state = DocumentStatus.ACTIVE;
         doc.shareDocument = sd;
         await doc.save();
@@ -191,7 +190,7 @@ export class DocumentController {
                     where.push({ organization: org.id, state: DocumentStatus.DELETED });
                 }
 
-                results = await Document.find( {
+                results = await Document.find({
                     where,
                     order: {
                         createdOn: "DESC",
@@ -284,7 +283,7 @@ export class DocumentController {
                 await doc.save();
 
                 const drawingObj = await Drawing.getRepository().findOneOrFail(
-                    {where: { documentId: targetId, status: DrawingStatus.CURRENT}});
+                    { where: { documentId: targetId, status: DrawingStatus.CURRENT } });
                 const newDrawing = drawingObj.drawing;
                 const newDrawingObject = Drawing.create();
                 newDrawingObject.documentId = doc.id;
@@ -357,14 +356,14 @@ router.ws("/:id/websocket", (webSocket: ws, req) => {
 
 router.ws("/share/:id/websocket", async (webSocket: ws, req) => {
     const token = req.params.id;
-    const sd = await ShareDocument.findOne({token});
+    const sd = await ShareDocument.findOne({ token });
 
     if (!sd) {
         sendErrorMessage(webSocket, 'Invalid link!');
         return;
     }
 
-    const doc = await Document.findOne({where: {shareDocument: {id: sd.id}}});
+    const doc = await Document.findOne({ where: { shareDocument: { id: sd.id } } });
     if (!doc) {
         sendErrorMessage(webSocket, 'Document has been deleted!');
         return;
