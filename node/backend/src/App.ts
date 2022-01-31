@@ -61,9 +61,9 @@ class App {
         MqClient.activate();
     }
 
-    private setMiddlewares(): void {                
+    private setMiddlewares(): void {
         this.express.use(cors());
-        this.express.use(morgan("dev"));
+        this.express.use(morgan("short"));
         this.express.use(bodyParser.json({limit: '20mb'}));
         this.express.use(bodyParser.urlencoded({ extended: false, limit: '20Mb' }));
         this.express.use(helmet());
@@ -88,5 +88,3 @@ class App {
 }
 
 export default new App().express;
-
-
