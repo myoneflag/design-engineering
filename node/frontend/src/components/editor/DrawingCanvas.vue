@@ -1173,14 +1173,15 @@ export default class DrawingCanvas extends Vue {
     }
 
     rebaseAll(this);
-    const modified = this.removeOrphanObjects();
-    if(modified) {
-      await reportWarning("Removed orphan objects");
-    }
-    if (tryToFix) {
-      await this.deleteDuplicatePipes();
-      await this.deleteWeirdStuff();
-    }
+    //  
+    // const modified = this.removeOrphanObjects();
+    // if(modified) {
+    //   await reportWarning("Removed orphan objects");
+    // }
+    // if (tryToFix) {
+    //   await this.deleteDuplicatePipes();
+    //   await this.deleteWeirdStuff();
+    // }
     const res = this.validate(tryToFix);
     if (res.success) {
       this.$store.dispatch("document/commit", { skipUndo: !logUndo });
