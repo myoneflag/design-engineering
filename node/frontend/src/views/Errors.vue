@@ -12,36 +12,6 @@
                 </b-row>
                 <b-row>
                     <b-col>
-                        <b-button-group>
-                            <b-button
-                                :variant="filters.includes(ErrorStatus.NEW) ? 'danger' : 'light'"
-                                @click="toggleFilter(ErrorStatus.NEW)"
-                                :pressed="filters.includes(ErrorStatus.NEW)"
-                                >New</b-button
-                            >
-                            <b-button
-                                :variant="filters.includes(ErrorStatus.DOING) ? 'primary' : 'light'"
-                                @click="toggleFilter(ErrorStatus.DOING)"
-                                :pressed="filters.includes(ErrorStatus.DOING)"
-                                >Doing</b-button
-                            >
-                            <b-button
-                                :variant="filters.includes(ErrorStatus.RESOLVED) ? 'success' : 'light'"
-                                @click="toggleFilter(ErrorStatus.RESOLVED)"
-                                :pressed="filters.includes(ErrorStatus.RESOLVED)"
-                                >Resolved</b-button
-                            >
-                            <b-button
-                                :variant="filters.includes(ErrorStatus.HIDDEN) ? 'dark' : 'light'"
-                                @click="toggleFilter(ErrorStatus.HIDDEN)"
-                                :pressed="filters.includes(ErrorStatus.HIDDEN)"
-                                >Hidden</b-button
-                            >
-                        </b-button-group>
-                    </b-col>
-                </b-row>
-                <b-row>
-                    <b-col>
                         <b-alert variant="success" v-if="errors.length === 0 && isLoaded" show
                             >There are no error reports right now</b-alert
                         >
@@ -57,11 +27,11 @@
                                 :variant="['danger', 'primary', 'success', ''][e.status]"
                             >
                                 <b-row>
-                                    <b-col cols="2">{{ e.user ? e.user.username : "[not logged in]" }}</b-col>
+                                    <b-col cols="1">{{ e.user ? e.user.username : "[not logged in]" }}</b-col>
                                     <b-col cols="2">{{ new Date(e.threwOn).toLocaleString() }}</b-col>
-                                    <b-col cols="2">{{ e.appVersion }}</b-col>
+                                    <b-col cols="1">{{ e.appVersion }}</b-col>
                                     <b-col cols="3">{{ e.url }}</b-col>
-                                    <b-col cols="3">{{ e.message }}</b-col>
+                                    <b-col cols="5">{{ e.message }}</b-col>
                                 </b-row>
                             </b-list-group-item>
                         </b-list-group>
