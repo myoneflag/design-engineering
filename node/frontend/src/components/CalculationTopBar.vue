@@ -31,7 +31,13 @@
           </tbody>
         </table>
       </template>
-      <template v-else>
+      <template v-else-if="!calculationsSuccess()">
+        <v-icon id="calculation-check-error" name="exclamation" scale="2" color="red"></v-icon>
+        <b-tooltip target="calculation-check-error" triggers="hover">
+          Errors have occurred while performing calculations.
+        </b-tooltip>
+      </template>   
+      <template v-else-if="reCalculate()">
         <b-button variant="warning" @click="reCalculate">Recalculate</b-button>
       </template>
     </b-col>
@@ -55,7 +61,9 @@ import { Catalog } from "../../../common/src/api/catalog/types";
 })
 export default class CalculationTopBar extends Vue {
   mounted() {
-    if (!this.calculationsUpToDate() && !this.$props.isCalculating) this.$props.onReCalculate();
+    if (!this.calculationsUpToDate() && !this.$props.isCalculating) {
+      this.performRecalculation();
+    }
   }
 
   get document(): DocumentState {
@@ -107,11 +115,15 @@ export default class CalculationTopBar extends Vue {
     return this.$store.getters["document/calculationsUpToDate"] && !this.$store.getters["document/reCalculate"];
   }
 
+  reCalculate() {
+    return this.$store.getters["document/reCalculate"];
+  }  
+
   calculationsSuccess() {
     return this.$store.getters["document/calculationsSuccess"];
   }
 
-  reCalculate() {
+  performRecalculation() {
     this.$props.onReCalculate();
   }
 }

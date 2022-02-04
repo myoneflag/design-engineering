@@ -23,6 +23,7 @@ export const THERMAL_CONDUCTIVITY: {[key: string]: Polynomial} = {
     hdpeSdr11: [0.465],
     pexSdr74: [0.465],
     stainlessSteel: [14.4],
+    ppr: [0.188],
 
     // insulation materials
     //https://www.engineeringtoolbox.com/thermal-conductivity-d_429.html
