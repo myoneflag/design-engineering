@@ -1173,15 +1173,20 @@ export default class DrawingCanvas extends Vue {
     }
 
     rebaseAll(this);
-    //  
-    // const modified = this.removeOrphanObjects();
-    // if(modified) {
-    //   await reportWarning("Removed orphan objects");
-    // }
-    // if (tryToFix) {
-    //   await this.deleteDuplicatePipes();
-    //   await this.deleteWeirdStuff();
-    // }
+
+    // the below code cleans up the document on open from various bugs
+    // do not delete / disable if the underlying root causes of the bugs have not been found and fixed
+    // the original author decided to "hide" teh bugs with this code
+    // and it's a real can of worms
+    // https://h2xengineering.atlassian.net/browse/DEV-621    
+    const modified = this.removeOrphanObjects();
+    if(modified) {
+      await reportWarning("Removed orphan objects");
+    }
+    if (tryToFix) {
+      await this.deleteDuplicatePipes();
+      await this.deleteWeirdStuff();
+    }
     const res = this.validate(tryToFix);
     if (res.success) {
       this.$store.dispatch("document/commit", { skipUndo: !logUndo });
