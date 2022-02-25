@@ -107,13 +107,14 @@ import { State } from "vuex-class";
 import Component from "vue-class-component";
 import ProfileMenuItem from "../../src/components/ProfileMenuItem.vue";
 import { AccessLevel, User } from "../../../common/src/models/User";
-import { Level } from "../../../common/src/api/document/drawing";
-import { getDocumentOperations } from "../api/document";
+import { Level, DrawingState } from "../../../common/src/api/document/drawing";
+import { getDocumentHistory, getDocumentHistorySnapshot } from "../api/document";
 import { DrawingMode } from "../htmlcanvas/types";
 import { Operation } from "../../../common/src/models/Operation";
 import OnboardingState, { ONBOARDING_SCREEN } from "../store/onboarding/types";
 import { DocumentStep } from "../store/onboarding/steps";
 import { reportError } from '../../src/api/error-report';
+import { diffState } from '../../../common/src/api/document/state-differ';
 
 @Component({
     components: { ProfileMenuItem },
@@ -212,22 +213,37 @@ export default class DrawingNavBar extends Vue {
 
         this.historyLoading = true;
         try {
-            const after = this.document.fullHistory.length
-                ? this.document.fullHistory[this.document.fullHistory.length - 1].orderIndex
-                : -1;
-            const ops = await getDocumentOperations(this.document.documentId, after);
+            const ops = await getDocumentHistory(this.document.documentId);
             if (ops.success) {
-                this.document.fullHistory.push(...ops.data);
-                this.document.uiState.historyIndex = -1;
+                this.document.fullHistory = ops.data;
+                this.document.uiState.historyIndex = this.discreteHistory.length - 1;
 
-                await this.$store.dispatch("document/resetDrawing");
+                const lastOperationIndex = this.document.fullHistory[this.document.fullHistory.length - 1].orderIndex;
+
+                const snapshot = 
+                    await getDocumentHistorySnapshot(this.document.documentId, lastOperationIndex);
+                if (snapshot.success) {
+                    await this.$store.dispatch("document/swapDrawing", snapshot.data);
+                    this.selectHistoryChangedEntities(this.discreteHistory[this.document.uiState.historyIndex]);
+                } else {
+                    reportError("Could not load earlier document version.", new Error());
+                }
 
                 this.document.uiState.drawingMode = DrawingMode.History;
             } else {
-                reportError("Couldn't Load Document History", new Error());
+                reportError("Could not load document history.", new Error());
             }
         } finally {
             this.historyLoading = false;
+        }
+    }
+
+    selectHistoryChangedEntities(operations: Operation[]) {
+        const operation = (operations[0].operation as any).diff as DrawingState;
+        if (operation.levels) {
+            const levelUid = Object.keys(operation.levels)[0];
+            this.$emit("level-changed", levelUid);
+            this.$store.dispatch("document/setCurrentLevelUid", levelUid);
         }
     }
 

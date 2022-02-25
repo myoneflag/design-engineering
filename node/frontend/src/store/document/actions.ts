@@ -186,14 +186,20 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit("setId", payload);
     },
 
+    swapDrawing({ commit, state }, newState) {
+        commit("swapDrawing", newState);
+    },
+
     revert({ commit, state }, redraw) {
         // We need to wait for entity mutation watchers to fire and update the filter.
         // Reverse all optimistic operations
         commit("revert", redraw);
     },
+
     revertFull({ commit, state }) {
         commit("revertFull");
     },
+
     reset({ commit, state }) {
         commit("reset");
     },

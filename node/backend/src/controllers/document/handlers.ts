@@ -13,6 +13,7 @@ import ws from "ws";
 import config from "../../config/config";
 import { DocumentUpgrader } from "../../services/DocumentUpgrader";
 import LRU from "lru-cache";
+import { DrawingRepository } from "../../repositories/DrawingRepository";
 
 export async function handleWebSocket(doc: Document, webSocket: ws, readonly: boolean, session: Session) {
     const errorMessage = checkForLoadingErrors(doc, webSocket);
@@ -41,8 +42,6 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
                 operationId++;
                 operation = localCache.get(operationId);
             }
-
-            console.log(operations.length);
 
             return operations;
         }
@@ -181,8 +180,7 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
     async function handleInitialData(lastOpId: any, outgoingMessageQueue: DocumentClientMessage) {
         let drawing: DrawingState;
         lastOpId = doc.nextOperationIndex - 1;
-        const drawingObject = await Drawing.getRepository()
-            .findOneOrFail({ where: { documentId: doc.id, status: DrawingStatus.CURRENT } });
+        const drawingObject = await DrawingRepository.findCurrentDrawing(doc.id);
         drawing = drawingObject.drawing;
 
         const openDocumentMessages = createMessagesFromDrawing(drawing, lastOpId);

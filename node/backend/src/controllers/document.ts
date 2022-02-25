@@ -1,6 +1,6 @@
 import { IsNull } from "typeorm";
 import { NextFunction, Request, Response, Router } from "express";
-import { initialDrawing } from "../../../common/src/api/document/drawing";
+import { initialDrawing, Level } from "../../../common/src/api/document/drawing";
 import { diffObject, diffState } from "../../../common/src/api/document/state-differ";
 import { CURRENT_VERSION } from "../../../common/src/api/config";
 import { Document, DocumentStatus } from "../../../common/src/models/Document";
@@ -23,6 +23,9 @@ import ws from "ws";
 import { Drawing, DrawingStatus } from "../../../common/src/models/Drawing";
 import { applyDiffNative } from "../../../common/src/api/document/state-ot-apply";
 import { DiffOperation, OPERATION_NAMES } from "../../../common/src/api/document/operation-transforms";
+import { DocumentUpgrader } from "../services/DocumentUpgrader";
+import { OperationRepository } from "../repositories/OperationRepository";
+import { DrawingRepository } from "../repositories/DrawingRepository";
 
 export class DocumentController {
 
@@ -72,6 +75,7 @@ export class DocumentController {
         drawingData.documentId = doc.id;
         drawingData.status = DrawingStatus.CURRENT;
         drawingData.drawing = initialDrawingState;
+        drawingData.version = CURRENT_VERSION;
 
         if (createExampleDoc) {
             const exampleDiff = diffState(initialDrawingState, newDocumentState, undefined)[0];
@@ -90,6 +94,7 @@ export class DocumentController {
         };
         operation.blame = doc.createdBy;
         operation.dateTime = doc.createdOn;
+        operation.version = CURRENT_VERSION;
         Operation.insert(operation);
 
         doc.nextOperationIndex++;
@@ -237,20 +242,119 @@ export class DocumentController {
 
     @ApiHandleError()
     @AuthRequired()
-    public async findOperations(req: Request, res: Response, next: NextFunction, session: Session) {
-        await withDocument(Number(req.params.id), res, session, AccessType.READ, async (doc) => {
-            const after = req.query.after === undefined ? -1 : Number(req.query.after);
-            const operations = await Operation
-                .createQueryBuilder("operation")
-                .leftJoinAndSelect("operation.blame", "user")
-                .where("operation.document = :document", { document: doc.id })
-                .andWhere("operation.\"orderIndex\" > :after", { after })
-                .orderBy("\"orderIndex\"", "ASC")
-                .getMany();
-
+    public async listHistory(req: Request, res: Response, next: NextFunction, session: Session) {
+        const documentId = Number(req.params.id);
+        await withDocument(documentId, res, session, AccessType.READ, async (doc) => {
+            const operations = await OperationRepository.findOperationsBatch(documentId, true, null, null,
+                (op: Operation) => {
+                    // null-out the body of the operation diff since it's not needed, and enormous for large documents
+                    // we do need the operation type and a brief of levels/entities affected by operation
+                    if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
+                        nullOutDiffDocumentProperties(op.operation.diff);
+                        nullOutDiffDocumentProperties(op.operation.inverse);
+                    }
+                });
             res.status(200).send({
                 success: true,
                 data: operations,
+            });
+        });
+
+        function nullOutDiffDocumentProperties(operation: any) {
+            if (operation) {
+                if (operation.shared) {
+                    Object.values(operation.shared).forEach((ent) => {
+                        nullOutEntityProperties(ent);
+                    });
+                }
+                if (operation.levels) {
+                    Object.values(operation.levels).forEach((level: Level) => {
+                        if (level.entities) {
+                            Object.values(level.entities).forEach((ent) => {
+                                nullOutEntityProperties(ent);
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        function nullOutEntityProperties(ent: any) {
+            Object.keys(ent).forEach((prop) => {
+                if (prop !== "id" && prop !== "type" && prop !== "deleted") {
+                    ent[prop] = null;
+                }
+            });
+        }
+    }
+
+    @ApiHandleError()
+    @AuthRequired()
+    public async getDocumentHistorySnapshot(req: Request, res: Response, next: NextFunction, session: Session) {
+
+        const DOCUMENT_AUTO_SNAPSHOT = 5000;
+
+        const documentId = Number(req.params.id);
+        const operationOrderIndex = Number(req.params.opId);
+        console.info(`Retrieve document snapshot at orderIndex: ${operationOrderIndex}`);
+        await withDocument(documentId, res, session, AccessType.READ, async (document) => {
+            // when we compose the drawing from operations,
+            // we upgrade internally as we encounter new versions in the list of operations
+
+            // check for snapshots with orderIndex closest to operationId
+            // if no snapshots exists start from initial drawing
+            let drawing = initialDrawing(document.locale);
+            let lastVersion = -1;
+            let retrieveOperationStartIndex = -1;
+
+            // if snapshots do exist get the latest and load up the drawing
+            const existingSnapShots = await DrawingRepository.findSnapshotDrawingsSorted(document.id);
+            if (existingSnapShots && existingSnapShots.length) {
+                const closestSnapshot = existingSnapShots.slice().reverse()
+                    .find((snap) => operationOrderIndex > snap.orderIndex);
+                if (closestSnapshot) {
+                    console.info(`Found snapshot docId: ${documentId} orderIndex: ${closestSnapshot.orderIndex}, id: ${closestSnapshot.id}`);
+                    console.info(`Snapshot has ${Object.keys(closestSnapshot.drawing.levels).length}`);
+                    drawing = closestSnapshot.drawing;
+                    lastVersion = closestSnapshot.version;
+                    retrieveOperationStartIndex = closestSnapshot.orderIndex + 1;
+                }
+            }
+
+            // load up operations only after the snapshots operation up to the requested operation
+            await OperationRepository.findOperationsBatch(
+                documentId, false, retrieveOperationStartIndex, operationOrderIndex, async (op) => {
+                    lastVersion =
+                        DocumentUpgrader.updateDrawingStateWithOperations([op], drawing, true, lastVersion);
+                    // every so many operations, create a snapshot of the document
+                    // next time history is retrieved the snapshot is used
+                    if (op.orderIndex && (op.orderIndex % DOCUMENT_AUTO_SNAPSHOT === 0)) {
+                        console.info(`Creating snapshot docId: ${documentId} orderIndex: ${op.orderIndex}`);
+                        const snapShot = Drawing.create();
+                        snapShot.documentId = documentId;
+                        snapShot.blame = op.blame;
+                        snapShot.dateTime = op.dateTime;
+                        snapShot.orderIndex = op.orderIndex;
+                        snapShot.version = op.version;
+                        snapShot.status = DrawingStatus.SNAPSHOT;
+                        snapShot.drawing = drawing;
+                        console.log(`Saving snapshot with ${Object.keys(drawing.levels).length} levels.`);
+                        await Drawing.getRepository().insert(snapShot);
+                    }
+                });
+
+            // the final drawing (even if it stops at an older version) we upgrade again up to CURRENT_VERSION
+            // when we do so, migration mandatory operations need to be added to the drawing since they contain
+            // critical changes for the document
+            await OperationRepository.findMigrationOperations(
+                documentId, operationOrderIndex + 1, async (op) => {
+                    lastVersion =
+                        DocumentUpgrader.updateDrawingStateWithOperations([op], drawing, true, lastVersion);
+                });
+
+            res.status(200).send({
+                success: true,
+                data: drawing,
             });
         });
     }
@@ -282,8 +386,7 @@ export class DocumentController {
 
                 await doc.save();
 
-                const drawingObj = await Drawing.getRepository().findOneOrFail(
-                    { where: { documentId: targetId, status: DrawingStatus.CURRENT } });
+                const drawingObj = await DrawingRepository.findCurrentDrawing(targetId);
                 const newDrawing = drawingObj.drawing;
                 const newDrawingObject = Drawing.create();
                 newDrawingObject.documentId = doc.id;
@@ -304,6 +407,7 @@ export class DocumentController {
                 };
                 operation.blame = doc.lastModifiedBy;
                 operation.dateTime = doc.lastModifiedOn;
+                operation.version = CURRENT_VERSION;
                 Operation.insert(operation);
 
                 doc.nextOperationIndex++;
@@ -374,7 +478,8 @@ router.ws("/share/:id/websocket", async (webSocket: ws, req) => {
 router.post("/", controller.create.bind(controller));
 router.delete("/:id", controller.delete.bind(controller));
 router.post("/:id/clone", controller.clone.bind(controller));
-router.get("/:id/operations", controller.findOperations.bind(controller));
+router.get("/:id/history", controller.listHistory.bind(controller));
+router.get("/:id/snapshot/:opId", controller.getDocumentHistorySnapshot.bind(controller));
 router.put("/:id", controller.update.bind(controller));
 router.get("/:id", controller.findOne.bind(controller));
 router.get("/shared/:sharedId", controller.findOneShared.bind(controller));

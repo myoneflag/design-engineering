@@ -30,4 +30,7 @@ export class Operation extends BaseEntity {
 
     @Column()
     version: number;
+
+    @Column()
+    migration: boolean;
 }

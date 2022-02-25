@@ -1,4 +1,3 @@
-import { DrawingMode } from "../../htmlcanvas/types";
 <template>
     <div>
         <b-card class="historySidePanel">
@@ -65,9 +64,8 @@ import { DrawingMode } from "../../htmlcanvas/types";
             <b-card style="overflow-y: auto; max-height: 400px" class="history-debug">
                 <h2>Debugging info</h2>
                 <pre style="font-size: 12px; text-align: left">
-                            {{ discreteHistory[document.uiState.historyIndex] }}
-                        </pre
-                >
+                    {{ discreteHistory[document.uiState.historyIndex] }}
+                </pre>
             </b-card>
         </b-collapse>
     </div>
@@ -77,11 +75,12 @@ import { DrawingMode } from "../../htmlcanvas/types";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { DocumentState } from "../../../src/store/document/types";
-import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { Operation } from "../../../../common/src/models/Operation";
 import { DrawingMode } from "../../htmlcanvas/types";
-import { MainEventBus } from "../../store/main-event-bus";
-import { cloneSimple } from "../../../../common/src/lib/utils";
+import { getDocumentHistorySnapshot } from '../../../src/api/document';
+import { MainEventBus } from '../../../src/store/main-event-bus';
+import { reportError } from '../../../src/api/error-report';
+import { DrawingState } from '../../../../common/src/api/document/drawing';
 
 @Component({
     components: {},
@@ -96,48 +95,36 @@ export default class HistoryView extends Vue {
     mounted() {
         this.unwatch = this.$watch(
             () => this.document.uiState.historyIndex,
-            (newVal, oldVal) => {
+            async (newVal, oldVal) => {
                 this.document.uiState.selectedUids.splice(0);
                 newVal = Number(newVal);
                 oldVal = Number(oldVal);
-                const diffs: any[] = [];
-                if (newVal > oldVal) {
-                    // fast forward
-                    for (let i = oldVal + 1; i <= newVal; i++) {
-                        for (let j = 0; j < this.discreteHistory[i].length; j++) {
-                            const op = this.discreteHistory[i][j];
-                            switch (op.operation.type) {
-                                case OPERATION_NAMES.DIFF_OPERATION:
-                                    diffs.push(op.operation.diff);
-                                    break;
-                                case OPERATION_NAMES.COMMITTED_OPERATION:
-                                    break;
-                            }
-                        }
-                    }
-                }
 
-                if (newVal < oldVal) {
-                    for (let i = oldVal; i > newVal; i--) {
-                        for (let j = this.discreteHistory[i].length - 1; j >= 0; j--) {
-                            const op = this.discreteHistory[i][j];
-                            switch (op.operation.type) {
-                                case OPERATION_NAMES.DIFF_OPERATION:
-                                    diffs.push(op.operation.inverse);
-                                    break;
-                                case OPERATION_NAMES.COMMITTED_OPERATION:
-                                    break;
-                            }
-                        }
-                    }
-                }
+                const [lastOperationForHistoryIndex] = this.discreteHistory[this.document.uiState.historyIndex].slice(-1);
+                const lastOrderIndex = lastOperationForHistoryIndex.orderIndex;
 
-                this.$store.dispatch("document/applyDiffs", cloneSimple(diffs));
-                MainEventBus.$emit("redraw");
+                const historySnapshotResult = 
+                    await getDocumentHistorySnapshot(this.document.documentId, lastOrderIndex);
+                if (historySnapshotResult.success) {
+                    this.$store.dispatch("document/swapDrawing", historySnapshotResult.data);
+                    MainEventBus.$emit("redraw");                    
+                    this.selectHistoryChangedEntities(this.discreteHistory[this.document.uiState.historyIndex]);
+                } else {
+                    reportError("Could not load earlier document version.", new Error());                    
+                }
             }
         );
 
         this.document.uiState.historyIndex = this.discreteHistory.length - 1;
+    }
+
+    selectHistoryChangedEntities(operations: Operation[]) {
+        const operation = (operations[0].operation as any).diff as DrawingState;
+        if (operation.levels) {
+            const levelUid = Object.keys(operation.levels)[0];
+            this.$emit("level-changed", levelUid);
+            this.$store.dispatch("document/setCurrentLevelUid", levelUid);
+        }
     }
 
     destroyed() {
@@ -199,15 +186,14 @@ export default class HistoryView extends Vue {
     position: fixed;
     left: 300px;
     top: 80px;
-    width: calc(100vw - 320px);
-    //margin-right: 20px;
+    width: calc(100vw - 320px - 250px);
 }
 
 .history-debug {
     position: fixed;
     left: 300px;
     top: 200px;
-    width: calc(100vw - 320px);
+    width: calc(100vw - 320px - 250);
     //margin-right: 20px;
 }
 </style>

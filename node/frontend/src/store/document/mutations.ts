@@ -174,6 +174,7 @@ function addEntityOn(state: DocumentState, { entity, levelUid }: EntityParamNull
     MainEventBus.$emit("add-entity", { entity, levelUid });
 }
 
+
 function changeDrawing(state: DocumentState, newDrawing: DrawingState, filter: any, redraw: boolean) {
     // newDrawing = cloneSimple(newDrawing);
     const reverseDiff = cloneSimple(diffState(state.drawing, newDrawing, filter));
@@ -354,6 +355,10 @@ export const mutations: MutationTree<DocumentState> = {
     applyDiff,
 
     applyDiffs,
+
+    swapDrawing(state: DocumentState, newState: DrawingState) {
+        changeDrawing(state, newState, undefined, true);
+    },
 
     revert(state, redraw) {
         if (state.uiState.drawingMode === DrawingMode.History) {

@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { AccessEvents, LoginEventType } from "../../../common/src/models/AccessEvents";
 import { Session } from "../../../common/src/models/Session";
 import { AccessLevel } from "../../../common/src/models/User";
+import { errorResponse } from "./apiWrapper";
 
 export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean = true) {
     return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -14,10 +15,7 @@ export function AuthRequired(minAccessLevel?: AccessLevel, eulaNeeded: boolean =
                     return original(req, res, next, session);
                 },
                 (message) => {
-                    res.status(401).send({
-                        success: false,
-                        message,
-                    })
+                    errorResponse(res, message, 401);
                 },
                 minAccessLevel,
                 eulaNeeded,
