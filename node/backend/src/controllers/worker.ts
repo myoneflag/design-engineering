@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import { errorResponse } from "../helpers/apiWrapper";
 import { ReportingManager } from "../reporting/ReportingManager";
 import { DocumentUpgrader } from "../services/DocumentUpgrader";
 
@@ -64,8 +65,7 @@ export class WorkerController {
             }
         } catch (err) {
             console.log({ "worker.error": jsonMessage.task, docId } );
-            console.error(err);
-            return res.status(500).send({success: false});
+            return errorResponse(res, err);
         }
     }
 }

@@ -6,7 +6,7 @@ import {
 import * as OT from "../../../common/src/api/document/operation-transforms";
 import axios from "axios";
 import { Document } from "../../../common/src/models/Document";
-import { GeneralInfo } from "../../../common/src/api/document/drawing";
+import { DrawingState, GeneralInfo } from "../../../common/src/api/document/drawing";
 import { Operation } from "../../../common/src/models/Operation";
 import { assertUnreachable } from "../../../common/src/api/config";
 import { SupportedLocales } from "../../../common/src/api/locale";
@@ -294,9 +294,21 @@ export async function cloneDocument(id: number): Promise<APIResult<Document>> {
     }
 }
 
-export async function getDocumentOperations(id: number, after: number): Promise<APIResult<Operation[]>> {
+export async function getDocumentHistory(id: number): Promise<APIResult<Operation[]>> {
     try {
-        return (await axios.get("/api/documents/" + id + "/operations", { params: { after } })).data;
+        return (await axios.get("/api/documents/" + id + "/history")).data;
+    } catch (e) {
+        if (e.response && e.response.data && e.response.data.message) {
+            return { success: false, message: e.response.data.message };
+        } else {
+            return { success: false, message: e.message };
+        }
+    }
+}
+
+export async function getDocumentHistorySnapshot(id: number, lastOpId: number): Promise<APIResult<DrawingState>> {
+    try {
+        return (await axios.get("/api/documents/" + id + "/snapshot/" + lastOpId)).data;
     } catch (e) {
         if (e.response && e.response.data && e.response.data.message) {
             return { success: false, message: e.response.data.message };

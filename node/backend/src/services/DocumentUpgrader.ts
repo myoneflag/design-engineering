@@ -63,28 +63,19 @@ export class DocumentUpgrader {
         await SqsClient.publishBatch(queueMessages);
     }
 
-    static async composeDrawingStateFromOperations(tx: EntityManager, doc: Document, runUpgrades: boolean) {
-        const operations = await tx.getRepository(Operation)
-            .createQueryBuilder("operation")
-            .leftJoinAndSelect("operation.blame", "user")
-            .where("operation.document = :document", { document: doc.id })
-            .orderBy("operation.orderIndex", "ASC")
-            .getMany();
-        const drawing = initialDrawing(doc.locale);
-        let lastOpId = -1;
-        let lastVersion = -1;
+    static updateDrawingStateWithOperations(
+        operations: Operation[], drawing: DrawingState, runUpgrades: boolean, lastVersion: number) {
         for (const op of operations) {
             // apply migration to drawing when operation version changes
             if (runUpgrades && op.version !== lastVersion && lastVersion !== -1) {
-                DocumentUpgrader.upgradeDrawing(drawing, op.version);
+                DocumentUpgrader.upgradeDrawing(drawing, lastVersion, op.version);
             }
             if (op.operation.type === OPERATION_NAMES.DIFF_OPERATION) {
                 applyDiffNative(drawing, op.operation.diff);
             }
-            lastOpId = op.orderIndex;
             lastVersion = op.version;
         }
-        return drawing;
+        return lastVersion;
     }
 
     static async onDocumentUpgradeRequest(docId: number, overwrite = false): Promise<boolean> {
@@ -110,7 +101,7 @@ export class DocumentUpgrader {
                 const drawingData: Drawing = await tx.getRepository(Drawing).findOneOrFail(
                     { where: { documentId: doc.id, status: DrawingStatus.CURRENT } });
                 const drawing = drawingData.drawing;
-                DocumentUpgrader.upgradeDrawing(drawing, doc.version);
+                DocumentUpgrader.upgradeDrawing(drawing, doc.version, CURRENT_VERSION);
                 doc.metadata = drawing.metadata.generalInfo;
                 drawingData.version = CURRENT_VERSION;
                 await tx.save(Drawing, drawingData);
@@ -130,25 +121,35 @@ export class DocumentUpgrader {
         return true;
     }
 
-    public static upgradeDrawing(drawing: DrawingState, version: number) {
-        // do not add "break" statements to the swith case below
-        // intentionally the upgrade process will go through all the version increments until reaching CURRENT_VERSION
+    public static upgradeDrawing(drawing: DrawingState, version: number, targetVersion: number) {
+        console.info(`Upgrading drawing from current: ${version} to target: ${targetVersion}. CURRENT_VERSION = ${CURRENT_VERSION}`);
+        // CAUTION: follow the pattern when adding new cases bellow
+        // case N:
+        //     drawing_upgradedNtoN+1(drawing);
+        //     if (targetVersion === N+1) { break; }
         switch (version) {
             case 22:
                 drawing_upgraded22to23(drawing);
+                if (targetVersion === 23) { break; }
             case 23:
                 drawing_upgraded23to24(drawing);
+                if (targetVersion === 24) { break; }
             case 24:
                 drawing_upgraded24to25(drawing);
+                if (targetVersion === 25) { break; }
             case 25:
                 drawing_upgraded25to26(drawing);
+                if (targetVersion === 26) { break; }
             case 26:
                 drawing_upgraded26to27(drawing);
+                if (targetVersion === 27) { break; }
             case 27:
                 drawing_upgraded27to28(drawing);
+                if (targetVersion === 28) { break; }
             case 28:
                 drawing_upgraded28to29(drawing);
-            case CURRENT_VERSION:
+                if (targetVersion === 29) { break; }
+            case targetVersion:
                 break;
         }
     }

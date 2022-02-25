@@ -35,4 +35,7 @@ export class Drawing extends BaseEntity {
 
     @Column()
     version: number;
+
+    @Column()
+    orderIndex: number | null;
 }
