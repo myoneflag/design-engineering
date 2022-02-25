@@ -1,6 +1,6 @@
 <template>
   <b-container>
-    <b-row class="exportRow" align-v="center">
+    <b-row class="exportRow" align-v="center" align-h="center">
       <b-col class="exportCol">
         <b-card title="Read-Only Link" img-alt="Image" img-top tag="article" class="mb-2 exportCard">
           <b-button class="exportButton" @click="handleShareClick">Generate</b-button>
@@ -25,6 +25,19 @@
           <img src="@/assets/export-icons//excel.png" width="150" height="150" />
           <b-card-text>
             Download a spreadsheet that contains all the components in your design and their associated cost
+          </b-card-text>
+        </b-card>
+      </b-col>
+      <b-col class="exportCol">
+        <b-card title="Design Report" img-alt="Image" img-top tag="article" class="mb-2 exportCard">
+          <b-button class="exportButton" @click="calcReport">Download</b-button>
+          <div class="design-export-img">
+            <img src="@/assets/export-icons//word.png" width="75" height="75" />
+            <img src="@/assets/export-icons//pdf.png" width="75" height="75" />
+            <img src="@/assets/export-icons//excel.png" width="75" height="75" />
+          </div>
+          <b-card-text>
+            Export a report containing a summary of your design and calculations
           </b-card-text>
         </b-card>
       </b-col>
@@ -91,8 +104,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { generateShareLink } from "../../api/share-document";
 import { exportBudgetReport } from "../../htmlcanvas/lib/budget-report/budget-report";
+import { exportCalcReport } from "../../htmlcanvas/lib/calc-report/calc-report";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import { jsonExport } from "../../htmlcanvas/lib/json-export/export-json";
+import { referenceFilterSettings } from "../../htmlcanvas/lib/calc-report/utils";
 import PdfSnapshotTool from "../../htmlcanvas/tools/pdf-snapshot-tool";
 import { globalStore } from "../../store/document/mutations";
 import { DocumentState } from "../../store/document/types";
@@ -134,14 +149,35 @@ export default class ExportPanel extends Vue {
     this.document.uiState.exportSettings.borderless = true;
     this.document.uiState.exportSettings.coverSheet = false;
     this.document.uiState.exportSettings.floorPlans = false;
+    this.document.uiState.exportSettings.isAppendix = false;
   }
   configurePdfExport() {
     this.document.uiState.exportSettings.borderless = false;
     this.document.uiState.exportSettings.coverSheet = true;
     this.document.uiState.exportSettings.floorPlans = true;
+    this.document.uiState.exportSettings.isAppendix = false;
+  }
+  configureDesignExport() {
+    this.document.uiState.exportSettings.borderless = false;
+    this.document.uiState.exportSettings.coverSheet = false;
+    this.document.uiState.exportSettings.floorPlans = false;
+    this.document.uiState.exportSettings.isAppendix = true;
   }
   budgetReport() {
     exportBudgetReport(this.$props.canvasContext);
+  }
+  async calcReport() {
+    await exportCalcReport(this.$props.canvasContext);
+
+    const oldCalculationFilterSettings = {...this.document.uiState.calculationFilterSettings};
+    this.document.uiState.calculationFilterSettings = referenceFilterSettings(oldCalculationFilterSettings);
+
+    this.configureDesignExport();
+    this.$store.dispatch("document/setPreviewMode", true);
+    MainEventBus.$emit("redraw");
+    MainEventBus.$emit("set-tool-handler", new PdfSnapshotTool());
+
+    // this.document.uiState.calculationFilterSettings = oldCalculationFilterSettings;
   }
   handleShareClick() {
     this.$bvModal.show("bv-modal-example");
@@ -203,11 +239,37 @@ export default class ExportPanel extends Vue {
   border: 2px solid black;
   border-radius: 10px;
   min-height: 28rem;
+
+  .design-export-img {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    margin: 0 auto;
+    > img {
+      position: absolute;
+      &:first-child {
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      &:nth-child(2) {
+        bottom: 0;
+        left: 0;
+      }
+      &:last-child {
+        bottom: 0;
+        right: 0;
+      }
+    }
+  }
 }
 .exportRow {
   position: fixed;
-  top: 25%;
+  top: 50%;
+  left: 50%;
   border-radius: 10px;
+  transform: translate(-50%, -50%);
+  width: 100%;
 }
 .exportButton {
   width: 10rem;

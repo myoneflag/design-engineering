@@ -99,6 +99,18 @@ export function makePipeCalculationFields(
     const layoutOptionDrainage: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['pressure', 'drainage'] : [];
     const layoutStrict: CalculationLayout[] = isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) ? ['drainage'] : ['pressure'];
 
+    result.push({
+        property: "reference",
+        title: "Reference",
+        short: "",
+        shortTitle: "",
+        units: Units.None,
+        category: FieldCategory.EntityName,
+        systemUid: entity.systemUid,
+        layouts: layoutStrict,
+        defaultEnabled: true
+    });
+
     if (!pipeIsGas) {
         if (pCalc.totalPeakFlowRateLS) {
             result.push(
@@ -291,8 +303,8 @@ export function makePipeCalculationFields(
                         property: "gradePCT",
                         title: 'Grade',
                         shortTitle: 'Pipe Grade',
-                        short: '%',
-                        units: Units.None,
+                        short: '',
+                        units: Units.Percent,
                         category: FieldCategory.Location,
                         systemUid: entity.systemUid,
                         defaultEnabled: true,

@@ -11,7 +11,7 @@ import CalculationEngine from "../../../src/calculations/calculation-engine";
 import { EntityType, getEntityName } from "../../../../common/src/api/document/entities/types";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import Pipe from "../../../src/htmlcanvas/objects/pipe";
-import { CalculationData } from "../../../src/store/document/calculations/calculation-field";
+import { CalculationData, CalculationFieldWithValue } from "../../../src/store/document/calculations/calculation-field";
 import Flatten from "@flatten-js/core";
 import { cooperativeYield } from "../../../src/htmlcanvas/utils";
 import { isCalculated } from "../../../src/store/document/calculations";
@@ -22,7 +22,7 @@ import {
     DrawableEntityConcrete,
     isConnectableEntity
 } from "../../../../common/src/api/document/entities/concrete-entity";
-import { assertUnreachable } from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage, isGas } from "../../../../common/src/api/config";
 import LayoutAllocator from "../lib/layout-allocator";
 import stringify from "json-stable-stringify";
 import { getEffectiveFilter, getFilterSettings, setInitFilterSettings } from "../../lib/filters/results";
@@ -33,6 +33,10 @@ import PipeCalculation from "src/store/document/calculations/pipe-calculation";
 import RiserCalculation from "src/store/document/calculations/riser-calculation";
 import { Entity } from "typeorm";
 import { getEntitySystem } from "../../../src/calculations/utils";
+import PlantEntity from "../../../../common/src/api/document/entities/plants/plant-entity";
+import { PlantType } from "../../../../common/src/api/document/entities/plants/plant-types";
+import DirectedValveEntity from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
+import { ValveType } from "../../../../common/src/api/document/entities/directed-valves/valve-types";
 
 const MINIMUM_SIGNIFICANT_PIPE_LENGTH_MM = 500;
 export const SIGNIFICANT_FLOW_THRESHOLD = 1e-5;
@@ -242,6 +246,15 @@ export default class CalculationLayer extends LayerImplementation {
                         obj2props.get(o.uid) || [],
                         true
                     ]);
+                } else {
+                    // TODO: References will ALL have to be displayed
+                    const wc = o.toWorldCoord();
+                    res.place(Flatten.point(wc.x, wc.y), [
+                        o.uid,
+                        o.position,
+                        obj2props.get(o.uid)?.filter(e => (e as CalculationFieldWithValue)?.property === 'reference') || [],
+                        true
+                    ]);
                 }
             }
         }
@@ -323,6 +336,9 @@ export default class CalculationLayer extends LayerImplementation {
     calculate(context: CanvasContext, done: () => void) {
         this.layout.clear();
 
+        // Add reference to all entities
+        this.addReferences();
+
         context.document.uiState.isCalculating = true;
         context.document.uiState.lastCalculationSuccess = false;
 
@@ -355,7 +371,108 @@ export default class CalculationLayer extends LayerImplementation {
             context.$store.getters["customEntity/nodes"]
         );
     }
+
+    getEntityReferenceName(obj: BaseBackedObject): string | null {
+        switch (obj.type) {
+            case EntityType.FLOW_SOURCE:
+                return 'FS';
+            case EntityType.PIPE:
+                return 'P';
+            case EntityType.FITTING:
+                return 'F';
+            case EntityType.FIXTURE:
+            case EntityType.LOAD_NODE:
+                return 'X';
+            case EntityType.DIRECTED_VALVE:
+                if ((obj.entity as DirectedValveEntity).valve.type === ValveType.GAS_REGULATOR) {
+                    return 'R';
+                }
+            case EntityType.BIG_VALVE:
+                return 'V';
+            case EntityType.PLANT:
+                switch ((obj.entity as PlantEntity).plant.type) {
+                    case PlantType.CUSTOM:
+                        return 'CP';
+                    case PlantType.RETURN_SYSTEM:
+                        return 'HWP';
+                    case PlantType.TANK:
+                        return 'TP';
+                    case PlantType.PUMP:
+                        return 'PP';
+                    case PlantType.DRAINAGE_PIT:
+                        return 'PT'
+                    case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+                        return 'GT';
+                }
+            case EntityType.GAS_APPLIANCE:
+                return 'A';
+            case EntityType.BACKGROUND_IMAGE:
+            case EntityType.RISER:
+            default:
+                return null;
+        }
+    }
+
+    systemLayoutRef(flowSystemUid: string, obj: BaseBackedObject): string {
+        switch (obj.type) {
+            case EntityType.GAS_APPLIANCE:
+                return 'G';
+            case EntityType.PLANT:
+                switch ((obj.entity as PlantEntity).plant.type) {
+                    case PlantType.DRAINAGE_PIT:
+                    case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
+                        return 'S';
+                    case PlantType.RETURN_SYSTEM:
+                        return 'G';
+                    case PlantType.CUSTOM:
+                    case PlantType.TANK:
+                    case PlantType.PUMP:
+                    default:
+                        break;
+                }
+            case EntityType.FLOW_SOURCE:
+            case EntityType.PIPE:
+            case EntityType.FITTING:
+            case EntityType.FIXTURE:
+            case EntityType.LOAD_NODE:
+            case EntityType.DIRECTED_VALVE:
+            case EntityType.BIG_VALVE:
+            case EntityType.BACKGROUND_IMAGE:
+            case EntityType.RISER:
+            default:
+                break;
+        }
+        if (isDrainage(flowSystemUid, this.context.document.drawing.metadata.flowSystems)) {
+            return 'S';
+        }
+    
+        if (isGas(flowSystemUid, this.context.effectiveCatalog.fluids, this.context.document.drawing.metadata.flowSystems)) {
+            return 'G';
+        }
+    
+        return 'W';
+    }
+
+    addReferences(): void {
+        const references = new Map<string, number>();
+        for (const obj of Array.from(this.context.globalStore.values())) {
+            const entitySystemUid = getEntitySystem(obj.entity, this.context)!;
+
+            const firstRef = this.systemLayoutRef(entitySystemUid, obj);
+            const secondRef = this.getEntityReferenceName(obj);
+            const levelUid = this.context.globalStore.levelOfEntity.get(obj.uid)!;
+
+            if (firstRef && secondRef && levelUid) {
+                const thirdRef = this.context.document.drawing.levels[levelUid].abbreviation!;
+                const key = `${firstRef}-${secondRef}-${thirdRef}`;
+                const pastId = references.get(key) || 0;
+                references.set(key, pastId + 1);
+                obj.entity.reference = `${key}-${pastId + 1}`;
+            }
+        }
+    }
 }
+
 function createCalculationReport(context: CanvasContext) {
     const calculationReport: AbbreviatedCalculationReport = { calculations: {} };
     const calculations = calculationReport.calculations;

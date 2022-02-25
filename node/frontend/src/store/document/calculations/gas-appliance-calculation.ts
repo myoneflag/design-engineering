@@ -11,6 +11,15 @@ export default interface GasApplianceCalculation extends Calculation {
 export function makeGasApplianceCalculationFields(entity: GasApplianceEntity): CalculationField[] {
     return [
         {
+            property: "reference",
+            title: "Reference",
+            short: "",
+            shortTitle: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+            defaultEnabled: true
+        },
+        {
             property: "demandMJH",
             title: "Gas Demand",
             short: "",

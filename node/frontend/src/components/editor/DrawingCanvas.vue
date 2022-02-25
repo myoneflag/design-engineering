@@ -91,13 +91,6 @@
         :canvas-context="this"
       />
 
-      <ExportPanel
-        v-if="showExport && initialized && (!toolHandler || toolHandler.config.calculationSideBar)"
-        :objects="visibleObjects"
-        :on-change="scheduleDraw"
-        :canvas-context="this"
-      />
-
       <HydraulicsInsertPanel
         v-if="document.uiState.drawingMode === DrawingMode.Hydraulics && initialized && !document.uiState.viewOnly"
         :flow-systems="availableFlowSystems"
@@ -114,7 +107,7 @@
       <PressureDrainageSelector
         v-if="
           (document.uiState.drawingMode !== DrawingMode.FloorPlan && !showExport) ||
-            (toolHandler && toolHandler.config.paperSnapshotTopBar)
+            (toolHandler && toolHandler.config.paperSnapshotTopBar && !document.uiState.exportSettings.isAppendix)
         "
       >
       </PressureDrainageSelector>
@@ -749,11 +742,11 @@ export default class DrawingCanvas extends Vue {
     this.$watch(
       () => this.document.uiState.drawingMode,
       (newVal, oldVal) => {
+        this.document.uiState.selectedUids.splice(0);
         if (oldVal === DrawingMode.History && newVal !== DrawingMode.History) {
           this.$store.dispatch("document/revertFull");
           this.scheduleDraw();
         }
-        this.document.uiState.selectedUids.splice(0);
         this.document.uiState.warningFilter.activeEntityUid = "";
         this.considerCalculating();
         this.scheduleDraw();
@@ -1871,10 +1864,10 @@ export default class DrawingCanvas extends Vue {
 
       // Draw selection layers
       /*
-                        if (this.activeLayer) {
-                            await this.activeLayer.drawSelectionLayer(context, this.interactive);
-                            await cooperativeYield(shouldContinue);
-                        }*/
+      if (this.activeLayer) {
+          await this.activeLayer.drawSelectionLayer(context, this.interactive);
+          await cooperativeYield(shouldContinue);
+      }*/
 
       if (!forExport) {
         this.buffer = buffer; // swap out the buffer, so that the new render shows the new frame.

@@ -781,14 +781,7 @@ export function getEntitySystem(entity: DrawableEntityConcrete, context: CanvasC
       return res.systemUidOption;
     }
     case EntityType.LOAD_NODE: {
-      const res = fillDefaultLoadNodeFields(
-        context.document,
-        context.globalStore,
-        entity,
-        context.$store.getters["catalog/default"],
-        context.$store.getters["customEntity/nodes"]
-      );
-      return res.systemUidOption;
+      return determineConnectableSystemUid(context.globalStore, entity)!;
     }
     case EntityType.BACKGROUND_IMAGE:
     case EntityType.BIG_VALVE:

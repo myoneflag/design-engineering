@@ -726,6 +726,9 @@ export default class CalculationEngine implements CalculationContext {
 				if ((o.entity as NamedEntity).entityName) {
 					(calc as NameCalculation).entityName = (o.entity as NamedEntity).entityName;
 				}
+				if (o.entity.reference) {
+					calc.reference = o.entity.reference;
+				}
 				calc.cost = zeroCost();
 				calc.expandedEntities = childEntities;
 				for (const e of childEntities) {

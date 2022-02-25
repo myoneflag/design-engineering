@@ -23,6 +23,17 @@ export function makeSystemNodeCalculationFields(entity: SystemNodeEntity, doc: D
     const psdUnit = getPsdUnitName(doc.drawing.metadata.calculationParams.psdMethod, doc.locale);
     const result: CalculationField[] = [];
 
+    result.push({
+        property: "reference",
+        title: "Reference",
+        short: "",
+        shortTitle: "",
+        units: Units.None,
+        category: FieldCategory.EntityName,
+        systemUid: entity.systemUid,
+        defaultEnabled: true
+    });
+
     addPressureCalculationFields(result, entity.systemUid);
 
     result.push(

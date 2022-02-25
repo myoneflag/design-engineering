@@ -35,6 +35,19 @@ export function makeFixtureCalculationFields(doc: DocumentState, entity: Fixture
             throw new Error("System not found");
         }
 
+        if (!result.find((e) => e.property === 'reference')) {
+            result.push({
+                property: "reference",
+                title: "Reference",
+                short: "",
+                shortTitle: "",
+                systemUid: suid,
+                units: Units.None,
+                category: FieldCategory.EntityName,
+                defaultEnabled: true
+            });
+        }
+
         addPressureCalculationFields(result, suid, "inlets." + suid + ".", { defaultEnabled: true }, { defaultEnabled: true });
 
         if (fCalc.inlets[suid] && fCalc.inlets[suid].deadlegVolumeL !== null) {

@@ -33,6 +33,7 @@ import { cloneSimple } from "../../../../../common/src/lib/utils";
 import { flowSystemsCompatible } from "../../lib/utils";
 import { CalculationType } from "src/store/document/calculations/types";
 import { Direction } from "../../types";
+import Pipe from "../pipe";
 
 @CalculatedObject
 @ConnectableObject({ customCopyObjects: true })
@@ -265,5 +266,11 @@ export default class SystemNode extends InvisibleNode<SystemNodeEntity> implemen
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
         return { cost: 0, breakdown: [] };
+    }
+
+    getConnetectedSidePipe(pipeUid: string): Pipe[] {
+        const connectionUids = this.globalStore.getConnections(this.uid)!;
+        const sidePipeUids = connectionUids.filter((uid) => uid !== pipeUid);
+        return sidePipeUids.map((uid) => this.globalStore.get(uid)! as Pipe).filter((o) => o.type === EntityType.PIPE);
     }
 }
