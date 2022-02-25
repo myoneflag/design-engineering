@@ -225,7 +225,7 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
                 iAmPressure = true;
                 break;
             case PlantType.CUSTOM:
-                iAmDrainage = iAmPressure = true;
+                iAmPressure = true; // iAmDrainage = iAmPressure = true;
                 break;
             case PlantType.DRAINAGE_PIT:
             case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:

@@ -11,7 +11,7 @@ import { DrawingState } from "../../../../../common/src/api/document/drawing";
 import { getPsdUnitName } from "../../../calculations/utils";
 import { determineConnectableSystemUid } from "../entities/lib";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
-import { isGas } from "../../../../../common/src/api/config";
+import { isDrainage, isGas } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DocumentState } from "../types";
 
@@ -24,6 +24,21 @@ export function makeLoadNodeCalculationFields(entity: LoadNodeEntity, doc: Docum
     const result: CalculationField[] = [];
 
     const systemUid = determineConnectableSystemUid(globalStore, entity);
+
+    if (isDrainage(systemUid!, doc.drawing.metadata.flowSystems) === (doc.uiState.pressureOrDrainage === 'drainage')) {
+        result.push({
+            property: "reference",
+            title: "Reference",
+            short: "",
+            shortTitle: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+            systemUid: systemUid,
+            layouts: ['pressure', 'drainage'],
+            defaultEnabled: true
+        });
+    }
+
     addPressureCalculationFields(result, entity.systemUidOption || undefined, "", { defaultEnabled: true }, { defaultEnabled: true });
 
     const thisIsGas = isGas(systemUid!, catalog.fluids, doc.drawing.metadata.flowSystems);

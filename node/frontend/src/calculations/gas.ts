@@ -460,7 +460,7 @@ function getGasVelocityRealMs(
 				0;
 			const diversifiedMJH = continuousMJH + diversification * dwellingMJH;
 
-			console.log("diversified: " + diversifiedMJH);
+			// console.log("diversified: " + diversifiedMJH);
 
 			let m3h = 0;
 			switch (type) {

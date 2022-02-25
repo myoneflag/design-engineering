@@ -70,6 +70,18 @@ export function makeRiserCalculationFields(entity: RiserEntity, doc: DocumentSta
     const iAmDrainage = isDrainage(entity.systemUid, drawing.metadata.flowSystems);
     const layoutOptionDrainage: CalculationLayout[] = iAmDrainage ? ['pressure', 'drainage'] : [];
 
+    result.push({
+        property: "reference",
+        title: "Reference",
+        short: "",
+        shortTitle: "",
+        units: Units.None,
+        category: FieldCategory.EntityName,
+        systemUid: entity.systemUid,
+        layouts: layoutOptionDrainage,
+        defaultEnabled: true
+    });
+
     if (extendsToBottom) {
 
         result.push(

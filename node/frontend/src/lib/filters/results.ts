@@ -12,7 +12,7 @@ import {
     PressureOrDrainage,
 } from "../../../src/store/document/types";
 import Vue from "vue";
-import { ALL_DRAINAGE_SYSTEM_UIDS, assertUnreachable, DrainageSystemUid } from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";;
 import { getEntityName } from "../../../../common/src/api/document/entities/types";
 import { cloneSimple } from "../../../../common/src/lib/utils";
@@ -48,30 +48,55 @@ const combineFilters: CombineFilters = {
     ]
 }
 
+const customFilterViewFields = [
+    {
+        view: 'pressure',
+        custom: [{
+            entityNames: ['Small Valves', 'Large Valves'],
+            fields: ['Size'],
+        }],
+    },
+    {
+        view: 'heat-loss',
+        custom: [
+            {
+                entityNames: ['Small Valves'],
+                fields: ['Kv Value'],
+            },
+            {
+                entityNames: ['Pipe'],
+                fields: ['Pipe Diameter', 'Return Flow Rate'],
+            },
+            {
+                entityNames: ['Plant'],
+                fields: ['Return System Duty Flow Rate', 'Return System Pressure Loss'],
+            },
+        ],
+    },
+    {
+        view: 'pipe-sizing',
+        custom: [
+            {
+                entityNames: ['Floor Waste', 'Inspection Opening', 'Grease Interceptor Trap'],
+                fields: ['Size'],
+            },
+            {
+                entityNames: ['Grease Interceptor Trap'],
+                fields: ['Model'],
+            },
+        ],
+    },
+];
+
 function customFilterViewByField(filterViewSetting: { [key: string]: FilterSettingKey }, eName: string, title: string): boolean {
     // Custom filter view for the particular filter & entity
-    if (filterViewSetting['pressure']?.enabled) {
-        if (['Small Valves', 'Large Valves'].includes(eName) && ['Size'].includes(title)) {
-            return true;
-        }
-    }
-    if (filterViewSetting['heat-loss']?.enabled) {
-        if (['Small Valves'].includes(eName) && ['Kv Value'].includes(title)) {
-            return true;
-        }
-        if (['Pipe'].includes(eName) && ['Pipe Diameter', 'Return Flow Rate'].includes(title)) {
-            return true;
-        }
-        if (['Plant'].includes(eName) && ['Return System Duty Flow Rate', 'Return System Pressure Loss'].includes(title)) {
-            return true;
-        }
-    }
-    if (filterViewSetting['pipe-sizing']?.enabled) {
-        if (['Floor Waste', 'Inspection Opening', 'Grease Interceptor Trap'].includes(eName) && ['Size'].includes(title)) {
-            return true;
-        }
-        if (['Grease Interceptor Trap'].includes(eName) && ['Model'].includes(title)) {
-            return true;
+    for (const item of customFilterViewFields) {
+        if (filterViewSetting[item.view]?.enabled) {
+            for (const op of item.custom) {
+                if (op.entityNames.includes(eName) && op.fields.includes(title)) {
+                    return true;
+                }
+            }
         }
     }
     return false;
@@ -106,7 +131,7 @@ export function getEffectiveFilter(objects: BaseBackedObject[], calculationFilte
         let fields = getFields(o.entity, document, o.globalStore, catalog);
         switch (document.uiState.pressureOrDrainage) {
             case "pressure":
-                fields = fields.filter((f) => f.layouts === undefined || f.layouts.includes('pressure'));
+                fields = fields.filter((f) => f.layouts === undefined || !f.layouts.length || f.layouts.includes('pressure'));
                 break;
             case "drainage":
                 fields = fields.filter((f) => f.layouts !== undefined && f.layouts.includes('drainage'));
@@ -221,7 +246,7 @@ export function setInitFilterSettings(objects: BaseBackedObject[], calculationFi
         const systemName = context.document.drawing.metadata.flowSystems.find((e) => e.uid === flowSystemUid)?.name!;
         if (flowSystemUid in filterSystemSetting) {
             filterSystemSetting[flowSystemUid].name = systemName;
-        } else if (ALL_DRAINAGE_SYSTEM_UIDS.includes(flowSystemUid as DrainageSystemUid)) {
+        } else if (isDrainage(flowSystemUid, context.document.drawing.metadata.flowSystems)) {
             filterSystemSetting[flowSystemUid] = {
                 name: systemName,
                 enabled: true,
@@ -312,9 +337,8 @@ export function getCombinedFilter(calculationFilters: CalculationFilters): Calcu
     return filters;
 }
 
-const FILTERS_ALL_KEYS_VERSION = "v3";
-const FILTERS_KEY = (docId:number) => `filters_${FILTERS_ALL_KEYS_VERSION}:${docId}`;
-const FILTERSETTINGS_KEY = (docId:number) => `filters-setting_${FILTERS_ALL_KEYS_VERSION}:${docId}`;
+const FILTERS_KEY = (docId:number) => `filters_v${ALL_KEY_VERSION}:${docId}`;
+const FILTERSETTINGS_KEY = (docId:number) => `filters-setting_v${ALL_KEY_VERSION}:${docId}`;
 
 export function getSavedFilters(window: WindowLocalStorage, documentId: number, defaultValue: CalculationFilters): CalculationFilters {
     return getSavedPreferenceOrDefault<CalculationFilters>(window, FILTERS_KEY(documentId), defaultValue)

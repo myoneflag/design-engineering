@@ -39,6 +39,18 @@ export function makeDirectedValveCalculationFields(
 
     let fields: CalculationField[] = [];
 
+    fields.push({
+        property: "reference",
+        title: "Reference",
+        short: "",
+        shortTitle: "",
+        units: Units.None,
+        category: FieldCategory.EntityName,
+        systemUid: systemUid,
+        layouts: iAmDrainage ? ['drainage'] : [],
+        defaultEnabled: true
+    });
+
     if (!valveIsGas && !iAmDrainage) {
         fields.push(
             {

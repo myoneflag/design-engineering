@@ -48,6 +48,7 @@ import { SnappableObject } from "../../lib/object-traits/snappable-object";
 import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-drops";
 import { prepareFill, prepareStroke } from "../../../../src/htmlcanvas/helpers/draw-helper";
 import { DEFAULT_FONT_NAME } from "../../../../src/config";
+import Pipe from "../pipe";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -312,6 +313,24 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         return result.map((uid) => this.globalStore.get(uid) as SystemNode);
     }
 
+    getOutlets(): SystemNode[] {
+        const result: string[] = [];
+        switch (this.entity.valve.type) {
+            case BigValveType.TMV:
+                result.push(this.entity.valve.warmOutputUid, this.entity.valve.coldOutputUid);
+                break;
+            case BigValveType.TEMPERING:
+                result.push(this.entity.valve.warmOutputUid);
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                result.push(this.entity.valve.hotOutputUid, this.entity.valve.coldOutputUid);
+                break;
+            default:
+                assertUnreachable(this.entity.valve);
+        }
+        return result.map((uid) => this.globalStore.get(uid) as SystemNode);
+    }
+
     offerJoiningInteraction(requestSystemUid: string, interaction: Interaction): DrawableEntityConcrete[] | null {
         const inouts = this.getInletsOutlets();
         inouts.sort((a, b) => {
@@ -532,6 +551,16 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         for (const sn of this.getInletsOutlets()) {
             if (sn) {
                 res.push(...sn.getNeighbours());
+            }
+        }
+        return res;
+    }
+
+    getOutPipes(): Pipe[] {
+        const res: Pipe[] = [];
+        for (const sn of this.getOutlets()) {
+            if (sn) {
+                res.push(...sn.getConnetectedSidePipe(''));
             }
         }
         return res;

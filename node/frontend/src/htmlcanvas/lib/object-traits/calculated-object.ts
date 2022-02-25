@@ -161,7 +161,7 @@ export function CalculatedObject<
 
             const { ctx, vp } = context;
             const calculation = context.globalStore.getCalculation(this.entity);
-            const hasWarning = this.hasWarning(context, forExport);
+            const hasWarning = context.doc.uiState.exportSettings.isAppendix ? false : this.hasWarning(context, forExport);
             const warnings = this.visibleWarnings(context, forExport);
             const { hiddenUids, activeEntityUid } = context.doc.uiState.warningFilter;
 

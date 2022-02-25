@@ -357,6 +357,9 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             throw new Error("could not find k value of fitting");
         }
 
+        const calc = this.globalStore.getOrCreateCalculation(this.entity);
+        calc.kvValue = kValue;
+
         const volLM = (smallestDiameterMM ** 2 * Math.PI) / 4 / 1000;
         const velocityMS = flowLS / volLM;
         const frictionLoss = sign * fittingFrictionLossMH(velocityMS, kValue, ga);
@@ -385,6 +388,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         res.warnings = calc.warnings;
         res.pressureByEndpointKPA = {};
         res.staticPressureKPA = calc.staticPressureKPA;
+        res.kvValue = calc.kvValue;
 
         const tower = this.getCalculationTower(context);
 

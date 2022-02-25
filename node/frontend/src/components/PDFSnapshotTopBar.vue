@@ -19,7 +19,7 @@
         <b-col class="col-auto">
             <ScalePicker v-model="document.uiState.exportSettings.scale" @input="redraw" />
         </b-col>
-        <b-col class="col-auto">
+        <b-col class="col-auto" v-if="!isAppendix">
             <b-btn :disabled="true" variant="outline-dark" style="background-color: white; opacity: 100%">
                 <b-checkbox v-model="document.uiState.exportSettings.coverSheet" :disabled="!supportsCoverSheet || document.uiState.exportSettings.borderless"
                     >Inc. Cover Sheet</b-checkbox
@@ -32,7 +32,18 @@
         </div>
         <div class="exportBar">
          <b-col class="col-auto">
-            <b-button-group>
+            <b-button-group v-if="isAppendix">
+                <b-button variant="success" @click="exportAppendix" id="export-appendix-btn" :disabled="exporting">
+                    <b-spinner style="width: 1em; height: 1em;" v-if="exporting && allLevels"></b-spinner> Export Appendix
+                </b-button>
+                <b-tooltip target="export-appendix-btn" v-if="exporting" triggers="hover"
+                    >Downloading full resolution assets</b-tooltip
+                >
+                <b-button variant="secondary" class="ml-4" @click="cancel">
+                    Cancel
+                </b-button>
+            </b-button-group>
+            <b-button-group v-else>
                 <b-button variant="success" @click="exportPdfCurrent" id="export-pdf-btn" :disabled="exporting">
                     <b-spinner style="width: 1em; height: 1em;" v-if="exporting && !allLevels"></b-spinner> Export This
                     Level
@@ -44,7 +55,7 @@
                     <b-spinner style="width: 1em; height: 1em;" v-if="exporting && allLevels"></b-spinner> Export All
                     Levels
                 </b-button>
-                <b-tooltip target="export-pdf-btn" v-if="exporting" triggers="hover"
+                <b-tooltip target="export-all-pdf-btn" v-if="exporting" triggers="hover"
                     >Downloading full resolution assets</b-tooltip
                 >
                 <b-button variant="secondary" class="ml-4" @click="cancel">
@@ -85,8 +96,8 @@ export default class PDFSnapshotTopBar extends Vue {
     exporting = false;
     allLevels = false;
 
-    async exportPdf(allLevels: boolean) {
-        console.log("this document ui state is : ", this.document.uiState);
+    async exportPdf(allLevels: boolean, isAppendix: boolean = false) {
+        // console.log("this document ui state is : ", this.document.uiState);
         this.allLevels = allLevels;
         if (!(this.$props.toolHandler instanceof PdfSnapshotTool)) {
             throw new Error("No pdf snapshot tool present");
@@ -114,7 +125,8 @@ export default class PDFSnapshotTopBar extends Vue {
                 scaleName: this.document.uiState.exportSettings.scale,
                 coverSheet: this.document.uiState.exportSettings.coverSheet && this.supportsCoverSheet,
                 floorPlans: this.document.uiState.exportSettings.floorPlans,
-                allLevels
+                allLevels,
+                isAppendix: !!this.document.uiState.exportSettings.isAppendix,
             });
         } catch (e) {
             this.exporting = false;
@@ -133,17 +145,27 @@ export default class PDFSnapshotTopBar extends Vue {
         await this.exportPdf(true);
     }
 
+    async exportAppendix() {
+        await this.exportPdf(true, true);
+    }
+
     get document(): DocumentState {
         return this.$store.getters["document/document"];
+    }
+
+    get isAppendix(): boolean {
+        return !!this.document.uiState.exportSettings.isAppendix;
     }
 
     get supportsCoverSheet() {
         return COVER_SHEET_SUPPORTED.includes(this.document.uiState.exportSettings.paperSize.name);
     }
     destroyed() {
+        this.document.uiState.exportSettings.isAppendix = false;
          MainEventBus.$emit("set-preview",false);
     }
     cancel() {
+        this.document.uiState.exportSettings.isAppendix = false;
         MainEventBus.$emit("set-tool-handler", null);
     }
 

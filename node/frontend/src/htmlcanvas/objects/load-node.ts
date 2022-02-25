@@ -75,6 +75,17 @@ export default class LoadNode extends BackedConnectable<LoadNodeEntity> implemen
     dragPriority = getDragPriority(EntityType.LOAD_NODE);
     minimumConnections = 0;
 
+    isActive(): boolean {
+        const systemUid = determineConnectableSystemUid(this.globalStore, this.entity);
+        switch (this.document.uiState.pressureOrDrainage) {
+            case "pressure":
+                return systemUid === undefined || !isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
+            case "drainage":
+                return systemUid === undefined || isDrainage(systemUid, this.document.drawing.metadata.flowSystems);
+        }
+        assertUnreachable(this.document.uiState.pressureOrDrainage);
+    }
+
     drawEntity(context: DrawingContext, args: EntityDrawingArgs): void {
         const { ctx, vp } = context;
         const baseRadius = this.baseRadius;

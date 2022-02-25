@@ -77,6 +77,7 @@ export interface ExportUiSettings {
     coverSheet: boolean;
     floorPlans: boolean;
     borderless?: boolean;
+    isAppendix?: boolean;
 }
 
 export enum GridLineMode {
@@ -118,6 +119,7 @@ export type CalculationFilterSettings = {
 export type FilterSettingViewKeyValues =
     "all" |
     "custom" |
+    "reference" |
     "pipe-sizing" |
     "pressure" |
     "heat-loss" |
@@ -263,11 +265,11 @@ export const initCalculationFilterSettings = {
                 name: "Custom",
                 enabled: true,
             },
-            /* "names": {
-                name: "Names",
+            "reference": {
+                name: "Reference",
                 enabled: false,
                 category: [FieldCategory.EntityName]
-            }, */
+            },
             "pipe-sizing": {
                 name: "Pipe Sizing",
                 enabled: false,
@@ -329,7 +331,7 @@ export const initialUIState: UIState = {
     lastCalculationSuccess: false,
     isCalculating: false,
     calculationFilters: {},
-    calculationFilterSettings: initCalculationFilterSettings,
+    calculationFilterSettings: {...initCalculationFilterSettings},
     warningFilter: {
         hiddenUids: [],
         collapsedLevelType: [],

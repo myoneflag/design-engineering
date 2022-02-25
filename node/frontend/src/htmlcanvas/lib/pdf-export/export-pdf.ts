@@ -15,7 +15,7 @@ import { parse as svgParse, stringify as svgStringify } from "svgson";
 // @ts-ignore
 import { BORDERLESS_INFO_BAR_SIZE_MM, INFO_BAR_SIZE_MM, MARGIN_SIZE_MM } from "../../tools/pdf-snapshot-tool";
 import { PAPER_SIZES, PaperSize } from "../../../../../common/src/api/paper-config";
-import { fetchDataUrl, parseScale } from "../../utils";
+import { fetchDataUrl, parseScale, toCapitalize } from "../../utils";
 import { getPropertyByString } from "../../../lib/utils";
 import { DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_BOLD } from "../../../config";
 import { getDocument } from "../../../api/document";
@@ -26,11 +26,11 @@ import {
     RING_MAIN_CALCULATION_METHODS
 } from "../../../../../common/src/api/config";
 import * as _ from "lodash";
-import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { BackgroundImage } from "../../objects/background-image";
 import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
-import { DrawingContext } from "../types";
 import { User } from "../../../../../common/src/models/User";
+import { referenceFilterSettings } from "../calc-report/utils";
+import { setInitFilterSettings } from "../../../../src/lib/filters/results";
 
 export function mm2pt(mm: number) {
     return (72 * mm) / 25.4;
@@ -56,6 +56,7 @@ export interface ExportPdfOptions {
     coverSheet: boolean;
     floorPlans: boolean;
     allLevels: boolean;
+    isAppendix: boolean;
 }
 
 export async function scaleSvg(svg: string, scale: number) {
@@ -649,7 +650,7 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 export async function exportPdf(context: CanvasContext, viewPort: ViewPort, options: ExportPdfOptions) {
-    const { paperSize, scaleName } = options;
+    const { paperSize, scaleName, isAppendix } = options;
 
     const doc: PDFKit.PDFDocument = new (window as any).PDFDocument({
         autoFirstPage: false,
@@ -677,33 +678,80 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
 
         levelUids.push(context.document.uiState.levelUid);
     }
-    for (const luid of levelUids.reverse()) {
-        const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
 
-        doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
-        const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
-        SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+    if (isAppendix) {
+        const reversedLevelUids = levelUids.reverse();
+        fileName = 'Appendix (' + context.document.drawing.metadata.generalInfo.title + ' - Calculation Export).pdf';
+        const canvasContext = context;
+        const oldCalculationFilterSettings = {...canvasContext.document.uiState.calculationFilterSettings};
+        const oldpressureOrDrainage = canvasContext.document.uiState.pressureOrDrainage;
 
-        doc.strokeColor("black");
-        doc.rect(
-            mm2pt(MARGIN_SIZE_MM),
-            mm2pt(MARGIN_SIZE_MM),
-            mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM),
-            mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
-        );
-        doc.rect(
-            mm2pt(paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM),
-            mm2pt(MARGIN_SIZE_MM),
-            mm2pt(INFO_BAR_SIZE_MM),
-            mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
-        );
-        doc.stroke();
+        for (const pressureOrDrainage of ['pressure', 'drainage']) {
+            canvasContext.document.uiState.pressureOrDrainage = pressureOrDrainage as 'pressure' || 'drainage';
+            canvasContext.document.uiState.calculationFilterSettings = referenceFilterSettings(canvasContext.document.uiState.calculationFilterSettings);
 
-        if(INFO_BAR_SIZE_MM != BORDERLESS_INFO_BAR_SIZE_MM) {
-            await drawTitleBar(doc, context, paperSize, scaleName, luid);
+            for (const luid of reversedLevelUids) {
+                const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
+
+                doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
+                const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
+                SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+        
+                doc.strokeColor("black");
+                doc.rect(
+                    mm2pt(MARGIN_SIZE_MM),
+                    mm2pt(MARGIN_SIZE_MM),
+                    mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM),
+                    mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
+                );
+                doc.rect(
+                    mm2pt(paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM),
+                    mm2pt(MARGIN_SIZE_MM),
+                    mm2pt(INFO_BAR_SIZE_MM),
+                    mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
+                );
+                doc.stroke();
+        
+                if(INFO_BAR_SIZE_MM != BORDERLESS_INFO_BAR_SIZE_MM) {
+                    await drawTitleBar(doc, context, paperSize, scaleName, luid);
+                }
+        
+                await drawScale(doc, context, paperSize, scaleName);
+    
+            }
         }
 
-        await drawScale(doc, context, paperSize, scaleName);
+        canvasContext.document.uiState.calculationFilterSettings = oldCalculationFilterSettings;
+        canvasContext.document.uiState.pressureOrDrainage = oldpressureOrDrainage;
+    } else {
+        for (const luid of levelUids.reverse()) {
+            const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
+    
+            doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
+            const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
+            SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+    
+            doc.strokeColor("black");
+            doc.rect(
+                mm2pt(MARGIN_SIZE_MM),
+                mm2pt(MARGIN_SIZE_MM),
+                mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM),
+                mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
+            );
+            doc.rect(
+                mm2pt(paperSize.widthMM - MARGIN_SIZE_MM - INFO_BAR_SIZE_MM),
+                mm2pt(MARGIN_SIZE_MM),
+                mm2pt(INFO_BAR_SIZE_MM),
+                mm2pt(paperSize.heightMM - MARGIN_SIZE_MM * 2)
+            );
+            doc.stroke();
+    
+            if(INFO_BAR_SIZE_MM != BORDERLESS_INFO_BAR_SIZE_MM) {
+                await drawTitleBar(doc, context, paperSize, scaleName, luid);
+            }
+    
+            await drawScale(doc, context, paperSize, scaleName);
+        }
     }
 
     const stream = doc.pipe(blobstream());

@@ -3,49 +3,10 @@ import { RootState } from "../../../src/store/types";
 import { getters } from "../../../src/store/catalog/getters";
 import { actions } from "../../../src/store/catalog/actions";
 import { mutations } from "../../../src/store/catalog/mutations";
-import CatalogState from "../../../src/store/catalog/types";
-import { EN12056FrequencyFactor } from "../../../../common/src/api/config";
+import CatalogState, { defaultCatalog } from "../../../src/store/catalog/types";
 
 export const state: CatalogState = {
-    defaultCatalog: {
-        valves: {},
-        fixtures: {},
-        pipes: {},
-        mixingValves: {},
-        psdStandards: {},
-        en12056FrequencyFactor: {
-            [EN12056FrequencyFactor.IntermittentUse]: 0.5,
-            [EN12056FrequencyFactor.FrequentUse]: 0.7,
-            [EN12056FrequencyFactor.CongestedUse]: 1.0,
-            [EN12056FrequencyFactor.SpecialUse]: 1.2,
-        },
-        dwellingStandards: {},
-        gasDiversification: {},
-        fluids: {},
-        backflowValves: {},
-        prv: {
-            manufacturer: [],
-            size: {},
-        },
-        balancingValves: {
-            manufacturer: [],
-        },
-        hotWaterPlant: {
-            manufacturer: [],
-            rheemVariants: [],
-            grundfosPressureDrop: {},
-            size: {},
-            storageTanks: {},
-        },
-        floorWaste: {
-            manufacturer: [],
-            size: {},
-        },
-        inspectionOpening: {
-            manufacturer: [],
-            size: {},
-        },
-    },
+    defaultCatalog: defaultCatalog,
     loaded: false
 };
 

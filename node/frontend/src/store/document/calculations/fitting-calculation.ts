@@ -10,7 +10,7 @@ import {
 import FittingEntity from "../../../../../common/src/api/document/entities/fitting-entity";
 import { GlobalStore } from "../../../htmlcanvas/lib/global-store";
 import { Units } from "../../../../../common/src/lib/measurements";
-import { isGas } from "../../../../../common/src/api/config";
+import { isDrainage, isGas } from "../../../../../common/src/api/config";
 import { Catalog } from "../../../../../common/src/api/catalog/types";
 import { DocumentState } from "../types";
 
@@ -21,6 +21,7 @@ export default interface FittingCalculation extends
     flowRateLS: number | null;
     pressureDropKPA: number | [number, number] | null;
     pressureByEndpointKPA: { [key: string]: number | null };
+    kvValue: number | null;
 }
 
 export function makeFittingCalculationFields(entity: FittingEntity, globalStore: GlobalStore, document: DocumentState, catalog: Catalog): CalculationField[] {
@@ -29,6 +30,20 @@ export function makeFittingCalculationFields(entity: FittingEntity, globalStore:
     }
     const result: CalculationField[] = [];
     const fittingIsGas = catalog && isGas(entity.systemUid!, catalog.fluids, document.drawing.metadata.flowSystems);
+
+    if (isDrainage(entity.systemUid, document.drawing.metadata.flowSystems) === (document.uiState.pressureOrDrainage === 'drainage')) {
+        result.push({
+            property: "reference",
+            title: "Reference",
+            short: "",
+            shortTitle: "",
+            units: Units.None,
+            category: FieldCategory.EntityName,
+            systemUid: entity.systemUid,
+            layouts: ['pressure', 'drainage'],
+            defaultEnabled: true
+        });
+    }
 
     if (!fittingIsGas) {
         result.push(
@@ -82,5 +97,6 @@ export function emptyFittingCalculation(): FittingCalculation {
         warnings: null,
         pressureByEndpointKPA: {},
         entityName: null,
+        kvValue: null,
     };
 }

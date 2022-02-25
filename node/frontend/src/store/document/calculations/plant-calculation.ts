@@ -41,11 +41,36 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
             assertUnreachable(value.plant);
     }
 
+    const results: CalculationField[] = [];
+
     if ((doc.uiState.pressureOrDrainage === 'pressure' && iAmPressure) ||
         (doc.uiState.pressureOrDrainage === 'drainage' && iAmDrainage)
     ) {
 
-        const results: CalculationField[] = [
+        if ([PlantType.RETURN_SYSTEM, PlantType.CUSTOM, PlantType.TANK, PlantType.PUMP].includes(value.plant.type)) {
+            results.push({
+                property: "reference",
+                title: "Reference",
+                short: "",
+                shortTitle: "",
+                units: Units.None,
+                category: FieldCategory.EntityName,
+                defaultEnabled: true
+            });
+        } else {
+            results.push({
+                property: "reference",
+                title: "Reference",
+                short: "",
+                shortTitle: "",
+                units: Units.None,
+                category: FieldCategory.EntityName,
+                layouts: ['drainage'],
+                defaultEnabled: true
+            });
+        }
+
+        results.push(
             {
                 property: "pressureDropKPA",
                 title: "Pressure Drop",
@@ -78,7 +103,7 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                 units: Units.KiloWatts,
                 category: FieldCategory.HeatLoss
             },
-        ];
+        );
 
         if (value.plant.type === PlantType.RETURN_SYSTEM) {
             const manufacturer = doc.drawing.metadata.catalog.hotWaterPlant.find(
@@ -141,12 +166,9 @@ export function makePlantCalculationFields(value: PlantEntity, doc: DocumentStat
                 },
             );
         }
-
-        return results;
-    } else {
-        return [];
     }
 
+    return results;
 }
 
 export function emptyPlantCalculation(): PlantCalculation {

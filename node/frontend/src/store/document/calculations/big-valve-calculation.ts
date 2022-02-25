@@ -42,6 +42,16 @@ export default interface BigValveCalculation extends Calculation, NameCalculatio
 export function makeBigValveCalculationFields(doc: DocumentState, entity: BigValveEntity, catalog: Catalog | undefined): CalculationField[] {
     const result: CalculationField[] = [];
 
+    result.push({
+        property: "reference",
+        title: "Reference",
+        short: "",
+        shortTitle: "",
+        units: Units.None,
+        category: FieldCategory.EntityName,
+        defaultEnabled: true
+    });
+
     const suids: string[] = [];
     const attachments: string[] = [];
     switch (entity.valve.type) {

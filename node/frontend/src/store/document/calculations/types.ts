@@ -32,6 +32,7 @@ export interface Calculation {
     cost: Cost | null;
     costBreakdown: Array<{ qty: number, path: string }> | null;
     expandedEntities: DrawableEntityConcrete[] | null;
+    reference?: string;
 }
 
 export interface PressureCalculation {

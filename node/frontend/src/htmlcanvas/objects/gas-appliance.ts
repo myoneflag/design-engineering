@@ -80,6 +80,10 @@ export default class GasAppliance extends BackedDrawableObject<GasApplianceEntit
             .flat();
     }
 
+    isActive(): boolean {
+        return this.document.uiState.pressureOrDrainage === 'pressure';
+    }
+
     drawEntity(context: DrawingContext, { selected, overrideColorList }: EntityDrawingArgs): void {
         const scale = context.vp.currToSurfaceScale(context.ctx);
         const ww = Math.max(10 / this.toWorldLength(1), 1 / scale);
