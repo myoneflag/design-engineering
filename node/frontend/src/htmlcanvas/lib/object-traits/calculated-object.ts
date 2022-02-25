@@ -169,6 +169,7 @@ export function CalculatedObject<
 
             let height = 0;
             let maxWidth = 0;
+            let shouldDraw = hasWarning || false;
             for (let i = data.length - 1; i >= 0; i--) {
                 const datum = data[i];
 
@@ -193,6 +194,8 @@ export function CalculatedObject<
                         const metrics = ctx.measureText(text);
                         maxWidth = Math.max(maxWidth, metrics.width);
                     }
+
+                    shouldDraw = true;
                 }
             }
 
@@ -227,14 +230,17 @@ export function CalculatedObject<
                         ctx.fillStyle = "rgba(0,123,255, 0.8)";
                     }
                 }
-                drawRoundRectangle(
-                    ctx,
-                    box.xmin,
-                    box.ymin,
-                    box.xmax - box.xmin,
-                    box.ymax - box.ymin,
-                    RECT_ROUND
-                );
+
+                if (shouldDraw) {
+                    drawRoundRectangle(
+                        ctx,
+                        box.xmin,
+                        box.ymin,
+                        box.xmax - box.xmin,
+                        box.ymax - box.ymin,
+                        RECT_ROUND
+                    );
+                }
 
                 ctx.font = FIELD_FONT_SIZE + "px " + DEFAULT_FONT_NAME;
                 ctx.fillStyle = "#000";
@@ -336,7 +342,7 @@ export function CalculatedObject<
 
                     boxShape.addFace(worldBox);
                     const line = this.shape()!.distanceTo(boxShape);
-                    if (!boxShape.contains(line[1].start) || true) {
+                    if (!boxShape.contains(line[1].start)) {
                         // line is now in world position. Transform line back to current position.
                         const world2curr = TM.transform(
                             TM.inverse(context.vp.currToScreenTransform(ctx)),
@@ -345,7 +351,7 @@ export function CalculatedObject<
 
                         const currLine = line[1].transform(tm2flatten(world2curr));
 
-                        ctx.strokeStyle = "#AAA";
+                        ctx.strokeStyle = "#aaa";
                         ctx.setLineDash([5, 5]);
                         ctx.lineWidth = 3;
                         ctx.beginPath();
