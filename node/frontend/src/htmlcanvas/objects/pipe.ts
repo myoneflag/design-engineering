@@ -59,7 +59,7 @@ import Fitting from "./fitting";
 import SystemNode from "./big-valve/system-node";
 import FlowSource from "./flow-source";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
-import { Direction } from "../types";
+import { Direction, DrawingMode } from "../types";
 
 export const TEXT_MAX_SCALE = 0.4;
 export const MIN_PIPE_PIXEL_WIDTH = 1.5;
@@ -542,6 +542,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         context: CanvasContext,
         isMultiDrag: boolean
     ) {
+        if (this.document.uiState.viewOnly || this.document.uiState.drawingMode === DrawingMode.History) {
+            return;
+        }
+
         if (!isMultiDrag) {
             context.$store.dispatch("document/revert", false);
         }

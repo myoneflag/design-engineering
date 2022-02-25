@@ -44,6 +44,8 @@ export default function CenterDraggableObject<
                 this.entity.center.x += after.x - before.x;
                 this.entity.center.y += after.y - before.y;
 
+                const point = {...this.entity.center};
+
                 if (this instanceof BackedConnectable && !isMulti) {
                     const worldCoord = this.toWorldCoord();
 
@@ -87,7 +89,7 @@ export default function CenterDraggableObject<
                     connectionUids.forEach((uid) => {
                         const conn = this.globalStore.get(uid)!;
                         if (conn instanceof Pipe && this.originCenter) {
-                            conn.dragConnectableEntity(context, this.uid, this.entity.center, this.originCenter);
+                            conn.dragConnectableEntity(context, this.uid, point, this.originCenter);
                         }
                     });
                 }
