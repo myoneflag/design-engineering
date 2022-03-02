@@ -101,12 +101,12 @@ export default abstract class BaseBackedObject extends DrawableObject {
             selected = args.allSelected;
         } else {
             // determine if this item was selected.
-            selected = (context.selectedUids.has(this.entity.uid));
+            selected = context.doc.uiState.selectedUids.includes(this.entity.uid);
             if (!args.active) {
                 selected = false;
             }
         }
-     
+
         if ((this.isActive() && context.doc.isPreview) || (!args.forExport && !context.doc.isPreview)) {
             this.drawEntity(context, { ...args, overrideColorList, selected, layerActive: args.active });
         }
