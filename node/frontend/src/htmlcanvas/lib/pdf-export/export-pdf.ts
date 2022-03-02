@@ -15,7 +15,7 @@ import { parse as svgParse, stringify as svgStringify } from "svgson";
 // @ts-ignore
 import { BORDERLESS_INFO_BAR_SIZE_MM, INFO_BAR_SIZE_MM, MARGIN_SIZE_MM } from "../../tools/pdf-snapshot-tool";
 import { PAPER_SIZES, PaperSize } from "../../../../../common/src/api/paper-config";
-import { fetchDataUrl, parseScale, toCapitalize } from "../../utils";
+import { fetchDataUrl, parseScale } from "../../utils";
 import { getPropertyByString } from "../../../lib/utils";
 import { DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_BOLD } from "../../../config";
 import { getDocument } from "../../../api/document";
@@ -29,8 +29,6 @@ import * as _ from "lodash";
 import { BackgroundImage } from "../../objects/background-image";
 import { convertMeasurementSystem, Units } from "../../../../../common/src/lib/measurements";
 import { User } from "../../../../../common/src/models/User";
-import { referenceFilterSettings } from "../calc-report/utils";
-import { setInitFilterSettings } from "../../../../src/lib/filters/results";
 
 export function mm2pt(mm: number) {
     return (72 * mm) / 25.4;
@@ -683,19 +681,17 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
         const reversedLevelUids = levelUids.reverse();
         fileName = 'Appendix (' + context.document.drawing.metadata.generalInfo.title + ' - Calculation Export).pdf';
         const canvasContext = context;
-        const oldCalculationFilterSettings = {...canvasContext.document.uiState.calculationFilterSettings};
         const oldpressureOrDrainage = canvasContext.document.uiState.pressureOrDrainage;
 
         for (const pressureOrDrainage of ['pressure', 'drainage']) {
             canvasContext.document.uiState.pressureOrDrainage = pressureOrDrainage as 'pressure' || 'drainage';
-            canvasContext.document.uiState.calculationFilterSettings = referenceFilterSettings(canvasContext.document.uiState.calculationFilterSettings);
 
             for (const luid of reversedLevelUids) {
                 const { svg, widthPx, heightPx } = await snapshotToSvg(context, viewPort, options, luid);
 
                 doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
                 const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
-                SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+                await SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
         
                 doc.strokeColor("black");
                 doc.rect(
@@ -721,7 +717,6 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
             }
         }
 
-        canvasContext.document.uiState.calculationFilterSettings = oldCalculationFilterSettings;
         canvasContext.document.uiState.pressureOrDrainage = oldpressureOrDrainage;
     } else {
         for (const luid of levelUids.reverse()) {
@@ -729,7 +724,7 @@ export async function exportPdf(context: CanvasContext, viewPort: ViewPort, opti
     
             doc.addPage({ size: [mm2pt(paperSize.widthMM), mm2pt(paperSize.heightMM)] });
             const scaled = await scaleSvg(svg, mm2pt(paperSize.widthMM - MARGIN_SIZE_MM * 2 - INFO_BAR_SIZE_MM) / widthPx);
-            SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
+            await SVGtoPDF(doc, scaled, mm2pt(MARGIN_SIZE_MM), mm2pt(MARGIN_SIZE_MM), { assumePt: true });
     
             doc.strokeColor("black");
             doc.rect(

@@ -745,7 +745,9 @@ export default class DrawingCanvas extends Vue {
         this.document.uiState.selectedUids.splice(0);
         if (oldVal === DrawingMode.History && newVal !== DrawingMode.History) {
           this.$store.dispatch("document/revertFull");
-          this.scheduleDraw();
+        }
+        if (newVal === DrawingMode.Calculations) {
+          this.onValidateAndCommit(false);
         }
         this.document.uiState.warningFilter.activeEntityUid = "";
         this.considerCalculating();
