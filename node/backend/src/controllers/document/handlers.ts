@@ -13,15 +13,27 @@ import ws from "ws";
 import config from "../../config/config";
 import { DocumentUpgrader } from "../../services/DocumentUpgrader";
 import LRU from "lru-cache";
+import uuid from "uuid";
 import { DrawingRepository } from "../../repositories/DrawingRepository";
 
-export async function handleWebSocket(doc: Document, webSocket: ws, readonly: boolean, session: Session) {
+export async function handleWebSocket(
+    doc: Document, lastOpIdReceived: number, webSocket: ws, readonly: boolean, session: Session) {
     const errorMessage = checkForLoadingErrors(doc, webSocket);
     if (errorMessage) {
         sendErrorMessage(webSocket, errorMessage);
         return;
     }
     try {
+
+        if (!config.MODE_PRODUCTION) {
+            if (doc.version < CURRENT_VERSION) {
+                await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
+            }
+        }
+
+        const outgoingMessageQueue: DocumentClientMessage = [];
+        let connectionLastOpIdSent;
+        const connectionId = uuid();
 
         // we're using a local cache to cache written operations so we don't have to queru the database right away
         // this code, as a client to the MQ, will publish a message and will immediately be received by the same client
@@ -46,36 +58,25 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
             return operations;
         }
 
-        if (!config.MODE_PRODUCTION) {
-            if (doc.version < CURRENT_VERSION) {
-                await DocumentUpgrader.onDocumentUpgradeRequest(doc.id);
-            }
-        }
-
-        const outgoingMessageQueue: DocumentClientMessage = [];
-        let lastOpId;
-
         const cdoc = new ConcurrentDocument(
             doc.id,
             async function onDocumentUpdate() {
                 try {
-                    const timingLabel = `timer:updateMessage:${doc.id}`;
+                    console.log({ connectionId, message: "onDocumentUpdate", connectionLastOpIdSent});
+                    const timingLabel = `timer:${connectionId}:updateMessage:${doc.id}`;
                     console.time(timingLabel);
 
-                    let operations;
-
-                    operations = getCachedOperations(lastOpId);
+                    let operations = getCachedOperations(connectionLastOpIdSent);
                     if (!operations.length) {
-                        console.log("operations cache miss");
-                        operations = await getDbOperations(doc, lastOpId);
+                        console.log({ connectionId, message: "operations cache miss"});
+                        operations = await getDbOperations(doc, connectionLastOpIdSent);
                         if (!operations) {
                             throw new Error("No operations found during Update notification");
                         }
                     }
 
                     const lastOperation = operations.slice(-1)[0];
-
-                    lastOpId = lastOperation.orderIndex;
+                    connectionLastOpIdSent = lastOperation.orderIndex;
 
                     const messages = createMessagesFromOperations(operations);
                     outgoingMessageQueue.push(...messages);
@@ -161,7 +162,35 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
             setupIncomingMessageHandler();
         }
 
-        lastOpId = await handleInitialData(lastOpId, outgoingMessageQueue);
+        async function handleInitialData() {
+            let drawing: DrawingState;
+            if (lastOpIdReceived) {
+                // client is requesting initially only operations after a certain op id
+                // usual case: reconecting after being disconnected
+                const operations = await getDbOperations(doc, lastOpIdReceived, false);
+                const operationsMesages = createMessagesFromOperations(operations);
+                if (operations.length) {
+                    const lastOperation = operations.slice(-1)[0];
+                    connectionLastOpIdSent = lastOperation.orderIndex;
+                } else {
+                    connectionLastOpIdSent = lastOpIdReceived;
+                }
+                return operationsMesages;
+            } else {
+                // client is not specifying last operation received so will receive whole document
+                // usual case: initial connection
+                const drawingObject = await Drawing.getRepository()
+                    .findOneOrFail({ where: { documentId: doc.id, status: DrawingStatus.CURRENT } });
+                drawing = drawingObject.drawing;
+
+                connectionLastOpIdSent = doc.nextOperationIndex - 1;
+                const fullDrawingMessage = createMessagesFromDrawing(drawing, connectionLastOpIdSent);
+                return fullDrawingMessage;
+            }
+        }
+
+        const initialMessages = await handleInitialData();
+        outgoingMessageQueue.push(...initialMessages);
 
         async function sendOutgoingQueue() {
             while (outgoingMessageQueue.length) {
@@ -192,6 +221,7 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
         const pingPid = setInterval(function timeout() {
             try {
                 webSocket.ping("heartbeat");
+                console.log(`WSS ping`);
             } catch (e) {
                 closeHandler();
             }
@@ -199,16 +229,17 @@ export async function handleWebSocket(doc: Document, webSocket: ws, readonly: bo
         const closeHandler = () => {
             clearInterval(pingPid);
             cdoc.close();
+            console.log(`WSS close`);
         };
         webSocket.on("close", closeHandler);
-        return closeHandler;
     }
 }
 
-async function getDbOperations(doc: Document, lastOpId: number): Promise<Operation[]> {
-    let operations;
+async function getDbOperations(doc: Document, lastOpId: number, repeatRetry: boolean = true): Promise<Operation[]> {
+    let operations = [];
     let attemptCount = 0;
-    while ( true && attemptCount < 10) {
+    const maxRetries = repeatRetry ? 10 : 0;
+    while (!operations.length && attemptCount <= maxRetries) {
         operations = await Operation
             .createQueryBuilder("operation")
             .leftJoinAndSelect("operation.blame", "user")
@@ -216,11 +247,10 @@ async function getDbOperations(doc: Document, lastOpId: number): Promise<Operati
             .andWhere('operation.orderIndex > :minOrderIndex', { minOrderIndex: lastOpId })
             .orderBy("operation.orderIndex", "ASC")
             .getMany();
-        if (operations.length > 0) {
-            break;
-        }
         attemptCount++;
-        console.log(`Retrying fetching operations ${attemptCount}`);
+        if (attemptCount > 1) {
+            console.log(`Fetched operations ${attemptCount}`);
+        }
     }
     return operations;
 }

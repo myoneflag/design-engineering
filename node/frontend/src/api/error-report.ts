@@ -64,11 +64,15 @@ export async function reportWarning(message: string) {
     await reportError("[WARNING] " + message, new Error(message), false);
 }
 
-export async function reportError(message: string, error: Error, showDialog: boolean = true) {
+export async function reportError(message: string, error: Error | null, showDialog: boolean = true) {
     // @ts-ignore
     const vue = document.vue;
     // @ts-ignore
     const store = document.store;
+
+    if (!error) {
+        error = new Error("reportError");
+    }
 
     if (sentErrors.has(message.toString())) {
         return;

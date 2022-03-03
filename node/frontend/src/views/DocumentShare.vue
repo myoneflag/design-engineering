@@ -13,7 +13,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { closeDocument, getSharedDocument, openDocumentShare } from "../api/document";
+import { closeDocument, getSharedDocument, openDocument } from "../api/document";
 import { loadCatalogShare } from "../api/catalog";
 import { MainEventBus } from "../store/main-event-bus";
 import { DocumentState } from "../store/document/types";
@@ -51,11 +51,11 @@ export default class DocumentShare extends Vue {
 
                 console.log(this.document.drawing)
 
-                openDocumentShare(
+                openDocument(
                     this.$props.documentSharedId,
+                    () => this.document.nextId,
                     (op) => {
-                        this.$store.dispatch("document/setIsLoading", true);
-                        setTimeout(() => this.$store.dispatch("document/applyRemoteOperation", op), 2000);
+                        this.$store.dispatch("document/applyRemoteOperation", op);
                     },
                     () => {
                         this.$bvToast.toast('The document has been deleted', {
@@ -79,6 +79,7 @@ export default class DocumentShare extends Vue {
                             );
                         }
                     },
+                    "/api/documents/share/"
                 );
             }
         })
