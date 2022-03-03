@@ -14,13 +14,15 @@ import {
     ProductSelectionReport,
     ProductSelectionReportKey,
     ReportContent,
-    ReportGeneralInfo
+    ReportGeneralInfo,
+    ReportUnits
 } from './types';
 import {
     getDesignParameter,
     getDesignSummary,
     getDrawnFlowsystems,
     getProductSelection,
+    getReportUnits,
     getWaterCalculationReport
 } from './utils';
 import _ from 'lodash';
@@ -136,6 +138,11 @@ class CalculationReport {
         };
     }
 
+    renderUnits(): ReportUnits {
+        const context = this.context;
+        return getReportUnits(context);
+    }
+
     renderDocument(): void {
         const context = this.context;
         const readOnlyLink = window.location.origin + "/" + context.document.shareToken;
@@ -147,6 +154,7 @@ class CalculationReport {
                 ...this.renderDesignParameters(),
                 ...this.renderProductSelection(),
                 ...this.renderContentPage(),
+                ...this.renderUnits(),
                 readOnlyLink,
             });
         } catch (e) {

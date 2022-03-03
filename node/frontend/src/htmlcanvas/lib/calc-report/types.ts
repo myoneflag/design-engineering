@@ -21,6 +21,12 @@ export interface ReportContent {
     appF: number;
 }
 
+export interface ReportUnits {
+    "L/s": string;
+    'mm': string;
+    'kPa': string;
+}
+
 export interface DesignSummaryReport {
     hasWaterService: boolean;
     waterCalcMethod: string;

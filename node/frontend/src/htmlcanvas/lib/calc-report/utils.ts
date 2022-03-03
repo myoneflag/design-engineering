@@ -1,5 +1,5 @@
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
-import { SelectedMaterialManufacturer } from "../../../../../common/src/api/document/drawing";
+import { SelectedMaterialManufacturer, UnitsParameters } from "../../../../../common/src/api/document/drawing";
 import {
     ComponentPressureLossMethod,
     COMPONENT_PRESSURE_LOSS_METHODS,
@@ -22,6 +22,7 @@ import {
     DesignCalculationKey,
     ReferenceDrawing,
     contacts,
+    ReportUnits,
 } from "./types";
 import { HotWaterPlantGrundfosSettingsName, PlantType } from "../../../../../common/src/api/document/entities/plants/plant-types";
 import { EntityType, getEntityName } from "../../../../../common/src/api/document/entities/types";
@@ -37,7 +38,7 @@ import _ from "lodash";
 import FlowSourceEntity, { fillFlowSourceDefaults } from "../../../../../common/src/api/document/entities/flow-source-entity";
 import FixtureEntity, { fillFixtureFields } from "../../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import LoadNodeEntity, { NodeType } from "../../../../../common/src/api/document/entities/load-node-entity";
-import { Units } from "../../../../../common/src/lib/measurements";
+import { convertMeasurementSystem, convertMeasurementSystemNonNull, Units } from "../../../../../common/src/lib/measurements";
 import DirectedValve from "../../../../src/htmlcanvas/objects/directed-valve"
 import { NodeProps } from "../../../../../common/src/models/CustomEntity";
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
@@ -45,11 +46,11 @@ import Fitting from "../../../../src/htmlcanvas/objects/fitting";
 import BigValve from "../../../../src/htmlcanvas/objects/big-valve/bigValve";
 import GasAppliance from "../../../../src/htmlcanvas/objects/gas-appliance";
 import GasApplianceEntity, { fillGasApplianceFields } from "../../../../../common/src/api/document/entities/gas-appliance";
-import { CalculationFilterSettings, FilterSettingViewKeyValues, initCalculationFilterSettings, PressureOrDrainage } from "../../../../src/store/document/types";
+import { CalculationFilterSettings, FilterSettingViewKeyValues } from "../../../../src/store/document/types";
+import { getFixedStringValue } from "../../../../src/lib/utils";
 import { fillDefaultLoadNodeFields } from "../../../../src/store/document/entities/fillDefaultLoadNodeFields";
 import { fillDirectedValveFields } from "../../../../src/store/document/entities/fillDirectedValveFields";
 import { fillValveDefaultFields } from "../../../../src/store/document/entities/fillDefaultEntityFields";
-import { globalStore } from "../../../../src/store/document/mutations";
 
 export function getDrawnFlowsystems(context: CanvasContext): Set<string> {
     const drawnFlowSystems = new Set<string>();
@@ -97,8 +98,11 @@ export function getDesignSummary(context: CanvasContext, drawnFlowSystemUids: Se
 export function getDesignParameter(context: CanvasContext, drawnFlowSystemUids: Set<string>): DesignParameterReport {
     const flowSystems = context.document.drawing.metadata.flowSystems;
     const catalog = context.effectiveCatalog;
+    const unitsPrefs = context.document.drawing.metadata.units;
+
     const pressureFlowSystems: PressureFSParameterReport[] = [];
     const drainageFlowSystems: DrainageFSParameterReport[] = [];
+
     flowSystems.forEach((fs) => {
         if (!drawnFlowSystemUids.has(fs.uid)) {
             return;
@@ -116,30 +120,30 @@ export function getDesignParameter(context: CanvasContext, drawnFlowSystemUids: 
                 ventsMaterial: catalog.pipes[fs.networks.CONNECTIONS.material].name,
                 horizontalPipeSizing: fs.drainageProperties.horizontalPipeSizing.map((e) => ({
                     ...e,
-                    gradePCT: getPsdUnitString(e.gradePCT, Units.Percent),
-                    sizeMM: getPsdUnitString(e.sizeMM, Units.Millimeters),
+                    gradePCT: getPsdUnitString(unitsPrefs, e.gradePCT, Units.Percent),
+                    sizeMM: getPsdUnitString(unitsPrefs, e.sizeMM, Units.Millimeters),
                 })),
                 ventSizing: fs.drainageProperties.ventSizing.map((e) => ({
                     ...e,
-                    sizeMM: getPsdUnitString(e.sizeMM, Units.Millimeters),
+                    sizeMM: getPsdUnitString(unitsPrefs, e.sizeMM, Units.Millimeters),
                 })),
                 stackPipeSizing: fs.drainageProperties.stackPipeSizing.map((e) => ({
                     ...e,
-                    sizeMM: getPsdUnitString(e.sizeMM, Units.Millimeters),
+                    sizeMM: getPsdUnitString(unitsPrefs, e.sizeMM, Units.Millimeters),
                 })),
                 stackVentPipeSizing: fs.drainageProperties.stackVentPipeSizing.map((e) => ({
                     ...e,
-                    sizeMM: getPsdUnitString(e.sizeMM, Units.Millimeters),
+                    sizeMM: getPsdUnitString(unitsPrefs, e.sizeMM, Units.Millimeters),
                 })),
                 maxUnventedLengthM: Object.keys(fs.drainageProperties.maxUnventedLengthM).map((e) => ({
-                    minLength: getPsdUnitString(fs.drainageProperties.maxUnventedLengthM[parseInt(e)], Units.Meters),
-                    sizeMM: getPsdUnitString(e, Units.Millimeters),
+                    minLength: getPsdUnitString(unitsPrefs, fs.drainageProperties.maxUnventedLengthM[parseInt(e)], Units.Meters),
+                    sizeMM: getPsdUnitString(unitsPrefs, e, Units.Millimeters),
                 })),
             })
         } else {
             pressureFlowSystems.push({
                 hexFS: fs.color.hex,
-                temperatureFS: getPsdUnitString(fs.temperature, Units.Celsius),
+                temperatureFS: getPsdUnitString(unitsPrefs, fs.temperature, Units.Celsius),
                 nameFS: fs.name,
                 nameStyle: {
                     cellBackground: fs.color.hex,
@@ -151,24 +155,24 @@ export function getDesignParameter(context: CanvasContext, drawnFlowSystemUids: 
                 gasTypeFS: catalog.fluids[fs.fluid].name,
 
                 insulationMaterial: INSULATION_MATERIAL_CHOICES.find((e) => e.key === fs.insulationMaterial)?.name,
-                insulationThicknessMM: getPsdUnitString(fs.insulationThicknessMM, Units.Millimeters),
+                insulationThicknessMM: getPsdUnitString(unitsPrefs, fs.insulationThicknessMM, Units.Millimeters),
             
-                riserVelocityMS: getPsdUnitString(fs.networks.RISERS.velocityMS, Units.MetersPerSecond),
-                reticulationVelocityMS: getPsdUnitString(fs.networks.RETICULATIONS.velocityMS, Units.MetersPerSecond),
-                connectionsVelocityMS: getPsdUnitString(fs.networks.CONNECTIONS.velocityMS, Units.MetersPerSecond),
-                returnVelocityMS: getPsdUnitString(fs.returnMaxVelocityMS, Units.MetersPerSecond),
+                riserVelocityMS: getPsdUnitString(unitsPrefs, fs.networks.RISERS.velocityMS, Units.MetersPerSecond),
+                reticulationVelocityMS: getPsdUnitString(unitsPrefs, fs.networks.RETICULATIONS.velocityMS, Units.MetersPerSecond),
+                connectionsVelocityMS: getPsdUnitString(unitsPrefs, fs.networks.CONNECTIONS.velocityMS, Units.MetersPerSecond),
+                returnVelocityMS: getPsdUnitString(unitsPrefs, fs.returnMaxVelocityMS, Units.MetersPerSecond),
             
                 riserMaterial: catalog.pipes[fs.networks.RISERS.material].name,
                 reticulationMaterial: catalog.pipes[fs.networks.RETICULATIONS.material].name,
                 connectionsMaterial: catalog.pipes[fs.networks.CONNECTIONS.material].name,
             
-                riserMinimumPipeSize: getPsdUnitString(fs.networks.RISERS.minimumPipeSize, Units.Millimeters),
-                reticulationMinimumPipeSize: getPsdUnitString(fs.networks.RETICULATIONS.minimumPipeSize, Units.Millimeters),
-                connectionsMinimumPipeSize: getPsdUnitString(fs.networks.CONNECTIONS.minimumPipeSize, Units.Millimeters),
+                riserMinimumPipeSize: getPsdUnitString(unitsPrefs, fs.networks.RISERS.minimumPipeSize, Units.Millimeters),
+                reticulationMinimumPipeSize: getPsdUnitString(unitsPrefs, fs.networks.RETICULATIONS.minimumPipeSize, Units.Millimeters),
+                connectionsMinimumPipeSize: getPsdUnitString(unitsPrefs, fs.networks.CONNECTIONS.minimumPipeSize, Units.Millimeters),
             
-                riserSpareCapacityPCT: getPsdUnitString(fs.networks.RISERS.spareCapacityPCT, Units.Percent),
-                reticulationSpareCapacityPCT: getPsdUnitString(fs.networks.RETICULATIONS.spareCapacityPCT, Units.Percent),
-                connectionsSpareCapacityPCT: getPsdUnitString(fs.networks.CONNECTIONS.spareCapacityPCT, Units.Percent),
+                riserSpareCapacityPCT: getPsdUnitString(unitsPrefs, fs.networks.RISERS.spareCapacityPCT, Units.Percent),
+                reticulationSpareCapacityPCT: getPsdUnitString(unitsPrefs, fs.networks.RETICULATIONS.spareCapacityPCT, Units.Percent),
+                connectionsSpareCapacityPCT: getPsdUnitString(unitsPrefs, fs.networks.CONNECTIONS.spareCapacityPCT, Units.Percent),
             })
         }
     });
@@ -275,9 +279,19 @@ export function filterEffectiveCatalog(context: CanvasContext): Catalog {
     return productiveCatalog;
 }
 
+export function getReportUnits(context: CanvasContext): ReportUnits {
+    const unitsPrefs = context.document.drawing.metadata.units;
+    return {
+        "L/s": convertMeasurementSystem(unitsPrefs, Units.LitersPerSecond, 1)[0],
+        'mm': convertMeasurementSystem(unitsPrefs, Units.Millimeters, 1)[0],
+        'kPa': convertMeasurementSystem(unitsPrefs, Units.KiloPascals, 1)[0],
+    };
+}
+
 export function getProductSelection(context: CanvasContext): ProductSelectionReport {
     const productiveCatalog = filterEffectiveCatalog(context);
     const drawingCatalog = context.document.drawing.metadata.catalog;
+    const unitsPrefs = context.document.drawing.metadata.units;
 
     const pipes = Object.values(productiveCatalog.pipes).map((pipe) => {
         const manufacturerUid = getSelectedManufacturer(drawingCatalog.pipes, pipe.uid);
@@ -286,6 +300,10 @@ export function getProductSelection(context: CanvasContext): ProductSelectionRep
                 return {
                     techKey,
                     ...data,
+                    diameterNominalMM: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.Millimeters, data.diameterNominalMM)[1]),
+                    diameterInternalMM: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.Millimeters, data.diameterInternalMM)[1]),
+                    diameterOutsideMM: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.Millimeters, data.diameterOutsideMM)[1]),
+                    safeWorkingPressureKPA: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, data.safeWorkingPressureKPA)[1]),
                 }
             });
         const manufacturer = pipe?.manufacturer.find((m) => m.uid === manufacturerUid)?.name!;
@@ -305,7 +323,7 @@ export function getProductSelection(context: CanvasContext): ProductSelectionRep
             .map(([techKey, pressureLoss]) => {
                 return {
                     techKey,
-                    pressureLoss,
+                    pressureLoss: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, pressureLoss)[1]),
                 }
             });
         const manufacturer = mixingValve?.manufacturer.find((m) => m.uid === manufacturerUid)?.name!;
@@ -324,6 +342,11 @@ export function getProductSelection(context: CanvasContext): ProductSelectionRep
                 return {
                     techKey,
                     ...data,
+                    sizeMM: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.Millimeters, data.sizeMM)[1]),
+                    minInletPressureKPA: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, data.minInletPressureKPA)[1]),
+                    maxInletPressureKPA: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, data.maxInletPressureKPA)[1]),
+                    minFlowRateLS: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.LitersPerSecond, data.minFlowRateLS)[1]),
+                    maxFlowRateLS: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.LitersPerSecond, data.maxFlowRateLS)[1]),
                 }
             });
         const manufacturer = item?.manufacturer.find((m) => m.uid === manufacturerUid)?.name!;
@@ -342,6 +365,11 @@ export function getProductSelection(context: CanvasContext): ProductSelectionRep
             return {
                 techKey,
                 ...data,
+                minInletPressureKPA: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, data.minInletPressureKPA)[1]),
+                maxInletPressureKPA: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.KiloPascals, data.maxInletPressureKPA)[1]),
+                minFlowRateLS: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.LitersPerSecond, data.minFlowRateLS)[1]),
+                maxFlowRateLS: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.LitersPerSecond, data.maxFlowRateLS)[1]),
+                diameterNominalMM: getFixedStringValue(convertMeasurementSystem(unitsPrefs, Units.Millimeters, data.diameterNominalMM)[1]),
             }
         });
     const prvManufacturer = productiveCatalog.prv?.manufacturer.find((m) => m.uid === prvManufacturerUid)?.name!;
@@ -447,8 +475,9 @@ function retrieveReference(context: CanvasContext, reference: string): { exportK
 }
 
 function getPsdUnitString(
+    unitsPrefs: UnitsParameters,
     value: string | string[] | number | [number, number] | undefined | null,
-    unit: string | null = '',
+    unit: Units = Units.None,
     emptyStr: string | number = 'N/A'
 ): string {
     if (value == 0) {
@@ -456,11 +485,15 @@ function getPsdUnitString(
     }
     if (value) {
         if (typeof value === 'number') {
-            return `${parseFloat(value.toFixed(3)).toString()} ${unit}`;
+            const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value)
+            return `${getFixedStringValue(_value)} ${_unit}`;
         } else if (typeof value === 'string') {
-            return `${value} ${unit}`;
+            const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value)
+            return `${getFixedStringValue(_value)} ${_unit}`;
         } else if (typeof value[0] === 'number' && typeof value[1] === 'number') {
-            return `${parseFloat(value[0].toFixed(3)).toString()} ${unit} to ${parseFloat(value[1].toFixed(3)).toString()} ${unit}`;
+            const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[0])
+            const [_, _value1] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[1])
+            return `${getFixedStringValue(_value)} ${_unit} to ${getFixedStringValue(_value1)} ${_unit}`;
         } else {
             return value.join(', ');
         }
@@ -474,6 +507,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
     const catalog = context.effectiveCatalog;
     const flowSystems = context.document.drawing.metadata.flowSystems;
     const drawingCatalog = context.document.drawing.metadata.catalog;
+    const unitsPrefs = context.document.drawing.metadata.units;
 
     for (const o of Array.from(context.globalStore.values())) {
         const reference = o.entity.reference;
@@ -504,17 +538,17 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                         designCalculationReport[exportKey]['Flow Sources'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Residual Pressure': getPsdUnitString(flowSourceCalc?.pressureKPA, Units.KiloPascals),
-                            'Static Pressure': getPsdUnitString(flowSourceCalc?.staticPressureKPA, Units.KiloPascals),
-                            'Height': getPsdUnitString(filledFlowSource.heightAboveGroundM, Units.Meters, 0),
+                            'Residual Pressure': getPsdUnitString(unitsPrefs, flowSourceCalc?.pressureKPA, Units.KiloPascals),
+                            'Static Pressure': getPsdUnitString(unitsPrefs, flowSourceCalc?.staticPressureKPA, Units.KiloPascals),
+                            'Height': getPsdUnitString(unitsPrefs, filledFlowSource.heightAboveGroundM, Units.Meters, 0),
                         });
                         break;
                     case DesignCalculationKey.GAS:
                         designCalculationReport[exportKey]['Flow Sources'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Pressure': getPsdUnitString(flowSourceCalc?.pressureKPA, Units.KiloPascals),
-                            'Height': getPsdUnitString(filledFlowSource.heightAboveGroundM, Units.Meters, 0),
+                            'Pressure': getPsdUnitString(unitsPrefs, flowSourceCalc?.pressureKPA, Units.KiloPascals),
+                            'Height': getPsdUnitString(unitsPrefs, filledFlowSource.heightAboveGroundM, Units.Meters, 0),
                         });
                         break;
                     case DesignCalculationKey.DRAINAGE:
@@ -546,41 +580,41 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                         designCalculationReport[exportKey]['Pipes'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Loading Units': getPsdUnitString(pipeCalc?.psdUnits?.units),
-                            'Continuous Flow Rates': getPsdUnitString(pipeCalc?.psdUnits?.continuousFlowLS, Units.LitersPerSecond),
-                            'Peak Flow Rate': getPsdUnitString(pipeCalc?.PSDFlowRateLS, Units.LitersPerSecond),
-                            'Nominal Diameter': getPsdUnitString(pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
-                            'Internal Diameter': getPsdUnitString(pipeCalc?.realInternalDiameterMM, Units.Millimeters),
+                            'Loading Units': getPsdUnitString(unitsPrefs, pipeCalc?.psdUnits?.units),
+                            'Continuous Flow Rates': getPsdUnitString(unitsPrefs, pipeCalc?.psdUnits?.continuousFlowLS, Units.LitersPerSecond),
+                            'Peak Flow Rate': getPsdUnitString(unitsPrefs, pipeCalc?.PSDFlowRateLS, Units.LitersPerSecond),
+                            'Nominal Diameter': getPsdUnitString(unitsPrefs, pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
+                            'Internal Diameter': getPsdUnitString(unitsPrefs, pipeCalc?.realInternalDiameterMM, Units.Millimeters),
                             'Material': catalog.pipes[pipeMaterial!]?.name,
-                            'Velocity': getPsdUnitString(pipeCalc?.velocityRealMS, Units.MetersPerSecond),
-                            'Colebrook White Coefficient': getPsdUnitString(pipeCoefficient),
-                            'Pressure Drop': getPsdUnitString(pipeCalc?.pressureDropKPA, Units.KiloPascals),
-                            'Length': getPsdUnitString(pipeCalc?.lengthM, Units.Meters),
-                            'Heat Loss Flow Rate': getPsdUnitString(pipeCalc?.rawReturnFlowRateLS, Units.LitersPerSecond),
+                            'Velocity': getPsdUnitString(unitsPrefs, pipeCalc?.velocityRealMS, Units.MetersPerSecond),
+                            'Colebrook White Coefficient': getPsdUnitString(unitsPrefs, pipeCoefficient),
+                            'Pressure Drop': getPsdUnitString(unitsPrefs, pipeCalc?.pressureDropKPA, Units.KiloPascals),
+                            'Length': getPsdUnitString(unitsPrefs, pipeCalc?.lengthM, Units.Meters),
+                            'Heat Loss Flow Rate': getPsdUnitString(unitsPrefs, pipeCalc?.rawReturnFlowRateLS, Units.LitersPerSecond),
                         });
                         break;
                     case DesignCalculationKey.GAS:
                         designCalculationReport[exportKey]['Pipes'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Peak Flow Rate': getPsdUnitString(pipeCalc?.gasMJH, Units.MegajoulesPerHour),
-                            'Nominal Diameter': getPsdUnitString(pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
-                            'Internal Diameter': getPsdUnitString(pipeCalc?.realInternalDiameterMM, Units.Millimeters),
+                            'Peak Flow Rate': getPsdUnitString(unitsPrefs, pipeCalc?.gasMJH, Units.MegajoulesPerHour),
+                            'Nominal Diameter': getPsdUnitString(unitsPrefs, pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
+                            'Internal Diameter': getPsdUnitString(unitsPrefs, pipeCalc?.realInternalDiameterMM, Units.Millimeters),
                             'Material': catalog.pipes[pipeMaterial!]?.name,
-                            'Velocity': getPsdUnitString(pipeCalc?.velocityRealMS, Units.MetersPerSecond),
-                            'Length': getPsdUnitString(pipeCalc?.lengthM, Units.Meters),
+                            'Velocity': getPsdUnitString(unitsPrefs, pipeCalc?.velocityRealMS, Units.MetersPerSecond),
+                            'Length': getPsdUnitString(unitsPrefs, pipeCalc?.lengthM, Units.Meters),
                         });
                         break;
                     case DesignCalculationKey.DRAINAGE:
                         designCalculationReport[exportKey]['Pipes'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Fixture Units': getPsdUnitString(pipeCalc?.psdUnits?.drainageUnits),
-                            'Nominal Diameter': getPsdUnitString(pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
+                            'Fixture Units': getPsdUnitString(unitsPrefs, pipeCalc?.psdUnits?.drainageUnits),
+                            'Nominal Diameter': getPsdUnitString(unitsPrefs, pipeCalc?.realNominalPipeDiameterMM, Units.Millimeters),
                             'Material': catalog.pipes[pipeMaterial!]?.name,
-                            'Length': getPsdUnitString(pipeCalc?.lengthM, Units.Meters),
-                            'Grade': getPsdUnitString(pipeCalc?.gradePCT, Units.Percent),
-                            'Fall': getPsdUnitString(pipeCalc?.fallM, Units.Meters),
+                            'Length': getPsdUnitString(unitsPrefs, pipeCalc?.lengthM, Units.Meters),
+                            'Grade': getPsdUnitString(unitsPrefs, pipeCalc?.gradePCT, Units.Percent),
+                            'Fall': getPsdUnitString(unitsPrefs, pipeCalc?.fallM, Units.Meters),
                         });
                         break;
                     default:
@@ -614,29 +648,29 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                         designCalculationReport[exportKey]['Fittings'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Name': getPsdUnitString(fitting.friendlyTypeName),
-                            'Size': getPsdUnitString(largestPipeDiameterMM, Units.Millimeters),
-                            'kV Value': getPsdUnitString(fittingCalc?.kvValue),
-                            'Flow Rate': getPsdUnitString(largestPipeFlowRate || fittingCalc?.flowRateLS, Units.LitersPerSecond),
-                            'Pressure Drop Including Height Change': getPsdUnitString(fittingCalc?.pressureDropKPA, Units.KiloPascals),
+                            'Name': getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+                            'Size': getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
+                            'kV Value': getPsdUnitString(unitsPrefs, fittingCalc?.kvValue),
+                            'Flow Rate': getPsdUnitString(unitsPrefs, largestPipeFlowRate || fittingCalc?.flowRateLS, Units.LitersPerSecond),
+                            'Pressure Drop Including Height Change': getPsdUnitString(unitsPrefs, fittingCalc?.pressureDropKPA, Units.KiloPascals),
                         });
                         break;
                     case DesignCalculationKey.GAS:
                         designCalculationReport[exportKey]['Fittings'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Name': getPsdUnitString(fitting.friendlyTypeName),
-                            'Size': getPsdUnitString(largestPipeDiameterMM, Units.Millimeters),
-                            'Flow Rate': getPsdUnitString(largestGasPipeFlowRate, Units.MegajoulesPerHour),
+                            'Name': getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+                            'Size': getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
+                            'Flow Rate': getPsdUnitString(unitsPrefs, largestGasPipeFlowRate, Units.MegajoulesPerHour),
                         });
                         break;
                     case DesignCalculationKey.DRAINAGE:
                         designCalculationReport[exportKey]['Fittings'][levelName].push({
                             flowSystemUid,
                             'Reference': reference,
-                            'Name': getPsdUnitString(fitting.friendlyTypeName),
-                            'Size': getPsdUnitString(largestPipeDiameterMM, Units.Millimeters),
-                            'Fixture Units': getPsdUnitString(connectedPipeToFittingCalc?.psdUnits?.drainageUnits),
+                            'Name': getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+                            'Size': getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
+                            'Fixture Units': getPsdUnitString(unitsPrefs, connectedPipeToFittingCalc?.psdUnits?.drainageUnits),
                         });
                         break;
                     default:
@@ -657,12 +691,12 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                                 flowSystemUid,
                                 'Reference': i === 0 ? reference : '',
                                 'Name': i === 0 ? catalog.fixtures[filledFixture.name]?.name || filledFixture.name : '',
-                                'Loading Units': getPsdUnitString(filledFixture.roughIns[systemUids[i]]?.loadingUnits),
-                                'Continuous Flow Rates': getPsdUnitString(filledFixture.roughIns[systemUids[i]]?.continuousFlowLS, Units.LitersPerSecond),
-                                'Residual Pressure': getPsdUnitString(fixtureCalc?.inlets[systemUids[i]]?.pressureKPA, Units.KiloPascals),
-                                'Static Pressure': getPsdUnitString(fixtureCalc?.inlets[systemUids[i]]?.staticPressureKPA, Units.KiloPascals),
-                                'Dead Leg Volume': getPsdUnitString(fixtureCalc?.inlets[systemUids[i]]?.deadlegVolumeL, Units.Liters),
-                                'Dead Leg Length': getPsdUnitString(fixtureCalc?.inlets[systemUids[i]]?.deadlegLengthM, Units.Meters),
+                                'Loading Units': getPsdUnitString(unitsPrefs, filledFixture.roughIns[systemUids[i]]?.loadingUnits),
+                                'Continuous Flow Rates': getPsdUnitString(unitsPrefs, filledFixture.roughIns[systemUids[i]]?.continuousFlowLS, Units.LitersPerSecond),
+                                'Residual Pressure': getPsdUnitString(unitsPrefs, fixtureCalc?.inlets[systemUids[i]]?.pressureKPA, Units.KiloPascals),
+                                'Static Pressure': getPsdUnitString(unitsPrefs, fixtureCalc?.inlets[systemUids[i]]?.staticPressureKPA, Units.KiloPascals),
+                                'Dead Leg Volume': getPsdUnitString(unitsPrefs, fixtureCalc?.inlets[systemUids[i]]?.deadlegVolumeL, Units.Liters),
+                                'Dead Leg Length': getPsdUnitString(unitsPrefs, fixtureCalc?.inlets[systemUids[i]]?.deadlegLengthM, Units.Meters),
                             });
                         }
                         break;
@@ -699,12 +733,12 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': filledLoadNode.name || '',
-                            'Loading Units': getPsdUnitString(loadNodeCalc?.psdUnits?.units),
-                            'Continuous Flow Rates': getPsdUnitString(null),
-                            'Residual Pressure': getPsdUnitString(loadNodeCalc?.pressureKPA, Units.KiloPascals),
-                            'Static Pressure': getPsdUnitString(loadNodeCalc?.staticPressureKPA, Units.KiloPascals),
-                            'Dead Leg Volume': getPsdUnitString(null),
-                            'Dead Leg Length': getPsdUnitString(null),
+                            'Loading Units': getPsdUnitString(unitsPrefs, loadNodeCalc?.psdUnits?.units),
+                            'Continuous Flow Rates': getPsdUnitString(unitsPrefs, null),
+                            'Residual Pressure': getPsdUnitString(unitsPrefs, loadNodeCalc?.pressureKPA, Units.KiloPascals),
+                            'Static Pressure': getPsdUnitString(unitsPrefs, loadNodeCalc?.staticPressureKPA, Units.KiloPascals),
+                            'Dead Leg Volume': getPsdUnitString(unitsPrefs, null),
+                            'Dead Leg Length': getPsdUnitString(unitsPrefs, null),
                         });
                         break;
                     case DesignCalculationKey.DRAINAGE:
@@ -712,7 +746,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': filledLoadNode.name || '',
-                            'Fixture Units': getPsdUnitString(loadNodeCalc?.psdUnits?.units),
+                            'Fixture Units': getPsdUnitString(unitsPrefs, loadNodeCalc?.psdUnits?.units),
                         });
                         break;
                     case DesignCalculationKey.GAS:
@@ -720,8 +754,8 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': filledLoadNode.name || '',
-                            'Inlet Pressure': getPsdUnitString(filledLoadNode?.node?.gasPressureKPA, Units.KiloPascals),
-                            'Flow Rates': getPsdUnitString(loadNodeCalc?.gasFlowRateMJH, Units.MegajoulesPerHour),
+                            'Inlet Pressure': getPsdUnitString(unitsPrefs, filledLoadNode?.node?.gasPressureKPA, Units.KiloPascals),
+                            'Flow Rates': getPsdUnitString(unitsPrefs, loadNodeCalc?.gasFlowRateMJH, Units.MegajoulesPerHour),
                         });
                     default:
                         break;
@@ -762,10 +796,10 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': valve.friendlyTypeName(catalog),
-                            'Size': getPsdUnitString(valveSize, Units.Millimeters),
-                            'kV Value': getPsdUnitString(valveKvValue, Units.Kv),
-                            'Flow Rate': getPsdUnitString(valveCalc?.flowRateLS || connectedPipeCalc?.rawReturnFlowRateLS, Units.LitersPerSecond),
-                            'Pressure Drop': getPsdUnitString(valveCalc?.pressureDropKPA, Units.KiloPascals),
+                            'Size': getPsdUnitString(unitsPrefs, valveSize, Units.Millimeters),
+                            'kV Value': getPsdUnitString(unitsPrefs, valveKvValue, Units.Kv),
+                            'Flow Rate': getPsdUnitString(unitsPrefs, valveCalc?.flowRateLS || connectedPipeCalc?.rawReturnFlowRateLS, Units.LitersPerSecond),
+                            'Pressure Drop': getPsdUnitString(unitsPrefs, valveCalc?.pressureDropKPA, Units.KiloPascals),
                         });
                         break;
                     case DesignCalculationKey.GAS:
@@ -773,7 +807,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': valve.friendlyTypeName(catalog),
-                            'Flow Rate': getPsdUnitString(connectedPipeCalc?.gasMJH, Units.MegajoulesPerHour),
+                            'Flow Rate': getPsdUnitString(unitsPrefs, connectedPipeCalc?.gasMJH, Units.MegajoulesPerHour),
                         });
                         break;
                     case DesignCalculationKey.DRAINAGE:
@@ -781,7 +815,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': valve.friendlyTypeName(catalog),
-                            'Fixture Units': getPsdUnitString(connectedPipeCalc?.psdUnits?.drainageUnits),
+                            'Fixture Units': getPsdUnitString(unitsPrefs, connectedPipeCalc?.psdUnits?.drainageUnits),
                         });
                         break;
                     default:
@@ -847,10 +881,10 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                                 flowSystemUid,
                                 'Reference': i === 0 ? reference : '',
                                 'Name': i === 0 ? bigValveName : '',
-                                'Size': getPsdUnitString(bigValveSizes[i], Units.Millimeters),
-                                'kV Value': getPsdUnitString(null),
-                                'Flow Rate': getPsdUnitString(bigValveFlowRates[i], Units.LitersPerSecond),
-                                'Pressure Drop': getPsdUnitString(bigValveCalc?.outputs[suids[i]]?.pressureDropKPA, Units.KiloPascals),
+                                'Size': getPsdUnitString(unitsPrefs, bigValveSizes[i], Units.Millimeters),
+                                'kV Value': getPsdUnitString(unitsPrefs, null),
+                                'Flow Rate': getPsdUnitString(unitsPrefs, bigValveFlowRates[i], Units.LitersPerSecond),
+                                'Pressure Drop': getPsdUnitString(unitsPrefs, bigValveCalc?.outputs[suids[i]]?.pressureDropKPA, Units.KiloPascals),
                             });
                         }
                         break;
@@ -877,12 +911,33 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                                     flowSystemUid,
                                     'Reference': reference,
                                     'Name': 'Hot Water Plant',
-                                    'Inlet Pressure': getPsdUnitString(plantCalc?.gasPressureKPA, Units.KiloPascals),
-                                    'Flow Rates': getPsdUnitString(plantCalc?.gasFlowRateMJH, Units.MegajoulesPerHour),
+                                    'Inlet Pressure': getPsdUnitString(unitsPrefs, plantCalc?.gasPressureKPA, Units.KiloPascals),
+                                    'Flow Rates': getPsdUnitString(unitsPrefs, plantCalc?.gasFlowRateMJH, Units.MegajoulesPerHour),
+                                });
+
+                                // Add Hot Water Plant to Water spreadsheet
+                                const outlet = context.globalStore.get(plant.outletUid);
+                                const inlet = context.globalStore.get(plant.inletUid);
+                                const outletCalc = outlet && context.globalStore.getCalculation(outlet.entity as SystemNodeEntity);
+                                const inletCalc = inlet && context.globalStore.getCalculation(inlet.entity as SystemNodeEntity);
+                                const plantSize = plantCalc?.size ||
+                                    `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x 
+                                    ${getPsdUnitString(unitsPrefs, filledPlant.heightMM, Units.Millimeters)} (H)`;
+                                if (!designCalculationReport['Water']['Plants'][levelName]) {
+                                    designCalculationReport['Water']['Plants'][levelName] = [];
+                                }
+                                designCalculationReport['Water']['Plants'][levelName].push({
+                                    flowSystemUid,
+                                    'Reference': reference,
+                                    'Type': plant.plant.type,
+                                    'Model': getPsdUnitString(unitsPrefs, plantCalc?.model),
+                                    'Inlet Pressure': getPsdUnitString(unitsPrefs, inletCalc?.pressureKPA, Units.KiloPascals),
+                                    'Outlet Pressure': getPsdUnitString(unitsPrefs, outletCalc?.pressureKPA, Units.KiloPascals),
+                                    'Dimensions': plantSize,
                                 });
                                 break;
-                            case DesignCalculationKey.DRAINAGE:
                             case DesignCalculationKey.WATER:
+                            case DesignCalculationKey.DRAINAGE:
                             default:
                                 break;
                         }
@@ -896,14 +951,15 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                                 const outletCalc = outlet && context.globalStore.getCalculation(outlet.entity as SystemNodeEntity);
                                 const inletCalc = inlet && context.globalStore.getCalculation(inlet.entity as SystemNodeEntity);
                                 const plantSize = plantCalc?.size ||
-                                    `${filledPlant.widthMM}${Units.Millimeters} (W) x ${filledPlant.heightMM}${Units.Millimeters} (H)`;
+                                    `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x 
+                                    ${getPsdUnitString(unitsPrefs, filledPlant.heightMM, Units.Millimeters)} (H)`;
                                 designCalculationReport[exportKey]['Plants'][levelName].push({
                                     flowSystemUid,
                                     'Reference': reference,
                                     'Type': plant.plant.type,
-                                    'Model': getPsdUnitString(plantCalc?.model),
-                                    'Inlet Pressure': getPsdUnitString(inletCalc?.pressureKPA, Units.KiloPascals),
-                                    'Outlet Pressure': getPsdUnitString(outletCalc?.pressureKPA, Units.KiloPascals),
+                                    'Model': getPsdUnitString(unitsPrefs, plantCalc?.model),
+                                    'Inlet Pressure': getPsdUnitString(unitsPrefs, inletCalc?.pressureKPA, Units.KiloPascals),
+                                    'Outlet Pressure': getPsdUnitString(unitsPrefs, outletCalc?.pressureKPA, Units.KiloPascals),
                                     'Dimensions': plantSize,
                                 });
                                 break;
@@ -917,13 +973,14 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                         switch (exportKey) {
                             case DesignCalculationKey.DRAINAGE:
                                 const plantSize = plantCalc?.size ||
-                                    `${filledPlant.widthMM}${Units.Millimeters} (W) x ${filledPlant.heightMM}${Units.Millimeters} (H)`;
+                                    `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x 
+                                    ${getPsdUnitString(unitsPrefs, filledPlant.heightMM, Units.Millimeters)} (H)`;
                                 designCalculationReport[exportKey]['Pits'][levelName].push({
                                     flowSystemUid,
                                     'Reference': reference,
                                     'Name': getEntityName(plant, context.document.drawing),
                                     'Size': plantSize,
-                                    'Model': getPsdUnitString(null),
+                                    'Model': getPsdUnitString(unitsPrefs, null),
                                 });
                                 break;
                             default:
@@ -937,8 +994,8 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                                     flowSystemUid,
                                     'Reference': reference,
                                     'Name': getEntityName(plant, context.document.drawing),
-                                    'Size': getPsdUnitString(plantCalc?.size),
-                                    'Model': getPsdUnitString(plantCalc?.model),
+                                    'Size': getPsdUnitString(unitsPrefs, plantCalc?.size),
+                                    'Model': getPsdUnitString(unitsPrefs, plantCalc?.model),
                                 });
                                 break;
                             default:
@@ -962,8 +1019,8 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                             flowSystemUid,
                             'Reference': reference,
                             'Name': filledGasAppliance?.name || filledGasAppliance?.abbreviation || '',
-                            'Inlet Pressure': getPsdUnitString(filledGasAppliance?.inletPressureKPA, Units.KiloPascals),
-                            'Flow Rates': getPsdUnitString(filledGasAppliance?.flowRateMJH, Units.MegajoulesPerHour),
+                            'Inlet Pressure': getPsdUnitString(unitsPrefs, filledGasAppliance?.inletPressureKPA, Units.KiloPascals),
+                            'Flow Rates': getPsdUnitString(unitsPrefs, filledGasAppliance?.flowRateMJH, Units.MegajoulesPerHour),
                         });
                         break;
                     case DesignCalculationKey.WATER:

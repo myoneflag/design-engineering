@@ -153,3 +153,10 @@ export function getNextPipeSize(currentSize: number, pipeSizes: number[]): numbe
 
     return newPipeSize;
 }
+
+export function getFixedStringValue(value: string | number | null, fixed: number = 3): string {
+    if (!value) {
+        return '';
+    }
+    return parseFloat(Number(value).toFixed(fixed)).toString();
+}
