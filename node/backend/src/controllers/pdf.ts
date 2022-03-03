@@ -76,7 +76,6 @@ async function getPdfDims(pdfPath: string) {
 
     }
 
-
     // try again
     regexp = "SCALE[-: \n\t][ \n\t]*@?[ \n\t]*(" + paperPattern + ")";
     m = pageText.match(regexp);
@@ -87,7 +86,6 @@ async function getPdfDims(pdfPath: string) {
     const vp = (await pdfFile.getPage(1)).getViewport({ scale: 1 });
     let w = vp.width / 72 * 25.4;
     let h = vp.height  / 72 * 25.4;
-
 
     let maxw = 0;
     let maxh = 0;
@@ -130,7 +128,6 @@ function formidablePromise(req: Request): Promise<{ fields: Fields, files: Files
     });
 }
 
-
 const renderQueue = new PQueue({concurrency: 1});
 
 export async function configureFloorPlanRenders(pdfPath: string, pngHash: string, res: Response) {
@@ -168,7 +165,6 @@ export async function configureFloorPlanRenders(pdfPath: string, pngHash: string
 
         // We can predict the width of the PDF so we should make that available to the frontend before the render
         // finishes.
-
 
         floorPlan.renders.bySize[id] = {
             images: [{
@@ -215,7 +211,6 @@ export class PDFController {
             }
         });
 
-
         await configureFloorPlanRenders(pdfPath, pngHash, res);
 
         const dims = await getPdfDims(pdfPath);
@@ -257,15 +252,31 @@ export class PDFController {
                 Bucket: Config.PDF_BUCKET,
                 Key: pdfFile,
             };
+
             // download pdf again from amazon
-            const ostream = await s3.getObject(params).createReadStream();
+            let ostream;
+            try {
+                ostream = await s3.getObject(params).createReadStream();
+            } catch (err) {
+                if (err.code === "NoSuchKey") {
+                    res.status(404).send({
+                        success: false,
+                        message: "Image not found",
+                    });
+                    return;
+                }
+            }
             const fileStream = fs.createWriteStream('/tmp/' + pdfFile);
 
-
-
-            await new Promise((resolve, rej) => {
+            await new Promise<void>((resolve, rej) => {
                 ostream.on('error', (err) => {
-                    // NoSuchKey: The specified key does not exist
+                    if (err.code === "NoSuchKey") {
+                        res.status(404).send({
+                            success: false,
+                            message: "Image not found",
+                        });
+                        return;
+                    }
                     rej(err);
                 });
 
@@ -301,11 +312,11 @@ export class PDFController {
 
         const sGetUrl = await s3.getSignedUrlPromise("getObject", {
             Bucket: Config.PDF_RENDERS_BUCKET,
-            Key: key
+            Key: key,
         });
         const sHeadUrl = await s3.getSignedUrlPromise("headObject", {
             Bucket: Config.PDF_RENDERS_BUCKET,
-            Key: key
+            Key: key,
         });
 
         return res.status(200).send({
@@ -313,7 +324,7 @@ export class PDFController {
             data: {
                 get: sGetUrl,
                 head: sHeadUrl
-            }
+            },
         });
     }
 }
@@ -327,4 +338,3 @@ router.get("/:key", controller.getImageLink.bind(controller));
 router.get("/:key/renders", controller.getRenders.bind(controller));
 
 export const pdfRouter = router;
-

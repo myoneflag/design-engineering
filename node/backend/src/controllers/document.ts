@@ -445,12 +445,14 @@ const router = Router();
 const controller = new DocumentController();
 
 router.ws("/:id/websocket", (webSocket: ws, req) => {
+    console.log(`WSS ${req.url} start`);
     const docId = Number(req.params.id);
+    const lastOpIdReceived = Number(req.query.lastOpId) || Number(req.headers["lastopid"]);
     withAuth(
         req,
         async (session) => {
             withDocument(docId, null, session, AccessType.UPDATE,
-                async (doc) => handleWebSocket(doc, webSocket, false, session));
+                async (doc) => handleWebSocket(doc, lastOpIdReceived, webSocket, false, session));
         },
         (msg) => {
             sendErrorMessage(webSocket, "Authorization failed: " + msg);
@@ -459,6 +461,7 @@ router.ws("/:id/websocket", (webSocket: ws, req) => {
 });
 
 router.ws("/share/:id/websocket", async (webSocket: ws, req) => {
+    console.log(`WSS ${req.url} start`);
     const token = req.params.id;
     const sd = await ShareDocument.findOne({ token });
 
@@ -472,7 +475,7 @@ router.ws("/share/:id/websocket", async (webSocket: ws, req) => {
         sendErrorMessage(webSocket, 'Document has been deleted!');
         return;
     }
-    handleWebSocket(doc, webSocket, true, null);
+    handleWebSocket(doc, 0, webSocket, true, null);
 });
 
 router.post("/", controller.create.bind(controller));

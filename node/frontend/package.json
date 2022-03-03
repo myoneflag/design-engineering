@@ -59,6 +59,7 @@
     "math3d": "^0.2.2",
     "mousetrap": "^1.6.5",
     "pdfkit": "^0.11.0",
+    "reconnecting-websocket": "^4.4.0",
     "pizzip": "^3.1.1",
     "register-service-worker": "^1.6.2",
     "scale-that-svg": "^1.0.3",

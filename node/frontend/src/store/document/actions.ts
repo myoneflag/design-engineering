@@ -2,7 +2,7 @@ import { ActionTree } from "vuex";
 import * as OT from "../../../../common/src/api/document/operation-transforms";
 import { OPERATION_NAMES } from "../../../../common/src/api/document/operation-transforms";
 import { RootState } from "../types";
-import { blankDiffFilter, DocumentState, EntityParam } from "../../../src/store/document/types";
+import { blankDiffFilter, DocumentState, EntityParam, UIState } from "../../../src/store/document/types";
 import { diffState } from "../../../../common/src/api/document/state-differ";
 import { applyOpOntoStateVue } from "../../../src/store/document/operation-transforms/state-ot-apply";
 import * as _ from "lodash";
@@ -108,19 +108,14 @@ export const actions: ActionTree<DocumentState, RootState> = {
         const prevHistoryId = state.history.length ? state.history[state.history.length - 1].id : -1;
 
         submitOperation(state.documentId, commit, diff).catch((e) => {
-            state.uiState.viewOnly = true;
-            state.uiState.viewOnlyReason = "Lost connection to the server - please refresh";
+            setUiStateViewOnly(state.uiState, "An error occured while saving the changes on the server", e);
             this.dispatch("document/revert");
-            reportError("Unable to Save: There is a connection issue with the server. Please refresh.", e);
         });
 
         setTimeout(() => {
             const thisHistoryId = state.history.length ? state.history[state.history.length - 1].id : -1;
             if (thisHistoryId === prevHistoryId) {
-                // didn't update successfully
-                state.uiState.viewOnly = true;
-                state.uiState.viewOnlyReason = "Having trouble saving, please refresh";
-                reportError("Having trouble saving for the last 10 seconds, please refresh", new Error("connection issues"));
+                setUiStateViewOnly(state.uiState, "Having trouble saving for the last 10 seconds, please refresh", null);
             }
         }, 10000);
 
@@ -224,3 +219,9 @@ export const actions: ActionTree<DocumentState, RootState> = {
         commit("setIsLoading", payload);
     }
 };
+
+export function setUiStateViewOnly(uiState: UIState, message: string, error: Error | null) {
+    reportError(message, error);
+    uiState.viewOnly = true;
+    uiState.viewOnlyReason = message;
+}

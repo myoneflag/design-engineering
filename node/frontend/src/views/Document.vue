@@ -21,7 +21,7 @@ import LoadingScreen from "../views/LoadingScreen.vue";
 import { customEntityData } from "../api/custom-entity";
 import { EntityType } from "../../../common/src/api/document/entities/types";
 import { initialDrawing } from "../../../common/src/api/document/drawing";
-import { reportError } from '../api/error-report';
+import { setUiStateViewOnly } from "../store/document/actions";
 
 @Component({
     components: { LoadingScreen, DrawingCanvas, DrawingNavBar },
@@ -61,9 +61,9 @@ export default class Document extends Vue {
                 this.document.drawing = initialDrawing(res.data.locale)
                 this.document.committedDrawing = initialDrawing(res.data.locale)
 
-
                 openDocument(
                     this.$props.id,
+                    () => this.document.nextId,
                     (op) => {
                         this.$store.dispatch("document/applyRemoteOperation", op);
                     },
@@ -80,13 +80,7 @@ export default class Document extends Vue {
                     },
                     (msg) => {
                         if (!this.closeExpected) {
-                            reportError(
-                                "The connection to the server was lost, please refresh. " +
-                                "Changes from now will not be saved.\n", 
-                                new Error(msg))
-
-                            this.document.uiState.viewOnly = true;
-                            this.document.uiState.viewOnlyReason = "Lost connection to the server - Please Refresh";
+                            setUiStateViewOnly(this.document.uiState, "The connection to the server was lost, please refresh.", new Error(msg));
                             this.$store.dispatch("document/revert");
                         }
                     }

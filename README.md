@@ -202,6 +202,8 @@ All commands to be executed on the host machine.
    cd node/backend
    npm install
    npm run dev
+   # optionally run a 2nd backend server locally 
+   # npm run dev2
    ```
 4. Run frontend
    ```bash
