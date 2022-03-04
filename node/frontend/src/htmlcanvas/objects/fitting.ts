@@ -66,8 +66,8 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     pixelRadius: number = 5;
     lastDrawnLength!: number;
 
-    TURN_RADIUS_MM = 100;
-    FITTING_DIAMETER_PIXELS = 3;
+    TURN_RADIUS_MM = 25;
+    FITTING_DIAMETER_PIXELS = 0.75;
     lastRadials!: Array<[Coord, BaseBackedObject]>;
 
     get position(): Matrix {
@@ -109,7 +109,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
                 const minJointLength = this.FITTING_DIAMETER_PIXELS / scale;
 
-                const defaultWidth = Math.max(this.FITTING_DIAMETER_PIXELS / scale, 25);
+                const defaultWidth = Math.max(minJointLength, 25);
                 this.lastDrawnWidth = defaultWidth;
                 this.lastDrawnLength = Math.max(this.toObjectLength(minJointLength), this.toObjectLength(this.TURN_RADIUS_MM));
 
