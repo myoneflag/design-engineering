@@ -54,6 +54,7 @@
             : ''
         "
         @contextmenu="disableContextMenu"
+        @mouseDown.middle="disableContextMenu"
         v-bind:style="{
           backgroundColor: 'aliceblue',
           cursor: currentCursor,
@@ -1109,6 +1110,7 @@ export default class DrawingCanvas extends Vue {
   }
 
   disableContextMenu(e: MouseEvent) {
+    this.currentCursor = "auto";
     e.preventDefault();
 
     if (this.selectedEntities.length !== 1) {
