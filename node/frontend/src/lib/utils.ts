@@ -160,3 +160,7 @@ export function getFixedStringValue(value: string | number | null, fixed: number
     }
     return parseFloat(Number(value).toFixed(fixed)).toString();
 }
+
+export function getCertainDecimalNumber(value: number, fixed: number = 3): number {
+    return Math.ceil(value * Math.pow(10, fixed)) / Math.pow(10, fixed);
+}

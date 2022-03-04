@@ -59,9 +59,10 @@
 
 <style>
     .pressure-drainage-selector {
-        position:absolute;
-        right:50px;
-        top:80px;
+        position: absolute;
+        right: 50px;
+        top: 80px;
+        z-index: 1;
     }
 
     .pressure-drainage-btn {

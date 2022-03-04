@@ -415,18 +415,18 @@ export default class Plant extends BackedDrawableObject<PlantEntity> implements 
         const e: PlantEntity = cloneSimple(this.entity);
         e.uid += ".calculation";
 
-        e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
-        e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+        e.outletUid = (this.globalStore.get(e.outletUid) as SystemNode)?.getCalculationNode(context, this.uid).uid;
+        e.inletUid = (this.globalStore.get(e.inletUid) as SystemNode)?.getCalculationNode(context, this.uid).uid;
 
         let manufacturer = 'generic';
         switch (e.plant.type) {
             case PlantType.RETURN_SYSTEM:
                 manufacturer = context.drawing.metadata.catalog.hotWaterPlant.find(i => i.uid === 'hotWaterPlant')?.manufacturer || manufacturer;
 
-                e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                e.plant.returnUid = (this.globalStore.get(e.plant.returnUid) as SystemNode)?.getCalculationNode(context, this.uid).uid;
 
                 if (manufacturer === 'generic' || (manufacturer === 'rheem' && this.withGas.includes(e.plant.rheemVariant!))) {
-                    e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode).getCalculationNode(context, this.uid).uid;
+                    e.plant.gasNodeUid = (this.globalStore.get(e.plant.gasNodeUid) as SystemNode)?.getCalculationNode(context, this.uid).uid;
                 }
 
                 break;

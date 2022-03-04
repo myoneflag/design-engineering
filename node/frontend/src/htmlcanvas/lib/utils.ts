@@ -42,7 +42,7 @@ import { Catalog } from "../../../../common/src/api/catalog/types";
 import { makeDirectedValveFields } from "../../../../common/src/api/document/entities/directed-valves/directed-valve-entity";
 import { makeLoadNodesFields } from "../../../../common/src/api/document/entities/load-node-entity";
 import { makeFlowSourceFields } from "../../../../common/src/api/document/entities/flow-source-entity";
-import { color2rgb, lighten, rgb2style } from "../../lib/utils";
+import { color2rgb, getCertainDecimalNumber, lighten, rgb2style } from "../../lib/utils";
 import { makeGasApplianceFields } from "../../../../common/src/api/document/entities/gas-appliance";
 import { determineConnectableSystemUid } from "../../store/document/entities/lib";
 import { prepareFill, prepareStroke } from "../helpers/draw-helper";
@@ -126,7 +126,7 @@ export function getEdgeLikeHeightAboveFloorM(entity: EdgeLikeEntity, context: Ca
 }
 
 export function getEdgeLikeHeightAboveGroundM(entity: EdgeLikeEntity, context: CalculationContext, forRiser = false): number {
-    return getEdgeLikeHeightAboveFloorM(entity, context, forRiser) + getFloorHeight(context.globalStore, context.doc, entity);
+    return getCertainDecimalNumber(getEdgeLikeHeightAboveFloorM(entity, context, forRiser) + getFloorHeight(context.globalStore, context.doc, entity));
 }
 
 export function getFloorHeight(globalStore: GlobalStore, doc: DocumentState, entity: DrawableEntityConcrete) {
