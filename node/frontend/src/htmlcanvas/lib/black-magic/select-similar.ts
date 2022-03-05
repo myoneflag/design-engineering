@@ -7,7 +7,7 @@ import { EntityType } from "../../../../../common/src/api/document/entities/type
 import { GlobalStore } from "../global-store";
 
 export function entityTypeSupportsSimilar(type: string) {
-    return type === EntityType.PIPE || type === EntityType.FIXTURE || type == EntityType.LOAD_NODE;
+    return type === EntityType.PIPE || type === EntityType.FIXTURE || type == EntityType.LOAD_NODE || type == EntityType.DIRECTED_VALVE;
 }
 
 export function getIdsOfSimilarEntities(selected: DrawableEntityConcrete, drawing: DrawingState, levelUid: string|null, globalStore: GlobalStore) {
@@ -63,11 +63,18 @@ export function getIdsOfSimilarEntities(selected: DrawableEntityConcrete, drawin
                             similarEntitiesId.push(entity.uid);
                         }
                     }
-                break;                    
+                break;
+            case EntityType.DIRECTED_VALVE:
+                if (entity.type === selected.type 
+                    && entity.uid !== selected.uid 
+                    && entity.valve.type === selected.valve.type)
+                {
+                    similarEntitiesId.push(entity.uid);
+                }
+                break;
             case EntityType.RISER:
             case EntityType.SYSTEM_NODE:
             case EntityType.BIG_VALVE:
-            case EntityType.DIRECTED_VALVE:
             case EntityType.FLOW_SOURCE:
             case EntityType.PLANT:
             case EntityType.GAS_APPLIANCE:

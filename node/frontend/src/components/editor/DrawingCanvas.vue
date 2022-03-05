@@ -1126,8 +1126,8 @@ export default class DrawingCanvas extends Vue {
     if (entityTypeSupportsSimilar(type)) {
       var menuNode = this.$refs.menu as HTMLDivElement;
       var rect = (this.$refs.drawingCanvas as HTMLCanvasElement).getBoundingClientRect();
-      var x = e.x - rect.left;
-      var y = e.y - rect.top;
+      var x = e.x / PAGE_ZOOM - rect.left;
+      var y = e.y / PAGE_ZOOM - rect.top;
 
       // show menu
       menuNode!.style.display = "initial";
