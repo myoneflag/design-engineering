@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <div
-      style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 270px); margin-bottom: 20px"
+      style="overflow-y: auto; overflow-x: hidden; height: calc(125vh- 270px); margin-bottom: 20px"
       id="settingsFieldTop"
     >
       <slot> </slot>

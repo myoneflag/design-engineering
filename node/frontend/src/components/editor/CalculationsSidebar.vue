@@ -431,7 +431,7 @@ export default class CalculationsSidebar extends Vue {
     border-radius: 5px;
     padding: 20px;
 
-    max-height: -webkit-calc(100vh - 30px);
+    max-height: -webkit-calc(125vh- 30px);
     overflow-y: auto;
     overflow-x: hidden;
     text-align: left;

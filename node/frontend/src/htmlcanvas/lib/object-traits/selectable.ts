@@ -5,6 +5,7 @@ import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import BackedDrawableObject from "../../../../src/htmlcanvas/lib/backed-drawable-object";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { Coord } from "../../../../../common/src/api/document/drawing";
+import { PAGE_ZOOM } from "../../../../src/config";
 
 export interface Selectable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;
@@ -19,7 +20,7 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
             if (context.document.uiState.drawingMode === DrawingMode.Calculations) {
                 return false;
             }
-            const wc = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+            const wc = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
             const oc = this.toObjectCoord(wc);
 
             // Check bounds
@@ -53,7 +54,7 @@ export function SelectableObject<T extends new (...args: any[]) => Selectable & 
             if (context.document.uiState.drawingMode === DrawingMode.Calculations) {
                 return false;
             }
-            const wc = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+            const wc = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
             if (this.entity) {
                 const oc = this.toObjectCoord(wc);
                 // Check bounds

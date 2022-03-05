@@ -1,7 +1,7 @@
 <template>
     <div>
         <MainNavBar></MainNavBar>
-        <div class="home" style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)">
+        <div class="home" style="overflow-y: auto; overflow-x: hidden; height: calc(125vh - 63px)">
             <b-container>
                 <b-row>
                     <b-col>

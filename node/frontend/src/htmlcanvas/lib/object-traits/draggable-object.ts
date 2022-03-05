@@ -3,6 +3,7 @@ import { MouseMoveResult, UNHANDLED } from "../../../../src/htmlcanvas/types";
 import CanvasContext from "../../../../src/htmlcanvas/lib/canvas-context";
 import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object";
 import { Coord } from "../../../../../common/src/api/document/drawing";
+import { PAGE_ZOOM } from "../../../../src/config";
 
 export interface Draggable {
     inBounds(objectCoord: Coord, objectRadius?: number): boolean;
@@ -29,7 +30,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
 
         onMouseDown(event: MouseEvent, context: CanvasContext) {
             let result = false;
-            const world = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+            const world = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
             const objectCoord = this.toObjectCoord(world);
             if (this.inBounds(objectCoord)) {
                 this.grabbedState = this.onDragStartPre(event, world, objectCoord, context);
@@ -44,7 +45,7 @@ export function DraggableObject<T extends new (...args: any[]) => Draggable & Dr
         onMouseMove(event: MouseEvent, context: CanvasContext) {
 
             let result = UNHANDLED;
-            const world = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+            const world = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
             const objectCoord = this.toObjectCoord(world);
             if (this.grabbedObjectCoord) {
                 if (event.movementX !== 0 || event.movementY !== 0 || this.hasMoved) {

@@ -381,7 +381,7 @@ export default class LevelSelector extends Vue {
     padding-bottom: 5px;
 }
 .level-selector-scroll {
-    max-height: -webkit-calc(100vh - 50px);
+    max-height: -webkit-calc(125vh- 50px);
     overflow-y: auto;
 }
 </style>

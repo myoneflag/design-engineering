@@ -1,51 +1,6 @@
 <template>
   <drop @drop="onDrop">
-    <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
-    <PropertiesWindow
-      :selected-entities="selectedEntities"
-      :selected-objects="selectedObjects"
-      :target-property="targetProperty"
-      v-if="selectedObjects.length && propertiesVisible && initialized"
-      :mode="document.uiState.drawingMode"
-      :on-change="onPropertiesChange"
-      :on-delete="deleteSelected"
-      :object-store="globalStore"
-    >
-    </PropertiesWindow>
-
-    <CalculationsSidebar
-      v-if="
-        document.uiState.drawingMode === DrawingMode.Calculations &&
-          initialized &&
-          !showExport &&
-          (!toolHandler || toolHandler.config.calculationSideBar)
-      "
-      :objects="visibleObjects"
-      :on-change="scheduleDraw"
-      :canvas-context="this"
-    >
-    </CalculationsSidebar>
-
-    <LevelSelector
-      v-if="levelSelectorVisible && initialized"
-      @level-changed="floorLockStatus = false"
-      :object-store="globalStore"
-      :class="{ onboarding: checkOnboardingClass(DocumentStep.Levels) }"
-    ></LevelSelector>
-    <LUAndCostTable
-      v-if="LUAndCostTableVisible && initialized && document.drawing"
-      :global-store="globalStore"
-      :selected-entities="selectedEntities"
-      :projectLUs="projectLUs"
-      :focus-l-us="focusLUs"
-      :focus-name="focusName"
-      :focus-cost="focusCost"
-      :project-cost="projectCost()"
-    />
-
     <div ref="canvasFrame" class="fullFrame" v-bind:class="{ disableMouseEvents: shouldDisableUIMouseEvents }">
-      <DrawingNavBar :loading="isLoading" :disabled="!!toolHandler" />
-
       <canvas
         ref="drawingCanvas"
         :title="
@@ -59,9 +14,14 @@
           backgroundColor: 'aliceblue',
           cursor: currentCursor,
           pointerEvents: 'auto',
-          marginTop: '-60px'
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
         }"
       ></canvas>
+
+      <DrawingNavBar :loading="isLoading" :disabled="!!toolHandler" />
 
       <div ref="menu" id="menu" v-click-outside="handleCloseMenu">
         <div>
@@ -154,6 +114,50 @@
       </div>
       <resize-observer @notify="scheduleDraw" />
     </div>
+
+    <!--Anything that needs scrolling needs to be up here, outside of canvasFrame.-->
+    <PropertiesWindow
+      :selected-entities="selectedEntities"
+      :selected-objects="selectedObjects"
+      :target-property="targetProperty"
+      v-if="selectedObjects.length && propertiesVisible && initialized"
+      :mode="document.uiState.drawingMode"
+      :on-change="onPropertiesChange"
+      :on-delete="deleteSelected"
+      :object-store="globalStore"
+    >
+    </PropertiesWindow>
+
+    <CalculationsSidebar
+      v-if="
+        document.uiState.drawingMode === DrawingMode.Calculations &&
+          initialized &&
+          !showExport &&
+          (!toolHandler || toolHandler.config.calculationSideBar)
+      "
+      :objects="visibleObjects"
+      :on-change="scheduleDraw"
+      :canvas-context="this"
+    >
+    </CalculationsSidebar>
+
+    <LevelSelector
+      v-if="levelSelectorVisible && initialized"
+      @level-changed="floorLockStatus = false"
+      :object-store="globalStore"
+      :class="{ onboarding: checkOnboardingClass(DocumentStep.Levels) }"
+    ></LevelSelector>
+    <LUAndCostTable
+      v-if="LUAndCostTableVisible && initialized && document.drawing"
+      :global-store="globalStore"
+      :selected-entities="selectedEntities"
+      :projectLUs="projectLUs"
+      :focus-l-us="focusLUs"
+      :focus-name="focusName"
+      :focus-cost="focusCost"
+      :project-cost="projectCost()"
+    />
+
     <Onboarding
       v-if="onboardingScreen"
       :screen="onboardingScreen"
@@ -247,7 +251,7 @@ import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../com
 import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
 import { globalStore } from "../../store/document/mutations";
 import HistoryView from "./HistoryView.vue";
-import { DEFAULT_FONT_NAME } from "../../config";
+import { DEFAULT_FONT_NAME, PAGE_ZOOM } from "../../config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import Riser from "../../htmlcanvas/objects/riser";
 import stringify from "json-stable-stringify";
@@ -2068,7 +2072,7 @@ export default class DrawingCanvas extends Vue {
             continue;
           }
 
-          const w = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+          const w = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
 
           this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
         }
@@ -2152,8 +2156,8 @@ export default class DrawingCanvas extends Vue {
         // start box thingy
         this.selectBox = new SelectBox(
           null,
-          this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }),
-          this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY })
+          this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM }),
+          this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM })
         );
 
         return true;
@@ -2168,7 +2172,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     // If no objects or tools wanted the events, we can always drag and shit.
-    this.grabbedPoint = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+    this.grabbedPoint = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
     this.hasDragged = false;
     return true;
   }
@@ -2189,7 +2193,7 @@ export default class DrawingCanvas extends Vue {
 
   onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
     if (this.selectBox) {
-      this.selectBox.pointB = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
+      this.selectBox.pointB = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
 
       event.preventDefault();
 
@@ -2228,7 +2232,7 @@ export default class DrawingCanvas extends Vue {
       if (this.grabbedPoint != null) {
         const s = this.viewPort.toScreenCoord(this.grabbedPoint);
         this.hasDragged = true;
-        this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
+        this.viewPort.panAbs(s.x - event.offsetX / PAGE_ZOOM, s.y - event.offsetY / PAGE_ZOOM);
         this.scheduleDraw();
         return { handled: true, cursor: "Move" };
       } else {
@@ -2297,7 +2301,7 @@ export default class DrawingCanvas extends Vue {
     delta = Math.min(2000 / currS, delta);
 
     if (!this.toolHandler || !this.toolHandler.config.preventZooming) {
-      this.viewPort.rescale(delta, event.offsetX, event.offsetY);
+      this.viewPort.rescale(delta, event.offsetX / PAGE_ZOOM, event.offsetY / PAGE_ZOOM);
     }
 
     this.scheduleDraw();
@@ -2329,11 +2333,17 @@ export default class DrawingCanvas extends Vue {
 body {
   height: 100%;
   overflow: hidden;
+  zoom: 0.8;
 }
 
 .fullFrame {
   width: 100%;
-  height: -webkit-calc(100vh);
+  height: -webkit-calc(125vh);
+}
+
+.modal-backdrop {
+  width: 100% !important;
+  height: 125vh !important;
 }
 
 .disableMouseEvents {
