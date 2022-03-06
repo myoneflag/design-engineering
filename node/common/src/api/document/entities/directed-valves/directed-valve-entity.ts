@@ -16,6 +16,7 @@ export default interface DirectedValveEntity extends ConnectableEntity, NamedEnt
     sourceUid: string;
 
     valve: DirectedValveConcrete;
+    valveSizeMM: number;
 }
 
 export function makeDirectedValveFields(
@@ -35,6 +36,16 @@ export function makeDirectedValveFields(
             type: FieldType.Text,
             params: null,
             multiFieldId: "entityName"
+        },
+        {
+            property: "valveSizeMM",
+            title: "Size",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 7, max: 70, step: 7 },
+            multiFieldId: "valveSizeMM",
+            units: Units.Percent,
         },
         {
             property: "systemUidOption",

@@ -73,6 +73,16 @@ export function makeBigValveFields(entity: BigValveEntity): PropertyField[] {
             multiFieldId: "entityName"
         },
         {
+            property: "pipeDistanceMM",
+            title: "Size",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 15, max: 150, step: 15 },
+            multiFieldId: "pipeDistanceMM",
+            units: Units.Percent,
+        },
+        {
             property: "rotation",
             title: "Rotation: (Degrees)",
             hasDefault: false,

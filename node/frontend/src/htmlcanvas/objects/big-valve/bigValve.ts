@@ -20,7 +20,8 @@ import {
     drawRpzdDouble,
     getHighlightColor,
     getRpzdHeadLoss,
-    VALVE_HEIGHT_MM
+    VALVE_HEIGHT_MM,
+    VALVE_LINE_WIDTH_MM
 } from "../../../../src/htmlcanvas/lib/utils";
 import { CalculationContext } from "../../../../src/calculations/types";
 import { FlowNode } from "../../../../src/calculations/calculation-engine";
@@ -104,7 +105,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         const r = this.entity.pipeDistanceMM;
         const lm = l / 2;
         const rm = r / 2;
-        const b = this.entity.valveLengthMM;
+        const b = this.entity.pipeDistanceMM * 200 / 150;
         const bm = b / 2;
         const t = 0;
         const m = 0;
@@ -156,10 +157,10 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
-        const b = this.entity.valveLengthMM;
+        const b = this.entity.pipeDistanceMM * 200 / 150;
         const t = 0;
 
-        ctx.lineWidth = this.entity.valveLengthMM * 0.1;
+        ctx.lineWidth = VALVE_LINE_WIDTH_MM * 2;
         ctx.strokeStyle ="#222222";
         ctx.lineCap = "square";
 
@@ -190,7 +191,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         const l = -this.entity.pipeDistanceMM;
         const r = this.entity.pipeDistanceMM;
-        const b = this.entity.valveLengthMM;
+        const b = this.entity.pipeDistanceMM * 200 / 150;
         const t = 0;
         let highlight: Color | undefined = undefined;
         if (selected || overrideColorList.length) {
@@ -199,7 +200,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
 
         ctx.rotate(Math.PI / 2);
         ctx.translate(VALVE_HEIGHT_MM, 0);
-        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], highlight,this);
+        drawRpzdDouble(context, [coldSystem.color.hex, hotSystem.color.hex], highlight, this);
         ctx.translate(-VALVE_HEIGHT_MM, 0);
         ctx.rotate(-Math.PI / 2);
     }
@@ -262,7 +263,7 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
         }
         if (Math.abs(objectCoord.x) <= this.entity.pipeDistanceMM) {
             if (objectCoord.y > -this.entity.pipeDistanceMM * 0.3) {
-                if (objectCoord.y < this.entity.valveLengthMM * 1.2) {
+                if (objectCoord.y < this.entity.pipeDistanceMM * 200 / 150 * 1.2) {
                     return true;
                 }
             }

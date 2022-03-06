@@ -112,6 +112,14 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         assertUnreachable(this.document.uiState.pressureOrDrainage);
     }
 
+    get valveWidthMM(): number {
+        return this.valveHeightMM * VALVE_SIZE_MM / VALVE_HEIGHT_MM;
+    }
+
+    get valveHeightMM(): number {
+        return this.entity.valveSizeMM || VALVE_HEIGHT_MM;
+    }
+
     drawEntity(context: DrawingContext, { selected }: EntityDrawingArgs): void {
         const s = context.vp.currToSurfaceScale(context.ctx);
         context.ctx.rotate(this.rotationRad);
@@ -119,7 +127,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const e = fillDirectedValveFields(context.doc.drawing, this.globalStore, this.entity);
         if (selected) {
             context.ctx.fillStyle = lighten(e.color!.hex, 50, 0.8);
-            context.ctx.fillRect(-VALVE_SIZE_MM * 1.2, -VALVE_SIZE_MM * 1.2, VALVE_SIZE_MM * 2.4, VALVE_SIZE_MM * 2.4);
+            context.ctx.fillRect(-this.valveWidthMM * 1.2, -this.valveWidthMM * 1.2, this.valveWidthMM * 2.4, this.valveWidthMM * 2.4);
         }
         let color = e.color!;
         if (!this.isActive()) {
@@ -131,7 +139,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         context.ctx.fillStyle = color.hex;
         context.ctx.strokeStyle = color.hex;
         context.ctx.lineWidth = baseWidth;
-        let maxOffsetY = VALVE_SIZE_MM;
+        let maxOffsetY = this.valveWidthMM;
         switch (this.entity.valve.type) {
             case ValveType.CHECK_VALVE:
                 this.drawCheckValve(context);
@@ -145,12 +153,12 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             case ValveType.PRV_DOUBLE:
                 this.drawPrvDouble(context);
-                maxOffsetY = VALVE_HEIGHT_MM * (2 + 0.3);
+                maxOffsetY = this.valveHeightMM * (2 + 0.3);
                 break;
 
             case ValveType.PRV_TRIPLE:
                 this.drawPrvTriple(context);
-                maxOffsetY = VALVE_HEIGHT_MM * (3 + 0.3);
+                maxOffsetY = this.valveHeightMM * (3 + 0.3);
                 break;
             case ValveType.RPZD_SINGLE:
                 this.drawRpzdSingle(context);
@@ -158,8 +166,8 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
             case ValveType.RPZD_DOUBLE_ISOLATED:
             case ValveType.RPZD_DOUBLE_SHARED:
-                drawRpzdDouble(context, [context.ctx.fillStyle, context.ctx.fillStyle]);
-                maxOffsetY = VALVE_HEIGHT_MM * (2 + 0.3);
+                drawRpzdDouble(context, [context.ctx.fillStyle, context.ctx.fillStyle], undefined, this);
+                maxOffsetY = this.valveHeightMM * (2 + 0.3);
                 break;
             case ValveType.WATER_METER:
                 this.drawWaterMeter(context);
@@ -212,16 +220,16 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             const ctx = context.ctx;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.arc(0, 0, this.valveWidthMM, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
             ctx.beginPath();
-            const lineX = VALVE_SIZE_MM / 2;
-            const lineY = ((VALVE_SIZE_MM ** 2) - (lineX ** 2)) ** 0.5;
+            const lineX = this.valveWidthMM / 2;
+            const lineY = ((this.valveWidthMM ** 2) - (lineX ** 2)) ** 0.5;
 
-            ctx.moveTo(0, VALVE_SIZE_MM);
-            ctx.lineTo(0, -VALVE_SIZE_MM);
+            ctx.moveTo(0, this.valveWidthMM);
+            ctx.lineTo(0, -this.valveWidthMM);
             ctx.moveTo(lineX, lineY);
             ctx.lineTo(lineX, -lineY);
             ctx.moveTo(-lineX, lineY);
@@ -247,7 +255,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             const ctx = context.ctx;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(0, 0, VALVE_SIZE_MM, 0, Math.PI * 2);
+            ctx.arc(0, 0, this.valveWidthMM, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
@@ -260,42 +268,42 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     drawRefluxValve(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM);
         ctx.stroke();
     }
 
     drawCheckValve(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.moveTo(-this.valveHeightMM, -this.valveHeightMM);
+        ctx.lineTo(-this.valveHeightMM, this.valveHeightMM);
+        ctx.lineTo(this.valveHeightMM, 0);
         ctx.closePath();
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(VALVE_HEIGHT_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_HEIGHT_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(this.valveHeightMM, this.valveHeightMM);
+        ctx.lineTo(this.valveHeightMM, -this.valveHeightMM);
         ctx.stroke();
     }
 
     drawIsolationValve(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, -this.valveHeightMM);
 
         if ((this.entity.valve as IsolationValve).isClosed) {
             ctx.closePath();
             ctx.stroke();
             ctx.fill();
         } else {
-            ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+            ctx.lineTo(-this.valveWidthMM, this.valveHeightMM);
             ctx.stroke();
         }
     }
@@ -303,22 +311,22 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     drawBalancingValve(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, -this.valveHeightMM);
 
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM, this.valveHeightMM);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
-        ctx.lineTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
-        ctx.lineTo(-VALVE_SIZE_MM / 4, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.moveTo(-this.valveWidthMM / 2, -this.valveHeightMM / 2);
+        ctx.lineTo(-this.valveWidthMM / 2, -this.valveHeightMM * 5 / 4);
+        ctx.lineTo(-this.valveWidthMM / 4, -this.valveHeightMM * 5 / 4);
 
-        ctx.moveTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2);
-        ctx.lineTo(VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM * 5 / 4);
-        ctx.lineTo(VALVE_SIZE_MM * 3 / 4, -VALVE_HEIGHT_MM * 5 / 4);
+        ctx.moveTo(this.valveWidthMM / 2, -this.valveHeightMM / 2);
+        ctx.lineTo(this.valveWidthMM / 2, -this.valveHeightMM * 5 / 4);
+        ctx.lineTo(this.valveWidthMM * 3 / 4, -this.valveHeightMM * 5 / 4);
 
         ctx.stroke();
     }
@@ -328,11 +336,11 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
 
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM * 0.7);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM * 0.7);
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM * 0.7);
+        ctx.moveTo(-this.valveWidthMM, this.valveHeightMM * 0.7);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM * 0.7);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM * 0.7);
+        ctx.lineTo(-this.valveWidthMM, -this.valveHeightMM * 0.7);
+        ctx.lineTo(-this.valveWidthMM, this.valveHeightMM * 0.7);
         ctx.stroke();
 
         // Umbrella
@@ -341,19 +349,19 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
 
         if (upsideDown) {
             ctx.moveTo(0, 0);
-            ctx.lineTo(0, VALVE_HEIGHT_MM);
-            ctx.lineTo(-VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM);
-            ctx.bezierCurveTo(-VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7,
-                VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7, VALVE_HEIGHT_MM);
-            ctx.lineTo(0, VALVE_HEIGHT_MM);
+            ctx.lineTo(0, this.valveHeightMM);
+            ctx.lineTo(-this.valveWidthMM * 0.7, this.valveHeightMM);
+            ctx.bezierCurveTo(-this.valveWidthMM * 0.7, this.valveHeightMM * 1.5, this.valveWidthMM * 0.7,
+                this.valveHeightMM * 1.5, this.valveWidthMM * 0.7, this.valveHeightMM);
+            ctx.lineTo(0, this.valveHeightMM);
             ctx.stroke();
         } else {
             ctx.moveTo(0, 0);
-            ctx.lineTo(0, -VALVE_HEIGHT_MM);
-            ctx.lineTo(-VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM);
-            ctx.bezierCurveTo(-VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7,
-                -VALVE_HEIGHT_MM * 1.5, VALVE_SIZE_MM * 0.7, -VALVE_HEIGHT_MM);
-            ctx.lineTo(0, -VALVE_HEIGHT_MM);
+            ctx.lineTo(0, -this.valveHeightMM);
+            ctx.lineTo(-this.valveWidthMM * 0.7, -this.valveHeightMM);
+            ctx.bezierCurveTo(-this.valveWidthMM * 0.7, -this.valveHeightMM * 1.5, this.valveWidthMM * 0.7,
+                -this.valveHeightMM * 1.5, this.valveWidthMM * 0.7, -this.valveHeightMM);
+            ctx.lineTo(0, -this.valveHeightMM);
             ctx.stroke();
         }
 
@@ -362,53 +370,53 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         ctx.fillStyle = 'rgba(50, 50, 200, 0.2)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM * 0.5, -VALVE_HEIGHT_MM * 0.7);
-        ctx.lineTo(VALVE_SIZE_MM * 0.7, 0);
-        ctx.lineTo(-VALVE_SIZE_MM * 0.5, VALVE_HEIGHT_MM * 0.7);
+        ctx.moveTo(-this.valveWidthMM * 0.5, -this.valveHeightMM * 0.7);
+        ctx.lineTo(this.valveWidthMM * 0.7, 0);
+        ctx.lineTo(-this.valveWidthMM * 0.5, this.valveHeightMM * 0.7);
         ctx.fill();
     }
 
     drawReturnPump(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(VALVE_HEIGHT_MM * Math.cos(Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(Math.PI * 3 / 4));
-        ctx.lineTo(VALVE_HEIGHT_MM * Math.cos(- Math.PI * 3 / 4), VALVE_HEIGHT_MM * Math.sin(- Math.PI * 3 / 4));
-        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.moveTo(this.valveHeightMM * Math.cos(Math.PI * 3 / 4), this.valveHeightMM * Math.sin(Math.PI * 3 / 4));
+        ctx.lineTo(this.valveHeightMM * Math.cos(- Math.PI * 3 / 4), this.valveHeightMM * Math.sin(- Math.PI * 3 / 4));
+        ctx.lineTo(this.valveHeightMM, 0);
         ctx.closePath();
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(0, 0, VALVE_HEIGHT_MM, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.valveHeightMM, 0, Math.PI * 2);
         ctx.stroke();
     }
 
     drawFilter(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        const VALVE_HEIGHT_MM = VALVE_SIZE_MM * 6 / 7;
+        const VALVE_HEIGHT_MM = this.valveWidthMM * 6 / 7;
 
         // outer box
-        ctx.moveTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(this.valveWidthMM, -VALVE_HEIGHT_MM);
+        ctx.lineTo(this.valveWidthMM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM, VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM, -VALVE_HEIGHT_MM);
         ctx.closePath();
         ctx.stroke();
 
         // mesh
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM * 3 / 7, -VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, - VALVE_HEIGHT_MM / 3);
-        ctx.moveTo(VALVE_SIZE_MM * 1 / 7, -VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM / 3);
-        ctx.moveTo(VALVE_SIZE_MM * 5 / 7, -VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM * 7 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM * 3 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM, - VALVE_HEIGHT_MM / 3);
+        ctx.moveTo(this.valveWidthMM * 1 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM, VALVE_HEIGHT_MM / 3);
+        ctx.moveTo(this.valveWidthMM * 5 / 7, -VALVE_HEIGHT_MM);
+        ctx.lineTo(-this.valveWidthMM * 7 / 7, VALVE_HEIGHT_MM);
 
-        ctx.moveTo(VALVE_SIZE_MM, - VALVE_HEIGHT_MM * 2 / 3);
-        ctx.lineTo(-VALVE_SIZE_MM * 3 / 7, VALVE_HEIGHT_MM);
-        ctx.moveTo(VALVE_SIZE_MM, 0);
-        ctx.lineTo(VALVE_SIZE_MM * 1 / 7, VALVE_HEIGHT_MM);
-        ctx.moveTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM * 2 / 3);
-        ctx.lineTo(VALVE_SIZE_MM * 5 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(this.valveWidthMM, - VALVE_HEIGHT_MM * 2 / 3);
+        ctx.lineTo(-this.valveWidthMM * 3 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(this.valveWidthMM, 0);
+        ctx.lineTo(this.valveWidthMM * 1 / 7, VALVE_HEIGHT_MM);
+        ctx.moveTo(this.valveWidthMM, VALVE_HEIGHT_MM * 2 / 3);
+        ctx.lineTo(this.valveWidthMM * 5 / 7, VALVE_HEIGHT_MM);
         ctx.stroke();
     }
 
@@ -418,28 +426,28 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         ctx.fillStyle = "#ffffff";
 
         ctx.fillRect(
-            -VALVE_HEIGHT_MM * 1.3,
-            -VALVE_HEIGHT_MM * ((2 * n) / 2 + 0.3),
-            VALVE_HEIGHT_MM * 2.6,
-            VALVE_HEIGHT_MM * (2 * n + 0.6)
+            -this.valveHeightMM * 1.3,
+            -this.valveHeightMM * ((2 * n) / 2 + 0.3),
+            this.valveHeightMM * 2.6,
+            this.valveHeightMM * (2 * n + 0.6)
         );
 
         ctx.beginPath();
         ctx.rect(
-            -VALVE_HEIGHT_MM * 1.3,
-            -VALVE_HEIGHT_MM * ((2 * n) / 2 + 0.3),
-            VALVE_HEIGHT_MM * 2.6,
-            VALVE_HEIGHT_MM * (2 * n + 0.6)
+            -this.valveHeightMM * 1.3,
+            -this.valveHeightMM * ((2 * n) / 2 + 0.3),
+            this.valveHeightMM * 2.6,
+            this.valveHeightMM * (2 * n + 0.6)
         );
         ctx.stroke();
 
         ctx.fillStyle = oldfs;
         for (let i = 0; i < n; i++) {
-            const yOffset = (-n / 2 + i + 0.5) * (VALVE_SIZE_MM * 1.3);
+            const yOffset = (-n / 2 + i + 0.5) * (this.valveWidthMM * 1.3);
             ctx.beginPath();
-            ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2 + yOffset);
-            ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2 + yOffset);
-            ctx.lineTo(VALVE_HEIGHT_MM, 0 + yOffset);
+            ctx.moveTo(-this.valveHeightMM, -this.valveWidthMM / 2 + yOffset);
+            ctx.lineTo(-this.valveHeightMM, this.valveWidthMM / 2 + yOffset);
+            ctx.lineTo(this.valveHeightMM, 0 + yOffset);
             ctx.closePath();
             ctx.fill();
         }
@@ -462,17 +470,17 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
         const oldfs = ctx.fillStyle;
         ctx.fillStyle = "#ffffff";
 
-        ctx.fillRect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
+        ctx.fillRect(-this.valveHeightMM * 1.3, -this.valveHeightMM * 1.3, this.valveHeightMM * 2.6, this.valveHeightMM * 2.6);
 
         ctx.beginPath();
-        ctx.rect(-VALVE_HEIGHT_MM * 1.3, -VALVE_HEIGHT_MM * 1.3, VALVE_HEIGHT_MM * 2.6, VALVE_HEIGHT_MM * 2.6);
+        ctx.rect(-this.valveHeightMM * 1.3, -this.valveHeightMM * 1.3, this.valveHeightMM * 2.6, this.valveHeightMM * 2.6);
         ctx.stroke();
 
         ctx.fillStyle = oldfs;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_HEIGHT_MM, -VALVE_SIZE_MM / 2);
-        ctx.lineTo(-VALVE_HEIGHT_MM, VALVE_SIZE_MM / 2);
-        ctx.lineTo(VALVE_HEIGHT_MM, 0);
+        ctx.moveTo(-this.valveHeightMM, -this.valveWidthMM / 2);
+        ctx.lineTo(-this.valveHeightMM, this.valveWidthMM / 2);
+        ctx.lineTo(this.valveHeightMM, 0);
         ctx.closePath();
         ctx.fill();
     }
@@ -480,36 +488,36 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
     drawWaterMeter(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, this.valveHeightMM);
         ctx.closePath();
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
-        ctx.lineTo(VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, VALVE_HEIGHT_MM);
-        ctx.lineTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM);
+        ctx.moveTo(-this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM);
+        ctx.lineTo(this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, this.valveHeightMM);
+        ctx.lineTo(-this.valveWidthMM, -this.valveHeightMM);
         ctx.stroke();
     }
 
     drawStrainer(context: DrawingContext) {
         const ctx = context.ctx;
         ctx.beginPath();
-        const offset = VALVE_HEIGHT_MM / 2;
-        ctx.moveTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM + offset);
-        ctx.lineTo(-VALVE_SIZE_MM, 0 + offset);
-        ctx.moveTo(-VALVE_SIZE_MM, -VALVE_HEIGHT_MM / 2 + offset);
-        ctx.lineTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM / 2 + offset);
-        ctx.moveTo(VALVE_SIZE_MM, -VALVE_HEIGHT_MM + offset);
-        ctx.lineTo(VALVE_SIZE_MM, 0 + offset);
+        const offset = this.valveHeightMM / 2;
+        ctx.moveTo(-this.valveWidthMM, -this.valveHeightMM + offset);
+        ctx.lineTo(-this.valveWidthMM, 0 + offset);
+        ctx.moveTo(-this.valveWidthMM, -this.valveHeightMM / 2 + offset);
+        ctx.lineTo(this.valveWidthMM, -this.valveHeightMM / 2 + offset);
+        ctx.moveTo(this.valveWidthMM, -this.valveHeightMM + offset);
+        ctx.lineTo(this.valveWidthMM, 0 + offset);
 
-        ctx.moveTo(-VALVE_SIZE_MM / 2, -VALVE_HEIGHT_MM / 2 + offset);
-        ctx.lineTo(VALVE_SIZE_MM / 2, VALVE_HEIGHT_MM / 2 + offset);
-        ctx.moveTo(VALVE_SIZE_MM * 0.8, VALVE_HEIGHT_MM * 0.2 + offset);
-        ctx.lineTo(VALVE_SIZE_MM * 0.2, VALVE_HEIGHT_MM * 0.8 + offset);
+        ctx.moveTo(-this.valveWidthMM / 2, -this.valveHeightMM / 2 + offset);
+        ctx.lineTo(this.valveWidthMM / 2, this.valveHeightMM / 2 + offset);
+        ctx.moveTo(this.valveWidthMM * 0.8, this.valveHeightMM * 0.2 + offset);
+        ctx.lineTo(this.valveWidthMM * 0.2, this.valveHeightMM * 0.8 + offset);
         ctx.stroke();
     }
 
@@ -539,7 +547,7 @@ export default class DirectedValve extends BackedConnectable<DirectedValveEntity
             return false;
         }
         const dist = Math.sqrt(objectCoord.x ** 2 + objectCoord.y ** 2);
-        return dist < VALVE_SIZE_MM + (objectRadius ? objectRadius : 0);
+        return dist < this.valveWidthMM + (objectRadius ? objectRadius : 0);
     }
 
     prepareDelete(context: CanvasContext): BaseBackedObject[] {

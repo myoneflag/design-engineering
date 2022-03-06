@@ -89,7 +89,7 @@
               >
                 <b-col cols="12">
                   <b-form-input
-                    :value="displayWithCorrectUnits(field)"
+                    :value="displayWithCorrectUnits(field) || field.params.max"
                     @input="setRenderedDataNumeric(field, $event)"
                     :id="'input-' + field.property"
                     :min="convertValueToUnits(field.units, field.params.min)"
@@ -341,10 +341,14 @@ export default class PropertiesFieldBuilder extends Vue {
 
   displayValue(field: PropertyField): string | number | null {
     if (field.params) {
-      const params = field.params as NumberParams;
-      const value = this.displayWithCorrectUnits(field);
-      if (params.max && params.step && value) {
-        return Math.ceil(value * 100 / params.max);
+      if ((field.params as NumberParams).step) {
+        const params = field.params as NumberParams;
+        const value = this.displayWithCorrectUnits(field);
+        if (value) {
+          return params.max ? Math.ceil(value * 100 / params.max) : 0;
+        } else {
+          return params.max ? 100 : 0;
+        }
       }
     }
     return null;

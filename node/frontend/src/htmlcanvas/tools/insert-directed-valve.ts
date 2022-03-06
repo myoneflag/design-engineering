@@ -181,7 +181,8 @@ function createBareValveEntity(
         calculationHeightM: null,
         uid: uuid(),
         valve: createBareValve(type, catalogId), 
-        entityName: null
+        entityName: null,
+        valveSizeMM: 70
     };
 }
 
