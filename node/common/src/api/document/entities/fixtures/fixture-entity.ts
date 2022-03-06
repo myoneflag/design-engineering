@@ -56,6 +56,16 @@ export function makeFixtureFields(drawing: DrawingState, entity: FixtureEntity, 
             multiFieldId: "entityName"
         },
         {
+            property: "pipeDistanceMM",
+            title: "Size",
+            hasDefault: false,
+            isCalculated: false,
+            type: FieldType.Number,
+            params: { min: 20, max: 200, step: 20 },
+            multiFieldId: "pipeDistanceMM",
+            units: Units.Percent,
+        },
+        {
             property: "rotation",
             title: "Rotation: (Degrees)",
             hasDefault: false,

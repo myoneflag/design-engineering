@@ -20,6 +20,7 @@ export enum FieldType {
 export interface NumberParams extends FieldParams {
     min: number | null;
     max: number | null;
+    step?: number;
 }
 
 export interface TextAreaParams extends FieldParams {

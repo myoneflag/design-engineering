@@ -27,7 +27,7 @@
                         </td>
                         <td v-if="field.units">
                           <label class="float-right" style="text-align: left; font-size: 15px">
-                            {{ convertUnits(field) }}
+                            {{ displayValue(field) }} {{ convertUnits(field) }}
                           </label>
                         </td>
                       </tr>
@@ -82,6 +82,26 @@
                 :disabled="isDisabled(field)"
                 @blur="onCommitInternal"
               ></b-form-textarea>
+
+              <b-row
+                style="(missingRequired(field) ? 'background-color: red' : '')"
+                v-else-if="field.type === FieldType.Number && field.params.min != null && field.params.max != null && field.params.step != null"
+              >
+                <b-col cols="12">
+                  <b-form-input
+                    :value="displayWithCorrectUnits(field)"
+                    @input="setRenderedDataNumeric(field, $event)"
+                    :id="'input-' + field.property"
+                    :min="convertValueToUnits(field.units, field.params.min)"
+                    :max="convertValueToUnits(field.units, field.params.max)"
+                    :step="field.params.step"
+                    size="sm"
+                    type="range"
+                    :disabled="isDisabled(field)"
+                    @change="onCommitInternal"
+                  />
+                </b-col>
+              </b-row>
 
               <b-row
                 style="(missingRequired(field) ? 'background-color: red' : '')"
@@ -226,7 +246,7 @@ import { DocumentState } from "../../../../src/store/document/types";
 import { Compact } from "vue-color";
 import FlowSystemPicker from "../../../../src/components/editor/FlowSystemPicker.vue";
 import PopoutColourPicker from "../../../../src/components/editor/lib/PopoutColourPicker.vue";
-import { FieldParams, PropertyField, FieldType } from "../../../../../common/src/api/document/entities/property-field";
+import { FieldParams, PropertyField, FieldType, NumberParams } from "../../../../../common/src/api/document/entities/property-field";
 import RotationPicker from "../../../../src/components/editor/lib/RotationPicker.vue";
 import BooleanPicker from "../../../../src/components/editor/lib/BooleanPicker.vue";
 import { getPropertyByString, setPropertyByString } from "../../../../src/lib/utils";
@@ -317,6 +337,17 @@ export default class PropertiesFieldBuilder extends Vue {
 
     const val = convertMeasurementSystem(this.document.drawing.metadata.units, curr, value);
     return val[1];
+  }
+
+  displayValue(field: PropertyField): string | number | null {
+    if (field.params) {
+      const params = field.params as NumberParams;
+      const value = this.displayWithCorrectUnits(field);
+      if (params.max && params.step && value) {
+        return Math.ceil(value * 100 / params.max);
+      }
+    }
+    return null;
   }
 
   convertUnits(field: PropertyField): Units {
