@@ -199,8 +199,8 @@ export function CalculatedObject<
                 }
             }
 
-            if (hasWarning) {
-                const warnWidth = ctx.measureText(calculation!.warnings![0].title!);
+            if (hasWarning && calculation?.warnings) {
+                const warnWidth = ctx.measureText(calculation.warnings[0].title!);
                 maxWidth = Math.max(maxWidth, Math.min(WARNING_HINT_WIDTH, warnWidth.width));
             }
 
@@ -492,7 +492,7 @@ export function CalculatedObject<
             if (calculation && calculation.warnings === undefined) {
                 throw new Error("undefined calculation: " + JSON.stringify(this.entity));
             }
-            if (!calculation || !calculation.warnings?.length) {
+            if (!calculation || !calculation.warnings || !calculation.warnings.length) {
                 return false;
             }
 
