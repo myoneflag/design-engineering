@@ -182,8 +182,7 @@ export default class PlantProperties extends Vue {
     return (
       this.readonly ||
       field.readonly ||
-      !field.requiresInput ||
-      ((field.isCalculated || field.hasDefault) &&
+      ((field.isCalculated || field.hasDefault) && !field.requiresInput &&
         getPropertyByString(this.reactiveData, field.property, true) === null)
     );
   }
