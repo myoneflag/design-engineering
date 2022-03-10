@@ -125,7 +125,7 @@ export function makeDirectedValveCalculationFields(
             }
             break;
         case ValveType.BALANCING:
-            manufacturer = drawing.metadata.catalog.balancingValves[0]?.manufacturer || manufacturer;
+            manufacturer = drawing.metadata.catalog.balancingValves && drawing.metadata.catalog.balancingValves[0]?.manufacturer || manufacturer;
             abbreviation = manufacturer !== 'generic'
                 && catalog?.balancingValves.manufacturer.find((manufacturerObj) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || abbreviation;
@@ -159,7 +159,7 @@ export function makeDirectedValveCalculationFields(
         case ValveType.PRV_SINGLE:
         case ValveType.PRV_DOUBLE:
         case ValveType.PRV_TRIPLE:
-            manufacturer = drawing.metadata.catalog.prv[0]?.manufacturer || manufacturer;
+            manufacturer = drawing.metadata.catalog.prv && drawing.metadata.catalog.prv[0]?.manufacturer || manufacturer;
             abbreviation = manufacturer !== 'generic'
                 && catalog?.prv.manufacturer.find((manufacturerObj) => manufacturerObj.uid === manufacturer)?.abbreviation
                 || '';
@@ -171,15 +171,15 @@ export function makeDirectedValveCalculationFields(
                 units: Units.Millimeters,
                 category: FieldCategory.Size,
                 format: (sizeMM) => {
-                    const settings = Object.entries(catalog!.prv.size[manufacturer]).find(([key, value]) => value.diameterNominalMM === sizeMM)![0];
-                    return settings;
+                    const settings = Object.entries(catalog!.prv.size[manufacturer]).find(([key, value]) => value.diameterNominalMM === sizeMM)!;
+                    return settings && settings[0];
                 }
             });
 
             break;
         case ValveType.FLOOR_WASTE:
             if (iAmDrainage) {
-                manufacturer = drawing.metadata.catalog.floorWaste[0]?.manufacturer || manufacturer;
+                manufacturer = drawing.metadata.catalog.floorWaste && drawing.metadata.catalog.floorWaste[0]?.manufacturer || manufacturer;
 
                 if (manufacturer === 'blucher' && filled.valve.variant === 'bucketTrap') {
                     fields.push({
@@ -196,7 +196,7 @@ export function makeDirectedValveCalculationFields(
             break;
         case ValveType.INSPECTION_OPENING:
             if (iAmDrainage) {
-                manufacturer = drawing.metadata.catalog.inspectionOpening[0]?.manufacturer || manufacturer;
+                manufacturer = drawing.metadata.catalog.inspectionOpening && drawing.metadata.catalog.inspectionOpening[0]?.manufacturer || manufacturer;
 
                 if (manufacturer === 'blucher') {
                     fields.push({
