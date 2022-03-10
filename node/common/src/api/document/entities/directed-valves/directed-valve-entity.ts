@@ -16,7 +16,7 @@ export default interface DirectedValveEntity extends ConnectableEntity, NamedEnt
     sourceUid: string;
 
     valve: DirectedValveConcrete;
-    valveSizeMM: number;
+    valveSizeMM?: number;
 }
 
 export function makeDirectedValveFields(
