@@ -14,23 +14,27 @@ export function getSavedPreferenceOrDefault<T>(window: WindowLocalStorage, itemK
 }
 
 export function savePreference<T>(window: WindowLocalStorage, itemKey: string, value: T, ttl: number = 30 * 24 * 3600 * 1000) {
-    if (window && !_.isEmpty(value)) {
-        try {
-            window.localStorage.setItem(itemKey, JSON.stringify({
-                value,
-                expiry: Date.now() + ttl,
-            }));
-        } catch (err) {
-            cleanLocalStorage();
-
+    if (window) {
+        if (!_.isEmpty(value)) {
             try {
                 window.localStorage.setItem(itemKey, JSON.stringify({
                     value,
                     expiry: Date.now() + ttl,
                 }));
             } catch (err) {
-                // is Full
+                cleanLocalStorage();
+    
+                try {
+                    window.localStorage.setItem(itemKey, JSON.stringify({
+                        value,
+                        expiry: Date.now() + ttl,
+                    }));
+                } catch (err) {
+                    // is Full
+                }
             }
+        } else {
+            window.localStorage.removeItem(itemKey);
         }
     }    
 }

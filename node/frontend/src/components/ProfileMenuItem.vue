@@ -1,5 +1,5 @@
 <template>
-    <b-nav-item-dropdown right :disabled="disabled">
+    <b-nav-item-dropdown right :disabled="disabled" class="dropdown-profile">
 
         <template slot="button-content">
             <v-icon name="user" style="margin-top: -3px"></v-icon>

@@ -51,6 +51,10 @@ export interface UIState {
     calculationFilters: CalculationFilters;
     calculationFilterSettings: CalculationFilterSettings;
     warningFilter: WarningFilter;
+    systemFilter: {
+        hiddenSystemUids: string[];
+        tempVisibleSystemUids: string[];
+    }
 
     levelUid: string | null;
     viewOnly: boolean;
@@ -339,6 +343,10 @@ export const initialUIState: UIState = {
         showWarningsToPDF: true,
         activeEntityUid: '',
         editEntityUid: '',
+    },
+    systemFilter: {
+        hiddenSystemUids: [],
+        tempVisibleSystemUids: [],
     },
     levelUid: null,
     viewOnly: true,

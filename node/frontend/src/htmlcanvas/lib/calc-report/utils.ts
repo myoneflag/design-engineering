@@ -56,7 +56,7 @@ export function getDrawnFlowsystems(context: CanvasContext): Set<string> {
     const drawnFlowSystems = new Set<string>();
 
     Array.from(context.globalStore.values()).forEach((o) => {
-        const entitySystem = getEntitySystem(o.entity, context)!;
+        const entitySystem = getEntitySystem(o.entity, context.globalStore)!;
         if (entitySystem) {
             drawnFlowSystems.add(entitySystem);
         }
@@ -526,7 +526,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
             }
         });
 
-        const flowSystemUid = getEntitySystem(o.entity, context);
+        const flowSystemUid = getEntitySystem(o.entity, context.globalStore);
 
         switch (o.type) {
             case EntityType.FLOW_SOURCE:

@@ -16,7 +16,7 @@
                         style="margin-bottom: 30px;
                             overflow-y: auto;
                             overflow-x: hidden;
-                            height: calc(125vh- 300px)"
+                            height: calc(125vh - 300px);"
                     >
                         <p>
                             This agreement is between

@@ -228,7 +228,7 @@ export function setInitFilterSettings(objects: BaseBackedObject[], calculationFi
     const allFlowSystems = new Set<string>();
 
     objects.forEach((o) => {
-        const entitySystem = getEntitySystem(o.entity, context)!;
+        const entitySystem = getEntitySystem(o.entity, context.globalStore)!;
         if (entitySystem) {
             allFlowSystems.add(entitySystem);
         }

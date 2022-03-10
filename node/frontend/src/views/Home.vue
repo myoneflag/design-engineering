@@ -802,7 +802,7 @@ h1 {
 }
 
 .isEmailVerification {
-  height: calc(125vh- 102px) !important;
+  height: calc(125vh - 102px) !important;
 }
 .circle-border {
   height: 24px;

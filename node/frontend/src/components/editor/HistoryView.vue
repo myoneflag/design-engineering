@@ -186,14 +186,14 @@ export default class HistoryView extends Vue {
     position: fixed;
     left: 300px;
     top: 80px;
-    width: calc(100vw - 320px - 250px);
+    width: calc(100% - 320px - 250px);
 }
 
 .history-debug {
     position: fixed;
     left: 300px;
     top: 200px;
-    width: calc(100vw - 320px - 250);
+    width: calc(100% - 320px - 250);
     //margin-right: 20px;
 }
 </style>

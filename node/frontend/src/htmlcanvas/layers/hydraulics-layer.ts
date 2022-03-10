@@ -11,6 +11,7 @@ import { levelIncludesRiser } from "../lib/utils";
 import { cooperativeYield } from "../utils";
 import { Coord } from "../../../../common/src/api/document/drawing";
 import { assertUnreachable } from "../../../../common/src/api/config";
+import { getEntitySystem } from "../../../src/calculations/utils";
 
 export default class HydraulicsLayer extends LayerImplementation {
     draggedObjects: BaseBackedObject[] | null = null;
@@ -29,9 +30,10 @@ export default class HydraulicsLayer extends LayerImplementation {
             if (!exclude.has(v)) {
                 if (!active || !this.isSelected(v)) {
                     try {
-                        this.context.globalStore
-                            .get(v)!
-                            .draw(context, { active, withCalculation, forExport });
+                        const o = this.context.globalStore.get(v)!;
+                        if (!active || !this.istempVisibleSystemUidsOff(context, o)) {
+                            o.draw(context, { active, withCalculation, forExport });
+                        }
                     } catch (e) {
                         // tslint:disable-next-line:no-console
                     }
@@ -41,6 +43,22 @@ export default class HydraulicsLayer extends LayerImplementation {
                 await cooperativeYield(shouldContinue);
             }
         }
+    }
+
+    istempVisibleSystemUidsOff(context: DrawingContext, object: BaseBackedObject): boolean {
+        const systemUid = getEntitySystem(object.entity, context.globalStore)!;
+        const tempVisibleSystemUids = context.doc.uiState.systemFilter.tempVisibleSystemUids;
+        const hiddenSystemUids = context.doc.uiState.systemFilter.hiddenSystemUids;
+        if (!systemUid) {
+            return false;
+        }
+        if (tempVisibleSystemUids.includes(systemUid)) {
+            return false;
+        }
+        if (!hiddenSystemUids.includes(systemUid)) {
+            return false;
+        }
+        return true;
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {

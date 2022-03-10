@@ -8,6 +8,7 @@
           @selectSystem="selectSystem"
           :disabled="isDrawing"
           :class="{ onboarding: checkOnboardingClass(DocumentStep.FlowSystems) }"
+          :hideable="true"
         />
         <b-button
           v-if="systemLayout === 'water' || systemLayout === 'gas'"

@@ -768,7 +768,7 @@ export function getFields(
   }
 }
 
-export function getEntitySystem(entity: DrawableEntityConcrete, context: CanvasContext): string | null {
+export function getEntitySystem(entity: DrawableEntityConcrete, globalStore: GlobalStore): string | null {
   switch (entity.type) {
     case EntityType.FITTING:
     case EntityType.PIPE:
@@ -776,12 +776,9 @@ export function getEntitySystem(entity: DrawableEntityConcrete, context: CanvasC
     case EntityType.FLOW_SOURCE:
     case EntityType.SYSTEM_NODE:
       return entity.systemUid;
-    case EntityType.DIRECTED_VALVE: {
-      const res = fillDirectedValveFields(context.document.drawing, context.globalStore, entity);
-      return res.systemUidOption;
-    }
+    case EntityType.DIRECTED_VALVE:
     case EntityType.LOAD_NODE: {
-      return determineConnectableSystemUid(context.globalStore, entity)!;
+      return determineConnectableSystemUid(globalStore, entity)!;
     }
     case EntityType.BACKGROUND_IMAGE:
     case EntityType.BIG_VALVE:

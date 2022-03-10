@@ -245,7 +245,7 @@ import { Buffer } from "./RenderBuffer";
 import { GlobalStore } from "../../htmlcanvas/lib/global-store";
 import insertFlowSource from "../../htmlcanvas/tools/insert-flow-source";
 import insertPlant from "../../htmlcanvas/tools/insert-plant";
-import { assertUnreachable, isDrainage } from "../../../../common/src/api/config";
+import { assertUnreachable, isDrainage, StandardFlowSystemUids } from "../../../../common/src/api/config";
 import { Catalog } from "../../../../common/src/api/catalog/types";
 import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../common/src/api/document/drawing";
 import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
@@ -279,6 +279,7 @@ import { reportWarning } from '../../../src/api/error-report';
 
 import { getSavedWarningsFilter } from "../../lib/filters/warnings";
 import { getSavedFilters, getSavedFilterSettings } from "../../lib/filters/results";
+import { getSavedSystemFilter } from "../../lib/filters/system";
 
 @Component({
   components: {
@@ -747,6 +748,7 @@ export default class DrawingCanvas extends Vue {
     this.$watch(
       () => this.document.uiState.drawingMode,
       (newVal, oldVal) => {
+        this.document.uiState.systemFilter.tempVisibleSystemUids = [];
         this.document.uiState.selectedUids.splice(0);
         if (oldVal === DrawingMode.History && newVal !== DrawingMode.History) {
           this.$store.dispatch("document/revertFull");
@@ -790,12 +792,22 @@ export default class DrawingCanvas extends Vue {
         this.scheduleDraw();
       }
     );
+    this.$watch(
+      () => this.toolHandler,
+      (newVal, oldVal) => {
+        if (newVal === null) {
+          this.document.uiState.systemFilter.tempVisibleSystemUids = [];
+          this.scheduleDraw();
+        }
+      }
+    );
     (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
     (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
     (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
     (this.$refs.canvasFrame as any).onwheel = this.onWheel;
 
     this.allLayers.push(this.backgroundLayer, this.hydraulicsLayer, this.calculationLayer);
+    this.document.uiState.systemFilter.hiddenSystemUids = getSavedSystemFilter(window, this.document.documentId, []);
 
     if (this.document.uiState.loaded) {
       this.onDrawingLoaded();
@@ -940,6 +952,7 @@ export default class DrawingCanvas extends Vue {
   }
 
   setToolHandler(toolHandler: ToolHandler) {
+    console.log(toolHandler, this.toolHandler)
     if (toolHandler !== null && this.toolHandler !== null) {
       this.toolHandler.finish(true, true);
     }
@@ -1607,6 +1620,16 @@ export default class DrawingCanvas extends Vue {
       isVent
     } = params;
     this.select([], SelectMode.Replace);
+    const tempVisibleSystemUids = new Set<string>();
+    if (system?.uid) {
+      tempVisibleSystemUids.add(system.uid);
+    }
+    if (inletSystemUid) {
+      tempVisibleSystemUids.add(inletSystemUid);
+    }
+    if (outletSystemUid) {
+      tempVisibleSystemUids.add(outletSystemUid);
+    }
 
     if (entityName === EntityType.RISER) {
       insertRiser(this, system, isVent);
@@ -1617,6 +1640,8 @@ export default class DrawingCanvas extends Vue {
     } else if (entityName === EntityType.FITTING) {
       insertValve(this, system);
     } else if (entityName === EntityType.BIG_VALVE) {
+      tempVisibleSystemUids.add(StandardFlowSystemUids.ColdWater);
+      tempVisibleSystemUids.add(StandardFlowSystemUids.HotWater);
       insertBigValve(this, bigValveType, 0);
     } else if (entityName === EntityType.FIXTURE) {
       this.document.uiState.lastUsedFixtureUid = catalogId;
@@ -1645,6 +1670,8 @@ export default class DrawingCanvas extends Vue {
     } else if (entityName === EntityType.GAS_APPLIANCE) {
       insertGasAppliance(this, 0);
     }
+
+    this.document.uiState.systemFilter.tempVisibleSystemUids = Array.from(tempVisibleSystemUids);
   }
 
   async drawFast() {

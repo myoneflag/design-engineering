@@ -204,7 +204,7 @@ export default class CalculationLayer extends LayerImplementation {
         const objList = Array.from(this.uidsInOrder)
             .map((uid) => this.context.globalStore.get(uid)!)
             .filter((o) => {
-                const entitySystem = getEntitySystem(o.entity, this.context);
+                const entitySystem = getEntitySystem(o.entity, this.context.globalStore);
                 return (isShowAll || !entitySystem || !disallowedSystems.has(entitySystem)) && o.calculated;
             });
         objList.sort((a, b) => {
@@ -456,7 +456,7 @@ export default class CalculationLayer extends LayerImplementation {
     addReferences(): void {
         const references = new Map<string, number>();
         for (const obj of Array.from(this.context.globalStore.values())) {
-            const entitySystemUid = getEntitySystem(obj.entity, this.context)!;
+            const entitySystemUid = getEntitySystem(obj.entity, this.context.globalStore)!;
 
             const firstRef = this.systemLayoutRef(entitySystemUid, obj);
             const secondRef = this.getEntityReferenceName(obj);

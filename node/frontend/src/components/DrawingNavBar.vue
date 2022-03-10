@@ -280,4 +280,8 @@ export default class DrawingNavBar extends Vue {
 #login a {
     color: #007bff;
 }
+
+.dropdown-profile .dropdown-menu {
+    max-height: 100vh;
+}
 </style>

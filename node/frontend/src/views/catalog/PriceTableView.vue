@@ -120,6 +120,6 @@ export default class CatalogView extends Vue {
     .priceTableContent {
         overflow-y: auto;
         overflow-x: hidden;
-        height: calc(125vh- 300px);
+        height: calc(125vh - 300px);
     }
 </style>

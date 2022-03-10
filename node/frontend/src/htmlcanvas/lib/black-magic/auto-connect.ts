@@ -33,6 +33,7 @@ import { Coord, NetworkType } from "../../../../../common/src/api/document/drawi
 import { fillDirectedValveFields } from "../../../store/document/entities/fillDirectedValveFields";
 import { fillDefaultLoadNodeFields } from "../../../store/document/entities/fillDefaultLoadNodeFields";
 import { fillPlantDefaults } from "../../../../../common/src/api/document/entities/plants/plant-entity";
+import { getEntitySystem } from "../../../../src/calculations/utils";
 
 const CEILING_HEIGHT_THRESHOLD_BELOW_PIPE_HEIGHT_MM = 500;
 const FIXTURE_WALL_DIST_MM = 200;
@@ -332,8 +333,8 @@ export class AutoConnector {
             let be = bo.entity;
 
             // Must be same system
-            const sa = this.getEntitySystem(ao.entity);
-            const sb = this.getEntitySystem(bo.entity);
+            const sa = getEntitySystem(ao.entity, this.context.globalStore);
+            const sb = getEntitySystem(bo.entity, this.context.globalStore);
             if (sa !== null && sb !== null && sa !== sb) {
                 return null;
             }
@@ -796,7 +797,7 @@ export class AutoConnector {
         // skip this if the systems are not compatible.
         const systems1 = new Set(
             a.map((uid) => {
-                const s = this.getEntitySystem(this.context.globalStore.get(uid)!.entity);
+                const s = getEntitySystem(this.context.globalStore.get(uid)!.entity, this.context.globalStore);
                 if (s === null) {
                     throw new Error("auto connected groups must belong to systems " + uid);
                 }
@@ -805,7 +806,7 @@ export class AutoConnector {
         );
         const systems2 = new Set(
             b.map((uid) => {
-                const s = this.getEntitySystem(this.context.globalStore.get(uid)!.entity);
+                const s = getEntitySystem(this.context.globalStore.get(uid)!.entity, this.context.globalStore);
                 if (s === null) {
                     throw new Error("auto connecteded groups must belong to systems");
                 }
@@ -847,32 +848,6 @@ export class AutoConnector {
         } else {
             return bestDist;
         }
-    }
-
-    getEntitySystem(entity: DrawableEntityConcrete): string | null {
-        switch (entity.type) {
-            case EntityType.FITTING:
-            case EntityType.PIPE:
-            case EntityType.RISER:
-            case EntityType.FLOW_SOURCE:
-            case EntityType.SYSTEM_NODE:
-                return entity.systemUid;
-            case EntityType.DIRECTED_VALVE: {
-                const res = fillDirectedValveFields(this.context.document.drawing, this.context.globalStore, entity);
-                return res.systemUidOption;
-            }
-            case EntityType.LOAD_NODE: {
-                const res = fillDefaultLoadNodeFields(this.context.document, this.context.globalStore, entity, this.context.$store.getters["catalog/default"], this.context.$store.getters["customEntity/nodes"]);
-                return res.systemUidOption;
-            }
-            case EntityType.BACKGROUND_IMAGE:
-            case EntityType.BIG_VALVE:
-            case EntityType.PLANT:
-            case EntityType.FIXTURE:
-            case EntityType.GAS_APPLIANCE:
-                return null;
-        }
-        assertUnreachable(entity);
     }
 
     groupDist(a: string[], b: string[], cutoff: number | undefined): number | null {

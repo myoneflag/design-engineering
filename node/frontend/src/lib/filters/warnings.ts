@@ -1,4 +1,4 @@
-import { WarningFilter } from "src/store/document/types";
+import { WarningFilter } from "../../../src/store/document/types";
 import { getSavedPreferenceOrDefault, savePreference } from "../localStorage";
 import { ALL_KEY_VERSION } from "../types";
 
