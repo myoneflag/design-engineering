@@ -43,7 +43,7 @@ export function makeDirectedValveFields(
             hasDefault: false,
             isCalculated: false,
             type: FieldType.Number,
-            params: { min: 7, max: 70, step: 7 },
+            params: { min: 35, max: 70, step: 10 },
             multiFieldId: "valveSizeMM",
             units: Units.Percent,
         },

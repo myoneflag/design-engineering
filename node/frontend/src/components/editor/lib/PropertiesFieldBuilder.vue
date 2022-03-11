@@ -92,9 +92,9 @@
                     :value="displayWithCorrectUnits(field) || field.params.max"
                     @input="setRenderedDataNumeric(field, $event)"
                     :id="'input-' + field.property"
-                    :min="convertValueToUnits(field.units, field.params.min)"
+                    :min="convertValueToUnits(field.units, field.params.max * field.params.step / 100)"
                     :max="convertValueToUnits(field.units, field.params.max)"
-                    :step="field.params.step"
+                    :step="field.params.max * field.params.step / 100"
                     size="sm"
                     type="range"
                     :disabled="isDisabled(field)"
@@ -324,6 +324,13 @@ export default class PropertiesFieldBuilder extends Vue {
     }
 
     if (!isNaN(result)) {
+      const params = field.params as NumberParams;
+      if (params?.step && params?.max && params?.min) {
+        result = ((result - params.min) / ((params.max - params.min) / (100 - params.step)) + params.step) * params.max / 100;
+        if (result < params.max * params.step / 100) {
+          result = params.max;
+        }
+      }
       return Number(Number(result).toFixed(5));
     } else {
       return result;
@@ -400,6 +407,10 @@ export default class PropertiesFieldBuilder extends Vue {
 
   setRenderedDataNumeric(field: PropertyField, value: any) {
     if (!isNaN(value) && value !== "") {
+      const params = field.params as NumberParams;
+      if (params?.step && params?.max && params?.min) {
+        value = (value * 100 / params.max - params.step) * ((params.max - params.min) / (100 - params.step)) + params.min;
+      }
       if (field.units) {
         // get display units
         const du = this.convertUnits(field);
