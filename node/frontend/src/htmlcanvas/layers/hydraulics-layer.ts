@@ -24,6 +24,7 @@ export default class HydraulicsLayer extends LayerImplementation {
         mode: DrawingMode,
         withCalculation: boolean,
         forExport: boolean,
+        showExport: boolean,
     ) {
         for (let i = 0; i < this.uidsInOrder.length; i++) {
             const v = this.uidsInOrder[i];
@@ -31,7 +32,7 @@ export default class HydraulicsLayer extends LayerImplementation {
                 if (!active || !this.isSelected(v)) {
                     try {
                         const o = this.context.globalStore.get(v)!;
-                        if (!active || !this.istempVisibleSystemUidsOff(context, o)) {
+                        if (showExport || !(active || withCalculation) || !this.istempVisibleSystemUidsOff(context, o) ) {
                             o.draw(context, { active, withCalculation, forExport });
                         }
                     } catch (e) {
@@ -43,22 +44,6 @@ export default class HydraulicsLayer extends LayerImplementation {
                 await cooperativeYield(shouldContinue);
             }
         }
-    }
-
-    istempVisibleSystemUidsOff(context: DrawingContext, object: BaseBackedObject): boolean {
-        const systemUid = getEntitySystem(object.entity, context.globalStore)!;
-        const tempVisibleSystemUids = context.doc.uiState.systemFilter.tempVisibleSystemUids;
-        const hiddenSystemUids = context.doc.uiState.systemFilter.hiddenSystemUids;
-        if (!systemUid) {
-            return false;
-        }
-        if (tempVisibleSystemUids.includes(systemUid)) {
-            return false;
-        }
-        if (!hiddenSystemUids.includes(systemUid)) {
-            return false;
-        }
-        return true;
     }
 
     entitySortOrder(entity: DrawableEntityConcrete): number {

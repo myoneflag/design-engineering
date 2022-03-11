@@ -952,7 +952,6 @@ export default class DrawingCanvas extends Vue {
   }
 
   setToolHandler(toolHandler: ToolHandler) {
-    console.log(toolHandler, this.toolHandler)
     if (toolHandler !== null && this.toolHandler !== null) {
       this.toolHandler.finish(true, true);
     }
@@ -1882,7 +1881,8 @@ export default class DrawingCanvas extends Vue {
         reactive,
         this.document.uiState.drawingMode,
         this.document.uiState.drawingMode === DrawingMode.Calculations,
-        forExport
+        forExport,
+        this.showExport,
       );
       await cooperativeYield(shouldContinue);
       await this.calculationLayer.draw(
@@ -1891,7 +1891,8 @@ export default class DrawingCanvas extends Vue {
         shouldContinue,
         reactive,
         this.document.uiState.drawingMode === DrawingMode.Calculations,
-        forExport
+        forExport,
+        this.showExport,
       );
       await cooperativeYield(shouldContinue);
 

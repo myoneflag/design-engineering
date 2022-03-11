@@ -14,6 +14,7 @@ import { GlobalStore } from "../lib/global-store";
 import { ObjectStore } from "../lib/object-store";
 import { assertUnreachable } from "../../../../common/src/api/config";
 import { Coord, DrawableEntity, WithID } from "../../../../common/src/api/document/drawing";
+import { getEntitySystem } from "../../../src/calculations/utils";
 
 export default interface Layer {
     uidsInOrder: string[];
@@ -100,6 +101,22 @@ export abstract class LayerImplementation implements Layer {
                 }
             }
         }
+    }
+
+    istempVisibleSystemUidsOff(context: DrawingContext, object: BaseBackedObject): boolean {
+        const systemUid = getEntitySystem(object.entity, context.globalStore)!;
+        const tempVisibleSystemUids = context.doc.uiState.systemFilter.tempVisibleSystemUids;
+        const hiddenSystemUids = context.doc.uiState.systemFilter.hiddenSystemUids;
+        if (!systemUid) {
+            return false;
+        }
+        if (tempVisibleSystemUids.includes(systemUid)) {
+            return false;
+        }
+        if (!hiddenSystemUids.includes(systemUid)) {
+            return false;
+        }
+        return true;
     }
 
     deleteEntity({ entity, levelUid }: EntityParam) {
