@@ -37,7 +37,7 @@ export default function insertDirectedValve(
         "set-tool-handler",
         new SnappingInsertTool(
             (interrupted, displaced) => {
-                MainEventBus.$emit("set-tool-handler", null);
+                MainEventBus.$emit("set-tool-handler", null, !interrupted && !displaced);
                 if (interrupted) {
                     context.$store.dispatch("document/revert");
                 } else {

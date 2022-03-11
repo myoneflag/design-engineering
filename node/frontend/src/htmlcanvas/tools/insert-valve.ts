@@ -15,7 +15,7 @@ export default function insertValve(context: CanvasContext, system: FlowSystemPa
         "set-tool-handler",
         new SnappingInsertTool(
             async (interrupted, displaced) => {
-                MainEventBus.$emit("set-tool-handler", null);
+                MainEventBus.$emit("set-tool-handler", null, !interrupted && !displaced);
                 if (interrupted) {
                     await context.$store.dispatch("document/revert");
                 } else {

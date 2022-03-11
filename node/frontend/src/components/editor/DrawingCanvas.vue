@@ -792,15 +792,6 @@ export default class DrawingCanvas extends Vue {
         this.scheduleDraw();
       }
     );
-    this.$watch(
-      () => this.toolHandler,
-      (newVal, oldVal) => {
-        if (newVal === null) {
-          this.document.uiState.systemFilter.tempVisibleSystemUids = [];
-          this.scheduleDraw();
-        }
-      }
-    );
     (this.$refs.drawingCanvas as any).onmousedown = this.onMouseDown;
     (this.$refs.drawingCanvas as any).onmousemove = this.onMouseMove;
     (this.$refs.drawingCanvas as any).onmouseup = this.onMouseUp;
@@ -951,9 +942,22 @@ export default class DrawingCanvas extends Vue {
     }
   }
 
-  setToolHandler(toolHandler: ToolHandler) {
+  setToolHandler(toolHandler: ToolHandler, drawAgain: boolean = false) {
     if (toolHandler !== null && this.toolHandler !== null) {
       this.toolHandler.finish(true, true);
+    }
+    if (
+      this.toolHandler !== null &&
+      toolHandler === null &&
+      (
+        !drawAgain ||
+        (
+          (this.toolHandler as any)?.clickActionName === 'Start Pipe' &&
+          !(this.toolHandler as any)?.nSnapEvents &&
+          !(this.toolHandler as any)?.lastWc)
+        )
+    ) {
+      this.document.uiState.systemFilter.tempVisibleSystemUids = [];
     }
     this.interactive = null;
     this.toolHandler = toolHandler;
