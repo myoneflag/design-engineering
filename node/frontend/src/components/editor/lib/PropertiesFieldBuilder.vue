@@ -416,6 +416,7 @@ export default class PropertiesFieldBuilder extends Vue {
         const du = this.convertUnits(field);
         value = convertMeasurementToMetric(du, Number(value))[1];
       }
+      console.log(value)
       this.setRenderedData(field, Number(value));
     }
     setPropertyByString(this.numberProxy, field.property, value, true);

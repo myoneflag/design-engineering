@@ -67,6 +67,7 @@ import {
 import { getPropertyByString, setPropertyByString } from "../../../lib/utils";
 import { DrawingMode } from "../../../htmlcanvas/types";
 import { Level } from "../../../../../common/src/api/document/drawing";
+import { fixedNumber } from "../../../../../common/src/lib/utils";
 
 @Component({
   components: { PropertiesFieldBuilder },
@@ -256,12 +257,12 @@ export default class RiserProperties extends Vue {
 
   getHeightBySelectedFloor(field: PropertyField) {
     const value = this.displayWithCorrectUnits(field) || 0;
-    return value - this.selectedLevel[field.property].floorHeightM;
+    return fixedNumber(value - this.selectedLevel[field.property].floorHeightM * 1);
   }
 
   setRealHeight(field: PropertyField, value: string) {
-    const floorHeightM = this.selectedLevel[field.property].floorHeightM;
-    const converted = +value + floorHeightM;
+    const floorHeightM = this.selectedLevel[field.property].floorHeightM * 1;
+    const converted = fixedNumber(+value + floorHeightM);
     this.setRenderedDataNumeric(field, converted);
   }
 }

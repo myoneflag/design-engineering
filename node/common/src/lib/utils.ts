@@ -355,3 +355,9 @@ export function mapToArray<T>(arg: Map<string, T>): T[] {
 export function numToPercent(val: number) {
     return val / 100;
 }
+
+export function fixedNumber(value: number | string | null | undefined): number | null {
+    if (!value) return null;
+    // return +(value).toFixed(12);
+    return Math.round(Number(value) * 1e12) / 1e12;
+}

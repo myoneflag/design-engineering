@@ -9,7 +9,7 @@ import {
     NamedEntity,
     NetworkType
 } from "../drawing";
-    import { Choice, cloneSimple, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
+    import { Choice, cloneSimple, fixedNumber, parseCatalogNumberExact, parseCatalogNumberOrMin } from "../../../lib/utils";
     import { isDrainage, LEVEL_HEIGHT_DIFF_M } from "../../config";
 import { Catalog } from "../../catalog/types";
 import { getDrainageMaterials, getWaterDrainageMaterials } from "./pipe-entity";
@@ -156,7 +156,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 multiFieldId: "bottomHeightM",
                 units: Units.Meters,
                 slot: true,
-                description: `Height = ${(entity.bottomHeightM || defaultEntity?.bottomHeightM)}m`,
+                description: `Height = ${fixedNumber(entity.bottomHeightM || defaultEntity?.bottomHeightM)}m`,
             },
 
             {
@@ -169,7 +169,7 @@ export function makeRiserFields(entity: RiserEntity, catalog: Catalog, drawing: 
                 multiFieldId: "topHeightM",
                 units: Units.Meters,
                 slot: true,
-                description: `Height = ${entity.topHeightM || defaultEntity?.topHeightM}m`,
+                description: `Height = ${fixedNumber(entity.topHeightM || defaultEntity?.topHeightM)}m`,
             },
 
             {
