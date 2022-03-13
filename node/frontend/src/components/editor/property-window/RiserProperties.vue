@@ -262,7 +262,7 @@ export default class RiserProperties extends Vue {
 
   setRealHeight(field: PropertyField, value: string) {
     const floorHeightM = this.selectedLevel[field.property].floorHeightM * 1;
-    const converted = fixedNumber(+value + floorHeightM);
+    const converted = fixedNumber(Number(value) + floorHeightM);
     this.setRenderedDataNumeric(field, converted);
   }
 }
