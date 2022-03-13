@@ -356,7 +356,7 @@ export function numToPercent(val: number) {
     return val / 100;
 }
 
-export function fixedNumber(value: number | string): number {
+export function fixedNumber(value: number | string | null | undefined): number {
     if (isNaN(Number(value))) return 0;
     return Math.round(Number(value) * 1e12) / 1e12;
 }
