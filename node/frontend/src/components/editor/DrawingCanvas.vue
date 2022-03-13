@@ -942,21 +942,11 @@ export default class DrawingCanvas extends Vue {
     }
   }
 
-  setToolHandler(toolHandler: ToolHandler, drawAgain: boolean = false) {
+  setToolHandler(toolHandler: ToolHandler) {
     if (toolHandler !== null && this.toolHandler !== null) {
       this.toolHandler.finish(true, true);
     }
-    if (
-      this.toolHandler !== null &&
-      toolHandler === null &&
-      (
-        !drawAgain ||
-        (
-          (this.toolHandler as any)?.clickActionName === 'Start Pipe' &&
-          !(this.toolHandler as any)?.nSnapEvents &&
-          !(this.toolHandler as any)?.lastWc)
-        )
-    ) {
+    if (this.toolHandler !== null && toolHandler === null) {
       this.document.uiState.systemFilter.tempVisibleSystemUids = [];
     }
     this.interactive = null;
@@ -1623,10 +1613,12 @@ export default class DrawingCanvas extends Vue {
       isVent
     } = params;
     this.select([], SelectMode.Replace);
-    const tempVisibleSystemUids = new Set<string>();
-    if (system?.uid) {
-      tempVisibleSystemUids.add(system.uid);
+    const hiddenSystemUids = this.document.uiState.systemFilter.hiddenSystemUids;
+    if (hiddenSystemUids.includes(system?.uid)) {
+      this.document.uiState.systemFilter.hiddenSystemUids = hiddenSystemUids.filter((uid: string) => uid !== system.uid);
+      this.scheduleDraw();
     }
+    const tempVisibleSystemUids = new Set<string>();
     if (inletSystemUid) {
       tempVisibleSystemUids.add(inletSystemUid);
     }

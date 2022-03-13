@@ -35,7 +35,7 @@ export default function insertBigValve(context: CanvasContext, bigValveType: Big
                     context.$store.dispatch("document/revert");
                 }
                 if (!displaced) {
-                    MainEventBus.$emit("set-tool-handler", null, !interrupted);
+                    MainEventBus.$emit("set-tool-handler", null);
                     if (!interrupted) {
                         // stamp
                         insertBigValve(context, bigValveType, angle);

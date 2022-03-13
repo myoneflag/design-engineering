@@ -36,7 +36,7 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
         new CoordContextualSnappingTool(
             (interrupted, displaced) => {
                 if (!displaced) {
-                    MainEventBus.$emit("set-tool-handler", null, true);
+                    MainEventBus.$emit("set-tool-handler", null);
                 }
             },
             (wc: Coord, event: MouseEvent) => {
@@ -155,7 +155,7 @@ function insertPipeChain(
                 }
 
                 if (!displaced) {
-                    MainEventBus.$emit("set-tool-handler", null, true);
+                    MainEventBus.$emit("set-tool-handler", null);
                     // stamp and draw another pipe
                     insertPipes(context, system, network);
                 } else {
