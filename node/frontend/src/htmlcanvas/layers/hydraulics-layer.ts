@@ -32,7 +32,11 @@ export default class HydraulicsLayer extends LayerImplementation {
                 if (!active || !this.isSelected(v)) {
                     try {
                         const o = this.context.globalStore.get(v)!;
-                        if (showExport || !(active || withCalculation) || !this.istempVisibleSystemUidsOff(context, o) ) {
+                        if (
+                            (showExport && context.doc.uiState.exportSettings.isAppendix) ||
+                            !(active || withCalculation) ||
+                            !this.istempVisibleSystemUidsOff(context, o)
+                        ) {
                             o.draw(context, { active, withCalculation, forExport });
                         }
                     } catch (e) {

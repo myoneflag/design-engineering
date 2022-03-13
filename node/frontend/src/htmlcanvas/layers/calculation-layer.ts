@@ -92,7 +92,10 @@ export default class CalculationLayer extends LayerImplementation {
                 const loc = TM.applyToPoint(label[1], { x: 0, y: 0 });
                 if (vp.someOnScreen(Flatten.point(loc.x, loc.y))) {
                     const o = context.globalStore.get(label[0])!;
-                    if (!showExport && this.istempVisibleSystemUidsOff(context, o)) {
+                    if (
+                        !(showExport && context.doc.uiState.exportSettings.isAppendix) &&
+                        this.istempVisibleSystemUidsOff(context, o)
+                    ) {
                         continue;
                     }
                     if (!label[3]) {

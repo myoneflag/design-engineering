@@ -942,11 +942,11 @@ export default class DrawingCanvas extends Vue {
     }
   }
 
-  setToolHandler(toolHandler: ToolHandler) {
+  setToolHandler(toolHandler: ToolHandler, drawAgain: boolean = false) {
     if (toolHandler !== null && this.toolHandler !== null) {
       this.toolHandler.finish(true, true);
     }
-    if (this.toolHandler !== null && toolHandler === null) {
+    if (this.toolHandler !== null && toolHandler === null && !drawAgain) {
       this.document.uiState.systemFilter.tempVisibleSystemUids = [];
     }
     this.interactive = null;
@@ -1652,6 +1652,8 @@ export default class DrawingCanvas extends Vue {
       insertDirectedValve(this, valveType, catalogId, system);
     } else if (entityName === EntityType.LOAD_NODE) {
       if (params.variant === "hot-cold-load") {
+        tempVisibleSystemUids.add(StandardFlowSystemUids.ColdWater);
+        tempVisibleSystemUids.add(StandardFlowSystemUids.HotWater);
         insertFixtureHotCold(this, 0, params.customNodeId);
       } else if (params.variant === "continuous") {
         insertLoadNode(this, nodeType, system?.uid || null, 0, 1, 1, NodeVariant.CONTINUOUS);

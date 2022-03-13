@@ -162,7 +162,7 @@ export default class PDFSnapshotTopBar extends Vue {
     }
     destroyed() {
         this.document.uiState.exportSettings.isAppendix = false;
-         MainEventBus.$emit("set-preview",false);
+         MainEventBus.$emit("set-preview", false);
     }
     cancel() {
         this.document.uiState.exportSettings.isAppendix = false;
