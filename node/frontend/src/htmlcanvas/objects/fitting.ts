@@ -556,10 +556,21 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
         const sidePipes = this.getConnetectedSidePipe(pipeUid);
+        console.log(sidePipes)
         if (skip) {
             sidePipes.forEach((sidePipe) => {
                 sidePipe.dragConnectableEntity(context, this.uid, point, originCenter);
             });
+            return;
+        }
+        const angles = this.getSortedAngles();
+        if (angles.length === 3) {
+            console.log(angles)
+            if (!angles.every((angle) => isStraightRad(angle, Math.PI / 8))) {
+                sidePipes.forEach((sidePipe) => {
+                    sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Horizontal);
+                });
+            }
             return;
         }
         if ((!direction || direction == Direction.Horizontal) && isSameWorldPX(this.entity.center.x, originCenter.x)) {
