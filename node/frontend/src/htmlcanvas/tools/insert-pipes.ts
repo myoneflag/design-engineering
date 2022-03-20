@@ -52,6 +52,13 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     },
                     (object) => {
                         return object[0].type !== EntityType.BACKGROUND_IMAGE;
+                    },
+                    (objs) => {
+                        if (isConnectableEntity(objs[0])) {
+                            return 10;
+                        } else {
+                            return 0;
+                        }
                     }
                 );
                 context.scheduleDraw();
@@ -71,6 +78,13 @@ export default function insertPipes(context: CanvasContext, system: FlowSystemPa
                     },
                     (object) => {
                         return object[0].type !== EntityType.BACKGROUND_IMAGE;
+                    },
+                    (objs) => {
+                        if (isConnectableEntity(objs[0])) {
+                            return 10;
+                        } else {
+                            return 0;
+                        }
                     }
                 );
 
