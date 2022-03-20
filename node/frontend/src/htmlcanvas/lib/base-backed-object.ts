@@ -142,7 +142,7 @@ export default abstract class BaseBackedObject extends DrawableObject {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 
-    getSortedAngles(): number[] {
+    getSortedAngles(): { angles: number[], ret: { uid: string, angle: number }[] } {
         throw new Error("Method not implemented. Please use @Connectable to implement.");
     }
 

@@ -31,7 +31,7 @@ import { assertUnreachable, ComponentPressureLossMethod, StandardFlowSystemUids 
 export default interface Connectable {
     getRadials(exclude?: string | null): Array<[Coord, BaseBackedObject]>;
     getAngleDiffs(): number[];
-    getSortedAngles(): number[];
+    getSortedAngles(): { angles: number[], ret: { uid: string, angle: number }[] };
     prepareDelete(context: CanvasContext): BaseBackedObject[];
     locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[];
     isStraight(tolerance: number): boolean;
@@ -316,14 +316,22 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 return ret;
             }
 
-            getSortedAngles(): number[] {
-                const ret = [];
+            getSortedAngles(): { angles: number[], ret: { uid: string, angle: number }[] } {
                 const radials = this.getRadials();
-                const angles = radials
-                    .map((r) => this.toObjectCoord(r[0]))
-                    .map((r) => (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI));
+                const angles: number[] = [];
+                const ret: { uid: string, angle: number }[] = [];
+                radials.forEach((radial) => {
+                    const r = this.toObjectCoord(radial[0]);
+                    const angle = (Math.atan2(r.y, r.x) + 2 * Math.PI) % (2 * Math.PI);
+                    angles.push(angle)
+                    const fittingUids = (radial[1] as Pipe).entity.endpointUid;
+                    ret.push({
+                        uid: fittingUids[0] === this.uid ? fittingUids[1] : fittingUids[0],
+                        angle,
+                    });
+                })
                 angles.sort();
-                return angles;
+                return { angles, ret };
             }
 
             locateCalculationBoxWorld(context: DrawingContext, data: CalculationData[], scale: number): TM.Matrix[] {
@@ -333,7 +341,7 @@ export function ConnectableObject(opts?: ConnectableObjectOptions) {
                 }
 
                 // Put a candidate position in each gap, starting from largest to smallest.
-                const angles = this.getSortedAngles();
+                const { angles } = this.getSortedAngles();
                 let candidates: Array<[number, number]> = [];
 
                 if (this.globalStore.getConnections(this.entity.uid).length >= 2) {

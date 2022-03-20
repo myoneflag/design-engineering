@@ -450,7 +450,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
-        const angles = this.getSortedAngles();
+        const { angles } = this.getSortedAngles();
         if (angles.length === 0) {
             return null;
         }
@@ -556,25 +556,23 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
 
     dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
         const sidePipes = this.getConnetectedSidePipe(pipeUid);
-        console.log(sidePipes)
         if (skip) {
             sidePipes.forEach((sidePipe) => {
                 sidePipe.dragConnectableEntity(context, this.uid, point, originCenter);
             });
             return;
         }
-        const angles = this.getSortedAngles();
-        if (angles.length === 3) {
-            console.log(angles)
-            if (!angles.every((angle) => isStraightRad(angle, Math.PI / 8))) {
-                sidePipes.forEach((sidePipe) => {
-                    sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Horizontal);
-                });
-            }
-            return;
-        }
+        const { ret } = this.getSortedAngles();
         if ((!direction || direction == Direction.Horizontal) && isSameWorldPX(this.entity.center.x, originCenter.x)) {
             this.debase(context);
+            if (ret.length >= 3) {
+                ret.forEach((r) => {
+                    if (is45AngleRad(r.angle, Math.PI / 8)) {
+                        const angledFitting = this.globalStore.get(r.uid)! as Fitting;
+                        angledFitting.entity.center.x += point.x - originCenter.x;
+                    }
+                });
+            }
             this.entity.center.x += point.x - originCenter.x;
             this.rebase(context);
             sidePipes.forEach((sidePipe) => {
@@ -582,6 +580,14 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
             });
         } else if ((!direction || direction == Direction.Vertical) && isSameWorldPX(this.entity.center.y, originCenter.y)) {
             this.debase(context);
+            if (ret.length >= 3) {
+                ret.forEach((r) => {
+                    if (is45AngleRad(r.angle, Math.PI / 8)) {
+                        const angledFitting = this.globalStore.get(r.uid)! as Fitting;
+                        angledFitting.entity.center.y += point.y - originCenter.y;
+                    }
+                });
+            }
             this.entity.center.y += point.y - originCenter.y;
             this.rebase(context);
             sidePipes.forEach((sidePipe) => {
