@@ -10,7 +10,8 @@ import {
     canonizeAngleRad,
     isRightAngleRad,
     isStraightRad,
-    is45AngleRad
+    is45AngleRad,
+    isSlashAngleRad
 } from "../../../src/lib/trigonometry";
 import {
     getValveK,
@@ -565,31 +566,33 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         const { ret } = this.getSortedAngles();
         if ((!direction || direction == Direction.Horizontal) && isSameWorldPX(this.entity.center.x, originCenter.x)) {
             this.debase(context);
-            if (ret.length >= 3) {
-                ret.forEach((r) => {
-                    if (is45AngleRad(r.angle, Math.PI / 8)) {
-                        const angledFitting = this.globalStore.get(r.uid)! as Fitting;
-                        angledFitting.entity.center.x += point.x - originCenter.x;
-                    }
-                });
-            }
+            ret.forEach((r) => {
+                if (r.uid !== this.uid && !this.document.uiState.tempUids.includes(r.uid) && isSlashAngleRad(r.angle, Math.PI / 8)) {
+                    const angledFitting = this.globalStore.get(r.uid)! as Fitting;
+                    angledFitting.entity.center.x += point.x - originCenter.x;
+                }
+            });
             this.entity.center.x += point.x - originCenter.x;
             this.rebase(context);
+            if (!this.document.uiState.tempUids.includes(this.uid)) {
+                this.document.uiState.tempUids.push(this.uid);
+            }
             sidePipes.forEach((sidePipe) => {
                 sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Horizontal);
             });
         } else if ((!direction || direction == Direction.Vertical) && isSameWorldPX(this.entity.center.y, originCenter.y)) {
             this.debase(context);
-            if (ret.length >= 3) {
-                ret.forEach((r) => {
-                    if (is45AngleRad(r.angle, Math.PI / 8)) {
-                        const angledFitting = this.globalStore.get(r.uid)! as Fitting;
-                        angledFitting.entity.center.y += point.y - originCenter.y;
-                    }
-                });
-            }
+            ret.forEach((r) => {
+                if (r.uid !== this.uid && !this.document.uiState.tempUids.includes(r.uid) && isSlashAngleRad(r.angle, Math.PI / 8)) {
+                    const angledFitting = this.globalStore.get(r.uid)! as Fitting;
+                    angledFitting.entity.center.y += point.y - originCenter.y;
+                }
+            });
             this.entity.center.y += point.y - originCenter.y;
             this.rebase(context);
+            if (!this.document.uiState.tempUids.includes(this.uid)) {
+                this.document.uiState.tempUids.push(this.uid);
+            }
             sidePipes.forEach((sidePipe) => {
                 sidePipe.dragConnectableEntity(context, this.uid, point, originCenter, Direction.Vertical);
             });

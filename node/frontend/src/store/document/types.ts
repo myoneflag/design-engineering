@@ -71,6 +71,7 @@ export interface UIState {
     pressureOrDrainage: "pressure" | "drainage";
 
     reCalculate: boolean;
+    tempUids: string[];
 }
 
 
@@ -366,6 +367,7 @@ export const initialUIState: UIState = {
     costAndLUTableOpen: true,
     pressureOrDrainage: "pressure",
     reCalculate: false,
+    tempUids: [],
 };
 
 export function blankDiffFilter() {

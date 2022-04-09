@@ -39,3 +39,10 @@ export function isHorizontalRad(a: number, tolerance: number = EPS) {
     }
     return false;
 }
+
+export function isSlashAngleRad(a: number, tolerance: number = EPS) {
+    return (
+        Math.abs(a % (Math.PI / 2)) >= tolerance &&
+        Math.abs(a % (Math.PI / 2)) <= Math.PI / 2 - tolerance
+    );
+}

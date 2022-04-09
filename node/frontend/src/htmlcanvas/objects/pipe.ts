@@ -436,10 +436,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    dragConnectableEntity(context: CanvasContext, connectUid: string, point: Coord, originCenter: Coord, direction?: Direction) {
+    dragConnectableEntity(context: CanvasContext, connectUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
         const sideEndpoint = this.getConnetectableSideEntity(connectUid)!;
         if (sideEndpoint) {
-            sideEndpoint.dragByBackConnectableEntity(context, this.uid, point, originCenter, direction);
+            sideEndpoint.dragByBackConnectableEntity(context, this.uid, point, originCenter, direction, skip);
         }
     }
 
@@ -656,7 +656,7 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
     }
 
     onDragFinish(event: MouseEvent, context: CanvasContext, isMultiDrag: boolean): void {
-        //
+        context.document.uiState.tempUids = [];
         if (!isMultiDrag) {
             this.onInteractionComplete(event);
         }

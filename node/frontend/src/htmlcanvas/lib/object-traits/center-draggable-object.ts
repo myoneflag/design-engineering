@@ -85,13 +85,15 @@ export default function CenterDraggableObject<
                     }
 
                     // Ignore Tees when moving and move based on elbows
-                    const connectionUids = this.globalStore.getConnections(this.uid)!;
-                    connectionUids.forEach((uid) => {
-                        const conn = this.globalStore.get(uid)!;
-                        if (conn instanceof Pipe && this.originCenter) {
-                            conn.dragConnectableEntity(context, this.uid, point, this.originCenter);
-                        }
-                    });
+                    if (this.originCenter) {
+                        const connectionUids = this.globalStore.getConnections(this.uid)!;
+                        connectionUids.forEach((uid) => {
+                            const conn = this.globalStore.get(uid)!;
+                            if (conn instanceof Pipe && this.originCenter) {
+                                conn.dragConnectableEntity(context, this.uid, point, this.originCenter);
+                            }
+                        });
+                    }
                 }
                 if (!isMulti) {
                     this.onRedrawNeeded();
@@ -100,6 +102,7 @@ export default function CenterDraggableObject<
 
             onDragFinish(event: MouseEvent, context: CanvasContext): void {
                 this.originCenter = null;
+                context.document.uiState.tempUids = [];
                 context.activeLayer.releaseDrag(context);
                 this.onInteractionComplete(event);
             }
