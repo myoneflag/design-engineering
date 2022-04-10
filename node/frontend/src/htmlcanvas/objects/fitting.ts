@@ -555,7 +555,7 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
         return sidePipeUids.map((uid) => this.globalStore.get(uid)! as Pipe);
     }
 
-    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean, slashedFittingUids?: Set<string>) {
         const sidePipes = this.getConnetectedSidePipe(pipeUid);
         if (skip) {
             sidePipes.forEach((sidePipe) => {
@@ -572,6 +572,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     angledFitting.entity.center.x += point.x - originCenter.x;
                 }
             });
+            slashedFittingUids?.forEach((fUid) => {
+                const slashedFitting = this.globalStore.get(fUid)! as Fitting;
+                slashedFitting.entity.center.x += point.x - originCenter.x;
+            });
             this.entity.center.x += point.x - originCenter.x;
             this.rebase(context);
             if (!this.document.uiState.tempUids.includes(this.uid)) {
@@ -587,6 +591,10 @@ export default class Fitting extends BackedConnectable<FittingEntity> implements
                     const angledFitting = this.globalStore.get(r.uid)! as Fitting;
                     angledFitting.entity.center.y += point.y - originCenter.y;
                 }
+            });
+            slashedFittingUids?.forEach((fUid) => {
+                    const slashedFitting = this.globalStore.get(fUid)! as Fitting;
+                    slashedFitting.entity.center.y += point.y - originCenter.y;
             });
             this.entity.center.y += point.y - originCenter.y;
             this.rebase(context);

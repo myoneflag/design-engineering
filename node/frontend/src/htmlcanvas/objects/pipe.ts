@@ -436,10 +436,10 @@ export default class Pipe extends BackedDrawableObject<PipeEntity> implements Dr
         }
     }
 
-    dragConnectableEntity(context: CanvasContext, connectUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+    dragConnectableEntity(context: CanvasContext, connectUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean, slashedFittingUids?: Set<string>) {
         const sideEndpoint = this.getConnetectableSideEntity(connectUid)!;
         if (sideEndpoint) {
-            sideEndpoint.dragByBackConnectableEntity(context, this.uid, point, originCenter, direction, skip);
+            sideEndpoint.dragByBackConnectableEntity(context, this.uid, point, originCenter, direction, skip, slashedFittingUids);
         }
     }
 

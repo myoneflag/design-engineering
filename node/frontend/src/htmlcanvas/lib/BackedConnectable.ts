@@ -207,7 +207,7 @@ export default abstract class BackedConnectable<T extends ConnectableEntityConcr
         //
     }
 
-    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean) {
+    dragByBackConnectableEntity(context: CanvasContext, pipeUid: string, point: Coord, originCenter: Coord, direction?: Direction, skip?: boolean, slashedFittingUids?: Set<string>) {
         //
     }
 

@@ -13,6 +13,7 @@ import BaseBackedObject from "../../../../src/htmlcanvas/lib/base-backed-object"
 import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 import { DrawingMode } from "../../types";
+import { isSlashAngleRad } from "../../../../src/lib/trigonometry";
 
 export default function CenterDraggableObject<
     T extends new (...args: any[]) => BackedDrawableObject<CenteredEntityConcrete>
@@ -22,6 +23,7 @@ export default function CenterDraggableObject<
         class extends constructor implements Draggable {
             toDelete: BaseBackedObject | null = null;
             originCenter: Coord | null = null;
+            slashedFittingUids: Set<string> = new Set();
 
             onDrag(
                 event: MouseEvent,
@@ -86,11 +88,21 @@ export default function CenterDraggableObject<
 
                     // Ignore Tees when moving and move based on elbows
                     if (this.originCenter) {
+                        if (!this.document.uiState.tempUids.includes(this.uid)) {
+                            this.document.uiState.tempUids.push(this.uid);
+                        }
                         const connectionUids = this.globalStore.getConnections(this.uid)!;
+                        let withSlash = true;
                         connectionUids.forEach((uid) => {
                             const conn = this.globalStore.get(uid)!;
                             if (conn instanceof Pipe && this.originCenter) {
-                                conn.dragConnectableEntity(context, this.uid, point, this.originCenter);
+                                const endUid = this.uid === conn.entity.endpointUid[0] ? conn.entity.endpointUid[1] : conn.entity.endpointUid[0];
+                                if (this.slashedFittingUids.has(endUid)) {
+                                    conn.dragConnectableEntity(context, this.uid, point, this.originCenter, undefined, false);
+                                } else {
+                                    conn.dragConnectableEntity(context, this.uid, point, this.originCenter, undefined, false, withSlash ? this.slashedFittingUids : new Set());
+                                    withSlash = false;
+                                }
                             }
                         });
                     }
@@ -102,6 +114,7 @@ export default function CenterDraggableObject<
 
             onDragFinish(event: MouseEvent, context: CanvasContext): void {
                 this.originCenter = null;
+                this.slashedFittingUids.clear();
                 context.document.uiState.tempUids = [];
                 context.activeLayer.releaseDrag(context);
                 this.onInteractionComplete(event);
@@ -109,6 +122,12 @@ export default function CenterDraggableObject<
 
             onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext): any {
                 this.originCenter = {...this.entity.center};
+                const { ret } = this.getSortedAngles();
+                ret.forEach((r) => {
+                    if (isSlashAngleRad(r.angle, Math.PI / 8)) {
+                        this.slashedFittingUids.add(r.uid);
+                    }
+                });
                 context.activeLayer.dragObjects([this], context);
                 return null;
             }
