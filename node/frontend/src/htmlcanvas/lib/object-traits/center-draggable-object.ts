@@ -106,45 +106,6 @@ export default function CenterDraggableObject<
                             }
                         });
                     }
-                } else if (!isMulti) {
-                    const worldCoord = this.toWorldCoord();
-
-                    // try moving the entity to a destination
-                    const draggedOn = context.offerInteraction(
-                        {
-                            type: InteractionType.MOVE_ONTO_RECEIVE,
-                            src: this.entity,
-                            worldCoord,
-                            worldRadius: 50
-                        },
-                        (obj) => {
-                            const result = this.offerInteraction({
-                                type: InteractionType.MOVE_ONTO_SEND,
-                                dest: obj[0],
-                                worldCoord,
-                                worldRadius: 10
-                            });
-                            return result !== null && result[0].uid !== obj[0].uid;
-                        },
-                        (objs) => {
-                            if (isConnectableEntity(objs[0])) {
-                                return 10;
-                            } else {
-                                return 0;
-                            }
-                        }
-                    );
-
-                    // console.log({draggedOn})
-
-                    if (draggedOn && draggedOn.length > 0) {
-                        const dest = this.globalStore.get(draggedOn[0].uid);
-                        if (dest instanceof BackedConnectable || dest instanceof Pipe) {
-                            // moveOnto(this, dest, context);
-                        } else {
-                            throw new Error("Somehow trying to move onto an incompatible entity");
-                        }
-                    }
                 }
                 if (!isMulti) {
                     this.onRedrawNeeded();
