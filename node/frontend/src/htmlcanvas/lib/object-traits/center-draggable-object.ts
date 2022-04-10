@@ -14,6 +14,7 @@ import Pipe from "../../../../src/htmlcanvas/objects/pipe";
 import { Coord } from "../../../../../common/src/api/document/drawing";
 import { DrawingMode } from "../../types";
 import { isSlashAngleRad } from "../../../../src/lib/trigonometry";
+import { EntityType } from "../../../../../common/src/api/document/entities/types";
 
 export default function CenterDraggableObject<
     T extends new (...args: any[]) => BackedDrawableObject<CenteredEntityConcrete>
@@ -122,12 +123,14 @@ export default function CenterDraggableObject<
 
             onDragStart(event: MouseEvent, objectCoord: Coord, context: CanvasContext): any {
                 this.originCenter = {...this.entity.center};
-                const { ret } = this.getSortedAngles();
-                ret.forEach((r) => {
-                    if (isSlashAngleRad(r.angle, Math.PI / 8)) {
-                        this.slashedFittingUids.add(r.uid);
-                    }
-                });
+                if (this.type === EntityType.FITTING) {
+                    const { ret } = this.getSortedAngles();
+                    ret.forEach((r) => {
+                        if (isSlashAngleRad(r.angle, Math.PI / 8)) {
+                            this.slashedFittingUids.add(r.uid);
+                        }
+                    });
+                }
                 context.activeLayer.dragObjects([this], context);
                 return null;
             }
