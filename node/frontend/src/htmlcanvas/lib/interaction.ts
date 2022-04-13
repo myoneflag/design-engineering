@@ -50,4 +50,6 @@ export enum InteractionType {
     EXTEND_NETWORK,
     MOVE_ONTO_RECEIVE,
     MOVE_ONTO_SEND,
+    // SNAP_ONTO_RECEIVE,
+    // SNAP_ONTO_SEND,
 }
