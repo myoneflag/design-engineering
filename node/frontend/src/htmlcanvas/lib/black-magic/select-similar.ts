@@ -6,8 +6,25 @@ import { fillPipeDefaultFields } from "../../../../../common/src/api/document/en
 import { EntityType } from "../../../../../common/src/api/document/entities/types";
 import { GlobalStore } from "../global-store";
 
-export function entityTypeSupportsSimilar(type: string) {
-    return type === EntityType.PIPE || type === EntityType.FIXTURE || type == EntityType.LOAD_NODE || type == EntityType.DIRECTED_VALVE || type == EntityType.BIG_VALVE;
+export function entityTypeSupportsSimilar(type: EntityType) {
+    switch (type) {
+        case EntityType.PIPE:
+        case EntityType.FIXTURE:
+        case EntityType.LOAD_NODE:
+        case EntityType.DIRECTED_VALVE:
+        case EntityType.BIG_VALVE:
+            return true;
+        case EntityType.BACKGROUND_IMAGE:
+        case EntityType.RISER:
+        case EntityType.RETURN:
+        case EntityType.FITTING:
+        case EntityType.SYSTEM_NODE:
+        case EntityType.PLANT:
+        case EntityType.FLOW_SOURCE:
+        case EntityType.GAS_APPLIANCE:
+            return false;
+    }
+    assertUnreachable(type);
 }
 
 export function getIdsOfSimilarEntities(selected: DrawableEntityConcrete, drawing: DrawingState, levelUid: string|null, globalStore: GlobalStore) {

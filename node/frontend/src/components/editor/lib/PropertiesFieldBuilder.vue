@@ -347,8 +347,8 @@ export default class PropertiesFieldBuilder extends Vue {
   }
 
   displayValue(field: PropertyField): string | number | null {
-    if (field.params) {
-      if ((field.params as NumberParams).step) {
+    if (field.type === FieldType.Number) {
+      if ((field.params as NumberParams)?.step) {
         const params = field.params as NumberParams;
         const value = this.displayWithCorrectUnits(field);
         if (value) {
@@ -407,16 +407,17 @@ export default class PropertiesFieldBuilder extends Vue {
 
   setRenderedDataNumeric(field: PropertyField, value: any) {
     if (!isNaN(value) && value !== "") {
-      const params = field.params as NumberParams;
-      if (params?.step && params?.max && params?.min) {
-        value = (value * 100 / params.max - params.step) * ((params.max - params.min) / (100 - params.step)) + params.min;
+      if (field.type === FieldType.Number) {
+        const params = field.params as NumberParams;
+        if (params?.step && params?.max && params?.min) {
+          value = (value * 100 / params.max - params.step) * ((params.max - params.min) / (100 - params.step)) + params.min;
+        }
       }
       if (field.units) {
         // get display units
         const du = this.convertUnits(field);
         value = convertMeasurementToMetric(du, Number(value))[1];
       }
-      console.log(value)
       this.setRenderedData(field, Number(value));
     }
     setPropertyByString(this.numberProxy, field.property, value, true);
