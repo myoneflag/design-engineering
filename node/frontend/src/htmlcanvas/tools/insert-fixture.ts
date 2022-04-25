@@ -81,7 +81,7 @@ export default function insertFixture(context: CanvasContext, fixtureName: strin
                 context.$store.dispatch("document/addEntity", newEntity);
 
                 const xMat = [[], [], [0.0, 0.0], [0.0, -0.5, 0.5]];
-                const yMat = [[], [], [-0.2, 0.0], [-0.2, 0.0, 0.0]]
+                const yMat = [[], [], [-0.2, 0.0], [-0.2, 0.0, 0.0]];
                 for (let i = 0; i < newEntity.roughInsInOrder.length; i++) {
                     const suid = newEntity.roughInsInOrder[i];
                     const snuid = newEntity.roughIns[suid].uid;

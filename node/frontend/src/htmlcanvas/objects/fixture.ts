@@ -11,7 +11,7 @@ import { CostBreakdown, DrawingContext } from "../../../src/htmlcanvas/lib/types
 import BigValveEntity from "../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../src/htmlcanvas/lib/drawable-object-factory";
 import { EntityType } from "../../../../common/src/api/document/entities/types";
-import FixtureEntity, { RoughInRecord } from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
+import FixtureEntity, { fillFixtureFields, RoughInRecord } from "../../../../common/src/api/document/entities/fixtures/fixture-entity";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { DrawableEntityConcrete } from "../../../../common/src/api/document/entities/concrete-entity";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
@@ -39,6 +39,7 @@ import { flowSystemsCompatible, getHighlightColor } from "../lib/utils";
 import Pipe from "./pipe";
 import { drawPipeCap } from "../helpers/draw-helper";
 import { Side } from "../helpers/side";
+import store from "../../../src/store/store";
 
 @CalculatedObject
 @SelectableObject
@@ -426,11 +427,30 @@ export default class Fixture extends BackedDrawableObject<FixtureEntity> impleme
 
     onUpdate() {
         super.onUpdate();
-        // sync the allowAllSystems setting
-        for (const ri of Object.values(this.entity.roughIns)) {
+
+        const filled = fillFixtureFields(
+            this.document.drawing,
+            store.getters['catalog/default'],
+            this.entity,
+        );
+
+        const pipeDistanceMM = filled.pipeDistanceMM!;
+        const xMat = [[], [], [0.0, 0.0], [0.0, -0.5, 0.5]];
+        const yMat = [[], [], [-0.2, 0.0], [-0.2, 0.0, 0.0]];
+        for (let i = 0; i < filled.roughInsInOrder.length; i++) {
+            const suid = filled.roughInsInOrder[i];
+            const ri = filled.roughIns[suid];
             const s = this.globalStore.get(ri.uid) as SystemNode;
+
+            // sync the allowAllSystems setting
             if (s && ri.allowAllSystems !== s.entity.allowAllSystems) {
                 s.entity.allowAllSystems = ri.allowAllSystems;
+            }
+
+            // update physical location of systemNodes
+            if (s) {
+                s.entity.center.x = pipeDistanceMM * xMat[filled.roughInsInOrder.length][i];
+                s.entity.center.y = pipeDistanceMM * yMat[filled.roughInsInOrder.length][i];
             }
         }
     }

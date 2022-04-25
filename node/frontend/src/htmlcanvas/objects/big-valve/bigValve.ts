@@ -8,6 +8,7 @@ import { Interaction, InteractionType } from "../../../../src/htmlcanvas/lib/int
 import {CostBreakdown, DrawingContext} from "../../../../src/htmlcanvas/lib/types";
 import BigValveEntity, {
     BigValveType,
+    fillDefaultBigValveFields,
     SystemNodeEntity
 } from "../../../../../common/src/api/document/entities/big-valve/big-valve-entity";
 import DrawableObjectFactory from "../../../../src/htmlcanvas/lib/drawable-object-factory";
@@ -50,6 +51,7 @@ import { fittingFrictionLossMH } from "../../../../src/calculations/pressure-dro
 import { prepareFill, prepareStroke } from "../../../../src/htmlcanvas/helpers/draw-helper";
 import { DEFAULT_FONT_NAME } from "../../../../src/config";
 import Pipe from "../pipe";
+import store from "../../../../src/store/store";
 
 export const BIG_VALVE_DEFAULT_PIPE_WIDTH_MM = 20;
 
@@ -574,6 +576,66 @@ export default class BigValve extends BackedDrawableObject<BigValveEntity> imple
     @Cached((kek) => new Set(kek.getParentChain().map((o) => o.uid)))
     shape(): Flatten.Segment | Flatten.Point | Flatten.Polygon | Flatten.Circle | null {
         return super.shape();
+    }
+
+    onUpdate() {
+        super.onUpdate();
+
+        const filled = fillDefaultBigValveFields(
+            store.getters['catalog/default'],
+            this.entity,
+            this.document.drawing,
+        );
+
+        const coldRoughIn = this.globalStore.get(filled.coldRoughInUid);
+        const hotRoughIn = this.globalStore.get(filled.hotRoughInUid);
+        let hotOutput, coldOutput, warmOutput;
+
+        const pipeDistanceMM = filled.pipeDistanceMM!;
+        const valveLengthMM = pipeDistanceMM * 200 / 150;
+
+        if (coldRoughIn instanceof SystemNode) {
+            coldRoughIn.entity.center.x = pipeDistanceMM / 2;
+        }
+
+        if (hotRoughIn instanceof SystemNode) {
+            hotRoughIn.entity.center.x = -pipeDistanceMM / 2;
+        }
+
+        switch (filled.valve.type) {
+            case BigValveType.TMV:
+                coldOutput = this.globalStore.get(filled.valve.coldOutputUid);
+                warmOutput = this.globalStore.get(filled.valve.warmOutputUid);
+                if (coldOutput && coldOutput instanceof SystemNode) {
+                    coldOutput.entity.center.x = pipeDistanceMM / 2;
+                    coldOutput.entity.center.y = valveLengthMM / 2;
+                }
+
+                if (warmOutput && warmOutput instanceof SystemNode) {
+                    warmOutput.entity.center.x = -pipeDistanceMM / 2;
+                    warmOutput.entity.center.y = valveLengthMM / 2;
+                }
+                break;
+            case BigValveType.TEMPERING:
+                warmOutput = this.globalStore.get(filled.valve.warmOutputUid);
+                if (warmOutput && warmOutput instanceof SystemNode) {
+                    warmOutput.entity.center.y = valveLengthMM / 2;
+                }
+                break;
+            case BigValveType.RPZD_HOT_COLD:
+                hotOutput = this.globalStore.get(filled.valve.hotOutputUid);
+                coldOutput = this.globalStore.get(filled.valve.coldOutputUid);
+                if (coldOutput && coldOutput instanceof SystemNode) {
+                    coldOutput.entity.center.x = pipeDistanceMM / 2;
+                    coldOutput.entity.center.y = valveLengthMM / 2;
+                }
+
+                if (hotOutput && hotOutput instanceof SystemNode) {
+                    hotOutput.entity.center.x = -pipeDistanceMM / 2;
+                    hotOutput.entity.center.y = valveLengthMM / 2;
+                }
+                break;
+        }
     }
 
     costBreakdown(context: CalculationContext): CostBreakdown | null {
