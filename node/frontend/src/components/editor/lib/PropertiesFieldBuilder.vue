@@ -324,11 +324,13 @@ export default class PropertiesFieldBuilder extends Vue {
     }
 
     if (!isNaN(result)) {
-      const params = field.params as NumberParams;
-      if (params?.step && params?.max && params?.min) {
-        result = ((result - params.min) / ((params.max - params.min) / (100 - params.step)) + params.step) * params.max / 100;
-        if (result < params.max * params.step / 100) {
-          result = params.max;
+      if (field.type === FieldType.Number) {
+        const params = field.params;
+        if (params?.step && params?.max && params?.min) {
+          result = ((result - params.min) / ((params.max - params.min) / (100 - params.step)) + params.step) * params.max / 100;
+          if (result < params.max * params.step / 100) {
+            result = params.max;
+          }
         }
       }
       return Number(Number(result).toFixed(5));
@@ -348,8 +350,8 @@ export default class PropertiesFieldBuilder extends Vue {
 
   displayValue(field: PropertyField): string | number | null {
     if (field.type === FieldType.Number) {
-      if ((field.params as NumberParams)?.step) {
-        const params = field.params as NumberParams;
+      if (field.params.step) {
+        const params = field.params;
         const value = this.displayWithCorrectUnits(field);
         if (value) {
           return params.max ? Math.ceil(value * 100 / params.max) : 0;
@@ -408,7 +410,7 @@ export default class PropertiesFieldBuilder extends Vue {
   setRenderedDataNumeric(field: PropertyField, value: any) {
     if (!isNaN(value) && value !== "") {
       if (field.type === FieldType.Number) {
-        const params = field.params as NumberParams;
+        const params = field.params;
         if (params?.step && params?.max && params?.min) {
           value = (value * 100 / params.max - params.step) * ((params.max - params.min) / (100 - params.step)) + params.min;
         }
