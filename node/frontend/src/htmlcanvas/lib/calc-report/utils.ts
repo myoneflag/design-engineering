@@ -588,23 +588,29 @@ function getPsdUnitString(
   if (value == 0) {
     return "0";
   }
-  if (value) {
-    if (typeof value === "number") {
-      const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value);
-      return `${getFixedStringValue(_value)} ${_unit}`;
-    } else if (typeof value === "string") {
-      const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value);
-      return `${getFixedStringValue(_value)} ${_unit}`;
-    } else if (typeof value[0] === "number" && typeof value[1] === "number") {
-      const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[0]);
-      const [_, _value1] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[1]);
-      return `${getFixedStringValue(_value)} ${_unit} to ${getFixedStringValue(_value1)} ${_unit}`;
-    } else {
-      return value.join(", ");
-    }
-  } else {
+  if (!value) {
     return emptyStr.toString();
   }
+  if (unit === Units.None) {
+    if (Array.isArray(value)) {
+      return value.join(", ");
+    }
+    return value.toString();
+  }
+  if (typeof value === "number") {
+    const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value);
+    return `${getFixedStringValue(_value)} ${_unit}`;
+  }
+  if (typeof value === "string") {
+    const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value);
+    return `${getFixedStringValue(_value)} ${_unit}`;
+  }
+  if (typeof value[0] === "number" && typeof value[1] === "number") {
+    const [_unit, _value] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[0]);
+    const [_, _value1] = convertMeasurementSystemNonNull(unitsPrefs, unit, value[1]);
+    return `${getFixedStringValue(_value)} ${_unit} to ${getFixedStringValue(_value1)} ${_unit}`;
+  }
+  return value.join(", ");
 }
 
 export function getWaterCalculationReport(context: CanvasContext): DesignCalculationReport {
@@ -755,7 +761,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
             designCalculationReport[exportKey]["Fittings"][levelName].push({
               flowSystemUid,
               Reference: reference,
-              Name: getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+              Name: fitting.friendlyTypeName,
               Size: getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
               "kV Value": getPsdUnitString(unitsPrefs, fittingCalc?.kvValue),
               "Flow Rate": getPsdUnitString(
@@ -774,7 +780,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
             designCalculationReport[exportKey]["Fittings"][levelName].push({
               flowSystemUid,
               Reference: reference,
-              Name: getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+              Name: fitting.friendlyTypeName,
               Size: getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
               "Flow Rate": getPsdUnitString(unitsPrefs, largestGasPipeFlowRate, Units.MegajoulesPerHour)
             });
@@ -783,7 +789,7 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
             designCalculationReport[exportKey]["Fittings"][levelName].push({
               flowSystemUid,
               Reference: reference,
-              Name: getPsdUnitString(unitsPrefs, fitting.friendlyTypeName),
+              Name: fitting.friendlyTypeName,
               Size: getPsdUnitString(unitsPrefs, largestPipeDiameterMM, Units.Millimeters),
               "Fixture Units": getPsdUnitString(unitsPrefs, connectedPipeToFittingCalc?.psdUnits?.drainageUnits)
             });
@@ -1035,6 +1041,13 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
           context.document.entityDependencies.get(plant.uid)
         );
         const plantCalc = context.globalStore.getCalculation(plant);
+        const plantSize =
+          plantCalc?.size ||
+          `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x ${getPsdUnitString(
+            unitsPrefs,
+            filledPlant.heightMM,
+            Units.Millimeters
+          )} (H)`;
         switch (plant.plant.type) {
           case PlantType.RETURN_SYSTEM:
             switch (exportKey) {
@@ -1052,13 +1065,6 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                 const inlet = context.globalStore.get(plant.inletUid);
                 const outletCalc = outlet && context.globalStore.getCalculation(outlet.entity as SystemNodeEntity);
                 const inletCalc = inlet && context.globalStore.getCalculation(inlet.entity as SystemNodeEntity);
-                const plantSize =
-                  plantCalc?.size ||
-                  `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x ${getPsdUnitString(
-                    unitsPrefs,
-                    filledPlant.heightMM,
-                    Units.Millimeters
-                  )} (H)`;
                 if (!designCalculationReport["Water"]["Plants"][levelName]) {
                   designCalculationReport["Water"]["Plants"][levelName] = [];
                 }
@@ -1086,13 +1092,6 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
                 const inlet = context.globalStore.get(plant.inletUid);
                 const outletCalc = outlet && context.globalStore.getCalculation(outlet.entity as SystemNodeEntity);
                 const inletCalc = inlet && context.globalStore.getCalculation(inlet.entity as SystemNodeEntity);
-                const plantSize =
-                  plantCalc?.size ||
-                  `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x ${getPsdUnitString(
-                    unitsPrefs,
-                    filledPlant.heightMM,
-                    Units.Millimeters
-                  )} (H)`;
                 designCalculationReport[exportKey]["Plants"][levelName].push({
                   flowSystemUid,
                   Reference: reference,
@@ -1112,13 +1111,6 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
           case PlantType.DRAINAGE_PIT:
             switch (exportKey) {
               case DesignCalculationKey.DRAINAGE:
-                const plantSize =
-                  plantCalc?.size ||
-                  `${getPsdUnitString(unitsPrefs, filledPlant.widthMM, Units.Millimeters)} (W) x ${getPsdUnitString(
-                    unitsPrefs,
-                    filledPlant.heightMM,
-                    Units.Millimeters
-                  )} (H)`;
                 designCalculationReport[exportKey]["Pits"][levelName].push({
                   flowSystemUid,
                   Reference: reference,
@@ -1134,11 +1126,12 @@ export function getWaterCalculationReport(context: CanvasContext): DesignCalcula
           case PlantType.DRAINAGE_GREASE_INTERCEPTOR_TRAP:
             switch (exportKey) {
               case DesignCalculationKey.DRAINAGE:
+                console.log(plantCalc?.model)
                 designCalculationReport[exportKey]["Pits"][levelName].push({
                   flowSystemUid,
                   Reference: reference,
                   Name: getEntityName(plant, context.document.drawing),
-                  Size: getPsdUnitString(unitsPrefs, plantCalc?.size),
+                  Size: plantSize,
                   Model: getPsdUnitString(unitsPrefs, plantCalc?.model)
                 });
                 break;
