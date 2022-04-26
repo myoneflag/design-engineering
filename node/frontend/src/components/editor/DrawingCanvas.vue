@@ -251,7 +251,7 @@ import { Coord, FlowSystemParameters, Level, NetworkType } from "../../../../com
 import { rebaseAll } from "../../htmlcanvas/lib/black-magic/rebase-all";
 import { globalStore } from "../../store/document/mutations";
 import HistoryView from "./HistoryView.vue";
-import { DEFAULT_FONT_NAME, PAGE_ZOOM } from "../../config";
+import { DEFAULT_FONT_NAME } from "../../config";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import Riser from "../../htmlcanvas/objects/riser";
 import stringify from "json-stable-stringify";
@@ -1132,8 +1132,8 @@ export default class DrawingCanvas extends Vue {
     if (entityTypeSupportsSimilar(type)) {
       var menuNode = this.$refs.menu as HTMLDivElement;
       var rect = (this.$refs.drawingCanvas as HTMLCanvasElement).getBoundingClientRect();
-      var x = e.x / PAGE_ZOOM - rect.left;
-      var y = e.y / PAGE_ZOOM - rect.top;
+      var x = e.x - rect.left;
+      var y = e.y - rect.top;
 
       // show menu
       menuNode!.style.display = "initial";
@@ -2098,7 +2098,7 @@ export default class DrawingCanvas extends Vue {
             continue;
           }
 
-          const w = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+          const w = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
 
           this.insertFloorPlan(event.dataTransfer.files.item(i) as File, w);
         }
@@ -2182,8 +2182,8 @@ export default class DrawingCanvas extends Vue {
         // start box thingy
         this.selectBox = new SelectBox(
           null,
-          this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM }),
-          this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM })
+          this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }),
+          this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY })
         );
 
         return true;
@@ -2198,7 +2198,7 @@ export default class DrawingCanvas extends Vue {
     }
 
     // If no objects or tools wanted the events, we can always drag and shit.
-    this.grabbedPoint = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+    this.grabbedPoint = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
     this.hasDragged = false;
     return true;
   }
@@ -2219,7 +2219,7 @@ export default class DrawingCanvas extends Vue {
 
   onMouseMoveInternal(event: MouseEvent): MouseMoveResult {
     if (this.selectBox) {
-      this.selectBox.pointB = this.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+      this.selectBox.pointB = this.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
 
       event.preventDefault();
 
@@ -2258,7 +2258,7 @@ export default class DrawingCanvas extends Vue {
       if (this.grabbedPoint != null) {
         const s = this.viewPort.toScreenCoord(this.grabbedPoint);
         this.hasDragged = true;
-        this.viewPort.panAbs(s.x - event.offsetX / PAGE_ZOOM, s.y - event.offsetY / PAGE_ZOOM);
+        this.viewPort.panAbs(s.x - event.offsetX, s.y - event.offsetY);
         this.scheduleDraw();
         return { handled: true, cursor: "Move" };
       } else {
@@ -2327,7 +2327,7 @@ export default class DrawingCanvas extends Vue {
     delta = Math.min(2000 / currS, delta);
 
     if (!this.toolHandler || !this.toolHandler.config.preventZooming) {
-      this.viewPort.rescale(delta, event.offsetX / PAGE_ZOOM, event.offsetY / PAGE_ZOOM);
+      this.viewPort.rescale(delta, event.offsetX, event.offsetY);
     }
 
     this.scheduleDraw();
@@ -2359,17 +2359,11 @@ export default class DrawingCanvas extends Vue {
 body {
   height: 100%;
   overflow: hidden;
-  zoom: 0.8;
 }
 
 .fullFrame {
   width: 100%;
-  height: -webkit-calc(125vh);
-}
-
-.modal-backdrop {
-  width: 100% !important;
-  height: 125vh !important;
+  height: -webkit-calc(100vh);
 }
 
 .disableMouseEvents {

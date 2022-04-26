@@ -2,7 +2,7 @@
     <div style="height: 100%">
         <PublicNavBar></PublicNavBar>
         <b-container style="height: 100%" fluid>
-            <b-row class="text-center" style="height: calc(125vh - 110px);">
+            <b-row class="text-center" style="height: calc(100vh - 110px);">
                 <b-col cols="12" style="height: 100%; background-color: aliceblue">
                     <b-card class="login-card">
                         <b-card bg-variant="primary" text-variant="light" class="welcome-back">

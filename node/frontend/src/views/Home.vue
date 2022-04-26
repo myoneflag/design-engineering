@@ -2,7 +2,7 @@ l<template>
   <div>
     <MainNavBar :profile="profile"></MainNavBar>
     <div
-      style="overflow-y: auto; overflow-x: hidden; height: calc(125vh - 63px)"
+      style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 70px)"
       :class="[profile && !profile.email_verified_at && 'isEmailVerification']"
     >
       <LocaleSelector />
@@ -802,7 +802,7 @@ h1 {
 }
 
 .isEmailVerification {
-  height: calc(125vh - 102px) !important;
+  height: calc(100vh - 102px) !important;
 }
 .circle-border {
   height: 24px;

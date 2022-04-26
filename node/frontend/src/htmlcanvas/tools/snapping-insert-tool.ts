@@ -7,7 +7,6 @@ import { MouseMoveResult } from "../types";
 import Pipe from "../objects/pipe";
 import { snapPoint, SnapResult } from "./snap-geometry";
 import Flatten from "@flatten-js/core";
-import { PAGE_ZOOM } from "../../../src/config";
 
 export const CONNECTABLE_SNAP_RADIUS_PX = 15;
 
@@ -76,7 +75,7 @@ export default class SnappingInsertTool extends PointTool {
 
         if (!event.shiftKey) {
 
-            const wc = context.viewPort.toWorldCoord({x: event.clientX / PAGE_ZOOM, y: event.clientY / PAGE_ZOOM});
+            const wc = context.viewPort.toWorldCoord({x: event.clientX, y: event.clientY});
             const uids = context.visibleObjects.sort((a, b) => context.hydraulicsLayer.entitySortOrder(a.entity) - context.hydraulicsLayer.entitySortOrder(b.entity)).map((o) => o.uid).reverse();
             const interactiveUids = context.interactive ? context.interactive.map((o) => o.uid) : [];
 

@@ -39,7 +39,7 @@
                     </b-nav>
                 </b-col>
                 <b-col cols="10">
-                    <div style="overflow-y: auto; overflow-x: hidden; height: calc(125vh - 200px);">
+                    <div style="overflow-y: auto; overflow-x: hidden; height: calc(100vh - 200px);">
                         <router-view> </router-view>
                     </div>
                 </b-col>

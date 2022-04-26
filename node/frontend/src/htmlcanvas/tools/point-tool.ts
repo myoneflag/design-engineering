@@ -8,7 +8,6 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import { KeyCode, keyCode2Image } from "../../../src/htmlcanvas/utils";
 import { DEFAULT_FONT_NAME } from "../../../src/config";
 import { Coord } from "../../../../common/src/api/document/drawing";
-import { PAGE_ZOOM } from "../../../src/config";
 
 export default class PointTool implements ToolHandler {
     onPointChosen: (worldCoord: Coord, event: MouseEvent) => void;
@@ -111,7 +110,7 @@ export default class PointTool implements ToolHandler {
     onMouseMove(event: MouseEvent, context: CanvasContext) {
         this.moved = true;
         this.lastEvent = event;
-        this.lastWc = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+        this.lastWc = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
         this.onMove(this.lastWc, event);
         return UNHANDLED;
     }
@@ -134,7 +133,7 @@ export default class PointTool implements ToolHandler {
         } else {
             if (event.button === 0) {
                 // End event.
-                this.onPointChosen(context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM }), event);
+                this.onPointChosen(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }), event);
                 this.finish(false, false);
                 return true;
             } else {

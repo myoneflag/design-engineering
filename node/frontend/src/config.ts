@@ -39,4 +39,3 @@ export function getDwellingMethods(catalog: Catalog): Choice[] {
 }
 
 export const PIPE_HEIGHT_GRAPHIC_EPS_MM = 50;
-export const PAGE_ZOOM = 0.8;

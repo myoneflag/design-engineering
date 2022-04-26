@@ -27,7 +27,6 @@ import { Coord, Rectangle } from "../../../../common/src/api/document/drawing";
 import { cloneSimple } from "../../../../common/src/lib/utils";
 import { FloorPlanRender, FloorPlanRenders } from "../../../../common/src/api/document/types";
 import { getFloorPlanRenders } from "../../api/pdf";
-import { PAGE_ZOOM } from "../../../src/config";
 
 export const imageStore = new Map<string, HTMLImageElement>();
 
@@ -425,7 +424,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
         
         if (!this.floorLockStatus) return false;
         this.shiftKey = event.shiftKey; // shift click moves the pdf but not the crop box or child points.
-        const w = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+        const w = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
         const o = this.toObjectCoord(w);
         if (this.inBounds(o)) {
             context.isLayerDragging = true;
@@ -451,7 +450,7 @@ export class BackgroundImage extends BackedDrawableObject<BackgroundEntity> impl
                 }
                 this.hasDragged = true;
 
-                const w = context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM });
+                const w = context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY });
                 if (this.shiftKey) {
                     // Move the offset, not the object
                     const o = this.toObjectCoord(w);

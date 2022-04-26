@@ -8,7 +8,6 @@ import { DrawingContext } from "../../../src/htmlcanvas/lib/types";
 import Layer from "../../../src/htmlcanvas/layers/layer";
 import CanvasContext from "../../../src/htmlcanvas/lib/canvas-context";
 import { Coord } from "../../../../common/src/api/document/drawing";
-import { PAGE_ZOOM } from "../../../src/config";
 
 enum Sides {
     Left,
@@ -93,7 +92,7 @@ export class ResizeControl extends DrawableObject {
     }
 
     onMouseDown(event: MouseEvent, context: CanvasContext): boolean {
-        this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX / PAGE_ZOOM, event.offsetY / PAGE_ZOOM, context.viewPort);
+        this.selectedHandle = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, context.viewPort);
         return this.selectedHandle != null;
     }
 
@@ -102,7 +101,7 @@ export class ResizeControl extends DrawableObject {
         // tslint:disable-next-line:no-bitwise
         if (event.buttons & 1) {
             if (this.selectedHandle != null) {
-                const w = this.toObjectCoord(context.viewPort.toWorldCoord({ x: event.offsetX / PAGE_ZOOM, y: event.offsetY / PAGE_ZOOM }));
+                const w = this.toObjectCoord(context.viewPort.toWorldCoord({ x: event.offsetX, y: event.offsetY }));
                 // start resizing shit
                 if (this.selectedHandle[2].indexOf(Sides.Left) !== -1) {
                     this.w += this.x - w.x;
@@ -132,7 +131,7 @@ export class ResizeControl extends DrawableObject {
                     this.onCommit(this);
                 }
             }
-            const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX / PAGE_ZOOM, event.offsetY / PAGE_ZOOM, context.viewPort);
+            const at: Handle | null = this.getHandleAtScreenCoord(event.offsetX, event.offsetY, context.viewPort);
             if (at == null) {
                 return UNHANDLED;
             } else {

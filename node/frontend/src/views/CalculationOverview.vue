@@ -9,7 +9,7 @@
             </b-row>
             <b-row style="padding-top: 20px">
                 <b-col cols="4">
-                    <div style="position:relative; height: calc(125vh - 180px); overflow-y:auto; text-align: left">
+                    <div style="position:relative; height: calc(100vh - 180px); overflow-y:auto; text-align: left">
                         <b-navbar v-b-scrollspy:scrollspy-nested class="flex-column">
                             <b-nav pills vertical>
                                 <template v-for="section in content">
@@ -39,7 +39,7 @@
                 <b-col cols="8">
                     <div
                         id="scrollspy-nested"
-                        style="position:relative; height: calc(125vh - 180px); overflow-y:auto; text-align: left"
+                        style="position:relative; height: calc(100vh - 180px); overflow-y:auto; text-align: left"
                     >
                         <template v-for="section in content">
                             <template v-if="typeof section.content === 'string'">
